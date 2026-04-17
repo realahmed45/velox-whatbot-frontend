@@ -17,27 +17,48 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[Register] Form submitted", {
+      name: form.name,
+      email: form.email,
+      passwordLen: form.password.length,
+    });
+
     if (form.password !== form.confirmPassword) {
+      console.warn("[Register] Password mismatch — aborting");
       toast.error("Passwords do not match");
       return;
     }
     if (form.password.length < 8) {
+      console.warn("[Register] Password too short — aborting");
       toast.error("Password must be at least 8 characters");
       return;
     }
+
     setLoading(true);
+    console.log("[Register] Sending POST /auth/register to API...");
     try {
-      await api.post("/auth/register", {
+      const res = await api.post("/auth/register", {
         name: form.name,
         email: form.email,
         password: form.password,
       });
+      console.log("[Register] API response OK", res.status, res.data);
+      console.log(
+        "[Register] Email status from server:",
+        res.data?._emailStatus,
+      );
       toast.success("Account created! Check your email to verify.");
+      console.log("[Register] Navigating to verify-email page...");
       navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
     } catch (err) {
+      console.error("[Register] API call FAILED");
+      console.error("[Register] HTTP status:", err.response?.status);
+      console.error("[Register] Response body:", err.response?.data);
+      console.error("[Register] Error message:", err.message);
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
+      console.log("[Register] handleSubmit done, loading=false");
     }
   };
 
