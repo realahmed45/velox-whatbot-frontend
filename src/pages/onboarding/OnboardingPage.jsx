@@ -46,6 +46,7 @@ export default function OnboardingPage() {
             <Step1
               onNext={(ws) => {
                 setWorkspace(ws);
+                setActiveWorkspace(ws._id); // set header for subsequent API calls
                 setStep(2);
               }}
               loading={loading}
