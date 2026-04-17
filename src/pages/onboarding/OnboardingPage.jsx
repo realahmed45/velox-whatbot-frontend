@@ -84,7 +84,7 @@ export default function OnboardingPage() {
 function Step1({ onNext, loading, setLoading }) {
   const [form, setForm] = useState({
     name: "",
-    businessType: "general",
+    industry: "general",
     timezone: "Asia/Karachi",
   });
   const TYPES = [
@@ -138,8 +138,8 @@ function Step1({ onNext, loading, setLoading }) {
           <label className="label">Business Type</label>
           <select
             className="input"
-            value={form.businessType}
-            onChange={(e) => setForm({ ...form, businessType: e.target.value })}
+            value={form.industry}
+            onChange={(e) => setForm({ ...form, industry: e.target.value })}
           >
             {TYPES.map((t) => (
               <option key={t} value={t}>
