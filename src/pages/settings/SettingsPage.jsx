@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -10,7 +10,11 @@ import {
   Globe,
   Clock,
   Users,
-  MessageSquare,
+  Instagram,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Trash2,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -20,8 +24,8 @@ export default function SettingsPage() {
 
   const TABS = [
     { id: "general", label: "General" },
-    { id: "whatsapp", label: "WhatsApp" },
-    { id: "business-hours", label: "Business Hours" },
+    { id: "instagram", label: "Instagram" },
+    { id: "automation", label: "Automation" },
     { id: "team", label: "Team" },
   ];
 
@@ -46,14 +50,17 @@ export default function SettingsPage() {
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
       )}
-      {tab === "whatsapp" && (
-        <WhatsAppSettings
+      {tab === "instagram" && (
+        <InstagramSettings
           workspace={workspace}
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
       )}
-      {tab === "business-hours" && (
-        <BusinessHoursSettings workspace={workspace} />
+      {tab === "automation" && (
+        <AutomationSettings
+          workspace={workspace}
+          onSave={() => fetchWorkspace(activeWorkspace)}
+        />
       )}
       {tab === "team" && <TeamSettings workspace={workspace} />}
     </div>
@@ -124,58 +131,43 @@ function GeneralSettings({ workspace, onSave }) {
           rows={3}
           value={form.welcomeMessage}
           onChange={(e) => setForm({ ...form, welcomeMessage: e.target.value })}
-          placeholder="Hi {{name}}! Welcome to our WhatsApp channel 👋"
+          placeholder="Hi {{name}}! Welcome, we're glad you're here 👋"
         />
       </div>
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
-        {loading ? "Saving…" : "Save changes"}
+        {loading ? "Savingâ€¦" : "Save changes"}
       </button>
     </div>
   );
 }
 
-function WhatsAppSettings({ workspace, onSave }) {
-  const wa = workspace?.whatsapp;
-  const [provider, setProvider] = useState(wa?.type || "ultramsg");
-  const [form, setForm] = useState({
-    instanceId: "",
-    token: "",
-    phoneNumberId: "",
-    accessToken: "",
-    verifyToken: "",
-  });
+function InstagramSettings({ workspace, onSave }) {
+  const ig = workspace?.instagram;
   const [loading, setLoading] = useState(false);
-  const [qrUrl, setQrUrl] = useState("");
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const [cookie, setCookie] = useState("");
+  const [cookieMode, setCookieMode] = useState(false);
 
-  const connectUltraMsg = async () => {
-    setLoading(true);
+  const startOAuth = async () => {
+    setOauthLoading(true);
     try {
-      const { data } = await api.post(
-        `/workspaces/${workspace._id}/connect-ultramsg`,
-        { instanceId: form.instanceId, token: form.token },
-      );
-      if (data.qrUrl) setQrUrl(data.qrUrl);
-      else {
-        toast.success("Connected!");
-        onSave();
-      }
+      const { data } = await api.get("/instagram/connect/oauth-url");
+      window.location.href = data.url;
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
-    } finally {
-      setLoading(false);
+      toast.error(err.response?.data?.message || "OAuth failed");
+      setOauthLoading(false);
     }
   };
 
-  const connectMeta = async () => {
+  const saveSessionCookie = async () => {
+    if (!cookie.trim()) return toast.error("Cookie required");
     setLoading(true);
     try {
-      await api.post(`/workspaces/${workspace._id}/connect-meta`, {
-        phoneNumberId: form.phoneNumberId,
-        accessToken: form.accessToken,
-        verifyToken: form.verifyToken,
+      await api.post("/instagram/connect/session", {
+        sessionCookie: cookie.trim(),
       });
-      toast.success("Meta API connected!");
+      toast.success("Session cookie saved");
       onSave();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed");
@@ -185,191 +177,186 @@ function WhatsAppSettings({ workspace, onSave }) {
   };
 
   const disconnect = async () => {
-    if (!window.confirm("Disconnect WhatsApp? Bot will stop working.")) return;
+    if (!window.confirm("Disconnect Instagram? Automations will stop.")) return;
     try {
-      await api.post(`/workspaces/${workspace._id}/disconnect-whatsapp`);
+      await api.delete("/instagram/connect");
       toast.success("Disconnected");
       onSave();
-    } catch (err) {
+    } catch {
       toast.error("Failed to disconnect");
     }
   };
 
   return (
-    <div className="card p-6 space-y-4">
+    <div className="card p-6 space-y-5">
+      {/* Connection status */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="font-semibold text-gray-800">WhatsApp Connection</p>
-          <p className="text-sm text-gray-500">
-            Current status:{" "}
+        <div className="flex items-center gap-3">
+          {ig?.profilePicture ? (
+            <img
+              src={ig.profilePicture}
+              className="w-10 h-10 rounded-full border border-pink-200"
+              alt=""
+            />
+          ) : (
+            <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center">
+              <Instagram className="w-5 h-5 text-pink-500" />
+            </div>
+          )}
+          <div>
+            <p className="font-semibold text-sm text-gray-900">
+              {ig?.status === "connected" ? `@${ig.username}` : "Not connected"}
+            </p>
             <span
-              className={
-                wa?.status === "connected"
-                  ? "text-green-600 font-medium"
-                  : "text-yellow-600 font-medium"
-              }
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                ig?.status === "connected"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-500"
+              }`}
             >
-              {wa?.status || "not connected"}
+              {ig?.status === "connected"
+                ? `â— Connected Â· ${ig?.connectionType === "meta_oauth" ? "Meta OAuth" : "Session Cookie"}`
+                : "â— Disconnected"}
             </span>
-          </p>
+          </div>
         </div>
-        {wa?.status === "connected" && (
-          <button onClick={disconnect} className="btn-danger text-xs">
+        {ig?.status === "connected" && (
+          <button
+            onClick={disconnect}
+            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition"
+          >
+            <Trash2 className="w-3 h-3" />
             Disconnect
           </button>
         )}
       </div>
 
-      {wa?.status !== "connected" && (
+      {ig?.status !== "connected" && (
         <>
-          <div className="flex gap-2">
-            {["ultramsg", "meta"].map((p) => (
+          {/* Method tabs */}
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            {[
+              { id: false, label: "Meta OAuth (Recommended)" },
+              { id: true, label: "Session Cookie" },
+            ].map((opt) => (
               <button
-                key={p}
-                onClick={() => setProvider(p)}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg border transition ${provider === p ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                key={String(opt.id)}
+                onClick={() => setCookieMode(opt.id)}
+                className={`flex-1 py-2 text-xs font-medium transition ${
+                  cookieMode === opt.id
+                    ? "bg-pink-500 text-white"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
               >
-                {p === "ultramsg" ? "UltraMsg (QR)" : "Meta Cloud API"}
+                {opt.label}
               </button>
             ))}
           </div>
-          {provider === "ultramsg" ? (
-            <>
-              <div>
-                <label className="label">Instance ID</label>
-                <input
-                  className="input"
-                  placeholder="instance12345"
-                  value={form.instanceId}
-                  onChange={(e) =>
-                    setForm({ ...form, instanceId: e.target.value })
-                  }
-                />
+
+          {!cookieMode ? (
+            <div>
+              <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 mb-4">
+                <p className="font-medium mb-1">Requirements:</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>Instagram Business or Creator account</li>
+                  <li>Facebook Page linked to your Instagram</li>
+                  <li>Admin access to that Facebook Page</li>
+                </ul>
               </div>
-              <div>
-                <label className="label">API Token</label>
-                <input
-                  className="input"
-                  type="password"
-                  value={form.token}
-                  onChange={(e) => setForm({ ...form, token: e.target.value })}
-                />
-              </div>
-              {qrUrl && (
-                <img
-                  src={qrUrl}
-                  alt="QR"
-                  className="mx-auto max-w-[220px] rounded-lg"
-                />
-              )}
               <button
-                onClick={connectUltraMsg}
-                className="btn-primary gap-2"
-                disabled={loading}
+                onClick={startOAuth}
+                disabled={oauthLoading}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-60"
               >
-                <RefreshCw className="w-4 h-4" />
-                {loading ? "Connecting…" : "Connect & Get QR"}
+                {oauthLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Instagram className="w-4 h-4" />
+                )}
+                Connect with Instagram
+                <ExternalLink className="w-3 h-3 opacity-70" />
               </button>
-            </>
+            </div>
           ) : (
-            <>
-              <div>
-                <label className="label">Phone Number ID</label>
-                <input
-                  className="input"
-                  value={form.phoneNumberId}
-                  onChange={(e) =>
-                    setForm({ ...form, phoneNumberId: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Access Token</label>
-                <input
-                  className="input"
-                  type="password"
-                  value={form.accessToken}
-                  onChange={(e) =>
-                    setForm({ ...form, accessToken: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Webhook Verify Token</label>
-                <input
-                  className="input"
-                  value={form.verifyToken}
-                  onChange={(e) =>
-                    setForm({ ...form, verifyToken: e.target.value })
-                  }
-                />
-              </div>
-              <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
-                <p className="font-medium mb-1">
-                  Webhook URL to set in Meta Dashboard:
+            <div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex gap-2 mb-4">
+                <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-yellow-700">
+                  Session cookies bypass the official API. Use only on accounts
+                  you own.
                 </p>
-                <code className="break-all">
-                  {window.location.origin}/api/whatsapp/webhook/meta
-                </code>
               </div>
+              <label className="label">Instagram sessionid Cookie</label>
+              <textarea
+                className="input min-h-[72px] text-xs font-mono mb-3"
+                placeholder="Paste sessionid valueâ€¦"
+                value={cookie}
+                onChange={(e) => setCookie(e.target.value)}
+              />
               <button
-                onClick={connectMeta}
-                className="btn-primary"
+                onClick={saveSessionCookie}
                 disabled={loading}
+                className="btn-primary gap-2"
               >
-                {loading ? "Saving…" : "Save Meta Credentials"}
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                Save session cookie
               </button>
-            </>
+            </div>
           )}
         </>
+      )}
+
+      {ig?.status === "connected" && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2">
+            Webhook URL
+          </p>
+          <code className="text-xs text-gray-700 break-all">
+            {import.meta.env.VITE_API_URL ||
+              "https://flowgram-backend.onrender.com/api"}
+            /instagram/webhook
+          </code>
+          <p className="text-xs text-gray-400 mt-2">
+            Set this URL in your Meta App dashboard under Instagram â†’
+            Webhooks.
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
-function BusinessHoursSettings({ workspace }) {
-  const DAYS = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const [hours, setHours] = useState(
-    DAYS.map((day, i) => ({
-      day: i + 1,
-      enabled: i < 5,
-      startTime: "09:00",
-      endTime: "18:00",
-    })),
-  );
+function AutomationSettings({ workspace, onSave }) {
+  const [form, setForm] = useState({
+    automationEnabled: workspace?.settings?.automationEnabled ?? true,
+    minDelayMinutes: workspace?.settings?.minDelayMinutes ?? 1,
+    maxDelayMinutes: workspace?.settings?.maxDelayMinutes ?? 5,
+    activeHourStart: workspace?.settings?.activeHourStart ?? 8,
+    activeHourEnd: workspace?.settings?.activeHourEnd ?? 22,
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (workspace?.businessHours?.length) {
-      setHours(
-        DAYS.map((_, i) => {
-          const found = workspace.businessHours.find((h) => h.day === i + 1);
-          return (
-            found || {
-              day: i + 1,
-              enabled: false,
-              startTime: "09:00",
-              endTime: "18:00",
-            }
-          );
-        }),
-      );
-    }
+    if (workspace?.settings)
+      setForm({
+        automationEnabled: workspace.settings.automationEnabled ?? true,
+        minDelayMinutes: workspace.settings.minDelayMinutes ?? 1,
+        maxDelayMinutes: workspace.settings.maxDelayMinutes ?? 5,
+        activeHourStart: workspace.settings.activeHourStart ?? 8,
+        activeHourEnd: workspace.settings.activeHourEnd ?? 22,
+      });
   }, [workspace]);
 
   const save = async () => {
     setLoading(true);
     try {
-      await api.put(`/workspaces/${workspace._id}`, { businessHours: hours });
-      toast.success("Business hours saved");
+      await api.put("/instagram/settings", form);
+      toast.success("Automation settings saved");
+      onSave();
     } catch (err) {
       toast.error("Failed to save");
     } finally {
@@ -377,61 +364,109 @@ function BusinessHoursSettings({ workspace }) {
     }
   };
 
-  const update = (i, field, value) =>
-    setHours((h) =>
-      h.map((x, idx) => (idx === i ? { ...x, [field]: value } : x)),
-    );
-
   return (
-    <div className="card p-6 space-y-3">
-      <p className="text-sm text-gray-500 mb-4">
-        Set when your bot is active. Outside these hours, messages will be
-        handled by the fallback (human handover or offline message).
-      </p>
-      {DAYS.map((day, i) => (
-        <div key={day} className="flex items-center gap-4">
-          <input
-            type="checkbox"
-            id={`day-${i}`}
-            checked={hours[i]?.enabled || false}
-            onChange={(e) => update(i, "enabled", e.target.checked)}
-            className="w-4 h-4 accent-brand-600"
-          />
-          <label
-            htmlFor={`day-${i}`}
-            className="w-24 text-sm font-medium text-gray-700"
-          >
-            {day}
-          </label>
-          {hours[i]?.enabled && (
-            <>
-              <input
-                type="time"
-                className="input w-28 text-sm"
-                value={hours[i]?.startTime || "09:00"}
-                onChange={(e) => update(i, "startTime", e.target.value)}
-              />
-              <span className="text-gray-400 text-sm">to</span>
-              <input
-                type="time"
-                className="input w-28 text-sm"
-                value={hours[i]?.endTime || "18:00"}
-                onChange={(e) => update(i, "endTime", e.target.value)}
-              />
-            </>
-          )}
-          {!hours[i]?.enabled && (
-            <span className="text-xs text-gray-400">Closed</span>
-          )}
+    <div className="card p-6 space-y-5">
+      {/* Master toggle */}
+      <div className="flex items-center justify-between py-2">
+        <div>
+          <p className="font-medium text-gray-800 text-sm">Enable Automation</p>
+          <p className="text-xs text-gray-500">
+            Turn all DM automations on or off globally
+          </p>
         </div>
-      ))}
-      <button
-        onClick={save}
-        disabled={loading}
-        className="btn-primary gap-2 mt-2"
-      >
+        <button
+          onClick={() =>
+            setForm((f) => ({ ...f, automationEnabled: !f.automationEnabled }))
+          }
+          className={`relative w-11 h-6 rounded-full transition-colors ${
+            form.automationEnabled ? "bg-brand-600" : "bg-gray-300"
+          }`}
+        >
+          <span
+            className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+              form.automationEnabled ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Delay range */}
+      <div>
+        <label className="label">Reply delay range (minutes)</label>
+        <p className="text-xs text-gray-400 mb-3">
+          Random delay before sending automated DMs (avoids spam detection)
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <label className="text-xs text-gray-500">Min</label>
+            <input
+              type="number"
+              min={0}
+              max={60}
+              className="input"
+              value={form.minDelayMinutes}
+              onChange={(e) =>
+                setForm({ ...form, minDelayMinutes: +e.target.value })
+              }
+            />
+          </div>
+          <span className="text-gray-400 mt-5">â€”</span>
+          <div className="flex-1">
+            <label className="text-xs text-gray-500">Max</label>
+            <input
+              type="number"
+              min={0}
+              max={120}
+              className="input"
+              value={form.maxDelayMinutes}
+              onChange={(e) =>
+                setForm({ ...form, maxDelayMinutes: +e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Active hours */}
+      <div>
+        <label className="label">Active hours</label>
+        <p className="text-xs text-gray-400 mb-3">
+          Only send automated DMs within this window
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <label className="text-xs text-gray-500">From (hour 0â€“23)</label>
+            <input
+              type="number"
+              min={0}
+              max={23}
+              className="input"
+              value={form.activeHourStart}
+              onChange={(e) =>
+                setForm({ ...form, activeHourStart: +e.target.value })
+              }
+            />
+          </div>
+          <span className="text-gray-400 mt-5">â€”</span>
+          <div className="flex-1">
+            <label className="text-xs text-gray-500">To (hour 0â€“23)</label>
+            <input
+              type="number"
+              min={0}
+              max={23}
+              className="input"
+              value={form.activeHourEnd}
+              onChange={(e) =>
+                setForm({ ...form, activeHourEnd: +e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
-        {loading ? "Saving…" : "Save hours"}
+        {loading ? "Savingâ€¦" : "Save settings"}
       </button>
     </div>
   );
@@ -502,7 +537,7 @@ function TeamSettings({ workspace }) {
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? "…" : "Invite"}
+            {loading ? "â€¦" : "Invite"}
           </button>
         </div>
       </div>

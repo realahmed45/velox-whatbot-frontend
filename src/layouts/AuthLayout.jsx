@@ -7,10 +7,10 @@ export default function AuthLayout() {
       <div className="hidden lg:flex w-1/2 bg-brand-600 flex-col items-center justify-center p-12 text-white">
         <div className="max-w-md text-center">
           <div className="text-5xl font-bold mb-4">💬</div>
-          <h1 className="text-3xl font-bold mb-3">Velox Whatbot</h1>
+          <h1 className="text-3xl font-bold mb-3">Flowgram</h1>
           <p className="text-brand-100 text-lg">
-            Automate your WhatsApp business conversations with powerful flows,
-            smart inbox, and real-time analytics.
+            Automate your Instagram DM conversations with powerful flows, smart
+            inbox, and real-time analytics.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
             {[

@@ -9,8 +9,7 @@ export const initSocket = () => {
   const token = useAuthStore.getState().token;
 
   socket = io(
-    import.meta.env.VITE_SOCKET_URL ||
-      "https://velox-whatbot-backend.onrender.com",
+    import.meta.env.VITE_SOCKET_URL || "https://flowgram-backend.onrender.com",
     {
       auth: { token },
       transports: ["websocket"],

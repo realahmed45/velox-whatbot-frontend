@@ -1,14 +1,22 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
-import { Building2, MessageSquare, Bot, CheckCircle2 } from "lucide-react";
+import {
+  Building2,
+  Instagram,
+  Bot,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 
 const STEPS = [
   { id: 1, title: "Create Workspace", icon: Building2 },
-  { id: 2, title: "Connect WhatsApp", icon: MessageSquare },
-  { id: 3, title: "Choose a Template", icon: Bot },
+  { id: 2, title: "Connect Instagram", icon: Instagram },
+  { id: 3, title: "Pick a Template", icon: Bot },
   { id: 4, title: "You're Ready!", icon: CheckCircle2 },
 ];
 
@@ -18,35 +26,60 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const { setActiveWorkspace } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // If redirected back from Meta OAuth callback, advance to step 3
+  useEffect(() => {
+    const oauthStatus = searchParams.get("oauth");
+    const wsId = searchParams.get("ws");
+    if (oauthStatus === "success" && wsId) {
+      setWorkspace({ _id: wsId });
+      setActiveWorkspace(wsId);
+      toast.success("Instagram connected successfully!");
+      setStep(3);
+    } else if (oauthStatus === "error") {
+      toast.error("Instagram connection failed. Please try again.");
+    }
+  }, [searchParams, setActiveWorkspace]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center p-6">
       <div className="w-full max-w-xl">
-        {/* Progress */}
+        {/* Branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+              <Instagram className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">Flowgram</span>
+          </div>
+          <p className="text-gray-500 text-sm">Instagram DM Automation</p>
+        </div>
+        {/* Progress steps */}
         <div className="flex items-center gap-0 mb-8">
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center flex-1">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0
-                ${step >= s.id ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-400"}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors
+                ${step > s.id ? "bg-brand-600 text-white" : step === s.id ? "bg-brand-600 text-white ring-4 ring-brand-100" : "bg-gray-200 text-gray-400"}`}
               >
-                {step > s.id ? "✓" : s.id}
+                {step > s.id ? "âœ“" : s.id}
               </div>
               {i < STEPS.length - 1 && (
                 <div
-                  className={`h-0.5 flex-1 mx-1 ${step > s.id ? "bg-brand-400" : "bg-gray-200"}`}
+                  className={`h-0.5 flex-1 mx-1 transition-colors ${step > s.id ? "bg-brand-400" : "bg-gray-200"}`}
                 />
               )}
             </div>
           ))}
         </div>
 
-        <div className="card p-8">
+        <div className="card p-8 shadow-lg">
           {step === 1 && (
             <Step1
               onNext={(ws) => {
                 setWorkspace(ws);
-                setActiveWorkspace(ws._id); // set header for subsequent API calls
+                setActiveWorkspace(ws._id);
                 setStep(2);
               }}
               loading={loading}
@@ -122,35 +155,50 @@ function Step1({ onNext, loading, setLoading }) {
         Create your workspace
       </h2>
       <p className="text-gray-500 text-sm mb-6">
-        A workspace represents your WhatsApp business account.
+        A workspace holds your Instagram account, flows, and contacts.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="label">Workspace / Business Name</label>
+          <label className="label">Brand / Business Name</label>
           <input
             className="input"
-            placeholder="e.g. Ahmed's Restaurant"
+            placeholder="e.g. Blushstrike Beauty"
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </div>
         <div>
-          <label className="label">Business Type</label>
+          <label className="label">Industry</label>
           <select
             className="input"
             value={form.industry}
             onChange={(e) => setForm({ ...form, industry: e.target.value })}
           >
-            {TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+            {[
+              { value: "ecommerce", label: "E-commerce / Shop" },
+              { value: "beauty_salon", label: "Beauty / Salon" },
+              { value: "restaurant", label: "Restaurant / Food" },
+              { value: "real_estate", label: "Real Estate" },
+              { value: "fitness", label: "Fitness / Wellness" },
+              { value: "education", label: "Education / Coaching" },
+              { value: "influencer", label: "Creator / Influencer" },
+              { value: "general", label: "Other / General" },
+            ].map((i) => (
+              <option key={i.value} value={i.value}>
+                {i.label}
               </option>
             ))}
           </select>
         </div>
         <button type="submit" className="btn-primary w-full" disabled={loading}>
-          {loading ? "Creating…" : "Create workspace & continue"}
+          {loading ? (
+            <span className="flex items-center gap-2 justify-center">
+              <Loader2 className="w-4 h-4 animate-spin" /> Creatingâ€¦
+            </span>
+          ) : (
+            "Create workspace & continue â†’"
+          )}
         </button>
       </form>
     </div>
@@ -158,53 +206,167 @@ function Step1({ onNext, loading, setLoading }) {
 }
 
 function Step2({ workspace, onNext, onSkip }) {
-  const [provider, setProvider] = useState("ultramsg");
-  const [form, setForm] = useState({
-    instanceId: "",
-    token: "",
-    phoneNumberId: "",
-    accessToken: "",
-    verifyToken: "",
-  });
-  const [qrUrl, setQrUrl] = useState("");
+  const [connectionType, setConnectionType] = useState("meta_oauth");
   const [loading, setLoading] = useState(false);
 
-  const connectUltraMsg = async () => {
-    if (!form.instanceId || !form.token) {
-      toast.error("Instance ID and token required");
-      return;
-    }
+  const startOAuth = async () => {
     setLoading(true);
     try {
-      const { data } = await api.post(
-        `/workspaces/${workspace._id}/connect-ultramsg`,
-        { instanceId: form.instanceId, token: form.token },
-      );
-      if (data.qrUrl) setQrUrl(data.qrUrl);
-      else toast.success("UltraMsg connected!");
+      const { data } = await api.get("/instagram/connect/oauth-url");
+      sessionStorage.setItem("onboarding_ws_id", workspace._id);
+      window.location.href = data.url;
     } catch (err) {
-      toast.error(err.response?.data?.message || "Connection failed");
-    } finally {
+      toast.error(err.response?.data?.message || "Failed to start OAuth");
       setLoading(false);
     }
   };
 
-  const connectMeta = async () => {
-    if (!form.phoneNumberId || !form.accessToken || !form.verifyToken) {
-      toast.error("All Meta fields required");
+  return (
+    <div>
+      <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center mb-4">
+        <Instagram className="w-5 h-5 text-pink-600" />
+      </div>
+      <h2 className="text-xl font-bold mb-1">Connect Instagram</h2>
+      <p className="text-gray-500 text-sm mb-6">
+        Link your Instagram Business or Creator account to start automating DMs.
+      </p>
+
+      {/* Method selector */}
+      <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-5">
+        {[
+          { id: "meta_oauth", label: "Meta OAuth (Recommended)" },
+          { id: "session_cookie", label: "Session Cookie" },
+        ].map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => setConnectionType(opt.id)}
+            className={`flex-1 py-2 text-xs font-medium transition ${
+              connectionType === opt.id
+                ? "bg-pink-500 text-white"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {connectionType === "meta_oauth" ? (
+        <OAuthConnectPanel
+          workspace={workspace}
+          loading={loading}
+          onStart={startOAuth}
+          onNext={onNext}
+        />
+      ) : (
+        <SessionCookiePanel workspace={workspace} onNext={onNext} />
+      )}
+
+      <button
+        onClick={onSkip}
+        className="btn-ghost w-full mt-3 text-gray-400 text-xs"
+      >
+        Skip for now â€” connect later in Settings
+      </button>
+    </div>
+  );
+}
+
+function OAuthConnectPanel({ workspace, loading, onStart, onNext }) {
+  const [status, setStatus] = useState("idle");
+  const [igInfo, setIgInfo] = useState(null);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await api.get("/instagram/connection");
+        if (data.connection?.status === "connected") {
+          setIgInfo(data.connection);
+          setStatus("connected");
+          clearInterval(interval);
+        }
+      } catch {
+        // not connected yet
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (status === "connected") {
+    return (
+      <div className="text-center py-4">
+        <div className="w-14 h-14 rounded-full border-2 border-pink-200 overflow-hidden mx-auto mb-3">
+          {igInfo?.profilePicture ? (
+            <img
+              src={igInfo.profilePicture}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-pink-100 flex items-center justify-center">
+              <Instagram className="w-6 h-6 text-pink-500" />
+            </div>
+          )}
+        </div>
+        <p className="font-semibold text-gray-900">@{igInfo?.username}</p>
+        <p className="text-xs text-gray-500 mb-4">
+          {igInfo?.followersCount?.toLocaleString()} followers
+        </p>
+        <button onClick={onNext} className="btn-primary w-full">
+          Looks good, continue â†’
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 text-xs text-blue-700">
+        <p className="font-semibold mb-1">Requirements for Meta OAuth:</p>
+        <ul className="list-disc list-inside space-y-0.5 text-blue-600">
+          <li>Instagram Business or Creator account</li>
+          <li>Facebook Page linked to your Instagram</li>
+          <li>Admin access to that Facebook Page</li>
+        </ul>
+      </div>
+      <button
+        onClick={onStart}
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-60"
+      >
+        {loading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Instagram className="w-4 h-4" />
+        )}
+        Connect with Instagram
+        <ExternalLink className="w-3 h-3 opacity-70" />
+      </button>
+      <p className="text-xs text-center text-gray-400 mt-2">
+        You'll be redirected to Facebook/Instagram to authorize Flowgram.
+      </p>
+    </div>
+  );
+}
+
+function SessionCookiePanel({ workspace, onNext }) {
+  const [cookie, setCookie] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleConnect = async () => {
+    if (!cookie.trim()) {
+      toast.error("Session cookie is required");
       return;
     }
     setLoading(true);
     try {
-      await api.post(`/workspaces/${workspace._id}/connect-meta`, {
-        phoneNumberId: form.phoneNumberId,
-        accessToken: form.accessToken,
-        verifyToken: form.verifyToken,
+      await api.post("/instagram/connect/session", {
+        sessionCookie: cookie.trim(),
       });
-      toast.success("Meta Cloud API connected!");
+      toast.success("Session cookie saved!");
       onNext();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Connection failed");
+      toast.error(err.response?.data?.message || "Failed to save session");
     } finally {
       setLoading(false);
     }
@@ -212,125 +374,37 @@ function Step2({ workspace, onNext, onSkip }) {
 
   return (
     <div>
-      <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-4">
-        <MessageSquare className="w-5 h-5 text-green-600" />
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex gap-2">
+        <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-yellow-700">
+          Session cookies bypass Instagram's official API. Use only on accounts
+          you own and accept the risk of temporary blocks.
+        </p>
       </div>
-      <h2 className="text-xl font-bold mb-1">Connect WhatsApp</h2>
-      <p className="text-gray-500 text-sm mb-6">
-        Choose how you want to connect your WhatsApp number.
-      </p>
-
-      {/* Provider tabs */}
-      <div className="flex gap-2 mb-4">
-        {["ultramsg", "meta"].map((p) => (
-          <button
-            key={p}
-            onClick={() => setProvider(p)}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg border transition ${provider === p ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-          >
-            {p === "ultramsg" ? "UltraMsg (QR Scan)" : "Meta Cloud API"}
-          </button>
-        ))}
+      <div className="mb-4">
+        <label className="label">Instagram sessionid Cookie</label>
+        <textarea
+          className="input min-h-[80px] text-xs font-mono"
+          placeholder="Paste your Instagram sessionid cookie value hereâ€¦"
+          value={cookie}
+          onChange={(e) => setCookie(e.target.value)}
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          DevTools â†’ Application â†’ Cookies â†’ instagram.com â†’ sessionid
+        </p>
       </div>
-
-      {provider === "ultramsg" ? (
-        <div className="space-y-3">
-          <div>
-            <label className="label">Instance ID</label>
-            <input
-              className="input"
-              placeholder="instance12345"
-              value={form.instanceId}
-              onChange={(e) => setForm({ ...form, instanceId: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">API Token</label>
-            <input
-              className="input"
-              type="password"
-              placeholder="your-ultramsg-token"
-              value={form.token}
-              onChange={(e) => setForm({ ...form, token: e.target.value })}
-            />
-          </div>
-          {qrUrl && (
-            <div className="text-center bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Scan this QR code with WhatsApp
-              </p>
-              <img
-                src={qrUrl}
-                alt="QR Code"
-                className="mx-auto max-w-[200px]"
-              />
-            </div>
-          )}
-          <button
-            onClick={connectUltraMsg}
-            className="btn-primary w-full"
-            disabled={loading}
-          >
-            {loading ? "Connecting…" : "Connect & Get QR"}
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div>
-            <label className="label">Phone Number ID</label>
-            <input
-              className="input"
-              placeholder="From Meta Developer Console"
-              value={form.phoneNumberId}
-              onChange={(e) =>
-                setForm({ ...form, phoneNumberId: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label className="label">Access Token</label>
-            <input
-              className="input"
-              type="password"
-              placeholder="EAAB..."
-              value={form.accessToken}
-              onChange={(e) =>
-                setForm({ ...form, accessToken: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label className="label">Webhook Verify Token</label>
-            <input
-              className="input"
-              placeholder="Any secret string"
-              value={form.verifyToken}
-              onChange={(e) =>
-                setForm({ ...form, verifyToken: e.target.value })
-              }
-            />
-          </div>
-          <div className="text-xs text-gray-500 bg-blue-50 rounded-lg p-3">
-            Webhook URL:{" "}
-            <code className="font-mono">
-              https://yourdomain.com/api/whatsapp/webhook/meta
-            </code>
-          </div>
-          <button
-            onClick={connectMeta}
-            className="btn-primary w-full"
-            disabled={loading}
-          >
-            {loading ? "Connecting…" : "Save & Connect"}
-          </button>
-        </div>
-      )}
-
       <button
-        onClick={onSkip}
-        className="btn-ghost w-full mt-3 text-gray-400 text-sm"
+        onClick={handleConnect}
+        className="btn-primary w-full"
+        disabled={loading}
       >
-        Skip for now
+        {loading ? (
+          <span className="flex items-center gap-2 justify-center">
+            <Loader2 className="w-4 h-4 animate-spin" /> Savingâ€¦
+          </span>
+        ) : (
+          "Save & continue â†’"
+        )}
       </button>
     </div>
   );
@@ -339,31 +413,32 @@ function Step2({ workspace, onNext, onSkip }) {
 function Step3({ workspace, onNext, onSkip }) {
   const [selected, setSelected] = useState("");
   const [loading, setLoading] = useState(false);
+
   const TEMPLATES = [
     {
-      id: "restaurant",
-      label: "🍽 Restaurant",
-      desc: "Menu, reservations, order enquiries",
+      id: "ig_welcome_dm",
+      label: "ðŸ‘‹ Welcome DM",
+      desc: "Auto-DM new followers with a personalised welcome",
     },
     {
-      id: "beauty_salon",
-      label: "💅 Beauty Salon",
-      desc: "Appointments & services menu",
+      id: "ig_keyword_reply",
+      label: "ðŸ”‘ Keyword Reply",
+      desc: "Reply when someone DMs a specific keyword (e.g. 'price')",
     },
     {
-      id: "retail",
-      label: "🛍 Retail Shop",
-      desc: "Product enquiry & order tracking",
+      id: "ig_story_mention",
+      label: "ðŸ“¸ Story Mention Reply",
+      desc: "DM users who mention you in their story",
     },
     {
-      id: "real_estate",
-      label: "🏠 Real Estate",
-      desc: "Lead qualification & property tours",
+      id: "ig_comment_to_dm",
+      label: "ðŸ’¬ Comment â†’ DM",
+      desc: "Auto-DM users who comment on your posts",
     },
     {
-      id: "general_faq",
-      label: "💬 General FAQ",
-      desc: "Welcome + human handover fallback",
+      id: "ig_lead_capture",
+      label: "ðŸŽ¯ Lead Capture",
+      desc: "Collect name + email via DM conversation",
     },
   ];
 
@@ -374,11 +449,11 @@ function Step3({ workspace, onNext, onSkip }) {
     }
     setLoading(true);
     try {
-      await api.post(`/flows/from-template`, {
-        workspaceId: workspace._id,
+      await api.post("/flows/from-template", {
+        workspaceId: workspace?._id,
         templateKey: selected,
       });
-      toast.success("Template applied!");
+      toast.success("Template flow created!");
       onNext();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to apply template");
@@ -392,16 +467,20 @@ function Step3({ workspace, onNext, onSkip }) {
       <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
         <Bot className="w-5 h-5 text-purple-600" />
       </div>
-      <h2 className="text-xl font-bold mb-1">Choose a starter template</h2>
+      <h2 className="text-xl font-bold mb-1">Pick a starter template</h2>
       <p className="text-gray-500 text-sm mb-4">
-        We'll create ready-made automation flows for your business type.
+        We'll create a ready-made automation flow you can customize.
       </p>
       <div className="space-y-2 mb-4">
         {TEMPLATES.map((t) => (
           <button
             key={t.id}
             onClick={() => setSelected(t.id)}
-            className={`w-full text-left p-3 rounded-lg border transition ${selected === t.id ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-300"}`}
+            className={`w-full text-left p-3 rounded-lg border transition ${
+              selected === t.id
+                ? "border-brand-500 bg-brand-50"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
           >
             <div className="font-medium text-sm">{t.label}</div>
             <div className="text-xs text-gray-500">{t.desc}</div>
@@ -413,7 +492,13 @@ function Step3({ workspace, onNext, onSkip }) {
         className="btn-primary w-full"
         disabled={loading || !selected}
       >
-        {loading ? "Applying…" : "Apply template"}
+        {loading ? (
+          <span className="flex items-center gap-2 justify-center">
+            <Loader2 className="w-4 h-4 animate-spin" /> Creatingâ€¦
+          </span>
+        ) : (
+          "Apply template â†’"
+        )}
       </button>
       <button
         onClick={onSkip}
@@ -428,16 +513,16 @@ function Step3({ workspace, onNext, onSkip }) {
 function Step4({ workspace, onDone }) {
   return (
     <div className="text-center">
-      <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <CheckCircle2 className="w-8 h-8 text-brand-600" />
       </div>
-      <h2 className="text-xl font-bold mb-2">You're all set!</h2>
+      <h2 className="text-xl font-bold mb-2">You're all set! ðŸŽ‰</h2>
       <p className="text-gray-500 text-sm mb-6">
-        Your workspace <strong>{workspace?.name}</strong> is ready. Start
-        building flows, managing your inbox, and growing your business.
+        <strong>{workspace?.name}</strong> is ready. Go to your dashboard to
+        build flows, monitor DMs, and grow your Instagram presence.
       </p>
       <button onClick={onDone} className="btn-primary w-full">
-        Go to Dashboard
+        Open Dashboard â†’
       </button>
     </div>
   );

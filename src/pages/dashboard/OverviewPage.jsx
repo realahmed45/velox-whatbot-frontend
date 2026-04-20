@@ -10,7 +10,8 @@ import {
   TrendingUp,
   ArrowRight,
   Bot,
-  CheckCircle2,
+  Instagram,
+  Heart,
 } from "lucide-react";
 import {
   AreaChart,
@@ -51,14 +52,13 @@ export default function OverviewPage() {
 
   const CARDS = [
     {
-      label: "Total Messages",
+      label: "DMs Sent",
       value: stats?.totalMessages ?? "—",
       icon: MessageSquare,
       color: "text-blue-600 bg-blue-50",
-      delta: stats?.messageDelta,
     },
     {
-      label: "Active Contacts",
+      label: "Followers Reached",
       value: stats?.totalContacts ?? "—",
       icon: Users,
       color: "text-purple-600 bg-purple-50",
@@ -70,7 +70,7 @@ export default function OverviewPage() {
       color: "text-brand-600 bg-brand-50",
     },
     {
-      label: "Bot Handled",
+      label: "Automation Rate",
       value: stats?.botHandledPct ? `${stats.botHandledPct}%` : "—",
       icon: Bot,
       color: "text-orange-600 bg-orange-50",
@@ -79,20 +79,23 @@ export default function OverviewPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* WhatsApp status banner */}
-      {workspace && workspace.whatsapp?.status !== "connected" && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <p className="font-medium text-yellow-800 text-sm">
-              WhatsApp not connected
-            </p>
-            <p className="text-yellow-600 text-xs mt-0.5">
-              Connect your WhatsApp to start receiving messages.
-            </p>
+      {/* Instagram status banner */}
+      {workspace && workspace.instagram?.status !== "connected" && (
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Instagram className="w-5 h-5 text-pink-500" />
+            <div>
+              <p className="font-medium text-pink-800 text-sm">
+                Instagram not connected
+              </p>
+              <p className="text-pink-600 text-xs mt-0.5">
+                Connect your Instagram account to start automating DMs.
+              </p>
+            </div>
           </div>
           <button
             onClick={() => navigate("/dashboard/settings")}
-            className="btn-secondary text-sm border-yellow-300 text-yellow-700 hover:bg-yellow-100"
+            className="flex items-center gap-1.5 text-sm font-medium text-pink-700 border border-pink-300 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition"
           >
             Connect now <ArrowRight className="w-3 h-3" />
           </button>
@@ -125,7 +128,7 @@ export default function OverviewPage() {
 
       {/* Chart */}
       <div className="card p-5">
-        <h2 className="font-semibold text-gray-800 mb-4">Messages this week</h2>
+        <h2 className="font-semibold text-gray-800 mb-4">DMs sent this week</h2>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={chartData}>
@@ -165,20 +168,20 @@ export default function OverviewPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             {
-              label: "Create a new flow",
-              desc: "Build automation sequences",
+              label: "Build an automation flow",
+              desc: "Automate DMs for new followers, keywords & more",
               to: "/dashboard/flows",
               icon: GitBranch,
             },
             {
-              label: "View Inbox",
-              desc: "Manage customer conversations",
+              label: "View DM Inbox",
+              desc: "Read and reply to conversations",
               to: "/dashboard/inbox",
               icon: MessageSquare,
             },
             {
-              label: "Add contacts",
-              desc: "Import or add CRM contacts",
+              label: "Manage contacts",
+              desc: "View followers & captured leads",
               to: "/dashboard/contacts",
               icon: Users,
             },

@@ -274,8 +274,8 @@ export default function FlowBuilderPage() {
               Select or create a flow
             </h2>
             <p className="text-gray-400 text-sm mb-6">
-              Build automated WhatsApp conversations with a visual drag-and-drop
-              editor.
+              Build automated Instagram DM conversations with a visual
+              drag-and-drop editor.
             </p>
             <button onClick={createNewFlow} className="btn-primary gap-2">
               <Plus className="w-4 h-4" />

@@ -9,7 +9,7 @@ import {
   CreditCard,
   Settings,
   LogOut,
-  Zap,
+  Instagram,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
@@ -41,9 +41,9 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-4 border-b border-gray-100">
         <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-          <Zap className="w-4 h-4 text-white" />
+          <Instagram className="w-4 h-4 text-white" />
         </div>
-        <span className="font-bold text-gray-900">Velox Whatbot</span>
+        <span className="font-bold text-gray-900">Flowgram</span>
       </div>
 
       {/* Workspace badge */}
@@ -58,14 +58,14 @@ export default function Sidebar() {
           <span
             className={clsx(
               "badge mt-1",
-              workspace.whatsapp?.status === "connected"
+              workspace.instagram?.status === "connected"
                 ? "badge-green"
                 : "badge-yellow",
             )}
           >
-            {workspace.whatsapp?.status === "connected"
-              ? "● Connected"
-              : "● Disconnected"}
+            {workspace.instagram?.status === "connected"
+              ? "● Instagram Connected"
+              : "● Instagram Disconnected"}
           </span>
         </div>
       )}
