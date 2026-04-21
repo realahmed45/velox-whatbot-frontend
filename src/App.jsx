@@ -12,9 +12,6 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 
-// Onboarding
-import OnboardingPage from "@/pages/onboarding/OnboardingPage";
-
 // App Pages
 import OverviewPage from "@/pages/dashboard/OverviewPage";
 import AutomationSetupPage from "@/pages/automation/AutomationSetupPage";
@@ -43,9 +40,6 @@ export default function App() {
           <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
         </Route>
-
-        {/* Onboarding */}
-        <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
         {/* App Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
