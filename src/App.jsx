@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 // Layouts
 import DashboardLayout from "@/layouts/DashboardLayout";
 import AuthLayout from "@/layouts/AuthLayout";
+import MarketingLayout from "@/layouts/MarketingLayout";
 
 // Auth Pages
 import LoginPage from "@/pages/auth/LoginPage";
@@ -17,6 +18,14 @@ import OverviewPage from "@/pages/dashboard/OverviewPage";
 import AutomationSetupPage from "@/pages/automation/AutomationSetupPage";
 import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import InboxPage from "@/pages/inbox/InboxPage";
+import ContactsPage from "@/pages/contacts/ContactsPage";
+import BroadcastsPage from "@/pages/broadcasts/BroadcastsPage";
+import AiBotPage from "@/pages/ai-bot/AiBotPage";
+import PricingPage from "@/pages/PricingPage";
+
+// Public
+import LandingPage from "@/pages/LandingPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 
@@ -35,28 +44,71 @@ export default function App() {
     <BrowserRouter>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
+        {/* Public marketing */}
+        <Route path="/" element={<LandingPage />} />
+        <Route element={<MarketingLayout />}>
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+        </Route>
+
         {/* Guest Routes */}
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
-          <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
-          <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
-          <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <LoginPage />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <RegisterPage />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPasswordPage />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <GuestRoute>
+                <ResetPasswordPage />
+              </GuestRoute>
+            }
+          />
         </Route>
 
         {/* App Routes */}
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<OverviewPage />} />
           <Route path="automation" element={<AutomationSetupPage />} />
+          <Route path="inbox" element={<InboxPage />} />
+          <Route path="contacts" element={<ContactsPage />} />
+          <Route path="broadcasts" element={<BroadcastsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="ai-bot" element={<AiBotPage />} />
+          <Route path="pricing" element={<PricingPage embedded />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Public Pages */}
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

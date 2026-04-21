@@ -1,274 +1,921 @@
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import toast from "react-hot-toast";
-import { Loader2, MessageCircle, Zap, Save, Plus, Trash2, Hash } from "lucide-react";
+import {
+  Loader2,
+  Zap,
+  Save,
+  Plus,
+  Trash2,
+  Hash,
+  MessageCircle,
+  Heart,
+  Share2,
+  Link as LinkIcon,
+  Radio,
+  Target,
+  Clock,
+  CircleDot,
+} from "lucide-react";
+import PlanGate from "@/components/PlanGate";
+import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
+import { clsx } from "clsx";
+
+const TABS = [
+  { id: "welcome", label: "Welcome DM", icon: MessageCircle, plan: "starter" },
+  { id: "comment_kw", label: "Comment keywords", icon: Hash, plan: "starter" },
+  { id: "dm_kw", label: "DM keywords", icon: MessageCircle, plan: "starter" },
+  { id: "story_reply", label: "Story replies", icon: Heart, plan: "growth" },
+  { id: "story_mention", label: "Story mentions", icon: Heart, plan: "growth" },
+  { id: "share", label: "Share to story", icon: Share2, plan: "growth" },
+  { id: "ref_url", label: "Tracked links", icon: LinkIcon, plan: "growth" },
+  { id: "live", label: "Live comments", icon: Radio, plan: "growth" },
+  { id: "starters", label: "Chat starters", icon: Target, plan: "growth" },
+  { id: "fallback", label: "Fallback reply", icon: CircleDot, plan: "starter" },
+  { id: "hours", label: "Business hours", icon: Clock, plan: "growth" },
+];
 
 export default function AutomationSetupPage() {
   const { activeWorkspace } = useAuthStore();
-  const [messages, setMessages] = useState({
-    greeting: "",
-    followUp1: "",
-    followUp2: "",
-    followUp3: "",
-    followUpIntervalHours: 3,
-  });
-  const [automationEnabled, setAutomationEnabled] = useState(true);
-  const [keywords, setKeywords] = useState([]);
+  const { workspace, fetchWorkspace } = useWorkspaceStore();
+  const [cfg, setCfg] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [savingMsgs, setSavingMsgs] = useState(false);
-  const [savingKeywords, setSavingKeywords] = useState(false);
+  const [tab, setTab] = useState("welcome");
+  const [saving, setSaving] = useState(false);
+
+  const plan = workspace?.subscription?.plan || "starter";
+
+  const reload = async () => {
+    try {
+      const { data } = await api.get(
+        `/workspaces/${activeWorkspace}/automation-config`,
+      );
+      setCfg(data);
+    } catch {
+      toast.error("Failed to load automation config");
+    }
+  };
 
   useEffect(() => {
     if (!activeWorkspace) return;
-    Promise.all([
-      api.get(`/workspaces/${activeWorkspace}`),
-      api.get(`/workspaces/${activeWorkspace}/keyword-triggers`),
-    ])
-      .then(([{ data: wsData }, { data: kwData }]) => {
-        const ws = wsData.workspace;
-        if (ws.dmMessages) {
-          setMessages({
-            greeting: ws.dmMessages.greeting || "",
-            followUp1: ws.dmMessages.followUp1 || "",
-            followUp2: ws.dmMessages.followUp2 || "",
-            followUp3: ws.dmMessages.followUp3 || "",
-            followUpIntervalHours: ws.dmMessages.followUpIntervalHours ?? 3,
-          });
-        }
-        if (ws.settings) setAutomationEnabled(ws.settings.automationEnabled ?? true);
-        setKeywords(kwData.keywordTriggers || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setLoading(true);
+    reload().finally(() => setLoading(false));
   }, [activeWorkspace]);
 
-  const saveMessages = async () => {
-    setSavingMsgs(true);
+  const save = async (path, body, label = "Saved") => {
+    setSaving(true);
     try {
-      await api.put(`/workspaces/${activeWorkspace}/dm-messages`, messages);
-      toast.success("Messages saved!");
-    } catch {
-      toast.error("Failed to save messages");
+      await api.put(`/workspaces/${activeWorkspace}${path}`, body);
+      toast.success(label);
+      await fetchWorkspace(activeWorkspace);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Save failed");
     } finally {
-      setSavingMsgs(false);
+      setSaving(false);
     }
   };
 
-  const toggleAutomation = async () => {
-    const newValue = !automationEnabled;
-    try {
-      await api.put(`/workspaces/${activeWorkspace}/automation-settings`, {
-        automationEnabled: newValue,
-      });
-      setAutomationEnabled(newValue);
-    } catch {
-      toast.error("Failed to update automation");
-    }
-  };
-
-  const addKeyword = () => {
-    setKeywords((k) => [...k, { keyword: "", replyMessage: "", enabled: true, matchType: "contains" }]);
-  };
-
-  const removeKeyword = (i) => setKeywords((k) => k.filter((_, idx) => idx !== i));
-
-  const updateKeyword = (i, field, value) =>
-    setKeywords((k) => k.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)));
-
-  const saveKeywords = async () => {
-    for (const t of keywords) {
-      if (!t.keyword.trim()) { toast.error("Each keyword trigger needs a keyword"); return; }
-      if (!t.replyMessage.trim()) { toast.error("Each keyword trigger needs a reply message"); return; }
-    }
-    setSavingKeywords(true);
-    try {
-      await api.put(`/workspaces/${activeWorkspace}/keyword-triggers`, { keywordTriggers: keywords });
-      toast.success("Keyword triggers saved!");
-    } catch {
-      toast.error("Failed to save keyword triggers");
-    } finally {
-      setSavingKeywords(false);
-    }
-  };
-
-  if (loading) {
+  if (loading || !cfg) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
       </div>
     );
   }
 
+  const activeTab = TABS.find((t) => t.id === tab);
+
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Zap className="w-6 h-6 text-purple-600" />
-          Setup Automation
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Configure auto-reply DMs triggered by comments and messages.
-        </p>
-      </div>
-
-      {/* Toggle automation */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between">
+    <div className="p-4 sm:p-6 max-w-6xl">
+      <div className="flex items-start justify-between mb-5">
         <div>
-          <p className="font-semibold text-gray-900">Automation Active</p>
-          <p className="text-xs text-gray-400">When off, no DMs will be sent automatically</p>
-        </div>
-        <button
-          onClick={toggleAutomation}
-          className={`relative w-12 h-6 rounded-full transition-colors ${automationEnabled ? "bg-purple-600" : "bg-gray-300"}`}
-        >
-          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${automationEnabled ? "translate-x-6" : "translate-x-0.5"}`} />
-        </button>
-      </div>
-
-      {/* Keyword Triggers */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-        <div>
-          <h2 className="font-bold text-gray-900 flex items-center gap-2">
-            <Hash className="w-4 h-4 text-purple-500" />
-            Comment Keyword Triggers
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            When someone comments a keyword on your post, they instantly receive a DM.
-            This is the <span className="font-semibold text-purple-600">industry-standard</span> way to automate Instagram DMs.
+          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-brand-600" /> Automation
+          </h1>
+          <p className="text-ink-500 text-sm mt-1">
+            Set up triggers that auto-reply to Instagram comments, DMs, stories
+            & more.
           </p>
-          <div className="mt-2 bg-purple-50 border border-purple-100 rounded-lg p-3 text-xs text-purple-700">
-            💡 <strong>How to use:</strong> Add a post caption like <em>"Comment 'DM' to get our full price list sent to your inbox!"</em> — anyone who comments gets an instant DM.
-          </div>
-        </div>
-
-        {keywords.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-4">No keyword triggers yet. Add one below.</p>
-        )}
-
-        {keywords.map((trigger, i) => (
-          <div key={i} className="border border-gray-200 rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Keyword</label>
-                <input
-                  className="input"
-                  placeholder='e.g. "DM", "price", "info"'
-                  value={trigger.keyword}
-                  onChange={(e) => updateKeyword(i, "keyword", e.target.value)}
-                />
-              </div>
-              <div className="flex-shrink-0 pt-5">
-                <select
-                  className="input text-xs"
-                  value={trigger.matchType}
-                  onChange={(e) => updateKeyword(i, "matchType", e.target.value)}
-                >
-                  <option value="contains">Contains</option>
-                  <option value="exact">Exact match</option>
-                </select>
-              </div>
-              <div className="flex-shrink-0 pt-5 flex items-center gap-2">
-                <button
-                  onClick={() => updateKeyword(i, "enabled", !trigger.enabled)}
-                  className={`relative w-10 h-5 rounded-full transition-colors ${trigger.enabled ? "bg-green-500" : "bg-gray-300"}`}
-                >
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${trigger.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
-                </button>
-                <button onClick={() => removeKeyword(i)} className="text-red-400 hover:text-red-600">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1 block">Reply DM</label>
-              <textarea
-                className="input min-h-[60px] resize-y text-sm"
-                placeholder="The DM to send when this keyword is commented. Use {name} for their name."
-                value={trigger.replyMessage}
-                onChange={(e) => updateKeyword(i, "replyMessage", e.target.value)}
-              />
-            </div>
-          </div>
-        ))}
-
-        <div className="flex gap-3 pt-1">
-          <button onClick={addKeyword} className="flex items-center gap-2 text-sm text-purple-600 border border-purple-200 rounded-lg px-4 py-2 hover:bg-purple-50 transition">
-            <Plus className="w-4 h-4" /> Add Keyword Trigger
-          </button>
-          <button onClick={saveKeywords} disabled={savingKeywords} className="btn-primary flex items-center gap-2">
-            {savingKeywords ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save Triggers
-          </button>
         </div>
       </div>
 
-      {/* DM Messages section */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-5">
-        <h2 className="font-bold text-gray-900 flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-pink-500" />
-          Greeting & Follow-up Messages
-        </h2>
-        <p className="text-xs text-gray-400 -mt-3">
-          Sent when someone DMs you directly. Use{" "}
-          <code className="bg-gray-100 px-1 rounded">{"{name}"}</code> for their first name.
-        </p>
+      <div className="mb-5">
+        <InstagramConstraintsInfo compact />
+      </div>
 
-        <MessageField
-          label="Greeting Message"
-          hint="First auto-reply when someone DMs you"
-          value={messages.greeting}
-          onChange={(v) => setMessages((m) => ({ ...m, greeting: v }))}
-        />
-        <MessageField
-          label="Follow-up #1"
-          hint="Sent if no reply after the interval"
-          value={messages.followUp1}
-          onChange={(v) => setMessages((m) => ({ ...m, followUp1: v }))}
-        />
-        <MessageField
-          label="Follow-up #2"
-          hint="Sent if still no reply after another interval"
-          value={messages.followUp2}
-          onChange={(v) => setMessages((m) => ({ ...m, followUp2: v }))}
-        />
-        <MessageField
-          label="Follow-up #3 (final)"
-          hint="Last automated message in the sequence"
-          value={messages.followUp3}
-          onChange={(v) => setMessages((m) => ({ ...m, followUp3: v }))}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
+        {/* Tabs */}
+        <nav className="card p-2 h-fit lg:sticky lg:top-4">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={clsx(
+                  "w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition mb-0.5",
+                  tab === t.id
+                    ? "bg-brand-50 text-brand-700"
+                    : "text-ink-600 hover:bg-ink-50",
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="flex-1 text-left">{t.label}</span>
+                {t.plan !== "starter" && plan === "starter" && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-500" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
+        {/* Panel */}
         <div>
-          <label className="label">Follow-up interval (hours)</label>
-          <input
-            type="number" min={1} max={72} className="input w-32"
-            value={messages.followUpIntervalHours}
-            onChange={(e) => setMessages((m) => ({ ...m, followUpIntervalHours: +e.target.value }))}
-          />
-          <p className="text-xs text-gray-400 mt-1">Time between each follow-up message</p>
+          <PlanGate
+            currentPlan={plan}
+            requiredPlan={activeTab.plan}
+            feature={activeTab.label}
+          >
+            {tab === "welcome" && (
+              <WelcomeTab
+                cfg={cfg}
+                save={save}
+                saving={saving}
+                setCfg={setCfg}
+              />
+            )}
+            {tab === "comment_kw" && (
+              <CommentKwTab
+                cfg={cfg}
+                setCfg={setCfg}
+                workspace={activeWorkspace}
+                reload={reload}
+              />
+            )}
+            {tab === "dm_kw" && (
+              <DmKwTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "story_reply" && (
+              <StoryReplyTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "story_mention" && (
+              <StoryMentionTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "share" && (
+              <ShareTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "ref_url" && (
+              <RefUrlTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "live" && (
+              <LiveTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "starters" && (
+              <StartersTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "fallback" && (
+              <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+            {tab === "hours" && (
+              <HoursTab cfg={cfg} save={save} setCfg={setCfg} />
+            )}
+          </PlanGate>
         </div>
-
-        <button onClick={saveMessages} disabled={savingMsgs} className="btn-primary flex items-center gap-2">
-          {savingMsgs ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Save Messages
-        </button>
       </div>
     </div>
   );
 }
 
-function MessageField({ label, hint, value, onChange }) {
+/* ---------- Tab panels ---------- */
+
+function Card({ title, desc, children }) {
   return (
-    <div>
-      <label className="label">{label}</label>
-      <p className="text-xs text-gray-400 mb-1">{hint}</p>
+    <div className="card p-5">
+      <h2 className="font-semibold text-ink-900">{title}</h2>
+      {desc && <p className="text-sm text-ink-500 mt-1">{desc}</p>}
+      <div className="mt-4 space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function WelcomeTab({ cfg, save, saving, setCfg }) {
+  const m = cfg.dmMessages || {};
+  const enabled = m.enabled !== false;
+  return (
+    <Card
+      title="Welcome DM"
+      desc="The very first message someone gets when they DM you for the first time."
+    >
+      <label className="flex items-center gap-3">
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) =>
+              setCfg({
+                ...cfg,
+                dmMessages: { ...m, enabled: e.target.checked },
+              })
+            }
+          />
+          <span className="slider" />
+        </label>
+        <span className="text-sm text-ink-700">
+          {enabled ? "On — welcome DM will be sent" : "Off — no welcome DM"}
+        </span>
+      </label>
+      <label className="label">Greeting message</label>
       <textarea
-        className="input min-h-[70px] resize-y"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Type your message..."
+        className="textarea min-h-[100px]"
+        value={m.greeting || ""}
+        onChange={(e) =>
+          setCfg({ ...cfg, dmMessages: { ...m, greeting: e.target.value } })
+        }
+        placeholder="Hi {name}! Thanks for reaching out 👋"
       />
+      <p className="text-xs text-ink-400">
+        Use {"{name}"} or {"{first_name}"} to personalize.
+      </p>
+      <button
+        disabled={saving}
+        onClick={() => save("/dm-messages", cfg.dmMessages, "Welcome DM saved")}
+        className="btn-primary mt-2"
+      >
+        <Save className="w-4 h-4" /> Save
+      </button>
+    </Card>
+  );
+}
+
+function CommentKwTab({ cfg, setCfg, workspace, reload }) {
+  const list = cfg.keywordTriggers || [];
+  const add = () =>
+    setCfg({
+      ...cfg,
+      keywordTriggers: [
+        ...list,
+        { keyword: "", replyMessage: "", matchType: "contains", enabled: true },
+      ],
+    });
+  const update = (i, patch) =>
+    setCfg({
+      ...cfg,
+      keywordTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
+    });
+  const remove = (i) =>
+    setCfg({ ...cfg, keywordTriggers: list.filter((_, j) => j !== i) });
+  const saveAll = async () => {
+    try {
+      await api.put(`/workspaces/${workspace}/keyword-triggers`, {
+        keywordTriggers: list,
+      });
+      toast.success("Comment keywords saved");
+      reload();
+    } catch {
+      toast.error("Save failed");
+    }
+  };
+  return (
+    <Card
+      title="Comment keywords"
+      desc="Someone comments a word like ‘info’ on your post → you auto-DM them the details. Classic ManyChat-style magic."
+    >
+      {list.length === 0 && (
+        <p className="text-sm text-ink-400">No triggers yet. Click Add.</p>
+      )}
+      {list.map((k, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={k.enabled !== false}
+                  onChange={(e) => update(i, { enabled: e.target.checked })}
+                />
+                <span className="slider" />
+              </label>
+              <span
+                className={
+                  k.enabled !== false ? "text-emerald-600" : "text-ink-400"
+                }
+              >
+                {k.enabled !== false ? "Active" : "Paused"}
+              </span>
+            </label>
+            <button
+              onClick={() => remove(i)}
+              className="btn-ghost text-red-500"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              className="input"
+              placeholder="keyword"
+              value={k.keyword}
+              onChange={(e) => update(i, { keyword: e.target.value })}
+            />
+            <select
+              className="input max-w-[140px]"
+              value={k.matchType}
+              onChange={(e) => update(i, { matchType: e.target.value })}
+            >
+              <option value="contains">contains</option>
+              <option value="exact">exact</option>
+              <option value="starts_with">starts with</option>
+            </select>
+          </div>
+          <textarea
+            className="textarea"
+            placeholder="DM reply message..."
+            value={k.replyMessage}
+            onChange={(e) => update(i, { replyMessage: e.target.value })}
+          />
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={add} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add trigger
+        </button>
+        <button onClick={saveAll} className="btn-primary">
+          <Save className="w-4 h-4" /> Save all
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function DmKwTab({ cfg, save, setCfg }) {
+  const list = cfg.dmKeywordTriggers || [];
+  const add = () =>
+    setCfg({
+      ...cfg,
+      dmKeywordTriggers: [
+        ...list,
+        { keyword: "", replyMessage: "", matchType: "contains", enabled: true },
+      ],
+    });
+  const update = (i, patch) =>
+    setCfg({
+      ...cfg,
+      dmKeywordTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
+    });
+  const remove = (i) =>
+    setCfg({ ...cfg, dmKeywordTriggers: list.filter((_, j) => j !== i) });
+  return (
+    <Card
+      title="DM keywords"
+      desc="Someone sends you a DM containing a word like ‘price’ → instant auto-reply. Perfect for FAQs."
+    >
+      {list.map((k, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={k.enabled !== false}
+                  onChange={(e) => update(i, { enabled: e.target.checked })}
+                />
+                <span className="slider" />
+              </label>
+              <span
+                className={
+                  k.enabled !== false ? "text-emerald-600" : "text-ink-400"
+                }
+              >
+                {k.enabled !== false ? "Active" : "Paused"}
+              </span>
+            </label>
+            <button
+              onClick={() => remove(i)}
+              className="btn-ghost text-red-500"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              className="input"
+              placeholder="keyword"
+              value={k.keyword}
+              onChange={(e) => update(i, { keyword: e.target.value })}
+            />
+            <select
+              className="input max-w-[140px]"
+              value={k.matchType}
+              onChange={(e) => update(i, { matchType: e.target.value })}
+            >
+              <option value="contains">contains</option>
+              <option value="exact">exact</option>
+              <option value="starts_with">starts with</option>
+            </select>
+          </div>
+          <textarea
+            className="textarea"
+            placeholder="Reply..."
+            value={k.replyMessage}
+            onChange={(e) => update(i, { replyMessage: e.target.value })}
+          />
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={add} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add
+        </button>
+        <button
+          onClick={() =>
+            save(
+              "/dm-keyword-triggers",
+              { dmKeywordTriggers: list },
+              "DM keywords saved",
+            )
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save all
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function EnableReplyCard({ title, desc, trig, setTrig, onSave, path }) {
+  return (
+    <Card title={title} desc={desc}>
+      <label className="flex items-center gap-3">
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={!!trig.enabled}
+            onChange={(e) => setTrig({ ...trig, enabled: e.target.checked })}
+          />
+          <span className="slider" />
+        </label>
+        <span className="text-sm text-ink-700">Enable</span>
+      </label>
+      <textarea
+        className="textarea min-h-[100px]"
+        placeholder="Reply message..."
+        value={trig.replyMessage || ""}
+        onChange={(e) => setTrig({ ...trig, replyMessage: e.target.value })}
+      />
+      <button className="btn-primary" onClick={onSave}>
+        <Save className="w-4 h-4" /> Save
+      </button>
+    </Card>
+  );
+}
+
+function StoryReplyTab({ cfg, save, setCfg }) {
+  const t = cfg.storyReplyTrigger || {};
+  return (
+    <EnableReplyCard
+      title="Story replies"
+      desc="Whenever someone replies to your story, send them a DM automatically."
+      trig={t}
+      setTrig={(v) => setCfg({ ...cfg, storyReplyTrigger: v })}
+      onSave={() =>
+        save("/story-reply-trigger", cfg.storyReplyTrigger, "Saved")
+      }
+      path="/story-reply-trigger"
+    />
+  );
+}
+function StoryMentionTab({ cfg, save, setCfg }) {
+  const t = cfg.storyMentionTrigger || {};
+  return (
+    <EnableReplyCard
+      title="Story mentions"
+      desc="When someone tags you in their story, send them a thank-you or offer DM."
+      trig={t}
+      setTrig={(v) => setCfg({ ...cfg, storyMentionTrigger: v })}
+      onSave={() =>
+        save("/story-mention-trigger", cfg.storyMentionTrigger, "Saved")
+      }
+    />
+  );
+}
+function ShareTab({ cfg, save, setCfg }) {
+  const t = cfg.shareToStoryTrigger || {};
+  return (
+    <EnableReplyCard
+      title="Share to story"
+      desc="When someone shares your post or story to their own story, Botlify sends them a friendly DM."
+      trig={t}
+      setTrig={(v) => setCfg({ ...cfg, shareToStoryTrigger: v })}
+      onSave={() =>
+        save("/share-to-story-trigger", cfg.shareToStoryTrigger, "Saved")
+      }
+    />
+  );
+}
+
+function RefUrlTab({ cfg, save, setCfg }) {
+  const list = cfg.refUrlTriggers || [];
+  const add = () =>
+    setCfg({
+      ...cfg,
+      refUrlTriggers: [
+        ...list,
+        { code: "", label: "", replyMessage: "", enabled: true },
+      ],
+    });
+  const update = (i, patch) =>
+    setCfg({
+      ...cfg,
+      refUrlTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
+    });
+  const remove = (i) =>
+    setCfg({ ...cfg, refUrlTriggers: list.filter((_, j) => j !== i) });
+  return (
+    <Card
+      title="Tracked links (Ref URLs)"
+      desc="Give each ad or campaign its own link. When someone clicks and messages you, they get a reply tailored to that campaign."
+    >
+      {list.map((r, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={r.enabled !== false}
+                  onChange={(e) => update(i, { enabled: e.target.checked })}
+                />
+                <span className="slider" />
+              </label>
+              <span
+                className={
+                  r.enabled !== false ? "text-emerald-600" : "text-ink-400"
+                }
+              >
+                {r.enabled !== false ? "Active" : "Paused"}
+              </span>
+            </label>
+            <button
+              onClick={() => remove(i)}
+              className="btn-ghost text-red-500 text-xs"
+            >
+              <Trash2 className="w-3 h-3" /> Remove
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              className="input"
+              placeholder="code (e.g. FBAD1)"
+              value={r.code}
+              onChange={(e) => update(i, { code: e.target.value })}
+            />
+            <input
+              className="input"
+              placeholder="label (internal)"
+              value={r.label}
+              onChange={(e) => update(i, { label: e.target.value })}
+            />
+          </div>
+          <textarea
+            className="textarea"
+            placeholder="Reply..."
+            value={r.replyMessage}
+            onChange={(e) => update(i, { replyMessage: e.target.value })}
+          />
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={add} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add
+        </button>
+        <button
+          onClick={() =>
+            save(
+              "/ref-url-triggers",
+              { refUrlTriggers: list },
+              "Ref URLs saved",
+            )
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function LiveTab({ cfg, save, setCfg }) {
+  const list = cfg.liveCommentTriggers || [];
+  const add = () =>
+    setCfg({
+      ...cfg,
+      liveCommentTriggers: [
+        ...list,
+        { keyword: "", replyMessage: "", enabled: true },
+      ],
+    });
+  const update = (i, patch) =>
+    setCfg({
+      ...cfg,
+      liveCommentTriggers: list.map((x, j) =>
+        i === j ? { ...x, ...patch } : x,
+      ),
+    });
+  const remove = (i) =>
+    setCfg({ ...cfg, liveCommentTriggers: list.filter((_, j) => j !== i) });
+  return (
+    <Card
+      title="Live stream comments"
+      desc="During an Instagram Live, if a viewer types a keyword in the comments, they instantly get a DM from you."
+    >
+      {list.map((k, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={k.enabled !== false}
+                  onChange={(e) => update(i, { enabled: e.target.checked })}
+                />
+                <span className="slider" />
+              </label>
+              <span
+                className={
+                  k.enabled !== false ? "text-emerald-600" : "text-ink-400"
+                }
+              >
+                {k.enabled !== false ? "Active" : "Paused"}
+              </span>
+            </label>
+            <button
+              onClick={() => remove(i)}
+              className="btn-ghost text-red-500 text-xs"
+            >
+              <Trash2 className="w-3 h-3" /> Remove
+            </button>
+          </div>
+          <input
+            className="input"
+            placeholder="keyword"
+            value={k.keyword}
+            onChange={(e) => update(i, { keyword: e.target.value })}
+          />
+          <textarea
+            className="textarea"
+            placeholder="Reply..."
+            value={k.replyMessage}
+            onChange={(e) => update(i, { replyMessage: e.target.value })}
+          />
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={add} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add
+        </button>
+        <button
+          onClick={() =>
+            save(
+              "/live-comment-triggers",
+              { liveCommentTriggers: list },
+              "Saved",
+            )
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function StartersTab({ cfg, save, setCfg }) {
+  const s = cfg.conversationStarters || {
+    enabled: false,
+    greeting: "",
+    options: [],
+  };
+  const update = (patch) =>
+    setCfg({ ...cfg, conversationStarters: { ...s, ...patch } });
+  const addOption = () =>
+    update({
+      options: [
+        ...(s.options || []),
+        { label: "", payload: "", replyMessage: "" },
+      ],
+    });
+  return (
+    <Card
+      title="Conversation starters"
+      desc="Show clickable buttons (like ‘See pricing’, ‘Book a call’) at the top of every new chat so people know exactly what to ask."
+    >
+      <label className="flex items-center gap-3">
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={!!s.enabled}
+            onChange={(e) => update({ enabled: e.target.checked })}
+          />
+          <span className="slider" />
+        </label>
+        <span className="text-sm text-ink-700">Enable starters</span>
+      </label>
+      <label className="label">Greeting</label>
+      <input
+        className="input"
+        value={s.greeting || ""}
+        onChange={(e) => update({ greeting: e.target.value })}
+      />
+      {(s.options || []).map((o, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <input
+            className="input"
+            placeholder="Button label"
+            value={o.label}
+            onChange={(e) =>
+              update({
+                options: s.options.map((x, j) =>
+                  i === j ? { ...x, label: e.target.value } : x,
+                ),
+              })
+            }
+          />
+          <textarea
+            className="textarea"
+            placeholder="Reply..."
+            value={o.replyMessage}
+            onChange={(e) =>
+              update({
+                options: s.options.map((x, j) =>
+                  i === j ? { ...x, replyMessage: e.target.value } : x,
+                ),
+              })
+            }
+          />
+          <button
+            className="btn-ghost text-red-500 text-xs"
+            onClick={() =>
+              update({ options: s.options.filter((_, j) => j !== i) })
+            }
+          >
+            <Trash2 className="w-3 h-3" /> Remove
+          </button>
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={addOption} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add option
+        </button>
+        <button
+          onClick={() =>
+            save("/conversation-starters", cfg.conversationStarters, "Saved")
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function FallbackTab({ cfg, save, setCfg }) {
+  const f = cfg.fallbackReply || {
+    enabled: false,
+    message: "",
+    cooldownHours: 24,
+  };
+  const update = (patch) =>
+    setCfg({ ...cfg, fallbackReply: { ...f, ...patch } });
+  return (
+    <Card
+      title="Fallback auto-reply"
+      desc="The safety net. If a message doesn’t match any of your other triggers, Botlify sends this reply — once every X hours per person."
+    >
+      <label className="flex items-center gap-3">
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={!!f.enabled}
+            onChange={(e) => update({ enabled: e.target.checked })}
+          />
+          <span className="slider" />
+        </label>
+        <span className="text-sm text-ink-700">Enable fallback</span>
+      </label>
+      <textarea
+        className="textarea min-h-[100px]"
+        placeholder="Fallback message..."
+        value={f.message || ""}
+        onChange={(e) => update({ message: e.target.value })}
+      />
+      <label className="label">Cooldown (hours): {f.cooldownHours || 24}</label>
+      <input
+        type="range"
+        min="1"
+        max="168"
+        value={f.cooldownHours || 24}
+        onChange={(e) => update({ cooldownHours: Number(e.target.value) })}
+        className="w-full"
+      />
+      <button
+        onClick={() => save("/fallback-reply", cfg.fallbackReply, "Saved")}
+        className="btn-primary"
+      >
+        <Save className="w-4 h-4" /> Save
+      </button>
+    </Card>
+  );
+}
+
+function HoursTab({ cfg, save, setCfg }) {
+  const bh = cfg.businessHours || {
+    enabled: false,
+    timezone: "Asia/Karachi",
+    schedule: {},
+  };
+  const aw = cfg.awayReply || { enabled: false, message: "" };
+  return (
+    <div className="space-y-5">
+      <Card
+        title="Business hours"
+        desc="Tell Botlify when your team is online and available to reply."
+      >
+        <label className="flex items-center gap-3">
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={!!bh.enabled}
+              onChange={(e) =>
+                setCfg({
+                  ...cfg,
+                  businessHours: { ...bh, enabled: e.target.checked },
+                })
+              }
+            />
+            <span className="slider" />
+          </label>
+          <span className="text-sm text-ink-700">Enable business hours</span>
+        </label>
+        <label className="label">Timezone</label>
+        <input
+          className="input"
+          value={bh.timezone || ""}
+          onChange={(e) =>
+            setCfg({
+              ...cfg,
+              businessHours: { ...bh, timezone: e.target.value },
+            })
+          }
+        />
+        <button
+          onClick={() =>
+            save("/business-hours", cfg.businessHours, "Hours saved")
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save hours
+        </button>
+      </Card>
+      <Card
+        title="Away reply"
+        desc="Used outside your business hours, so no one feels ignored."
+      >
+        <label className="flex items-center gap-3">
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={!!aw.enabled}
+              onChange={(e) =>
+                setCfg({
+                  ...cfg,
+                  awayReply: { ...aw, enabled: e.target.checked },
+                })
+              }
+            />
+            <span className="slider" />
+          </label>
+          <span className="text-sm text-ink-700">Enable away reply</span>
+        </label>
+        <textarea
+          className="textarea min-h-[100px]"
+          placeholder="We're away. We'll get back to you soon!"
+          value={aw.message || ""}
+          onChange={(e) =>
+            setCfg({ ...cfg, awayReply: { ...aw, message: e.target.value } })
+          }
+        />
+        <button
+          onClick={() => save("/away-reply", cfg.awayReply, "Away reply saved")}
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save away
+        </button>
+      </Card>
     </div>
   );
 }

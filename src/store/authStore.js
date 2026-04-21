@@ -33,7 +33,7 @@ export const useAuthStore = create(
         }),
     }),
     {
-      name: "velox-auth",
+      name: "botlify-auth",
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,

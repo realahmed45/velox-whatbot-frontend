@@ -1,27 +1,39 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Zap,
+  Inbox,
+  Users,
   BarChart2,
   Settings,
   LogOut,
-  Instagram,
+  Sparkles,
+  CreditCard,
+  Send,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import Logo from "@/components/Logo";
 import { clsx } from "clsx";
 
 const NAV = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/dashboard/automation", icon: Zap, label: "Automation" },
-  { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
-  { to: "/dashboard/settings", icon: Settings, label: "Settings" },
+  { to: "/dashboard",              icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard/automation",   icon: Zap,             label: "Automation" },
+  { to: "/dashboard/inbox",        icon: Inbox,           label: "Inbox" },
+  { to: "/dashboard/contacts",     icon: Users,           label: "Contacts" },
+  { to: "/dashboard/broadcasts",   icon: Send,            label: "Broadcasts" },
+  { to: "/dashboard/analytics",    icon: BarChart2,       label: "Analytics" },
+  { to: "/dashboard/ai-bot",       icon: Sparkles,        label: "AI Bot",  premium: true },
+  { to: "/dashboard/pricing",      icon: CreditCard,      label: "Pricing" },
+  { to: "/dashboard/settings",     icon: Settings,        label: "Settings" },
 ];
 
 export default function Sidebar() {
   const { logout, user } = useAuthStore();
   const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
+  const plan = workspace?.subscription?.plan || "starter";
+  const isConnected = workspace?.instagram?.status === "connected";
 
   const handleLogout = () => {
     logout();
@@ -29,70 +41,72 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-56 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col">
+    <aside className="w-60 flex-shrink-0 bg-white border-r border-ink-100 flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center gap-2 px-4 border-b border-gray-100">
-        <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-          <Instagram className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-bold text-gray-900">Botlify</span>
+      <div className="h-16 flex items-center px-4 border-b border-ink-100">
+        <Link to="/dashboard"><Logo size="sm" /></Link>
       </div>
 
-      {/* Instagram status badge */}
+      {/* Workspace + connection */}
       {workspace && (
-        <div className="px-4 py-3 border-b border-gray-50">
-          <p className="text-xs text-gray-400 truncate font-medium">{workspace.name}</p>
-          <span
-            className={clsx(
-              "inline-flex items-center gap-1 text-xs mt-1 font-medium",
-              workspace.instagram?.status === "connected"
-                ? "text-green-600"
-                : "text-gray-400",
-            )}
-          >
-            <span className={clsx("w-1.5 h-1.5 rounded-full", workspace.instagram?.status === "connected" ? "bg-green-500" : "bg-gray-300")} />
-            {workspace.instagram?.status === "connected" ? "Connected" : "Not connected"}
-          </span>
+        <div className="px-4 py-3 border-b border-ink-100">
+          <p className="text-xs text-ink-400 truncate font-medium uppercase tracking-wider">
+            {workspace.name}
+          </p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className={clsx("inline-flex items-center gap-1 text-xs font-medium",
+              isConnected ? "text-emerald-600" : "text-ink-400")}>
+              <span className={clsx("w-1.5 h-1.5 rounded-full",
+                isConnected ? "bg-emerald-500" : "bg-ink-300")} />
+              {isConnected ? "IG Connected" : "Not connected"}
+            </span>
+            <span className={clsx("chip text-[10px] capitalize",
+              plan === "scale" ? "bg-accent-100 text-accent-700" :
+              plan === "growth" ? "bg-brand-100 text-brand-700" : "bg-ink-100 text-ink-600")}>
+              {plan}
+            </span>
+          </div>
         </div>
       )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2 px-2">
-        {NAV.map(({ to, icon: Icon, label, end }) => (
+      <nav className="flex-1 overflow-y-auto py-3 px-2.5">
+        {NAV.map(({ to, icon: Icon, label, end, premium }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
               clsx(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-all",
                 isActive
-                  ? "bg-purple-50 text-purple-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                  ? "bg-brand-gradient text-white shadow-sm"
+                  : "text-ink-600 hover:bg-ink-50 hover:text-ink-900",
               )
             }
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
-            {label}
+            <span className="flex-1">{label}</span>
+            {premium && plan !== "scale" && (
+              <Sparkles className="w-3 h-3 text-accent-500" />
+            )}
           </NavLink>
         ))}
       </nav>
 
       {/* User + Logout */}
-      <div className="p-3 border-t border-gray-100">
+      <div className="p-3 border-t border-ink-100">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-xs">
+          <div className="w-9 h-9 bg-brand-gradient rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-glow">
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">
-              {user?.name}
-            </p>
-            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            <p className="text-sm font-medium text-ink-800 truncate">{user?.name}</p>
+            <p className="text-xs text-ink-400 truncate">{user?.email}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+            className="p-1.5 rounded text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
             title="Logout"
           >
             <LogOut className="w-4 h-4" />

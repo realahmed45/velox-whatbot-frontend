@@ -17,7 +17,7 @@ export default function DashboardLayout() {
   }, [activeWorkspace]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-ink-50">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />

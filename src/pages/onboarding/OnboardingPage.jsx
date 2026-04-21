@@ -43,15 +43,15 @@ export default function OnboardingPage() {
   }, [searchParams, setActiveWorkspace]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 flex items-center justify-center p-6">
       <div className="w-full max-w-xl">
         {/* Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-9 h-9 bg-brand-gradient rounded-xl flex items-center justify-center shadow-glow">
               <Instagram className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">Flowgram</span>
+            <span className="text-2xl font-bold text-ink-900">Botlify</span>
           </div>
           <p className="text-gray-500 text-sm">Instagram DM Automation</p>
         </div>
@@ -223,8 +223,8 @@ function Step2({ workspace, onNext, onSkip }) {
 
   return (
     <div>
-      <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center mb-4">
-        <Instagram className="w-5 h-5 text-pink-600" />
+      <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
+        <Instagram className="w-5 h-5 text-brand-600" />
       </div>
       <h2 className="text-xl font-bold mb-1">Connect Instagram</h2>
       <p className="text-gray-500 text-sm mb-6">
@@ -234,7 +234,7 @@ function Step2({ workspace, onNext, onSkip }) {
       <button
         onClick={startOAuth}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-60 mb-3"
+        className="w-full flex items-center justify-center gap-2 bg-brand-gradient text-white font-semibold py-3 rounded-xl shadow-glow hover:shadow-hero transition disabled:opacity-60 mb-3"
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -253,12 +253,16 @@ function Step2({ workspace, onNext, onSkip }) {
 
       {showHelp && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 mb-3">
-          <p className="font-semibold mb-1">Switch to a Business or Creator account:</p>
+          <p className="font-semibold mb-1">
+            Switch to a Business or Creator account:
+          </p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Open Instagram &rarr; go to your profile</li>
             <li>Tap Settings &rarr; Account</li>
             <li>Tap &quot;Switch to Professional Account&quot;</li>
-            <li>Choose <strong>Business</strong> or <strong>Creator</strong></li>
+            <li>
+              Choose <strong>Business</strong> or <strong>Creator</strong>
+            </li>
             <li>Come back here and connect</li>
           </ol>
         </div>
@@ -273,7 +277,6 @@ function Step2({ workspace, onNext, onSkip }) {
     </div>
   );
 }
-
 
 function Step3({ workspace, onNext, onSkip }) {
   const [selected, setSelected] = useState("");

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useInboxStore } from "@/store/inboxStore";
@@ -7,16 +7,29 @@ import toast from "react-hot-toast";
 import {
   Send,
   Bot,
-  User,
   UserCheck,
   CheckCheck,
-  ChevronRight,
   Search,
-  Filter,
+  Tag as TagIcon,
+  Pause,
+  Play,
+  X,
+  MessageCircle,
+  Plus,
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { clsx } from "clsx";
 dayjs.extend(relativeTime);
+
+const STATUS_META = {
+  bot_active: { label: "Bot", cls: "bg-emerald-100 text-emerald-700" },
+  open: { label: "Open", cls: "bg-brand-100 text-brand-700" },
+  awaiting_human: { label: "Waiting", cls: "bg-amber-100 text-amber-700" },
+  human_active: { label: "Agent", cls: "bg-sky-100 text-sky-700" },
+  resolved: { label: "Resolved", cls: "bg-ink-100 text-ink-500" },
+  closed: { label: "Closed", cls: "bg-ink-100 text-ink-500" },
+};
 
 export default function InboxPage() {
   const { activeWorkspace } = useAuthStore();
@@ -30,10 +43,12 @@ export default function InboxPage() {
     setMessages,
     appendMessage,
   } = useInboxStore();
+
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all"); // all | bot_active | awaiting_human | human_active
+  const [filter, setFilter] = useState("all");
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+  const [tagInput, setTagInput] = useState("");
   const messagesEndRef = useRef(null);
 
   const activeConv = conversations.find((c) => c._id === activeConversationId);
@@ -57,44 +72,91 @@ export default function InboxPage() {
   useEffect(() => {
     if (activeConversationId) loadMessages(activeConversationId);
   }, [activeConversationId]);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeMessages]);
 
   const loadConversations = async () => {
     try {
-      const { data } = await api.get("/inbox/conversations");
+      const { data } = await api.get("/inbox");
       setConversations(data.conversations || []);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const loadMessages = async (convId) => {
+  const loadMessages = async (id) => {
     try {
-      const { data } = await api.get(`/inbox/conversations/${convId}/messages`);
-      setMessages(convId, data.messages || []);
-    } catch (err) {
-      console.error(err);
+      const { data } = await api.get(`/inbox/${id}/messages`);
+      setMessages(id, data.messages || []);
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const takeover = async () => {
     try {
-      await api.post(`/inbox/conversations/${activeConversationId}/takeover`);
+      await api.post(`/inbox/${activeConversationId}/takeover`);
       toast.success("You took over this conversation");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
+      loadConversations();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed");
     }
   };
 
   const resolve = async () => {
     try {
-      await api.post(`/inbox/conversations/${activeConversationId}/resolve`);
+      await api.post(`/inbox/${activeConversationId}/resolve`);
       toast.success("Conversation resolved");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
+      loadConversations();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed");
+    }
+  };
+
+  const toggleBot = async () => {
+    if (!activeConv) return;
+    const next = !activeConv.botEnabled;
+    try {
+      const { data } = await api.patch(`/inbox/${activeConversationId}/bot`, {
+        enabled: next,
+      });
+      addOrUpdateConversation(data.conversation);
+      toast.success(
+        next
+          ? "Bot resumed â€” it will auto-reply"
+          : "Bot paused â€” only agents reply now",
+      );
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed");
+    }
+  };
+
+  const addTag = async () => {
+    const t = tagInput.trim().toLowerCase();
+    if (!t || !activeConv) return;
+    const tags = Array.from(new Set([...(activeConv.tags || []), t]));
+    try {
+      const { data } = await api.patch(`/inbox/${activeConversationId}/tags`, {
+        tags,
+      });
+      addOrUpdateConversation(data.conversation);
+      setTagInput("");
+    } catch (e) {
+      toast.error("Failed to add tag");
+    }
+  };
+
+  const removeTag = async (tag) => {
+    if (!activeConv) return;
+    const tags = (activeConv.tags || []).filter((t) => t !== tag);
+    try {
+      const { data } = await api.patch(`/inbox/${activeConversationId}/tags`, {
+        tags,
+      });
+      addOrUpdateConversation(data.conversation);
+    } catch (e) {
+      toast.error("Failed to remove tag");
     }
   };
 
@@ -102,38 +164,37 @@ export default function InboxPage() {
     if (!replyText.trim() || !activeConversationId) return;
     setSending(true);
     try {
-      const { data } = await api.post(
-        `/inbox/conversations/${activeConversationId}/messages`,
-        { text: replyText },
-      );
+      const { data } = await api.post(`/inbox/${activeConversationId}/send`, {
+        text: replyText,
+      });
       appendMessage(activeConversationId, data.message);
       setReplyText("");
-    } catch (err) {
-      toast.error("Failed to send");
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed to send");
     } finally {
       setSending(false);
     }
   };
 
   const filtered = conversations.filter((c) => {
-    const matchFilter = filter === "all" || c.status === filter;
-    const matchSearch =
+    const status = filter === "all" || c.status === filter;
+    const text =
       !search ||
       c.contact?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact?.phone?.includes(search);
-    return matchFilter && matchSearch;
+      c.contact?.username?.toLowerCase().includes(search.toLowerCase());
+    return status && text;
   });
 
   return (
-    <div className="flex h-full">
-      {/* Conversations list */}
-      <div className="w-72 flex-shrink-0 border-r border-gray-100 bg-white flex flex-col">
-        <div className="p-3 border-b border-gray-100 space-y-2">
+    <div className="flex h-full bg-ink-50">
+      {/* Conversation list */}
+      <div className="w-72 flex-shrink-0 border-r border-ink-100 bg-white flex flex-col">
+        <div className="p-3 border-b border-ink-100 space-y-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-400" />
             <input
               className="input pl-8 text-xs"
-              placeholder="Search conversations…"
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -149,50 +210,83 @@ export default function InboxPage() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex-shrink-0 px-2 py-1 rounded text-xs font-medium border transition ${filter === f ? "bg-brand-50 border-brand-300 text-brand-700" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                className={clsx(
+                  "flex-shrink-0 px-2 py-1 rounded text-[11px] font-medium border transition",
+                  filter === f
+                    ? "bg-brand-50 border-brand-300 text-brand-700"
+                    : "border-ink-200 text-ink-500 hover:bg-ink-50",
+                )}
               >
-                {f === "all"
-                  ? "All"
-                  : f
-                      .replace(/_/g, " ")
-                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                {f === "all" ? "All" : STATUS_META[f]?.label || f}
               </button>
             ))}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {filtered.map((conv) => (
-            <button
-              key={conv._id}
-              onClick={() => setActiveConversation(conv._id)}
-              className={`w-full text-left p-3 border-b border-gray-50 hover:bg-gray-50 transition ${activeConversationId === conv._id ? "bg-brand-50 border-l-2 border-l-brand-500" : ""}`}
-            >
-              <div className="flex items-start gap-2">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold text-gray-600">
-                  {conv.contact?.name?.[0]?.toUpperCase() || "?"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-gray-800 truncate">
-                      {conv.contact?.name || conv.contact?.phone || "Unknown"}
-                    </p>
-                    <span className="text-xs text-gray-400 flex-shrink-0 ml-1">
-                      {dayjs(conv.updatedAt).fromNow(true)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">
-                    {conv.lastMessage?.text || "…"}
-                  </p>
-                  <StatusBadge status={conv.status} />
-                </div>
-              </div>
-            </button>
-          ))}
           {filtered.length === 0 && (
-            <p className="text-xs text-gray-400 text-center py-8">
-              No conversations
-            </p>
+            <div className="text-center py-12 px-4">
+              <MessageCircle className="w-8 h-8 text-ink-300 mx-auto mb-2" />
+              <p className="text-xs text-ink-400">No conversations yet</p>
+              <p className="text-[11px] text-ink-400 mt-1">
+                They'll show here when someone DMs you.
+              </p>
+            </div>
           )}
+          {filtered.map((conv) => {
+            const meta = STATUS_META[conv.status] || STATUS_META.open;
+            return (
+              <button
+                key={conv._id}
+                onClick={() => setActiveConversation(conv._id)}
+                className={clsx(
+                  "w-full text-left p-3 border-b border-ink-50 hover:bg-ink-50 transition",
+                  activeConversationId === conv._id &&
+                    "bg-brand-50 border-l-2 border-l-brand-500",
+                )}
+              >
+                <div className="flex items-start gap-2">
+                  <div className="w-8 h-8 bg-brand-gradient rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold text-white">
+                    {(conv.contact?.name ||
+                      conv.contact?.username ||
+                      "?")[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-ink-800 truncate">
+                        {conv.contact?.name ||
+                          conv.contact?.username ||
+                          "Unknown"}
+                      </p>
+                      <span className="text-[10px] text-ink-400 flex-shrink-0 ml-1">
+                        {dayjs(conv.updatedAt).fromNow(true)}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-ink-400 truncate mt-0.5">
+                      {conv.lastMessage?.text || "â€¦"}
+                    </p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className={`chip text-[10px] ${meta.cls}`}>
+                        {meta.label}
+                      </span>
+                      {conv.botEnabled === false && (
+                        <span className="chip text-[10px] bg-red-100 text-red-600">
+                          <Pause className="w-2.5 h-2.5" /> Bot off
+                        </span>
+                      )}
+                      {(conv.tags || []).slice(0, 2).map((t) => (
+                        <span
+                          key={t}
+                          className="chip text-[10px] bg-ink-100 text-ink-600"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -200,42 +294,113 @@ export default function InboxPage() {
       {activeConv ? (
         <div className="flex-1 flex flex-col">
           {/* Chat header */}
-          <div className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600">
-                {activeConv.contact?.name?.[0]?.toUpperCase() || "?"}
+          <div className="bg-white border-b border-ink-100 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-brand-gradient rounded-full flex items-center justify-center text-xs font-semibold text-white">
+                  {(activeConv.contact?.name ||
+                    activeConv.contact?.username ||
+                    "?")[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-ink-900">
+                    {activeConv.contact?.name ||
+                      activeConv.contact?.username ||
+                      "Unknown"}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span
+                      className={`chip text-[10px] ${(STATUS_META[activeConv.status] || STATUS_META.open).cls}`}
+                    >
+                      {
+                        (STATUS_META[activeConv.status] || STATUS_META.open)
+                          .label
+                      }
+                    </span>
+                    {activeConv.contact?.username && (
+                      <span className="text-[10px] text-ink-400">
+                        @{activeConv.contact.username}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-sm text-gray-800">
-                  {activeConv.contact?.name || activeConv.contact?.phone}
-                </p>
-                <StatusBadge status={activeConv.status} />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleBot}
+                  className={clsx(
+                    "btn text-xs gap-1",
+                    activeConv.botEnabled === false
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                      : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100",
+                  )}
+                >
+                  {activeConv.botEnabled === false ? (
+                    <Play className="w-3 h-3" />
+                  ) : (
+                    <Pause className="w-3 h-3" />
+                  )}
+                  {activeConv.botEnabled === false ? "Resume bot" : "Pause bot"}
+                </button>
+                {activeConv.status !== "human_active" && (
+                  <button
+                    onClick={takeover}
+                    className="btn-secondary text-xs gap-1"
+                  >
+                    <UserCheck className="w-3 h-3" /> Take over
+                  </button>
+                )}
+                {activeConv.status !== "resolved" &&
+                  activeConv.status !== "closed" && (
+                    <button
+                      onClick={resolve}
+                      className="btn-ghost text-xs gap-1 bg-ink-100"
+                    >
+                      <CheckCheck className="w-3 h-3" /> Resolve
+                    </button>
+                  )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {activeConv.status !== "human_active" && (
-                <button
-                  onClick={takeover}
-                  className="btn-secondary text-xs gap-1"
+
+            {/* Tags row */}
+            <div className="flex items-center flex-wrap gap-1.5 mt-2">
+              <TagIcon className="w-3 h-3 text-ink-400" />
+              {(activeConv.tags || []).map((t) => (
+                <span
+                  key={t}
+                  className="chip bg-brand-50 text-brand-700 text-[10px]"
                 >
-                  <UserCheck className="w-3 h-3" />
-                  Take over
-                </button>
-              )}
-              {activeConv.status !== "resolved" && (
-                <button
-                  onClick={resolve}
-                  className="btn text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 gap-1"
-                >
-                  <CheckCheck className="w-3 h-3" />
-                  Resolve
+                  #{t}
+                  <button
+                    onClick={() => removeTag(t)}
+                    className="ml-1 hover:text-red-500"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              ))}
+              <input
+                className="input text-[11px] h-6 py-0 px-2 w-28 inline-block"
+                placeholder="add tag..."
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+              />
+              {tagInput && (
+                <button onClick={addTag} className="btn-ghost p-1">
+                  <Plus className="w-3 h-3" />
                 </button>
               )}
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-ink-50">
             {activeMessages.map((msg) => (
               <MessageBubble key={msg._id} msg={msg} />
             ))}
@@ -243,35 +408,46 @@ export default function InboxPage() {
           </div>
 
           {/* Reply box */}
-          <div className="bg-white border-t border-gray-100 p-3 flex items-end gap-3">
-            <textarea
-              className="input resize-none flex-1 text-sm"
-              rows={2}
-              placeholder="Type a message…"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendReply();
-                }
-              }}
-            />
-            <button
-              onClick={sendReply}
-              disabled={sending || !replyText.trim()}
-              className="btn-primary px-3 py-2"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+          <div className="bg-white border-t border-ink-100 p-3">
+            {activeConv.botEnabled === false && (
+              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mb-2">
+                Bot is paused for this conversation. Automated replies won't be
+                sent until you resume.
+              </div>
+            )}
+            <div className="flex items-end gap-3">
+              <textarea
+                className="input resize-none flex-1 text-sm"
+                rows={2}
+                placeholder="Type a messageâ€¦"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendReply();
+                  }
+                }}
+              />
+              <button
+                onClick={sendReply}
+                disabled={sending || !replyText.trim()}
+                className="btn-primary px-3 py-2"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-center">
           <div>
-            <div className="text-4xl mb-3">💬</div>
-            <p className="text-gray-500 text-sm">
-              Select a conversation to view messages
+            <div className="w-14 h-14 rounded-2xl bg-brand-gradient mx-auto mb-3 flex items-center justify-center shadow-glow">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
+            <p className="text-ink-700 font-medium">Pick a conversation</p>
+            <p className="text-ink-400 text-sm mt-1">
+              Or wait for a new DM to come in.
             </p>
           </div>
         </div>
@@ -280,32 +456,27 @@ export default function InboxPage() {
   );
 }
 
-function StatusBadge({ status }) {
-  const MAP = {
-    bot_active: ["badge-green", "Bot Active"],
-    awaiting_human: ["badge-yellow", "Waiting"],
-    human_active: ["badge-blue", "Agent Active"],
-    resolved: ["badge-gray", "Resolved"],
-  };
-  const [cls, label] = MAP[status] || ["badge-gray", status];
-  return <span className={`${cls} badge mt-0.5`}>{label}</span>;
-}
-
 function MessageBubble({ msg }) {
   const isOutbound = msg.direction === "outbound";
-  const isNote = msg.isInternalNote;
-  if (isNote)
+  const isBot = msg.sentBy === "bot" || msg.metadata?.triggerType;
+  if (msg.isInternalNote) {
     return (
       <div className="flex justify-center">
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs rounded-lg px-3 py-1.5 max-w-[70%] text-center">
-          📝 {msg.text}
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg px-3 py-1.5 max-w-[70%] text-center">
+          ðŸ“ {msg.text}
         </div>
       </div>
     );
+  }
   return (
     <div className={`flex ${isOutbound ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] rounded-2xl px-3.5 py-2.5 text-sm ${isOutbound ? "bg-brand-600 text-white rounded-br-sm" : "bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm"}`}
+        className={clsx(
+          "max-w-[70%] rounded-2xl px-3.5 py-2.5 text-sm",
+          isOutbound
+            ? "bg-brand-gradient text-white rounded-br-sm"
+            : "bg-white text-ink-800 border border-ink-100 rounded-bl-sm shadow-sm",
+        )}
       >
         {msg.type === "image" && msg.mediaUrl && (
           <img
@@ -314,12 +485,18 @@ function MessageBubble({ msg }) {
             className="rounded-lg max-w-full mb-1"
           />
         )}
-        <p className="leading-relaxed">{msg.text || msg.caption || ""}</p>
-        <p
-          className={`text-xs mt-1 ${isOutbound ? "text-brand-200" : "text-gray-400"}`}
-        >
-          {dayjs(msg.createdAt).format("h:mm A")}
+        <p className="leading-relaxed whitespace-pre-wrap">
+          {msg.text || msg.caption || ""}
         </p>
+        <div
+          className={clsx(
+            "flex items-center gap-1 text-[10px] mt-1",
+            isOutbound ? "text-white/70" : "text-ink-400",
+          )}
+        >
+          {isBot && isOutbound && <Bot className="w-2.5 h-2.5" />}
+          <span>{dayjs(msg.createdAt).format("h:mm A")}</span>
+        </div>
       </div>
     </div>
   );

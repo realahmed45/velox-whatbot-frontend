@@ -9,7 +9,7 @@ export const initSocket = () => {
   const token = useAuthStore.getState().token;
 
   socket = io(
-    import.meta.env.VITE_SOCKET_URL || "https://flowgram-backend.onrender.com",
+    import.meta.env.VITE_SOCKET_URL || "https://botlify-backend.onrender.com",
     {
       auth: { token },
       transports: ["websocket"],

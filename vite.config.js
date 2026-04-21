@@ -13,11 +13,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/api": {
-        target: "https://velox-whatbot-backend.onrender.com",
+        target: "https://botlify-backend.onrender.com",
         changeOrigin: true,
       },
       "/socket.io": {
-        target: "https://velox-whatbot-backend.onrender.com",
+        target: "https://botlify-backend.onrender.com",
         ws: true,
       },
     },
