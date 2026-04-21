@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import TimezonePicker from "@/components/TimezonePicker";
 import toast from "react-hot-toast";
 import {
   Loader2,
@@ -18,6 +19,10 @@ import {
   Target,
   Clock,
   CircleDot,
+  CheckCircle2,
+  AlertTriangle,
+  RefreshCw,
+  Stethoscope,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
 import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
@@ -105,6 +110,8 @@ export default function AutomationSetupPage() {
         <InstagramConstraintsInfo compact />
       </div>
 
+      <DiagnosticsPanel workspaceId={activeWorkspace} />
+
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
         {/* Tabs */}
         <nav className="card p-2 h-fit lg:sticky lg:top-4">
@@ -189,6 +196,129 @@ export default function AutomationSetupPage() {
 }
 
 /* ---------- Tab panels ---------- */
+
+function DiagnosticsPanel({ workspaceId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [resubbing, setResubbing] = useState(false);
+
+  const run = async () => {
+    if (!workspaceId) return;
+    setLoading(true);
+    try {
+      const { data } = await api.get("/instagram/diagnose");
+      setData(data);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Diagnose failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaceId]);
+
+  const resubscribe = async () => {
+    setResubbing(true);
+    try {
+      const { data } = await api.post("/instagram/webhook/resubscribe");
+      toast.success(data.message || "Webhook re-subscribed");
+      await run();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Re-subscribe failed");
+    } finally {
+      setResubbing(false);
+    }
+  };
+
+  if (!data) {
+    return (
+      <div className="card p-4 mb-5 flex items-center gap-2 text-sm text-ink-500">
+        <Stethoscope className="w-4 h-4" />
+        {loading ? "Running automation health check..." : "Loading health..."}
+      </div>
+    );
+  }
+
+  const failed = data.checks?.filter((c) => !c.ok) || [];
+
+  return (
+    <div
+      className={clsx(
+        "card p-4 mb-5 border",
+        data.ok
+          ? "border-emerald-200 bg-emerald-50/40"
+          : "border-amber-200 bg-amber-50/40",
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2">
+          {data.ok ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className="text-sm font-semibold text-ink-900">
+              {data.ok
+                ? "Automation is healthy"
+                : `${failed.length} issue${failed.length === 1 ? "" : "s"} blocking your automations`}
+            </p>
+            <p className="text-xs text-ink-500 mt-0.5">
+              {data.ok
+                ? "Triggers will fire as soon as events arrive from Instagram."
+                : "Fix the items below so Instagram events reach Botlify."}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <button
+            onClick={run}
+            disabled={loading}
+            className="btn-secondary text-xs"
+          >
+            <RefreshCw
+              className={clsx("w-3.5 h-3.5", loading && "animate-spin")}
+            />
+            Recheck
+          </button>
+          <button
+            onClick={resubscribe}
+            disabled={resubbing}
+            className="btn-primary text-xs"
+          >
+            <RefreshCw
+              className={clsx("w-3.5 h-3.5", resubbing && "animate-spin")}
+            />
+            Re-subscribe webhook
+          </button>
+        </div>
+      </div>
+
+      {!data.ok && (
+        <ul className="mt-3 space-y-1.5 pl-7">
+          {data.checks.map((c, i) => (
+            <li key={i} className="text-xs flex items-start gap-2">
+              {c.ok ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+              )}
+              <span className={c.ok ? "text-ink-600" : "text-ink-900"}>
+                <span className="font-medium">{c.label}</span>
+                {!c.ok && c.hint && (
+                  <span className="text-ink-500"> — {c.hint}</span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function Card({ title, desc, children }) {
   return (
@@ -836,9 +966,33 @@ function HoursTab({ cfg, save, setCfg }) {
   const bh = cfg.businessHours || {
     enabled: false,
     timezone: "Asia/Karachi",
-    schedule: {},
+    schedule: [],
   };
   const aw = cfg.awayReply || { enabled: false, message: "" };
+  const DAYS = [
+    { k: "mon", l: "Monday" },
+    { k: "tue", l: "Tuesday" },
+    { k: "wed", l: "Wednesday" },
+    { k: "thu", l: "Thursday" },
+    { k: "fri", l: "Friday" },
+    { k: "sat", l: "Saturday" },
+    { k: "sun", l: "Sunday" },
+  ];
+  const scheduleArr = Array.isArray(bh.schedule) ? bh.schedule : [];
+  const getDay = (k) =>
+    scheduleArr.find((d) => d.day === k) || {
+      day: k,
+      enabled: false,
+      start: "09:00",
+      end: "18:00",
+    };
+  const setDay = (k, patch) => {
+    const existing = scheduleArr.find((d) => d.day === k);
+    const next = existing
+      ? scheduleArr.map((d) => (d.day === k ? { ...d, ...patch } : d))
+      : [...scheduleArr, { ...getDay(k), ...patch }];
+    setCfg({ ...cfg, businessHours: { ...bh, schedule: next } });
+  };
   return (
     <div className="space-y-5">
       <Card
@@ -861,17 +1015,52 @@ function HoursTab({ cfg, save, setCfg }) {
           </label>
           <span className="text-sm text-ink-700">Enable business hours</span>
         </label>
-        <label className="label">Timezone</label>
-        <input
-          className="input"
-          value={bh.timezone || ""}
-          onChange={(e) =>
-            setCfg({
-              ...cfg,
-              businessHours: { ...bh, timezone: e.target.value },
-            })
-          }
-        />
+        <div>
+          <label className="label">Timezone</label>
+          <TimezonePicker
+            value={bh.timezone || "Asia/Karachi"}
+            onChange={(tz) =>
+              setCfg({ ...cfg, businessHours: { ...bh, timezone: tz } })
+            }
+          />
+        </div>
+        <div className="space-y-2 mt-2">
+          <label className="label">Weekly schedule</label>
+          {DAYS.map(({ k, l }) => {
+            const d = getDay(k);
+            return (
+              <div
+                key={k}
+                className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-3 py-2"
+              >
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={!!d.enabled}
+                    onChange={(e) => setDay(k, { enabled: e.target.checked })}
+                  />
+                  <span className="slider" />
+                </label>
+                <span className="text-sm text-ink-700 w-24">{l}</span>
+                <input
+                  type="time"
+                  className="input flex-1"
+                  value={d.start || "09:00"}
+                  disabled={!d.enabled}
+                  onChange={(e) => setDay(k, { start: e.target.value })}
+                />
+                <span className="text-ink-400 text-xs">to</span>
+                <input
+                  type="time"
+                  className="input flex-1"
+                  value={d.end || "18:00"}
+                  disabled={!d.enabled}
+                  onChange={(e) => setDay(k, { end: e.target.value })}
+                />
+              </div>
+            );
+          })}
+        </div>
         <button
           onClick={() =>
             save("/business-hours", cfg.businessHours, "Hours saved")

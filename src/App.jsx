@@ -17,7 +17,6 @@ import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import OverviewPage from "@/pages/dashboard/OverviewPage";
 import AutomationSetupPage from "@/pages/automation/AutomationSetupPage";
 import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
-import SettingsPage from "@/pages/settings/SettingsPage";
 import InboxPage from "@/pages/inbox/InboxPage";
 import ContactsPage from "@/pages/contacts/ContactsPage";
 import BroadcastsPage from "@/pages/broadcasts/BroadcastsPage";
@@ -105,7 +104,6 @@ export default function App() {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="ai-bot" element={<AiBotPage />} />
           <Route path="pricing" element={<PricingPage embedded />} />
-          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -5,7 +5,6 @@ import {
   Inbox,
   Users,
   BarChart2,
-  Settings,
   LogOut,
   Sparkles,
   CreditCard,
@@ -17,15 +16,14 @@ import Logo from "@/components/Logo";
 import { clsx } from "clsx";
 
 const NAV = [
-  { to: "/dashboard",              icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/dashboard/automation",   icon: Zap,             label: "Automation" },
-  { to: "/dashboard/inbox",        icon: Inbox,           label: "Inbox" },
-  { to: "/dashboard/contacts",     icon: Users,           label: "Contacts" },
-  { to: "/dashboard/broadcasts",   icon: Send,            label: "Broadcasts" },
-  { to: "/dashboard/analytics",    icon: BarChart2,       label: "Analytics" },
-  { to: "/dashboard/ai-bot",       icon: Sparkles,        label: "AI Bot",  premium: true },
-  { to: "/dashboard/pricing",      icon: CreditCard,      label: "Pricing" },
-  { to: "/dashboard/settings",     icon: Settings,        label: "Settings" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard/automation", icon: Zap, label: "Automation" },
+  { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
+  { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
+  { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
+  { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
+  { to: "/dashboard/ai-bot", icon: Sparkles, label: "AI Bot", premium: true },
+  { to: "/dashboard/pricing", icon: CreditCard, label: "Pricing" },
 ];
 
 export default function Sidebar() {
@@ -44,7 +42,9 @@ export default function Sidebar() {
     <aside className="w-60 flex-shrink-0 bg-white border-r border-ink-100 flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-ink-100">
-        <Link to="/dashboard"><Logo size="sm" /></Link>
+        <Link to="/dashboard">
+          <Logo size="sm" />
+        </Link>
       </div>
 
       {/* Workspace + connection */}
@@ -54,15 +54,30 @@ export default function Sidebar() {
             {workspace.name}
           </p>
           <div className="mt-1 flex items-center justify-between">
-            <span className={clsx("inline-flex items-center gap-1 text-xs font-medium",
-              isConnected ? "text-emerald-600" : "text-ink-400")}>
-              <span className={clsx("w-1.5 h-1.5 rounded-full",
-                isConnected ? "bg-emerald-500" : "bg-ink-300")} />
+            <span
+              className={clsx(
+                "inline-flex items-center gap-1 text-xs font-medium",
+                isConnected ? "text-emerald-600" : "text-ink-400",
+              )}
+            >
+              <span
+                className={clsx(
+                  "w-1.5 h-1.5 rounded-full",
+                  isConnected ? "bg-emerald-500" : "bg-ink-300",
+                )}
+              />
               {isConnected ? "IG Connected" : "Not connected"}
             </span>
-            <span className={clsx("chip text-[10px] capitalize",
-              plan === "scale" ? "bg-accent-100 text-accent-700" :
-              plan === "growth" ? "bg-brand-100 text-brand-700" : "bg-ink-100 text-ink-600")}>
+            <span
+              className={clsx(
+                "chip text-[10px] capitalize",
+                plan === "scale"
+                  ? "bg-accent-100 text-accent-700"
+                  : plan === "growth"
+                    ? "bg-brand-100 text-brand-700"
+                    : "bg-ink-100 text-ink-600",
+              )}
+            >
               {plan}
             </span>
           </div>
@@ -101,7 +116,9 @@ export default function Sidebar() {
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink-800 truncate">{user?.name}</p>
+            <p className="text-sm font-medium text-ink-800 truncate">
+              {user?.name}
+            </p>
             <p className="text-xs text-ink-400 truncate">{user?.email}</p>
           </div>
           <button
