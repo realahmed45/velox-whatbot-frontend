@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
+import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import {
@@ -9,16 +10,36 @@ import {
   MessageSquare,
   Users,
   TrendingUp,
-  Settings,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
-  const { workspace } = useWorkspaceStore();
+  const { workspace, fetchWorkspace } = useWorkspaceStore();
   const [stats, setStats] = useState(null);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle OAuth callback params
+  useEffect(() => {
+    const connected = searchParams.get("connected");
+    const error = searchParams.get("error");
+    if (connected === "true") {
+      toast.success("Instagram connected successfully! 🎉");
+      fetchWorkspace(activeWorkspace);
+      setSearchParams({});
+    } else if (error) {
+      const msgs = {
+        cancelled: "Instagram connection was cancelled.",
+        no_pages: "No Facebook pages found. Make sure you have a linked Business/Creator account.",
+        no_ig_account: "No Instagram Business account found on your Facebook page.",
+        invalid_state: "Connection failed. Please try again.",
+      };
+      toast.error(msgs[error] || "Connection failed. Please try again.");
+      setSearchParams({});
+    }
+  }, []);
 
   useEffect(() => {
     if (!activeWorkspace) return;

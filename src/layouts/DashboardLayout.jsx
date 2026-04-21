@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { initSocket } from "@/services/socket";
@@ -7,15 +7,11 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
 export default function DashboardLayout() {
-  const { user, activeWorkspace } = useAuthStore();
-  const { fetchWorkspace, workspace } = useWorkspaceStore();
-  const navigate = useNavigate();
+  const { activeWorkspace } = useAuthStore();
+  const { fetchWorkspace } = useWorkspaceStore();
 
   useEffect(() => {
-    if (!activeWorkspace) {
-      navigate("/onboarding");
-      return;
-    }
+    if (!activeWorkspace) return;
     fetchWorkspace(activeWorkspace);
     initSocket();
   }, [activeWorkspace]);
