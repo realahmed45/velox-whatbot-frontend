@@ -105,6 +105,22 @@ export default function OverviewPage() {
     }
   };
 
+  const disconnectIG = async () => {
+    if (
+      !window.confirm(
+        "Disconnect Instagram? Automations will stop until you reconnect.",
+      )
+    )
+      return;
+    try {
+      await api.delete("/instagram/connect");
+      toast.success("Instagram disconnected");
+      await fetchWorkspace(activeWorkspace);
+    } catch {
+      toast.error("Failed to disconnect");
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -221,6 +237,14 @@ export default function OverviewPage() {
               Connect Instagram Business Account
             </span>
             <span className="sm:hidden">Connect Instagram</span>
+          </button>
+        )}
+        {isConnected && (
+          <button
+            onClick={disconnectIG}
+            className="w-full text-xs text-red-600 hover:text-red-700 hover:underline text-right"
+          >
+            Disconnect Instagram
           </button>
         )}
       </div>

@@ -201,6 +201,7 @@ function DiagnosticsPanel({ workspaceId }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resubbing, setResubbing] = useState(false);
+  const [simulating, setSimulating] = useState(false);
 
   const run = async () => {
     if (!workspaceId) return;
@@ -230,6 +231,22 @@ function DiagnosticsPanel({ workspaceId }) {
       toast.error(e?.response?.data?.message || "Re-subscribe failed");
     } finally {
       setResubbing(false);
+    }
+  };
+
+  const simulate = async () => {
+    setSimulating(true);
+    try {
+      await api.post("/instagram/test/trigger", {
+        triggerType: "direct_message",
+        text: "hi",
+        username: "demo_user",
+      });
+      toast.success("Simulated DM sent. Check the Inbox tab.");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Simulate failed");
+    } finally {
+      setSimulating(false);
     }
   };
 
@@ -283,6 +300,17 @@ function DiagnosticsPanel({ workspaceId }) {
               className={clsx("w-3.5 h-3.5", loading && "animate-spin")}
             />
             Recheck
+          </button>
+          <button
+            onClick={simulate}
+            disabled={simulating}
+            className="btn-secondary text-xs"
+            title="Simulate an inbound DM to test your automation end-to-end without needing Instagram"
+          >
+            <Stethoscope
+              className={clsx("w-3.5 h-3.5", simulating && "animate-pulse")}
+            />
+            Simulate DM
           </button>
           <button
             onClick={resubscribe}
