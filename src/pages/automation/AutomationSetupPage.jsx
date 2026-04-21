@@ -316,6 +316,39 @@ function DiagnosticsPanel({ workspaceId }) {
           ))}
         </ul>
       )}
+
+      {/* Meta-verified subscription details */}
+      {data.instagram && (
+        <div className="mt-3 pl-7 text-xs text-ink-500 space-y-0.5">
+          <div>
+            <span className="font-medium text-ink-700">
+              Meta-verified fields:
+            </span>{" "}
+            {data.instagram.subscribedFields?.length ? (
+              <span className="font-mono text-ink-800">
+                {data.instagram.subscribedFields.join(", ")}
+              </span>
+            ) : (
+              <span className="text-amber-700">
+                none — Meta is NOT sending events to this server
+              </span>
+            )}
+          </div>
+          <div>
+            <span className="font-medium text-ink-700">
+              Last webhook received:
+            </span>{" "}
+            {data.instagram.lastWebhookAt ? (
+              <span>
+                {new Date(data.instagram.lastWebhookAt).toLocaleString()} (
+                {data.instagram.lastWebhookType || "event"})
+              </span>
+            ) : (
+              <span className="text-amber-700">never</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
