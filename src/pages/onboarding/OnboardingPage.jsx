@@ -63,7 +63,7 @@ export default function OnboardingPage() {
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors
                 ${step > s.id ? "bg-brand-600 text-white" : step === s.id ? "bg-brand-600 text-white ring-4 ring-brand-100" : "bg-gray-200 text-gray-400"}`}
               >
-                {step > s.id ? "âœ“" : s.id}
+                {step > s.id ? "✓" : s.id}
               </div>
               {i < STEPS.length - 1 && (
                 <div
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
 function Step1({ onNext, loading, setLoading }) {
   const [form, setForm] = useState({
     name: "",
-    industry: "general",
+    industry: "other",
     timezone: "Asia/Karachi",
   });
   const TYPES = [
@@ -183,7 +183,7 @@ function Step1({ onNext, loading, setLoading }) {
               { value: "fitness", label: "Fitness / Wellness" },
               { value: "education", label: "Education / Coaching" },
               { value: "influencer", label: "Creator / Influencer" },
-              { value: "general", label: "Other / General" },
+              { value: "other", label: "Other / General" },
             ].map((i) => (
               <option key={i.value} value={i.value}>
                 {i.label}
@@ -194,10 +194,10 @@ function Step1({ onNext, loading, setLoading }) {
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? (
             <span className="flex items-center gap-2 justify-center">
-              <Loader2 className="w-4 h-4 animate-spin" /> Creatingâ€¦
+              <Loader2 className="w-4 h-4 animate-spin" /> Creating…
             </span>
           ) : (
-            "Create workspace & continue â†’"
+            "Create workspace & continue →"
           )}
         </button>
       </form>
