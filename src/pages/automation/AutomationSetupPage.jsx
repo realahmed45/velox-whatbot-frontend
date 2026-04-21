@@ -80,7 +80,7 @@ export default function AutomationSetupPage() {
           Setup Automation
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          Edit your DM messages. New followers detected every 5 minutes.
+          Configure auto-reply DMs for incoming messages and post comments.
         </p>
       </div>
 
@@ -88,9 +88,7 @@ export default function AutomationSetupPage() {
       <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between">
         <div>
           <p className="font-semibold text-gray-900">Automation Active</p>
-          <p className="text-xs text-gray-400">
-            When off, no DMs will be sent automatically
-          </p>
+          <p className="text-xs text-gray-400">When off, no DMs will be sent automatically</p>
         </div>
         <button
           onClick={toggleAutomation}
@@ -109,8 +107,9 @@ export default function AutomationSetupPage() {
           DM Messages
         </h2>
         <p className="text-xs text-gray-400 -mt-3">
-          Use <code className="bg-gray-100 px-1 rounded">{"{name}"}</code> to
-          insert the user's first name
+          Sent automatically when someone DMs you or comments on your post. Use{" "}
+          <code className="bg-gray-100 px-1 rounded">{"{ name }"}</code> to
+          insert the user's first name.
         </p>
 
         <MessageField

@@ -102,7 +102,7 @@ export default function OverviewPage() {
             </p>
             <p className="text-xs text-gray-500">
               {isConnected
-                ? "New followers detected every 5 min"
+                ? "Auto-DM on incoming messages & comments"
                 : "Connect to start"}
             </p>
           </div>
