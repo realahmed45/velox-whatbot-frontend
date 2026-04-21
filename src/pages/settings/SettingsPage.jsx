@@ -30,14 +30,14 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="p-6 max-w-3xl">
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Settings</h1>
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6 w-fit">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto">
+      <h1 className="text-xl font-bold text-gray-900 mb-4 sm:mb-6">Settings</h1>
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-4 sm:mb-6 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === t.id ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${tab === t.id ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
           >
             {t.label}
           </button>
@@ -71,7 +71,6 @@ function GeneralSettings({ workspace, onSave }) {
   const [form, setForm] = useState({
     name: workspace?.name || "",
     timezone: workspace?.timezone || "Asia/Karachi",
-    welcomeMessage: workspace?.settings?.welcomeMessage || "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -80,7 +79,6 @@ function GeneralSettings({ workspace, onSave }) {
       setForm({
         name: workspace.name,
         timezone: workspace.timezone || "Asia/Karachi",
-        welcomeMessage: workspace.settings?.welcomeMessage || "",
       });
   }, [workspace]);
 
@@ -90,7 +88,6 @@ function GeneralSettings({ workspace, onSave }) {
       await api.put(`/workspaces/${workspace._id}`, {
         name: form.name,
         timezone: form.timezone,
-        settings: { welcomeMessage: form.welcomeMessage },
       });
       toast.success("Settings saved");
       onSave();
@@ -102,7 +99,7 @@ function GeneralSettings({ workspace, onSave }) {
   };
 
   return (
-    <div className="card p-6 space-y-4">
+    <div className="card p-4 sm:p-6 space-y-4">
       <div>
         <label className="label">Workspace name</label>
         <input
@@ -123,16 +120,6 @@ function GeneralSettings({ workspace, onSave }) {
           <option value="UTC">UTC</option>
           <option value="America/New_York">America/New_York (ET)</option>
         </select>
-      </div>
-      <div>
-        <label className="label">Welcome message (sent to new contacts)</label>
-        <textarea
-          className="input resize-none"
-          rows={3}
-          value={form.welcomeMessage}
-          onChange={(e) => setForm({ ...form, welcomeMessage: e.target.value })}
-          placeholder="Hi {{name}}! Welcome, we're glad you're here 👋"
-        />
       </div>
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
