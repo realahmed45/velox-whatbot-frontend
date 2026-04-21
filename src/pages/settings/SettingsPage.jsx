@@ -3,19 +3,7 @@ import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
-import {
-  Save,
-  RefreshCw,
-  ExternalLink,
-  Globe,
-  Clock,
-  Users,
-  Instagram,
-  AlertCircle,
-  Loader2,
-  CheckCircle2,
-  Trash2,
-} from "lucide-react";
+import { Save, Instagram, AlertCircle, Loader2, Trash2 } from "lucide-react";
 
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
@@ -26,7 +14,6 @@ export default function SettingsPage() {
     { id: "general", label: "General" },
     { id: "instagram", label: "Instagram" },
     { id: "automation", label: "Automation" },
-    { id: "team", label: "Team" },
   ];
 
   return (
@@ -62,7 +49,6 @@ export default function SettingsPage() {
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
       )}
-      {tab === "team" && <TeamSettings workspace={workspace} />}
     </div>
   );
 }
@@ -131,10 +117,7 @@ function GeneralSettings({ workspace, onSave }) {
 
 function InstagramSettings({ workspace, onSave }) {
   const ig = workspace?.instagram;
-  const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
-  const [cookie, setCookie] = useState("");
-  const [cookieMode, setCookieMode] = useState(false);
 
   const startOAuth = async () => {
     setOauthLoading(true);
@@ -142,24 +125,10 @@ function InstagramSettings({ workspace, onSave }) {
       const { data } = await api.get("/instagram/connect/oauth-url");
       window.location.href = data.url;
     } catch (err) {
-      toast.error(err.response?.data?.message || "OAuth failed");
+      toast.error(
+        err.response?.data?.message || "Connection failed. Please try again.",
+      );
       setOauthLoading(false);
-    }
-  };
-
-  const saveSessionCookie = async () => {
-    if (!cookie.trim()) return toast.error("Cookie required");
-    setLoading(true);
-    try {
-      await api.post("/instagram/connect/session", {
-        sessionCookie: cookie.trim(),
-      });
-      toast.success("Session cookie saved");
-      onSave();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -176,13 +145,12 @@ function InstagramSettings({ workspace, onSave }) {
 
   return (
     <div className="card p-6 space-y-5">
-      {/* Connection status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {ig?.profilePicture ? (
             <img
               src={ig.profilePicture}
-              className="w-10 h-10 rounded-full border border-pink-200"
+              className="w-10 h-10 rounded-full border border-pink-200 object-cover"
               alt=""
             />
           ) : (
@@ -195,15 +163,16 @@ function InstagramSettings({ workspace, onSave }) {
               {ig?.status === "connected" ? `@${ig.username}` : "Not connected"}
             </p>
             <span
-              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                 ig?.status === "connected"
                   ? "bg-green-100 text-green-700"
                   : "bg-gray-100 text-gray-500"
               }`}
             >
-              {ig?.status === "connected"
-                ? `â— Connected Â· ${ig?.connectionType === "meta_oauth" ? "Meta OAuth" : "Session Cookie"}`
-                : "â— Disconnected"}
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${ig?.status === "connected" ? "bg-green-500" : "bg-gray-400"}`}
+              />
+              {ig?.status === "connected" ? "Connected" : "Disconnected"}
             </span>
           </div>
         </div>
@@ -219,98 +188,24 @@ function InstagramSettings({ workspace, onSave }) {
       </div>
 
       {ig?.status !== "connected" && (
-        <>
-          {/* Method tabs */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-            {[
-              { id: false, label: "Meta OAuth (Recommended)" },
-              { id: true, label: "Session Cookie" },
-            ].map((opt) => (
-              <button
-                key={String(opt.id)}
-                onClick={() => setCookieMode(opt.id)}
-                className={`flex-1 py-2 text-xs font-medium transition ${
-                  cookieMode === opt.id
-                    ? "bg-pink-500 text-white"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          {!cookieMode ? (
-            <div>
-              <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 mb-4">
-                <p className="font-medium mb-1">Requirements:</p>
-                <ul className="list-disc list-inside space-y-0.5">
-                  <li>Instagram Business or Creator account</li>
-                  <li>Facebook Page linked to your Instagram</li>
-                  <li>Admin access to that Facebook Page</li>
-                </ul>
-              </div>
-              <button
-                onClick={startOAuth}
-                disabled={oauthLoading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-60"
-              >
-                {oauthLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Instagram className="w-4 h-4" />
-                )}
-                Connect with Instagram
-                <ExternalLink className="w-3 h-3 opacity-70" />
-              </button>
-            </div>
+        <button
+          onClick={startOAuth}
+          disabled={oauthLoading}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-60"
+        >
+          {oauthLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex gap-2 mb-4">
-                <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-yellow-700">
-                  Session cookies bypass the official API. Use only on accounts
-                  you own.
-                </p>
-              </div>
-              <label className="label">Instagram sessionid Cookie</label>
-              <textarea
-                className="input min-h-[72px] text-xs font-mono mb-3"
-                placeholder="Paste sessionid value…"
-                value={cookie}
-                onChange={(e) => setCookie(e.target.value)}
-              />
-              <button
-                onClick={saveSessionCookie}
-                disabled={loading}
-                className="btn-primary gap-2"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                Save session cookie
-              </button>
-            </div>
+            <Instagram className="w-4 h-4" />
           )}
-        </>
+          Connect Instagram
+        </button>
       )}
 
-      {ig?.status === "connected" && (
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2">
-            Webhook URL
-          </p>
-          <code className="text-xs text-gray-700 break-all">
-            {import.meta.env.VITE_API_URL ||
-              "https://flowgram-backend.onrender.com/api"}
-            /instagram/webhook
-          </code>
-          <p className="text-xs text-gray-400 mt-2">
-            Set this URL in your Meta App dashboard under Instagram → Webhooks.
-          </p>
-        </div>
+      {ig?.status === "connected" && ig?.connectedAt && (
+        <p className="text-xs text-gray-400">
+          Connected {new Date(ig.connectedAt).toLocaleDateString()}
+        </p>
       )}
     </div>
   );
@@ -396,7 +291,7 @@ function AutomationSettings({ workspace, onSave }) {
               }
             />
           </div>
-          <span className="text-gray-400 mt-5">â€”</span>
+          <span className="text-gray-400 mt-5">–</span>
           <div className="flex-1">
             <label className="text-xs text-gray-500">Max</label>
             <input
@@ -433,7 +328,7 @@ function AutomationSettings({ workspace, onSave }) {
               }
             />
           </div>
-          <span className="text-gray-400 mt-5">â€”</span>
+          <span className="text-gray-400 mt-5">–</span>
           <div className="flex-1">
             <label className="text-xs text-gray-500">To (hour 0–23)</label>
             <input
@@ -454,79 +349,6 @@ function AutomationSettings({ workspace, onSave }) {
         <Save className="w-4 h-4" />
         {loading ? "Saving…" : "Save settings"}
       </button>
-    </div>
-  );
-}
-
-function TeamSettings({ workspace }) {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const inviteAgent = async () => {
-    if (!email) {
-      toast.error("Email required");
-      return;
-    }
-    setLoading(true);
-    try {
-      await api.post(`/workspaces/${workspace?._id}/invite`, {
-        email,
-        role: "agent",
-      });
-      toast.success("Invite sent!");
-      setEmail("");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to invite");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="card p-6 space-y-4">
-      <p className="font-semibold text-gray-800">Team Members</p>
-      <div className="space-y-2">
-        {workspace?.members?.map((m) => (
-          <div
-            key={m.user?._id || m.user}
-            className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
-          >
-            <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 text-xs font-semibold">
-              {m.user?.name?.[0]?.toUpperCase() || "?"}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">
-                {m.user?.name || m.user?.email || "Member"}
-              </p>
-              <p className="text-xs text-gray-400 capitalize">{m.role}</p>
-            </div>
-          </div>
-        ))}
-        {(!workspace?.members || workspace.members.length === 0) && (
-          <p className="text-sm text-gray-400">No team members yet.</p>
-        )}
-      </div>
-      <div className="border-t border-gray-100 pt-4">
-        <p className="font-medium text-sm text-gray-700 mb-3">
-          Invite a team member
-        </p>
-        <div className="flex gap-2">
-          <input
-            className="input flex-1"
-            type="email"
-            placeholder="colleague@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button
-            onClick={inviteAgent}
-            disabled={loading}
-            className="btn-primary"
-          >
-            {loading ? "…" : "Invite"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
