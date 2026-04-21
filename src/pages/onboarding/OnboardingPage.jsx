@@ -206,8 +206,8 @@ function Step1({ onNext, loading, setLoading }) {
 }
 
 function Step2({ workspace, onNext, onSkip }) {
-  const [connectionType, setConnectionType] = useState("meta_oauth");
   const [loading, setLoading] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const startOAuth = async () => {
     setLoading(true);
@@ -228,187 +228,52 @@ function Step2({ workspace, onNext, onSkip }) {
       </div>
       <h2 className="text-xl font-bold mb-1">Connect Instagram</h2>
       <p className="text-gray-500 text-sm mb-6">
-        Link your Instagram Business or Creator account to start automating DMs.
+        Sign in with Facebook to connect your Instagram Business account.
       </p>
 
-      {/* Method selector */}
-      <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-5">
-        {[
-          { id: "meta_oauth", label: "Meta OAuth (Recommended)" },
-          { id: "session_cookie", label: "Session Cookie" },
-        ].map((opt) => (
-          <button
-            key={opt.id}
-            onClick={() => setConnectionType(opt.id)}
-            className={`flex-1 py-2 text-xs font-medium transition ${
-              connectionType === opt.id
-                ? "bg-pink-500 text-white"
-                : "text-gray-500 hover:bg-gray-50"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {connectionType === "meta_oauth" ? (
-        <OAuthConnectPanel
-          workspace={workspace}
-          loading={loading}
-          onStart={startOAuth}
-          onNext={onNext}
-        />
-      ) : (
-        <SessionCookiePanel workspace={workspace} onNext={onNext} />
-      )}
-
       <button
-        onClick={onSkip}
-        className="btn-ghost w-full mt-3 text-gray-400 text-xs"
-      >
-        Skip for now â€” connect later in Settings
-      </button>
-    </div>
-  );
-}
-
-function OAuthConnectPanel({ workspace, loading, onStart, onNext }) {
-  const [status, setStatus] = useState("idle");
-  const [igInfo, setIgInfo] = useState(null);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const { data } = await api.get("/instagram/connection");
-        if (data.connection?.status === "connected") {
-          setIgInfo(data.connection);
-          setStatus("connected");
-          clearInterval(interval);
-        }
-      } catch {
-        // not connected yet
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (status === "connected") {
-    return (
-      <div className="text-center py-4">
-        <div className="w-14 h-14 rounded-full border-2 border-pink-200 overflow-hidden mx-auto mb-3">
-          {igInfo?.profilePicture ? (
-            <img
-              src={igInfo.profilePicture}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-pink-100 flex items-center justify-center">
-              <Instagram className="w-6 h-6 text-pink-500" />
-            </div>
-          )}
-        </div>
-        <p className="font-semibold text-gray-900">@{igInfo?.username}</p>
-        <p className="text-xs text-gray-500 mb-4">
-          {igInfo?.followersCount?.toLocaleString()} followers
-        </p>
-        <button onClick={onNext} className="btn-primary w-full">
-          Looks good, continue â†’
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 text-xs text-blue-700">
-        <p className="font-semibold mb-1">Requirements for Meta OAuth:</p>
-        <ul className="list-disc list-inside space-y-0.5 text-blue-600">
-          <li>Instagram Business or Creator account</li>
-          <li>Facebook Page linked to your Instagram</li>
-          <li>Admin access to that Facebook Page</li>
-        </ul>
-      </div>
-      <button
-        onClick={onStart}
+        onClick={startOAuth}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-60 mb-3"
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <Instagram className="w-4 h-4" />
         )}
-        Connect with Instagram
-        <ExternalLink className="w-3 h-3 opacity-70" />
+        Connect Instagram Business Account
       </button>
-      <p className="text-xs text-center text-gray-400 mt-2">
-        You'll be redirected to Facebook/Instagram to authorize Flowgram.
-      </p>
-    </div>
-  );
-}
 
-function SessionCookiePanel({ workspace, onNext }) {
-  const [cookie, setCookie] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleConnect = async () => {
-    if (!cookie.trim()) {
-      toast.error("Session cookie is required");
-      return;
-    }
-    setLoading(true);
-    try {
-      await api.post("/instagram/connect/session", {
-        sessionCookie: cookie.trim(),
-      });
-      toast.success("Session cookie saved!");
-      onNext();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save session");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex gap-2">
-        <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-yellow-700">
-          Session cookies bypass Instagram's official API. Use only on accounts
-          you own and accept the risk of temporary blocks.
-        </p>
-      </div>
-      <div className="mb-4">
-        <label className="label">Instagram sessionid Cookie</label>
-        <textarea
-          className="input min-h-[80px] text-xs font-mono"
-          placeholder="Paste your Instagram sessionid cookie value hereâ€¦"
-          value={cookie}
-          onChange={(e) => setCookie(e.target.value)}
-        />
-        <p className="text-xs text-gray-400 mt-1">
-          DevTools â†’ Application â†’ Cookies â†’ instagram.com â†’ sessionid
-        </p>
-      </div>
       <button
-        onClick={handleConnect}
-        className="btn-primary w-full"
-        disabled={loading}
+        onClick={() => setShowHelp(!showHelp)}
+        className="w-full text-xs text-gray-400 hover:text-gray-600 transition mb-1"
       >
-        {loading ? (
-          <span className="flex items-center gap-2 justify-center">
-            <Loader2 className="w-4 h-4 animate-spin" /> Savingâ€¦
-          </span>
-        ) : (
-          "Save & continue â†’"
-        )}
+        Don't have a business account?
+      </button>
+
+      {showHelp && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 mb-3">
+          <p className="font-semibold mb-1">Switch to a Business or Creator account:</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Open Instagram &rarr; go to your profile</li>
+            <li>Tap Settings &rarr; Account</li>
+            <li>Tap &quot;Switch to Professional Account&quot;</li>
+            <li>Choose <strong>Business</strong> or <strong>Creator</strong></li>
+            <li>Come back here and connect</li>
+          </ol>
+        </div>
+      )}
+
+      <button
+        onClick={onSkip}
+        className="btn-ghost w-full mt-1 text-gray-400 text-xs"
+      >
+        Skip for now &mdash; connect later in Settings
       </button>
     </div>
   );
 }
+
 
 function Step3({ workspace, onNext, onSkip }) {
   const [selected, setSelected] = useState("");
@@ -417,27 +282,27 @@ function Step3({ workspace, onNext, onSkip }) {
   const TEMPLATES = [
     {
       id: "ig_welcome_dm",
-      label: "ðŸ‘‹ Welcome DM",
+      label: "👋 Welcome DM",
       desc: "Auto-DM new followers with a personalised welcome",
     },
     {
       id: "ig_keyword_reply",
-      label: "ðŸ”‘ Keyword Reply",
+      label: "🔑 Keyword Reply",
       desc: "Reply when someone DMs a specific keyword (e.g. 'price')",
     },
     {
       id: "ig_story_mention",
-      label: "ðŸ“¸ Story Mention Reply",
+      label: "📸 Story Mention Reply",
       desc: "DM users who mention you in their story",
     },
     {
       id: "ig_comment_to_dm",
-      label: "ðŸ’¬ Comment â†’ DM",
+      label: "💬 Comment → DM",
       desc: "Auto-DM users who comment on your posts",
     },
     {
       id: "ig_lead_capture",
-      label: "ðŸŽ¯ Lead Capture",
+      label: "🎯 Lead Capture",
       desc: "Collect name + email via DM conversation",
     },
   ];
@@ -494,10 +359,10 @@ function Step3({ workspace, onNext, onSkip }) {
       >
         {loading ? (
           <span className="flex items-center gap-2 justify-center">
-            <Loader2 className="w-4 h-4 animate-spin" /> Creatingâ€¦
+            <Loader2 className="w-4 h-4 animate-spin" /> Creating…
           </span>
         ) : (
-          "Apply template â†’"
+          "Apply template →"
         )}
       </button>
       <button
@@ -516,13 +381,13 @@ function Step4({ workspace, onDone }) {
       <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <CheckCircle2 className="w-8 h-8 text-brand-600" />
       </div>
-      <h2 className="text-xl font-bold mb-2">You're all set! ðŸŽ‰</h2>
+      <h2 className="text-xl font-bold mb-2">You're all set! 🎉</h2>
       <p className="text-gray-500 text-sm mb-6">
         <strong>{workspace?.name}</strong> is ready. Go to your dashboard to
         build flows, monitor DMs, and grow your Instagram presence.
       </p>
       <button onClick={onDone} className="btn-primary w-full">
-        Open Dashboard â†’
+        Open Dashboard →
       </button>
     </div>
   );

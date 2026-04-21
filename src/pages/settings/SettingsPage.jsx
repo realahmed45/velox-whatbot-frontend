@@ -136,7 +136,7 @@ function GeneralSettings({ workspace, onSave }) {
       </div>
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
-        {loading ? "Savingâ€¦" : "Save changes"}
+        {loading ? "Saving…" : "Save changes"}
       </button>
     </div>
   );
@@ -289,7 +289,7 @@ function InstagramSettings({ workspace, onSave }) {
               <label className="label">Instagram sessionid Cookie</label>
               <textarea
                 className="input min-h-[72px] text-xs font-mono mb-3"
-                placeholder="Paste sessionid valueâ€¦"
+                placeholder="Paste sessionid value…"
                 value={cookie}
                 onChange={(e) => setCookie(e.target.value)}
               />
@@ -321,8 +321,7 @@ function InstagramSettings({ workspace, onSave }) {
             /instagram/webhook
           </code>
           <p className="text-xs text-gray-400 mt-2">
-            Set this URL in your Meta App dashboard under Instagram â†’
-            Webhooks.
+            Set this URL in your Meta App dashboard under Instagram → Webhooks.
           </p>
         </div>
       )}
@@ -435,7 +434,7 @@ function AutomationSettings({ workspace, onSave }) {
         </p>
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <label className="text-xs text-gray-500">From (hour 0â€“23)</label>
+            <label className="text-xs text-gray-500">From (hour 0–23)</label>
             <input
               type="number"
               min={0}
@@ -449,7 +448,7 @@ function AutomationSettings({ workspace, onSave }) {
           </div>
           <span className="text-gray-400 mt-5">â€”</span>
           <div className="flex-1">
-            <label className="text-xs text-gray-500">To (hour 0â€“23)</label>
+            <label className="text-xs text-gray-500">To (hour 0–23)</label>
             <input
               type="number"
               min={0}
@@ -466,7 +465,7 @@ function AutomationSettings({ workspace, onSave }) {
 
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
-        {loading ? "Savingâ€¦" : "Save settings"}
+        {loading ? "Saving…" : "Save settings"}
       </button>
     </div>
   );
@@ -537,7 +536,7 @@ function TeamSettings({ workspace }) {
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? "â€¦" : "Invite"}
+            {loading ? "…" : "Invite"}
           </button>
         </div>
       </div>
