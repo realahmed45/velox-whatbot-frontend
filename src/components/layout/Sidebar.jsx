@@ -1,12 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  GitBranch,
-  MessageSquare,
-  Users,
+  Zap,
   BarChart2,
-  Megaphone,
-  CreditCard,
   Settings,
   LogOut,
   Instagram,
@@ -16,13 +12,9 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { clsx } from "clsx";
 
 const NAV = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Overview", end: true },
-  { to: "/dashboard/flows", icon: GitBranch, label: "Flow Builder" },
-  { to: "/dashboard/inbox", icon: MessageSquare, label: "Inbox" },
-  { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
-  { to: "/dashboard/broadcasts", icon: Megaphone, label: "Broadcasts" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard/automation", icon: Zap, label: "Automation" },
   { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
-  { to: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -37,35 +29,29 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col">
+    <aside className="w-56 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-4 border-b border-gray-100">
-        <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+        <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
           <Instagram className="w-4 h-4 text-white" />
         </div>
-        <span className="font-bold text-gray-900">Flowgram</span>
+        <span className="font-bold text-gray-900">Botlify</span>
       </div>
 
-      {/* Workspace badge */}
+      {/* Instagram status badge */}
       {workspace && (
-        <div className="px-4 py-2 border-b border-gray-50">
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-            Workspace
-          </p>
-          <p className="text-sm font-semibold text-gray-700 truncate">
-            {workspace.name}
-          </p>
+        <div className="px-4 py-3 border-b border-gray-50">
+          <p className="text-xs text-gray-400 truncate font-medium">{workspace.name}</p>
           <span
             className={clsx(
-              "badge mt-1",
+              "inline-flex items-center gap-1 text-xs mt-1 font-medium",
               workspace.instagram?.status === "connected"
-                ? "badge-green"
-                : "badge-yellow",
+                ? "text-green-600"
+                : "text-gray-400",
             )}
           >
-            {workspace.instagram?.status === "connected"
-              ? "● Instagram Connected"
-              : "● Instagram Disconnected"}
+            <span className={clsx("w-1.5 h-1.5 rounded-full", workspace.instagram?.status === "connected" ? "bg-green-500" : "bg-gray-300")} />
+            {workspace.instagram?.status === "connected" ? "Connected" : "Not connected"}
           </span>
         </div>
       )}
@@ -81,7 +67,7 @@ export default function Sidebar() {
               clsx(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-colors",
                 isActive
-                  ? "bg-brand-50 text-brand-700"
+                  ? "bg-purple-50 text-purple-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
               )
             }
@@ -95,7 +81,7 @@ export default function Sidebar() {
       {/* User + Logout */}
       <div className="p-3 border-t border-gray-100">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-semibold text-xs">
+          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-xs">
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div className="flex-1 min-w-0">
