@@ -17,6 +17,8 @@ import OverviewPage from "@/pages/dashboard/OverviewPage";
 import AutomationSetupPage from "@/pages/automation/AutomationSetupPage";
 import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import PrivacyPage from "@/pages/PrivacyPage";
+import TermsPage from "@/pages/TermsPage";
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuthStore();
@@ -48,6 +50,10 @@ export default function App() {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
+
+        {/* Public Pages */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
