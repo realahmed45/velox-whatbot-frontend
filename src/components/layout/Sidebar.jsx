@@ -9,6 +9,7 @@ import {
   Sparkles,
   CreditCard,
   Send,
+  Calendar,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
@@ -21,6 +22,11 @@ const NAV = [
   { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
   { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
+  {
+    to: "/dashboard/scheduled-posts",
+    icon: Calendar,
+    label: "Scheduled Posts",
+  },
   { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
   { to: "/dashboard/ai-bot", icon: Sparkles, label: "AI Bot", premium: true },
   { to: "/dashboard/pricing", icon: CreditCard, label: "Pricing" },

@@ -20,6 +20,7 @@ import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import InboxPage from "@/pages/inbox/InboxPage";
 import ContactsPage from "@/pages/contacts/ContactsPage";
 import BroadcastsPage from "@/pages/broadcasts/BroadcastsPage";
+import ScheduledPostsPage from "@/pages/content/ScheduledPostsPage";
 import AiBotPage from "@/pages/ai-bot/AiBotPage";
 import PricingPage from "@/pages/PricingPage";
 
@@ -101,6 +102,7 @@ export default function App() {
           <Route path="inbox" element={<InboxPage />} />
           <Route path="contacts" element={<ContactsPage />} />
           <Route path="broadcasts" element={<BroadcastsPage />} />
+          <Route path="scheduled-posts" element={<ScheduledPostsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="ai-bot" element={<AiBotPage />} />
           <Route path="pricing" element={<PricingPage embedded />} />
