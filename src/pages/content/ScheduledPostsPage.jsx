@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
@@ -25,6 +25,8 @@ export default function ScheduledPostsPage() {
   const [caption, setCaption] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [uploading, setUploading] = useState(false);
+
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadPosts();
@@ -68,10 +70,23 @@ export default function ScheduledPostsPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      console.log("[Upload] Response:", data);
+
+      if (!data.url) {
+        throw new Error("No URL returned from upload");
+      }
+
       setImageUrl(data.url);
+      console.log("[Upload] Image URL set to:", data.url);
       toast.success("Image uploaded!");
+
+      // Clear file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err) {
-      toast.error("Failed to upload image");
+      console.error("[Upload] Error:", err);
+      toast.error(err.response?.data?.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -79,6 +94,9 @@ export default function ScheduledPostsPage() {
 
   const createPost = async (e) => {
     e.preventDefault();
+
+    console.log("[Create Post] imageUrl:", imageUrl);
+    console.log("[Create Post] scheduledTime:", scheduledTime);
 
     if (!imageUrl) {
       toast.error("Please upload an image");
@@ -270,6 +288,19 @@ export default function ScheduledPostsPage() {
                       src={imageUrl}
                       alt="Preview"
                       className="w-full rounded-lg border"
+                      onError={(e) => {
+                        console.error(
+                          "[Image Preview] Failed to load:",
+                          imageUrl,
+                        );
+                        toast.error("Failed to load image preview");
+                      }}
+                      onLoad={() => {
+                        console.log(
+                          "[Image Preview] Loaded successfully:",
+                          imageUrl,
+                        );
+                      }}
                     />
                     <button
                       type="button"
@@ -286,6 +317,7 @@ export default function ScheduledPostsPage() {
                       {uploading ? "Uploading..." : "Click to upload image"}
                     </span>
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       className="hidden"
