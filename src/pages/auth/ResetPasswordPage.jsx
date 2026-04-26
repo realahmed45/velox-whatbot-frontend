@@ -35,10 +35,10 @@ export default function ResetPasswordPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-1">
+      <h2 className="text-2xl font-bold text-ink-900 mb-1">
         Set new password
       </h2>
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-ink-500 text-sm mb-6">
         Choose a strong password for your account.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
               onClick={() => setShow(!show)}
             >
               {show ? (

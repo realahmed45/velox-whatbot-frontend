@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
@@ -21,12 +21,48 @@ const STEPS = [
 ];
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1);
-  const [workspace, setWorkspace] = useState(null);
+  const [step, setStep] = useState(() => {
+    try {
+      const saved = localStorage.getItem("botlify_onboarding_step");
+      const n = saved ? Number(saved) : 1;
+      return Number.isFinite(n) && n >= 1 && n <= 4 ? n : 1;
+    } catch {
+      return 1;
+    }
+  });
+  const [workspace, setWorkspace] = useState(() => {
+    try {
+      const saved = localStorage.getItem("botlify_onboarding_ws");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(false);
   const { setActiveWorkspace } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Persist step + workspace so page reload doesn't reset progress.
+  useEffect(() => {
+    try {
+      localStorage.setItem("botlify_onboarding_step", String(step));
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [step]);
+  useEffect(() => {
+    try {
+      if (workspace) {
+        localStorage.setItem(
+          "botlify_onboarding_ws",
+          JSON.stringify(workspace),
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [workspace]);
 
   // If redirected back from Meta OAuth callback, advance to step 3
   useEffect(() => {
@@ -53,7 +89,7 @@ export default function OnboardingPage() {
             </div>
             <span className="text-2xl font-bold text-ink-900">Botlify</span>
           </div>
-          <p className="text-gray-500 text-sm">Instagram DM Automation</p>
+          <p className="text-ink-500 text-sm">Instagram DM Automation</p>
         </div>
         {/* Progress steps */}
         <div className="flex items-center gap-0 mb-8">
@@ -61,13 +97,13 @@ export default function OnboardingPage() {
             <div key={s.id} className="flex items-center flex-1">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors
-                ${step > s.id ? "bg-brand-600 text-white" : step === s.id ? "bg-brand-600 text-white ring-4 ring-brand-100" : "bg-gray-200 text-gray-400"}`}
+                ${step > s.id ? "bg-brand-600 text-white" : step === s.id ? "bg-brand-600 text-white ring-4 ring-brand-100" : "bg-ink-200 text-ink-400"}`}
               >
                 {step > s.id ? "✓" : s.id}
               </div>
               {i < STEPS.length - 1 && (
                 <div
-                  className={`h-0.5 flex-1 mx-1 transition-colors ${step > s.id ? "bg-brand-400" : "bg-gray-200"}`}
+                  className={`h-0.5 flex-1 mx-1 transition-colors ${step > s.id ? "bg-brand-400" : "bg-ink-200"}`}
                 />
               )}
             </div>
@@ -105,6 +141,12 @@ export default function OnboardingPage() {
               workspace={workspace}
               onDone={() => {
                 setActiveWorkspace(workspace?._id);
+                try {
+                  localStorage.removeItem("botlify_onboarding_step");
+                  localStorage.removeItem("botlify_onboarding_ws");
+                } catch {
+                  /* ignore */
+                }
                 navigate("/dashboard");
               }}
             />
@@ -151,10 +193,10 @@ function Step1({ onNext, loading, setLoading }) {
       <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
         <Building2 className="w-5 h-5 text-brand-600" />
       </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl font-bold text-ink-900 mb-1">
         Create your workspace
       </h2>
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-ink-500 text-sm mb-6">
         A workspace holds your Instagram account, flows, and contacts.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -227,7 +269,7 @@ function Step2({ workspace, onNext, onSkip }) {
         <Instagram className="w-5 h-5 text-brand-600" />
       </div>
       <h2 className="text-xl font-bold mb-1">Connect Instagram</h2>
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-ink-500 text-sm mb-6">
         Sign in with Facebook to connect your Instagram Business account.
       </p>
 
@@ -246,7 +288,7 @@ function Step2({ workspace, onNext, onSkip }) {
 
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="w-full text-xs text-gray-400 hover:text-gray-600 transition mb-1"
+        className="w-full text-xs text-ink-400 hover:text-ink-600 transition mb-1"
       >
         Don't have a business account?
       </button>
@@ -270,7 +312,7 @@ function Step2({ workspace, onNext, onSkip }) {
 
       <button
         onClick={onSkip}
-        className="btn-ghost w-full mt-1 text-gray-400 text-xs"
+        className="btn-ghost w-full mt-1 text-ink-400 text-xs"
       >
         Skip for now &mdash; connect later in Settings
       </button>
@@ -336,7 +378,7 @@ function Step3({ workspace, onNext, onSkip }) {
         <Bot className="w-5 h-5 text-purple-600" />
       </div>
       <h2 className="text-xl font-bold mb-1">Pick a starter template</h2>
-      <p className="text-gray-500 text-sm mb-4">
+      <p className="text-ink-500 text-sm mb-4">
         We'll create a ready-made automation flow you can customize.
       </p>
       <div className="space-y-2 mb-4">
@@ -347,11 +389,11 @@ function Step3({ workspace, onNext, onSkip }) {
             className={`w-full text-left p-3 rounded-lg border transition ${
               selected === t.id
                 ? "border-brand-500 bg-brand-50"
-                : "border-gray-200 hover:border-gray-300"
+                : "border-ink-200 hover:border-ink-300"
             }`}
           >
             <div className="font-medium text-sm">{t.label}</div>
-            <div className="text-xs text-gray-500">{t.desc}</div>
+            <div className="text-xs text-ink-500">{t.desc}</div>
           </button>
         ))}
       </div>
@@ -370,7 +412,7 @@ function Step3({ workspace, onNext, onSkip }) {
       </button>
       <button
         onClick={onSkip}
-        className="btn-ghost w-full mt-2 text-gray-400 text-sm"
+        className="btn-ghost w-full mt-2 text-ink-400 text-sm"
       >
         Start from scratch
       </button>
@@ -385,7 +427,7 @@ function Step4({ workspace, onDone }) {
         <CheckCircle2 className="w-8 h-8 text-brand-600" />
       </div>
       <h2 className="text-xl font-bold mb-2">You're all set! 🎉</h2>
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-ink-500 text-sm mb-6">
         <strong>{workspace?.name}</strong> is ready. Go to your dashboard to
         build flows, monitor DMs, and grow your Instagram presence.
       </p>

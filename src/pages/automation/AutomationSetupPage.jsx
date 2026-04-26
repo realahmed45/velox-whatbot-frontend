@@ -93,16 +93,21 @@ export default function AutomationSetupPage() {
   const activeTab = TABS.find((t) => t.id === tab);
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-brand-600" /> Automation
-          </h1>
-          <p className="text-ink-500 text-sm mt-1">
-            Set up triggers that auto-reply to Instagram comments, DMs, stories
-            & more.
-          </p>
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-brand-gradient rounded-xl flex items-center justify-center shadow-glow flex-shrink-0">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
+              Automation
+            </h1>
+            <p className="text-ink-500 text-sm mt-1">
+              Set up triggers that auto-reply to Instagram comments, DMs,
+              stories & more.
+            </p>
+          </div>
         </div>
       </div>
 

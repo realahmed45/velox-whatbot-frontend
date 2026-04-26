@@ -60,8 +60,8 @@ const PALETTE_NODES = [
     type: "delay",
     label: "Delay",
     icon: Clock,
-    color: "text-gray-600",
-    bg: "bg-gray-50",
+    color: "text-ink-600",
+    bg: "bg-ink-50",
   },
   {
     type: "tag_contact",
@@ -88,8 +88,8 @@ const PALETTE_NODES = [
     type: "end_flow",
     label: "End Flow",
     icon: X,
-    color: "text-gray-500",
-    bg: "bg-gray-50",
+    color: "text-ink-500",
+    bg: "bg-ink-50",
   },
 ];
 
@@ -100,14 +100,14 @@ export default function NodePalette({ onClose }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-3 w-48">
+    <div className="bg-white rounded-xl border border-ink-200 shadow-lg p-3 w-48">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
           Nodes
         </span>
         <button
           onClick={onClose}
-          className="p-0.5 rounded hover:bg-gray-100 text-gray-400"
+          className="p-0.5 rounded hover:bg-ink-100 text-ink-400"
         >
           <X className="w-3 h-3" />
         </button>
@@ -118,14 +118,14 @@ export default function NodePalette({ onClose }) {
             key={type}
             draggable
             onDragStart={(e) => onDragStart(e, type)}
-            className="flex items-center gap-2 p-2 rounded-lg cursor-grab hover:bg-gray-50 transition border border-transparent hover:border-gray-200"
+            className="flex items-center gap-2 p-2 rounded-lg cursor-grab hover:bg-ink-50 transition border border-transparent hover:border-ink-200"
           >
             <div
               className={`w-6 h-6 rounded-md flex items-center justify-center ${bg} flex-shrink-0`}
             >
               <Icon className={`w-3 h-3 ${color}`} />
             </div>
-            <span className="text-xs font-medium text-gray-700">{label}</span>
+            <span className="text-xs font-medium text-ink-700">{label}</span>
           </div>
         ))}
       </div>

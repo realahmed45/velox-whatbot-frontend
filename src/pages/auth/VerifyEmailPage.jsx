@@ -50,15 +50,15 @@ export default function VerifyEmailPage() {
         <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Mail className="w-8 h-8 text-brand-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-ink-900 mb-2">
           Check your email
         </h2>
-        <p className="text-gray-500 text-sm mb-4">
+        <p className="text-ink-500 text-sm mb-4">
           We sent a verification link to{" "}
-          <strong className="text-gray-700">{email}</strong>. Click the link in
+          <strong className="text-ink-700">{email}</strong>. Click the link in
           the email to verify your account.
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-400">
           Didn't get it? Check your spam folder.{" "}
           <Link to="/login" className="text-brand-600 hover:underline">
             Back to login
@@ -75,10 +75,10 @@ export default function VerifyEmailPage() {
         <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Loader className="w-8 h-8 text-brand-600 animate-spin" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-ink-900 mb-2">
           Verifying your email...
         </h2>
-        <p className="text-gray-500 text-sm">Please wait a moment.</p>
+        <p className="text-ink-500 text-sm">Please wait a moment.</p>
       </div>
     );
   }
@@ -90,10 +90,10 @@ export default function VerifyEmailPage() {
         <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-green-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-ink-900 mb-2">
           Email Verified!
         </h2>
-        <p className="text-gray-500 text-sm">
+        <p className="text-ink-500 text-sm">
           Your account is confirmed. Taking you to setup...
         </p>
       </div>
@@ -106,10 +106,10 @@ export default function VerifyEmailPage() {
       <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
         <XCircle className="w-8 h-8 text-red-500" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+      <h2 className="text-2xl font-bold text-ink-900 mb-2">
         Verification Failed
       </h2>
-      <p className="text-gray-500 text-sm mb-4">{errorMsg}</p>
+      <p className="text-ink-500 text-sm mb-4">{errorMsg}</p>
       <Link to="/login" className="text-brand-600 hover:underline text-sm">
         Back to login
       </Link>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useInboxStore } from "@/store/inboxStore";
@@ -16,6 +16,7 @@ import {
   X,
   MessageCircle,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -48,6 +49,8 @@ export default function InboxPage() {
   const [filter, setFilter] = useState("all");
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -124,8 +127,8 @@ export default function InboxPage() {
       addOrUpdateConversation(data.conversation);
       toast.success(
         next
-          ? "Bot resumed â€” it will auto-reply"
-          : "Bot paused â€” only agents reply now",
+          ? "Bot resumed — it will auto-reply"
+          : "Bot paused — only agents reply now",
       );
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed");
@@ -188,7 +191,13 @@ export default function InboxPage() {
   return (
     <div className="flex h-full bg-ink-50">
       {/* Conversation list */}
-      <div className="w-72 flex-shrink-0 border-r border-ink-100 bg-white flex flex-col">
+      <div
+        className={clsx(
+          "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col",
+          "w-full md:w-72",
+          activeConversationId && "hidden md:flex",
+        )}
+      >
         <div className="p-3 border-b border-ink-100 space-y-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-400" />
@@ -262,7 +271,7 @@ export default function InboxPage() {
                       </span>
                     </div>
                     <p className="text-[11px] text-ink-400 truncate mt-0.5">
-                      {conv.lastMessage?.text || "â€¦"}
+                      {conv.lastMessage?.text || "…"}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <span className={`chip text-[10px] ${meta.cls}`}>
@@ -295,6 +304,13 @@ export default function InboxPage() {
         <div className="flex-1 flex flex-col">
           {/* Chat header */}
           <div className="bg-white border-b border-ink-100 px-4 py-3">
+            <button
+              onClick={() => setActiveConversation(null)}
+              className="md:hidden mb-2 text-xs text-brand-600 font-medium flex items-center gap-1"
+              aria-label="Back to conversations"
+            >
+              ← Back
+            </button>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-brand-gradient rounded-full flex items-center justify-center text-xs font-semibold text-white">
@@ -415,11 +431,62 @@ export default function InboxPage() {
                 sent until you resume.
               </div>
             )}
-            <div className="flex items-end gap-3">
+            {aiSuggestions.length > 0 && (
+              <div className="mb-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-accent-700 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> AI Suggestions
+                  </span>
+                  <button
+                    onClick={() => setAiSuggestions([])}
+                    className="text-[11px] text-ink-400 hover:text-ink-600"
+                  >
+                    clear
+                  </button>
+                </div>
+                {aiSuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setReplyText(s);
+                      setAiSuggestions([]);
+                    }}
+                    className="w-full text-left text-xs p-2 rounded border border-accent-200 bg-accent-50/40 hover:bg-accent-50 transition"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <button
+                onClick={async () => {
+                  setAiLoading(true);
+                  try {
+                    const { data } = await api.post("/ai/suggest-replies", {
+                      conversationId: activeConversationId,
+                    });
+                    const sugs = (data.suggestions || []).map((s) =>
+                      typeof s === "string" ? s : s.text || "",
+                    );
+                    setAiSuggestions(sugs.filter(Boolean));
+                    if (!sugs.length) toast("No suggestions", { icon: "🤔" });
+                  } catch (err) {
+                    toast.error("AI failed");
+                  } finally {
+                    setAiLoading(false);
+                  }
+                }}
+                disabled={aiLoading}
+                title="AI suggest replies"
+                className="p-2 rounded-lg border border-accent-200 text-accent-600 hover:bg-accent-50 disabled:opacity-50"
+              >
+                <Sparkles className="w-4 h-4" />
+              </button>
               <textarea
                 className="input resize-none flex-1 text-sm"
                 rows={2}
-                placeholder="Type a messageâ€¦"
+                placeholder="Type a message…"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => {
@@ -440,7 +507,7 @@ export default function InboxPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-center">
+        <div className="hidden md:flex flex-1 items-center justify-center text-center">
           <div>
             <div className="w-14 h-14 rounded-2xl bg-brand-gradient mx-auto mb-3 flex items-center justify-center shadow-glow">
               <MessageCircle className="w-6 h-6 text-white" />
@@ -463,7 +530,7 @@ function MessageBubble({ msg }) {
     return (
       <div className="flex justify-center">
         <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg px-3 py-1.5 max-w-[70%] text-center">
-          ðŸ“ {msg.text}
+          📝 {msg.text}
         </div>
       </div>
     );

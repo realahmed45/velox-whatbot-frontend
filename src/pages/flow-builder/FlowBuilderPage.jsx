@@ -14,11 +14,12 @@ import "@xyflow/react/dist/style.css";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
-import { Plus, Save, ArrowLeft, Trash2, Play, Pause } from "lucide-react";
+import { Plus, Save, ArrowLeft, Trash2, Play, Pause, Workflow } from "lucide-react";
 import NodePalette from "./components/NodePalette";
 import NodeConfigPanel from "./components/NodeConfigPanel";
 import FlowListSidebar from "./components/FlowListSidebar";
 import { NODE_TYPES_MAP } from "./nodeTypes";
+import EmptyState from "@/components/ui/EmptyState";
 
 let nodeIdCounter = 1;
 const getId = () => `node_${Date.now()}_${nodeIdCounter++}`;
@@ -193,7 +194,7 @@ export default function FlowBuilderPage() {
         {currentFlow ? (
           <>
             {/* Top bar */}
-            <div className="h-12 bg-white border-b border-gray-100 flex items-center justify-between px-4">
+            <div className="h-12 bg-white border-b border-ink-100 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate("/dashboard/flows")}
@@ -201,7 +202,7 @@ export default function FlowBuilderPage() {
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-                <h2 className="font-semibold text-gray-800 text-sm">
+                <h2 className="font-semibold text-ink-800 text-sm">
                   {currentFlow.name}
                 </h2>
                 <span
@@ -255,7 +256,7 @@ export default function FlowBuilderPage() {
               onDragOver={onDragOver}
               nodeTypes={NODE_TYPES_MAP}
               fitView
-              className="bg-gray-50"
+              className="bg-ink-50"
             >
               <Background color="#e5e7eb" gap={20} />
               <Controls />
@@ -268,19 +269,19 @@ export default function FlowBuilderPage() {
             </ReactFlow>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <div className="text-5xl mb-4">🤖</div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              Select or create a flow
-            </h2>
-            <p className="text-gray-400 text-sm mb-6">
-              Build automated Instagram DM conversations with a visual
-              drag-and-drop editor.
-            </p>
-            <button onClick={createNewFlow} className="btn-primary gap-2">
-              <Plus className="w-4 h-4" />
-              Create new flow
-            </button>
+          <div className="flex-1 flex items-center justify-center p-8">
+            <EmptyState
+              className="max-w-lg w-full"
+              icon={Workflow}
+              title="Select or create a flow"
+              description="Build automated Instagram DM conversations with a visual drag-and-drop editor. Pick a flow from the left or start from scratch."
+              action={
+                <button onClick={createNewFlow} className="btn-primary gap-2">
+                  <Plus className="w-4 h-4" />
+                  Create new flow
+                </button>
+              }
+            />
           </div>
         )}
       </div>

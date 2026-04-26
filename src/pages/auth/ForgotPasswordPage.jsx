@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">Email sent!</h2>
-        <p className="text-gray-500 text-sm mb-4">
+        <p className="text-ink-500 text-sm mb-4">
           Check your inbox for a password reset link.
         </p>
         <Link to="/login" className="text-brand-600 hover:underline text-sm">
@@ -39,12 +39,12 @@ export default function ForgotPasswordPage() {
     <div>
       <Link
         to="/login"
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        className="flex items-center gap-1 text-sm text-ink-500 hover:text-ink-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4" /> Back to login
       </Link>
-      <h2 className="text-2xl font-bold text-gray-900 mb-1">Forgot password</h2>
-      <p className="text-gray-500 text-sm mb-6">
+      <h2 className="text-2xl font-bold text-ink-900 mb-1">Forgot password</h2>
+      <p className="text-ink-500 text-sm mb-6">
         Enter your email and we'll send you a reset link.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">

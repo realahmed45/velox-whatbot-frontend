@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -30,10 +31,10 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-1">
+      <h2 className="text-2xl font-bold text-ink-900 mb-1">
         Sign in to your account
       </h2>
-      <p className="text-gray-500 text-sm mb-8">
+      <p className="text-ink-500 text-sm mb-8">
         Don't have an account?{" "}
         <Link
           to="/register"
@@ -44,6 +45,19 @@ export default function LoginPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="mb-2">
+          <GoogleSignInButton />
+        </div>
+        <div className="relative py-1">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-ink-200"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-ink-400">
+              Or continue with email
+            </span>
+          </div>
+        </div>
         <div>
           <label className="label">Email address</label>
           <input
@@ -68,7 +82,7 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
               onClick={() => setShow(!show)}
             >
               {show ? (

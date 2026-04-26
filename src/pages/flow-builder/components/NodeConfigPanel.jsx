@@ -153,21 +153,21 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
   const handleChange = (key, value) => onChange({ [key]: value });
 
   return (
-    <div className="w-72 bg-white border-l border-gray-100 flex flex-col flex-shrink-0">
-      <div className="h-12 flex items-center justify-between px-4 border-b border-gray-100">
-        <span className="font-semibold text-sm text-gray-800 capitalize">
+    <div className="w-72 bg-white border-l border-ink-100 flex flex-col flex-shrink-0">
+      <div className="h-12 flex items-center justify-between px-4 border-b border-ink-100">
+        <span className="font-semibold text-sm text-ink-800 capitalize">
           {node.type?.replace(/_/g, " ")}
         </span>
         <div className="flex items-center gap-1">
           <button
             onClick={onDelete}
-            className="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50"
+            className="p-1.5 rounded text-ink-400 hover:text-red-500 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-1.5 rounded text-gray-400 hover:bg-gray-100"
+            className="p-1.5 rounded text-ink-400 hover:bg-ink-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -220,7 +220,7 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
           </div>
         ))}
         {fields.length === 0 && (
-          <p className="text-sm text-gray-400">No configuration needed.</p>
+          <p className="text-sm text-ink-400">No configuration needed.</p>
         )}
       </div>
     </div>

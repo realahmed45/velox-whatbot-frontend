@@ -11,6 +11,8 @@ import {
   Megaphone,
 } from "lucide-react";
 import dayjs from "dayjs";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default function BroadcastsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -65,41 +67,39 @@ export default function BroadcastsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Broadcasts</h1>
-          <p className="text-sm text-gray-500">
-            Send messages to multiple contacts at once
-          </p>
-        </div>
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
+      <PageHeader
+        icon={Megaphone}
+        title="Broadcasts"
+        subtitle="Send one-off messages to a segment of your contacts"
+      >
         <button
           onClick={() => setShowModal(true)}
           className="btn-primary gap-2"
         >
           <Plus className="w-4 h-4" />
-          New Campaign
+          New campaign
         </button>
-      </div>
+      </PageHeader>
 
       {/* Campaigns list */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading…</div>
+        <div className="text-center py-12 text-ink-400">Loading…</div>
       ) : campaigns.length === 0 ? (
-        <div className="text-center py-16">
-          <Megaphone className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">No campaigns yet</p>
-          <p className="text-gray-300 text-sm mt-1">
-            Create your first broadcast to reach all your contacts
-          </p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn-primary mt-4 gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Create campaign
-          </button>
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title="No campaigns yet"
+          description="Send a one-off message to a segment of your contacts. Great for announcements, drops, and promos."
+          action={
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create campaign
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {campaigns.map((c) => (
@@ -107,7 +107,7 @@ export default function BroadcastsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-800 truncate">
+                    <h3 className="font-semibold text-ink-800 truncate">
                       {c.name}
                     </h3>
                     <span
@@ -116,10 +116,10 @@ export default function BroadcastsPage() {
                       {c.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 line-clamp-2">
+                  <p className="text-sm text-ink-500 line-clamp-2">
                     {c.message}
                   </p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-ink-400">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
                       {c.stats?.totalTargeted || 0} targets
@@ -152,7 +152,7 @@ export default function BroadcastsPage() {
                   {["draft", "scheduled"].includes(c.status) && (
                     <button
                       onClick={() => deleteCampaign(c._id)}
-                      className="p-1.5 rounded text-gray-300 hover:text-red-500 hover:bg-red-50"
+                      className="p-1.5 rounded text-ink-300 hover:text-red-500 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -227,10 +227,10 @@ function CreateCampaignModal({ onClose, onCreated }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">New Broadcast Campaign</h2>
+          <h2 className="font-bold text-ink-900">New Broadcast Campaign</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded text-gray-400 hover:bg-gray-100"
+            className="p-1.5 rounded text-ink-400 hover:bg-ink-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -292,7 +292,7 @@ function CreateCampaignModal({ onClose, onCreated }) {
             </div>
           )}
           {estimate !== null && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-500">
               Estimated reach: <strong>{estimate} contacts</strong>
             </p>
           )}

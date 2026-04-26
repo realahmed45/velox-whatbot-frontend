@@ -162,12 +162,26 @@ export default function ContactsPage() {
                   </tr>
                 ) : contacts.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="text-center py-12 text-ink-400 text-sm"
-                    >
-                      No contacts yet. They'll appear here as people DM your
-                      Instagram.
+                    <td colSpan={6} className="py-12">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center mb-3">
+                          <MessageSquare className="w-5 h-5 text-brand-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-ink-800">
+                          No contacts yet
+                        </p>
+                        <p className="text-xs text-ink-500 mt-1 max-w-sm">
+                          Contacts appear automatically as people DM your
+                          Instagram. You can also add one manually.
+                        </p>
+                        <button
+                          onClick={() => setShowAdd(true)}
+                          className="btn-primary text-xs mt-4 gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Add contact
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (

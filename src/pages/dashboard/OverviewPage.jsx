@@ -15,7 +15,13 @@ import {
   Circle,
   ArrowRight,
   Rocket,
+  Send,
+  Calendar,
+  UserPlus,
+  Workflow,
 } from "lucide-react";
+import ActionCard from "@/components/ui/ActionCard";
+import StatCard from "@/components/ui/StatCard";
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
@@ -121,15 +127,24 @@ export default function OverviewPage() {
     }
   };
 
+  const user = useAuthStore((s) => s.user);
+  const firstName = (user?.name || "").split(" ")[0] || "there";
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   return (
-    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-ink-900">
-          Dashboard
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+      {/* Greeting */}
+      <div className="mb-8">
+        <p className="text-xs uppercase tracking-[0.2em] text-brand-600 font-semibold mb-1">
+          {greeting}
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
+          Welcome back, {firstName}.
         </h1>
-        <p className="text-ink-500 text-xs sm:text-sm mt-1">
-          Manage your Instagram DM automation
+        <p className="text-ink-500 text-sm mt-1">
+          Here's what's happening with your Instagram automation today.
         </p>
       </div>
 
@@ -215,12 +230,12 @@ export default function OverviewPage() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+            <p className="font-semibold text-sm sm:text-base text-ink-900 truncate">
               {isConnected
                 ? `@${workspace.instagram.username}`
                 : "Not Connected"}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-500">
               {isConnected
                 ? "Auto-DM on incoming messages & comments"
                 : "Connect to start"}
@@ -250,72 +265,63 @@ export default function OverviewPage() {
       </div>
 
       {/* Main actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <button
-          onClick={() => navigate("/dashboard/automation")}
-          className="group p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-brand-200 bg-brand-50 hover:border-brand-400 hover:bg-brand-100 transition text-left"
-        >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-brand-gradient rounded-lg sm:rounded-xl shadow-glow flex items-center justify-center mb-2 sm:mb-3">
-            <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </div>
-          <p className="font-bold text-sm sm:text-base text-gray-900">
-            Setup Automation
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Edit greeting & follow-up messages
-          </p>
-        </button>
-
-        <button
-          onClick={() => navigate("/dashboard/analytics")}
-          className="group p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-blue-200 bg-blue-50 hover:border-blue-400 hover:bg-blue-100 transition text-left"
-        >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-3">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </div>
-          <p className="font-bold text-sm sm:text-base text-gray-900">
-            Analytics
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Track DMs sent, replies, and growth
-          </p>
-        </button>
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-sm font-semibold text-ink-700 uppercase tracking-wider mb-3">
+          Quick actions
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <ActionCard
+            icon={Zap}
+            title="Setup Automation"
+            description="Triggers, keywords, welcome DMs"
+            to="/dashboard/automation"
+            accent="brand"
+          />
+          <ActionCard
+            icon={Workflow}
+            title="Build a Flow"
+            description="Drag-and-drop conversation builder"
+            to="/dashboard/flow-builder"
+            accent="accent"
+          />
+          <ActionCard
+            icon={Send}
+            title="Send Broadcast"
+            description="Mass DM your contacts"
+            to="/dashboard/broadcasts"
+            accent="emerald"
+          />
+          <ActionCard
+            icon={Calendar}
+            title="Schedule Post"
+            description="Plan IG posts & stories"
+            to="/dashboard/scheduled-posts"
+            accent="amber"
+          />
+        </div>
       </div>
 
       {/* Stats row */}
       {stats && (
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {[
-            {
-              label: "DMs Sent",
-              value: stats.totalMessages ?? 0,
-              icon: MessageSquare,
-              color: "text-blue-600",
-            },
-            {
-              label: "Contacts",
-              value: stats.totalContacts ?? 0,
-              icon: Users,
-              color: "text-brand-600",
-            },
-            {
-              label: "Reply Rate",
-              value: stats.replyRate ? `${stats.replyRate}%` : "—",
-              icon: TrendingUp,
-              color: "text-green-600",
-            },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div
-              key={label}
-              className="bg-white rounded-lg sm:rounded-xl border border-gray-100 p-3 sm:p-4 text-center"
-            >
-              <Icon className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${color}`} />
-              <p className="text-lg sm:text-xl font-bold text-gray-900">
-                {value}
-              </p>
-              <p className="text-[10px] sm:text-xs text-gray-400">{label}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <StatCard
+            icon={MessageSquare}
+            label="DMs Sent"
+            value={stats.totalMessages ?? 0}
+            accent="brand"
+          />
+          <StatCard
+            icon={Users}
+            label="Contacts"
+            value={stats.totalContacts ?? 0}
+            accent="accent"
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Reply Rate"
+            value={stats.replyRate ? `${stats.replyRate}%` : "—"}
+            accent="emerald"
+          />
         </div>
       )}
     </div>

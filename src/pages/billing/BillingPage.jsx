@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
-import { CheckCircle2, TrendingUp, Zap, Sparkles, Rocket } from "lucide-react";
+import { CheckCircle2, TrendingUp, Zap, Sparkles, Rocket, CreditCard } from "lucide-react";
 import { clsx } from "clsx";
 import PricingPage from "../PricingPage";
+import PageHeader from "@/components/ui/PageHeader";
 
 const ICONS = { starter: Zap, growth: Rocket, scale: Sparkles };
 
@@ -30,13 +31,12 @@ export default function BillingPage() {
   const Icon = ICONS[plan?.id] || Zap;
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink-900">Billing & Plan</h1>
-        <p className="text-sm text-ink-500">
-          Manage your subscription and monitor usage.
-        </p>
-      </div>
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+      <PageHeader
+        icon={CreditCard}
+        title="Billing & plan"
+        subtitle="Manage your subscription and monitor usage"
+      />
 
       {/* Current plan card */}
       {plan && (

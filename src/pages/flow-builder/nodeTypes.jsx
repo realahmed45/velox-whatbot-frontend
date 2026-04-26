@@ -27,12 +27,12 @@ const NodeWrapper = ({ children, color, selected }) => (
 const mkNode = (icon, label, color) => {
   const Comp = ({ data, selected }) => (
     <NodeWrapper color={color} selected={selected}>
-      <Handle type="target" position={Position.Top} className="!bg-gray-300" />
+      <Handle type="target" position={Position.Top} className="!bg-ink-300" />
       <div className={`flex items-center gap-2 text-${color}-700 mb-1`}>
         {icon}
         <span className="font-semibold text-xs">{label}</span>
       </div>
-      <p className="text-gray-500 truncate text-xs">
+      <p className="text-ink-500 truncate text-xs">
         {data.content || data.text || data.label || "(empty)"}
       </p>
       <Handle
@@ -93,10 +93,10 @@ export const ConditionNode = mkNode(
 );
 export const EndFlowNode = ({ data, selected }) => (
   <div
-    className={`${baseStyle} ${selected ? "border-gray-500" : "border-gray-300"} p-3 bg-gray-50`}
+    className={`${baseStyle} ${selected ? "border-ink-500" : "border-ink-300"} p-3 bg-ink-50`}
   >
-    <Handle type="target" position={Position.Top} className="!bg-gray-300" />
-    <div className="flex items-center gap-2 text-gray-500">
+    <Handle type="target" position={Position.Top} className="!bg-ink-300" />
+    <div className="flex items-center gap-2 text-ink-500">
       <X className="w-3 h-3" />
       <span className="font-semibold text-xs">End Flow</span>
     </div>
