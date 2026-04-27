@@ -39,7 +39,7 @@ export default function AuthLayout() {
 
         <div className="relative">
           <Link to="/" className="inline-flex items-center gap-3">
-            <div className="w-12 h-12 bg-brand-gradient rounded-lg flex items-center justify-center shadow-neon-violet animate-glow-pulse">
+            <div className="w-12 h-12 bg-brand-gradient rounded-md flex items-center justify-center shadow-neon-violet animate-glow-pulse">
               <Instagram className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-black tracking-tight">Botlify</span>
