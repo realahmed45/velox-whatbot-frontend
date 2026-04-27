@@ -1,4 +1,4 @@
-﻿import {
+import {
   Menu,
   Search,
   LogOut,
@@ -7,6 +7,7 @@
   CreditCard,
   ChevronDown,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -71,14 +72,25 @@ export default function Header({ onMenuClick, onSearchClick }) {
           aria-label="Search"
         >
           <Search className="w-4 h-4" />
-          <span className="hidden sm:inline">Search or jump toâ€¦</span>
+          <span className="hidden sm:inline">Search or jump to…</span>
           <span className="hidden md:inline text-[10px] px-1.5 py-0.5 rounded bg-white border border-ink-200 font-mono text-ink-400">
-            âŒ˜K
+            ⌘K
           </span>
         </button>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Guide me � prominent gradient pill */}
+        <button
+          onClick={() => navigate("/dashboard/guide")}
+          className="relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-brand-gradient text-white text-xs sm:text-sm font-semibold shadow-glow hover:shadow-glow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+          aria-label="Open setup guide"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Guide me</span>
+          <span className="sm:hidden">Guide</span>
+        </button>
+
         {/* Workspace switcher */}
         {workspaces.length > 0 && (
           <div className="relative hidden sm:block" ref={wsRef}>
@@ -91,7 +103,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
               <ChevronDown className="w-3.5 h-3.5 text-ink-400 flex-shrink-0" />
             </button>
             {wsOpen && (
-              <div className="absolute right-0 mt-2 w-60 bg-white border border-ink-100 rounded-xl shadow-lg py-2 z-50">
+              <div className="absolute right-0 mt-2 w-60 bg-white border border-ink-100 rounded-md shadow-lg py-2 z-50">
                 <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ink-400 font-semibold">
                   Workspaces
                 </div>
@@ -159,7 +171,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
             )}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-ink-100 rounded-xl shadow-lg py-2 z-50">
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-ink-100 rounded-md shadow-lg py-2 z-50">
               <div className="px-4 py-2 border-b border-ink-100">
                 <p className="text-sm font-medium text-ink-900 truncate">
                   {user?.name || user?.email}

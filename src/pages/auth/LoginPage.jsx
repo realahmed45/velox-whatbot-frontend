@@ -31,14 +31,14 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-ink-900 mb-1">
-        Sign in to your account
+      <h2 className="text-3xl font-black text-ink-900 tracking-tighter">
+        Welcome <span className="text-gradient-animated">back</span>
       </h2>
-      <p className="text-ink-500 text-sm mb-8">
+      <p className="text-ink-500 text-sm mt-2 mb-7">
         Don't have an account?{" "}
         <Link
           to="/register"
-          className="text-brand-600 font-medium hover:underline"
+          className="text-brand-600 font-semibold hover:underline"
         >
           Sign up free
         </Link>

@@ -21,7 +21,7 @@ export default function ConnectInstagramGate({ children, feature }) {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <div className="card p-8 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-orange-500 mx-auto mb-4 flex items-center justify-center shadow-glow">
+        <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-pink-500 via-rose-500 to-orange-500 mx-auto mb-4 flex items-center justify-center shadow-glow">
           <Instagram className="w-7 h-7 text-white" />
         </div>
         <h2 className="text-xl font-bold text-ink-900 mb-1">

@@ -296,7 +296,7 @@ export default function LinkInBioPage() {
             Live Preview
           </p>
           <div
-            className={`rounded-2xl p-6 shadow-lg border ${
+            className={`rounded-lg p-6 shadow-lg border ${
               page.theme === "dark"
                 ? "bg-ink-900 text-white"
                 : page.theme === "gradient"
@@ -330,7 +330,7 @@ export default function LinkInBioPage() {
                   .map((link, i) => (
                     <div
                       key={i}
-                      className="w-full py-3 px-4 rounded-xl bg-white/10 backdrop-blur hover:bg-white/20 text-center font-medium transition cursor-pointer"
+                      className="w-full py-3 px-4 rounded-md bg-white/10 backdrop-blur hover:bg-white/20 text-center font-medium transition cursor-pointer"
                       style={
                         page.theme === "light"
                           ? {

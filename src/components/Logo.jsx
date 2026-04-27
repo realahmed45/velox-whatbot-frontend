@@ -20,7 +20,7 @@ export default function Logo({
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
       <div
-        className={`${s.box} bg-brand-gradient rounded-xl flex items-center justify-center shadow-glow`}
+        className={`${s.box} bg-brand-gradient rounded-md flex items-center justify-center shadow-glow`}
       >
         <Bot className={`${s.icon} text-white`} strokeWidth={2.5} />
       </div>

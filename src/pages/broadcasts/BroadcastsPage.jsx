@@ -225,7 +225,7 @@ function CreateCampaignModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+      <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-ink-900">New Broadcast Campaign</h2>
           <button

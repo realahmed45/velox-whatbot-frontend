@@ -47,6 +47,7 @@ const LinkInBioPage = lazy(() => import("@/pages/link-in-bio/LinkInBioPage"));
 import PublicBioPage from "@/pages/link-in-bio/PublicBioPage";
 const AiBotPage = lazy(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazy(() => import("@/pages/PricingPage"));
+const GuidePage = lazy(() => import("@/pages/GuidePage"));
 const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const FlowBuilderPage = lazy(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
@@ -100,6 +101,7 @@ export default function App() {
               <Route path="/@:slug" element={<PublicBioPage />} />
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/guide" element={<GuidePage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
               </Route>
@@ -216,6 +218,7 @@ export default function App() {
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="pricing" element={<PricingPage embedded />} />
+                <Route path="guide" element={<GuidePage />} />
               </Route>
 
               <Route

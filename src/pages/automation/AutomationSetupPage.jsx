@@ -96,7 +96,7 @@ export default function AutomationSetupPage() {
     <div className="p-4 sm:p-8 max-w-7xl mx-auto">
       <div className="mb-6">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-brand-gradient rounded-xl flex items-center justify-center shadow-glow flex-shrink-0">
+          <div className="w-10 h-10 bg-brand-gradient rounded-md flex items-center justify-center shadow-glow flex-shrink-0">
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
@@ -1097,7 +1097,7 @@ function HoursTab({ cfg, save, setCfg }) {
             return (
               <div
                 key={k}
-                className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-3 py-2"
+                className="flex items-center gap-3 rounded-md border border-ink-200 bg-white px-3 py-2"
               >
                 <label className="toggle">
                   <input

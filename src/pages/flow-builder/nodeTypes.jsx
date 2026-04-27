@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 const baseStyle =
-  "min-w-[160px] max-w-[220px] rounded-xl border-2 bg-white shadow-sm text-xs font-medium";
+  "min-w-[160px] max-w-[220px] rounded-md border-2 bg-white shadow-sm text-xs font-medium";
 const NodeWrapper = ({ children, color, selected }) => (
   <div
     className={`${baseStyle} ${selected ? `border-${color}-500` : `border-${color}-200`} p-3`}

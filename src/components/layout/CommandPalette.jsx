@@ -168,7 +168,7 @@ export default function CommandPalette({ open, onClose }) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl rounded-xl bg-white shadow-2xl border border-ink-100 overflow-hidden"
+        className="relative w-full max-w-xl rounded-md bg-white shadow-2xl border border-ink-100 overflow-hidden"
       >
         <Command label="Command palette" className="w-full">
           <div className="flex items-center border-b border-ink-100 px-3">

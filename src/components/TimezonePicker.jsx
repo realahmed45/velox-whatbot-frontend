@@ -209,7 +209,7 @@ export default function TimezonePicker({ value, onChange, className }) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-ink-200 shadow-hero z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md border border-ink-200 shadow-hero z-50 overflow-hidden">
           <div className="p-2 border-b border-ink-100 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-400" />
             <input

@@ -20,7 +20,7 @@ export default function EmptyState({
       )}
     >
       {Icon && (
-        <div className="w-14 h-14 rounded-2xl bg-brand-gradient/10 bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center mb-4">
+        <div className="w-14 h-14 rounded-lg bg-brand-gradient/10 bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center mb-4">
           <Icon className="w-7 h-7 text-brand-600" />
         </div>
       )}

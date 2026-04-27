@@ -39,75 +39,146 @@ import Logo from "@/components/Logo";
 
 const FEATURES = [
   {
-    icon: MessageCircle,
-    title: "Welcome DM",
-    desc: "Auto-greet anyone messaging your account for the first time.",
+    icon: Bot,
+    title: "AI conversation bot",
+    desc: "GPT-powered chats that sound exactly like you — answers off-script questions and only pings you when it's something real.",
+    bullets: [
+      "Trains on your FAQs, offers, and tone",
+      "Multi-turn context — remembers the whole chat",
+      "Smart hand-off to human when stuck",
+    ],
+    premium: true,
+    hero: true,
   },
   {
     icon: Hash,
-    title: "Comment keywords",
-    desc: "Comments like 'info' trigger a private DM with the link.",
+    title: "Comment → DM",
+    desc: "When followers comment a keyword on your post or Reel, Botlify slides into their DMs with the link, offer or info — instantly.",
+    bullets: [
+      "Per-post or account-wide triggers",
+      "Multiple keyword variations supported",
+      "Public reply + private DM combo",
+    ],
   },
   {
     icon: MessageCircle,
-    title: "DM keywords",
-    desc: "Reply to 'price', 'link' & FAQs in under one second.",
+    title: "DM keyword auto-reply",
+    desc: "Reply to common questions like 'price', 'link', 'sizes' in under one second — no human required.",
+    bullets: [
+      "Unlimited keyword rules per account",
+      "Rich replies with buttons and links",
+      "Pause auto-reply when human jumps in",
+    ],
+  },
+  {
+    icon: MessageCircle,
+    title: "Welcome DM",
+    desc: "Auto-greet anyone who messages you for the first time with a warm intro, your menu, or a discount code.",
+    bullets: [
+      "Personalised first-touch experience",
+      "Quick-reply buttons to qualify leads",
+      "Stops repeating itself on returning chats",
+    ],
   },
   {
     icon: Heart,
     title: "Story replies & mentions",
-    desc: "Every reaction & tag converts into a personal DM.",
+    desc: "Every story reaction, sticker reply or @mention converts into a personal DM — turning passive engagement into conversation.",
+    bullets: [
+      "Story reaction triggers",
+      "Story mention triggers",
+      "Share-to-story → DM thank you",
+    ],
   },
   {
     icon: Share2,
     title: "Share-to-story → DM",
-    desc: "Thank fans who share your post — automatically.",
+    desc: "Thank fans who share your post to their story — automatically. Builds loyalty and drives word-of-mouth.",
+    bullets: [
+      "Auto-DM with a thank-you + link",
+      "Optional discount code for sharers",
+      "Tracks which posts get shared most",
+    ],
   },
   {
     icon: LinkIcon,
-    title: "Tracked ad links",
-    desc: "Per-campaign links so you know what drove each lead.",
+    title: "Tracked ad links (Ref-URL)",
+    desc: "Per-campaign deep links so you know exactly which ad, post or Reel drove every single lead.",
+    bullets: [
+      "Unlimited tracked URLs",
+      "Drop directly into Meta ads",
+      "Per-link analytics on conversion",
+    ],
   },
   {
     icon: Send,
     title: "Live-stream auto-replies",
-    desc: "Type 'buy' mid-live → instant DM with checkout.",
+    desc: "Type a keyword in a live comment → instant DM with the checkout link. Convert hype into sales mid-stream.",
+    bullets: [
+      "Real-time live-comment listener",
+      "Multi-keyword support",
+      "Works on creator and business lives",
+    ],
   },
   {
     icon: Target,
-    title: "Chat starter buttons",
-    desc: "Quick CTAs at the top of every new conversation.",
+    title: "Conversation starter buttons",
+    desc: "Quick CTA buttons that show at the top of every new chat — guide people to the action you want.",
+    bullets: [
+      "Up to 4 starter buttons",
+      "Customisable copy and links",
+      "Drives 2-3× higher response rate",
+    ],
   },
   {
     icon: CircleDot,
     title: "Fallback reply",
-    desc: "A polite catch-all when no other rule matches.",
+    desc: "A polite, on-brand catch-all when no other rule matches — never leave a DM on read.",
+    bullets: [
+      "Custom fallback per workspace",
+      "Optional auto-handoff after fallback",
+      "AI-generated fallback (Scale plan)",
+    ],
   },
   {
     icon: Clock,
     title: "Business hours",
-    desc: "Friendly 'we're away' message when your team is offline.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI conversation bot",
-    desc: "GPT-powered chats that sound like you.",
-    premium: true,
+    desc: "A friendly 'we're away' DM during off-hours so customers always know when to expect a real reply.",
+    bullets: [
+      "Per-day schedule with timezone",
+      "Custom away message",
+      "Stops AI bot or routes to human queue",
+    ],
   },
   {
     icon: Users,
     title: "Team inbox",
-    desc: "Assign chats, leave notes, reply together.",
+    desc: "Assign DMs to teammates, leave private notes, and reply together without stepping on each other.",
+    bullets: [
+      "Internal notes (only your team sees)",
+      "Assignments + read receipts",
+      "Up to 10 seats on Scale",
+    ],
   },
   {
     icon: BarChart3,
-    title: "Analytics",
-    desc: "Replies, conversions and best-performing triggers.",
+    title: "Analytics that matter",
+    desc: "Replies, conversions, best-performing triggers — and which ad sent the lead. Numbers that actually drive decisions.",
+    bullets: [
+      "Per-trigger conversion rate",
+      "Funnel: comment → DM → click → sale",
+      "Export CSV any time",
+    ],
   },
   {
     icon: Zap,
     title: "One-click bot pause",
-    desc: "Agent jumps in → bot steps back. No double replies.",
+    desc: "When you (or a teammate) jump into a conversation, the bot steps back instantly. No double-replies, no awkwardness.",
+    bullets: [
+      "Auto-detects human typing",
+      "Resumes after configurable idle time",
+      "Per-conversation override toggle",
+    ],
   },
 ];
 
@@ -116,19 +187,55 @@ const TESTIMONIALS = [
     quote:
       "Botlify replaced ManyChat for half the price and twice the polish. My DMs convert 3× now.",
     name: "Aisha Khan",
+    handle: "@aisha.style",
     role: "Beauty creator · 280k",
+    avatar: "https://i.pravatar.cc/120?img=47",
+    metric: "+317% reply rate",
+  },
+  {
+    quote:
+      "The AI bot is the magic. It answers product questions in my voice while I sleep. Real revenue, real difference.",
+    name: "Daniyal Ahmed",
+    handle: "@daniyal.coach",
+    role: "Coaching agency",
+    avatar: "https://i.pravatar.cc/120?img=12",
+    metric: "PKR 1.4M / mo via DMs",
   },
   {
     quote:
       "Setup was honestly six minutes. The story-mention auto-DM alone pays for the whole plan.",
-    name: "Daniyal Ahmed",
-    role: "Coaching agency",
+    name: "Mira Patel",
+    handle: "@mira.boutique",
+    role: "Boutique founder",
+    avatar: "https://i.pravatar.cc/120?img=49",
+    metric: "−18hrs / week saved",
   },
   {
     quote:
-      "Clean inbox, no double-replies, and the analytics actually tell you what's working.",
-    name: "Mira Patel",
-    role: "Boutique founder",
+      "Clean inbox, no double replies, the analytics actually tell you what's working. Best $30 I spend.",
+    name: "Hamza Iqbal",
+    handle: "@hamza.fitness",
+    role: "Personal trainer · 88k",
+    avatar: "https://i.pravatar.cc/120?img=33",
+    metric: "+62 leads / week",
+  },
+  {
+    quote:
+      "The team inbox + AI hand-off is unreal. My VAs only see the chats that actually need a human.",
+    name: "Sana Riaz",
+    handle: "@sana.skin",
+    role: "Skincare brand",
+    avatar: "https://i.pravatar.cc/120?img=44",
+    metric: "94% AI resolution",
+  },
+  {
+    quote:
+      "The comment-to-DM trigger on a viral Reel got me 1,200 leads in 24 hours. I almost cried.",
+    name: "Faraz Malik",
+    handle: "@faraz.builds",
+    role: "DTC founder",
+    avatar: "https://i.pravatar.cc/120?img=15",
+    metric: "1.2k leads / Reel",
   },
 ];
 
@@ -178,6 +285,7 @@ export default function LandingPage() {
       <Hero />
       <SocialProof />
       <Features />
+      <PlatformDarkSection />
       <HowItWorks />
       <ProductPreview />
       <Comparison />
@@ -285,25 +393,26 @@ function Hero() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-brand-200 text-xs font-semibold text-brand-700 shadow-sm">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/70 backdrop-blur border border-brand-200 text-xs font-semibold text-brand-700 shadow-sm">
             <Sparkles className="w-3 h-3" />
-            Your all-in-one Instagram automation platform
+            AI Instagram automation, finally simple
           </span>
 
-          <h1 className="mt-6 text-5xl sm:text-7xl font-black tracking-tight leading-[1.05]">
-            Stop missing leads.
-            <br />
+          <h1 className="mt-6 text-4xl sm:text-7xl font-black tracking-tight leading-[1.05]">
+            An AI bot that{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
-              Start closing them.
-            </span>
+              replies to every Instagram DM
+            </span>{" "}
+            in your voice — instantly.
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            Botlify auto-DMs every comment, story-reply and mention so you turn
-            engagement into revenue —
-            <span className="font-semibold text-ink-900">
-              {" "}
-              24/7, hands-free.
+          <p className="mt-6 text-base sm:text-xl text-ink-600 max-w-2xl mx-auto leading-relaxed">
+            Train Botlify on your FAQs, offers and tone. The AI answers DMs
+            24/7, qualifies leads, sends links, and only pings you when it's
+            something real.
+            <span className="block mt-2 text-sm text-ink-500">
+              Plus: comment-to-DM, story replies, story mentions, broadcasts &
+              more.
             </span>
           </p>
 
@@ -312,11 +421,11 @@ function Hero() {
               to="/register"
               className="btn-primary !px-7 !py-3.5 text-base shadow-glow"
             >
-              Start free — no card <ArrowRight className="w-4 h-4" />
+              Try the AI bot free <ArrowRight className="w-4 h-4" />
             </Link>
-            <a href="#how" className="btn-secondary !px-7 !py-3.5 text-base">
-              <PlayCircle className="w-4 h-4" /> Watch 60-sec demo
-            </a>
+            <Link to="/guide" className="btn-secondary !px-7 !py-3.5 text-base">
+              <PlayCircle className="w-4 h-4" /> See how it works
+            </Link>
           </div>
 
           <div className="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-ink-500">
@@ -341,9 +450,9 @@ function Hero() {
         {/* Hero product preview */}
         <div className="mt-16 sm:mt-20 max-w-5xl mx-auto">
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-3xl opacity-30 blur-2xl" />
-            <div className="relative rounded-3xl bg-gradient-to-br from-indigo-500/20 via-violet-500/20 to-pink-500/20 p-1 backdrop-blur-xl border border-white/40 shadow-hero">
-              <div className="rounded-[20px] bg-white overflow-hidden">
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-lg opacity-30 blur-2xl" />
+            <div className="relative rounded-lg bg-gradient-to-br from-indigo-500/20 via-violet-500/20 to-pink-500/20 p-1 backdrop-blur-xl border border-white/40 shadow-hero">
+              <div className="rounded-md bg-white overflow-hidden">
                 <DashboardMockup />
               </div>
             </div>
@@ -409,7 +518,7 @@ function DashboardMockup() {
           ].map((s) => (
             <div
               key={s.l}
-              className="rounded-xl bg-white border border-ink-100 p-3 shadow-card"
+              className="rounded-md bg-white border border-ink-100 p-3 shadow-card"
             >
               <div
                 className={`text-lg sm:text-xl font-bold bg-gradient-to-r ${s.c} bg-clip-text text-transparent`}
@@ -423,24 +532,70 @@ function DashboardMockup() {
           ))}
         </div>
 
-        {/* mini chart */}
-        <div className="rounded-xl bg-white border border-ink-100 p-4">
+        {/* Real-looking line+area chart */}
+        <div className="rounded-md bg-white border border-ink-100 p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-ink-700">
-              DMs this week
-            </span>
-            <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +24%
+            <div>
+              <span className="text-xs font-semibold text-ink-700 block">
+                DMs handled by AI · last 30 days
+              </span>
+              <span className="text-[10px] text-ink-400">
+                Powered by Botlify AI bot
+              </span>
+            </div>
+            <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-100">
+              <TrendingUp className="w-3 h-3" /> +247%
             </span>
           </div>
-          <div className="flex items-end gap-1.5 h-16">
-            {[40, 65, 50, 80, 70, 90, 100].map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t-md bg-gradient-to-t from-brand-500 to-pink-500"
-                style={{ height: `${h}%`, opacity: 0.5 + i * 0.07 }}
+          <svg
+            viewBox="0 0 600 140"
+            className="w-full h-24 sm:h-28"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="lpAreaG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#ec4899" stopOpacity="0.02" />
+              </linearGradient>
+              <linearGradient id="lpLineG" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+            </defs>
+            {/* gridlines */}
+            {[28, 56, 84, 112].map((y) => (
+              <line
+                key={y}
+                x1="0"
+                x2="600"
+                y1={y}
+                y2={y}
+                stroke="#f1f5f9"
+                strokeWidth="1"
               />
             ))}
+            {/* area + line: 30 points smooth curve */}
+            <path
+              d="M0,120 C30,118 50,115 70,112 C90,108 110,103 140,98 C170,93 195,90 220,85 C245,80 268,78 290,72 C310,66 330,60 360,55 C385,51 410,48 430,42 C455,35 478,30 500,24 C525,18 555,14 600,10 L600,140 L0,140 Z"
+              fill="url(#lpAreaG)"
+            />
+            <path
+              d="M0,120 C30,118 50,115 70,112 C90,108 110,103 140,98 C170,93 195,90 220,85 C245,80 268,78 290,72 C310,66 330,60 360,55 C385,51 410,48 430,42 C455,35 478,30 500,24 C525,18 555,14 600,10"
+              fill="none"
+              stroke="url(#lpLineG)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            {/* end dot */}
+            <circle cx="600" cy="10" r="4" fill="#ec4899" />
+            <circle cx="600" cy="10" r="9" fill="#ec4899" fillOpacity="0.18" />
+          </svg>
+          <div className="flex justify-between text-[9px] text-ink-400 mt-1">
+            <span>Day 1</span>
+            <span>Day 10</span>
+            <span>Day 20</span>
+            <span>Today</span>
           </div>
         </div>
       </div>
@@ -455,17 +610,50 @@ function SocialProof() {
     { v: "99.9%", l: "Uptime" },
     { v: "<1s", l: "Avg reply time" },
   ];
+  const logos = [
+    "Bloom",
+    "Maya Studio",
+    "Northwind",
+    "PulseGym",
+    "Lumen",
+    "Halo Beauty",
+    "Vanta",
+    "Stride",
+    "Atlas Co.",
+    "Nova",
+    "Orbit",
+    "Crest",
+  ];
   return (
-    <section className="py-14 border-y border-ink-100 bg-ink-50/60">
+    <section className="py-14 border-y border-ink-100 bg-gradient-to-b from-white to-ink-50/60 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         {stats.map((s) => (
-          <div key={s.l}>
-            <div className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
+          <div key={s.l} className="relative group">
+            <div className="text-4xl sm:text-5xl font-black tracking-tighter text-gradient-animated">
               {s.v}
             </div>
-            <div className="text-xs sm:text-sm text-ink-500 mt-1">{s.l}</div>
+            <div className="text-xs sm:text-sm text-ink-500 mt-1.5 font-medium uppercase tracking-wider">
+              {s.l}
+            </div>
           </div>
         ))}
+      </div>
+      <div className="mt-12 relative">
+        <p className="text-center text-[11px] uppercase tracking-[0.3em] font-bold text-ink-400 mb-6">
+          Trusted by 2,500+ brands & creators
+        </p>
+        <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+          <div className="marquee gap-12">
+            {[...logos, ...logos].map((l, i) => (
+              <span
+                key={i}
+                className="text-2xl font-black text-ink-400/70 tracking-tight whitespace-nowrap"
+              >
+                {l}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -473,40 +661,193 @@ function SocialProof() {
 
 function Features() {
   return (
-    <section id="features" className="py-24 sm:py-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section id="features" className="py-20 sm:py-32 relative">
+      <div className="absolute inset-0 bg-grid-light bg-grid-48 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)] opacity-50 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <SectionHeading
-          eyebrow="Features"
+          eyebrow="Every feature, in detail"
           title={
             <>
               Everything you need to{" "}
-              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
-                automate Instagram
-              </span>
+              <span className="text-gradient-animated">automate Instagram</span>
             </>
           }
-          subtitle="14 triggers. One inbox. Infinite scale. No flow-charts required — click, write your reply, hit save."
+          subtitle="14 features. One platform. We tell you exactly what each one does, so you know what you're getting before you commit."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
-          {FEATURES.map(({ icon: Icon, title, desc, premium }) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-12 sm:mt-16">
+          {FEATURES.map(
+            ({ icon: Icon, title, desc, bullets, premium, hero }) => (
+              <div
+                key={title}
+                className={`group relative p-5 sm:p-6 rounded-lg backdrop-blur-md border transition-all duration-500 shine-on-hover overflow-hidden ${
+                  hero
+                    ? "sm:col-span-2 lg:col-span-3 bg-gradient-to-br from-ink-900 via-ink-900 to-brand-900 text-white border-accent-400/30 shadow-hero hover:-translate-y-1"
+                    : "bg-white/70 border-ink-100 hover:border-transparent hover:shadow-glow-lg hover:-translate-y-1.5"
+                }`}
+              >
+                {!hero && (
+                  <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-indigo-500/0 via-violet-500/0 to-pink-500/0 group-hover:from-indigo-500/15 group-hover:via-violet-500/15 group-hover:to-pink-500/15 blur-2xl transition-all duration-500" />
+                )}
+                {hero && (
+                  <>
+                    <div className="absolute -top-20 -right-10 w-72 h-72 rounded-full bg-accent-500/30 blur-3xl" />
+                    <div className="absolute -bottom-20 -left-10 w-72 h-72 rounded-full bg-brand-500/30 blur-3xl" />
+                  </>
+                )}
+                <div
+                  className={`relative ${hero ? "grid lg:grid-cols-[auto,1fr] gap-6 items-start" : ""}`}
+                >
+                  <div
+                    className={`relative ${hero ? "w-14 h-14" : "w-12 h-12"} rounded-md flex items-center justify-center ${
+                      premium
+                        ? "bg-gradient-to-br from-amber-400 via-rose-500 to-pink-600"
+                        : "bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500"
+                    } shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 ${hero ? "" : "mb-4"}`}
+                  >
+                    <Icon
+                      className={`${hero ? "w-7 h-7" : "w-6 h-6"} text-white`}
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3
+                      className={`relative font-bold flex items-center gap-2 ${hero ? "text-2xl sm:text-3xl text-white" : "text-base text-ink-900"}`}
+                    >
+                      {title}
+                      {premium && (
+                        <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-sm">
+                          {hero ? "Headline AI feature" : "Premium"}
+                        </span>
+                      )}
+                    </h3>
+                    <p
+                      className={`relative mt-2 leading-relaxed ${hero ? "text-base text-ink-200 max-w-2xl" : "text-sm text-ink-500"}`}
+                    >
+                      {desc}
+                    </p>
+                    {bullets && (
+                      <ul
+                        className={`mt-3 space-y-1.5 ${hero ? "grid sm:grid-cols-3 gap-x-4 gap-y-1.5 mt-4" : ""}`}
+                      >
+                        {bullets.map((b, i) => (
+                          <li
+                            key={i}
+                            className={`flex items-start gap-2 text-xs leading-snug ${hero ? "text-ink-300" : "text-ink-600"}`}
+                          >
+                            <Check
+                              className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${hero ? "text-accent-400" : "text-brand-500"}`}
+                            />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {hero && (
+                      <div className="mt-5 flex flex-wrap gap-3">
+                        <Link to="/register" className="btn-premium">
+                          Try the AI bot free <ArrowRight className="w-4 h-4" />
+                        </Link>
+                        <Link
+                          to="/guide"
+                          className="btn bg-white/10 text-white border border-white/15 hover:bg-white/15"
+                        >
+                          How training works
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ),
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlatformDarkSection() {
+  const stats = [
+    { v: "6 min", l: "From signup to first auto-DM" },
+    { v: "24/7", l: "Always-on auto replies" },
+    { v: "0.8s", l: "Average response latency" },
+  ];
+  return (
+    <section className="relative overflow-hidden py-24 sm:py-32 bg-ink-950 text-white">
+      <div className="absolute inset-0 bg-mesh-dark" />
+      <div className="absolute inset-0 bg-grid-dark bg-grid-48 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-60" />
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem] rounded-full bg-brand-500/15 blur-[140px] animate-blob" />
+      <div
+        className="absolute bottom-0 right-0 w-[32rem] h-[32rem] rounded-full bg-pink-500/15 blur-[140px] animate-blob"
+        style={{ animationDelay: "5s" }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-dark text-xs font-semibold text-brand-200">
+            <Rocket className="w-3 h-3" /> Built for scale
+          </span>
+          <h2 className="mt-5 text-4xl sm:text-6xl font-black tracking-tighter text-balance">
+            One platform.
+            <br />
+            <span className="text-gradient-animated">
+              Every Instagram surface.
+            </span>
+          </h2>
+          <p className="mt-5 text-ink-300 text-lg leading-relaxed">
+            Botlify connects to Meta's Graph API and listens to every signal —
+            so the moment a follower reacts to your story, comments on your post
+            or sends you a DM, we reply.
+          </p>
+        </div>
+
+        <div className="mt-16 grid md:grid-cols-3 gap-5">
+          {stats.map((s, i) => (
+            <div
+              key={s.l}
+              className="glass-dark rounded-lg p-7 text-center hover:-translate-y-1 transition-all duration-500 perspective-1500 group"
+            >
+              <div className="text-5xl sm:text-6xl font-black tracking-tighter text-gradient-animated">
+                {s.v}
+              </div>
+              <div className="mt-2 text-sm text-ink-300">{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Platform pillars */}
+        <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              icon: Zap,
+              title: "Real-time webhooks",
+              desc: "Sub-second delivery on Meta events.",
+            },
+            {
+              icon: Shield,
+              title: "Enterprise security",
+              desc: "AES-256 encrypted tokens at rest.",
+            },
+            {
+              icon: Bot,
+              title: "AI conversations",
+              desc: "GPT-powered replies in your voice.",
+            },
+            {
+              icon: BarChart3,
+              title: "Attribution built-in",
+              desc: "See which trigger drove each sale.",
+            },
+          ].map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="group relative p-6 rounded-2xl border border-ink-100 bg-white hover:border-brand-200 hover:shadow-glow hover:-translate-y-1 transition-all duration-300"
+              className="glass-dark rounded-lg p-5 group hover:bg-white/10 transition"
             >
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${premium ? "bg-gradient-to-br from-amber-400 to-rose-500" : "bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500"} shadow-md group-hover:scale-110 transition-transform`}
-              >
-                <Icon className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-md bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-neon-violet group-hover:scale-110 transition">
+                <Icon className="w-5 h-5 text-white" />
               </div>
-              <h3 className="font-bold text-ink-900 flex items-center gap-2 text-base">
-                {title}
-                {premium && (
-                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-rose-500 text-white">
-                    Premium
-                  </span>
-                )}
-              </h3>
-              <p className="text-sm text-ink-500 mt-1.5 leading-relaxed">
+              <p className="mt-4 font-bold text-white text-sm">{title}</p>
+              <p className="text-xs text-ink-400 mt-1 leading-relaxed">
                 {desc}
               </p>
             </div>
@@ -555,9 +896,9 @@ function HowItWorks() {
           {steps.map(({ n, title, desc, icon: Icon }) => (
             <div
               key={n}
-              className="relative bg-white rounded-2xl border border-ink-100 p-7 text-center shadow-card hover:shadow-glow hover:-translate-y-1 transition"
+              className="relative bg-white rounded-lg border border-ink-100 p-7 text-center shadow-card hover:shadow-glow hover:-translate-y-1 transition"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 text-white shadow-glow relative">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 text-white shadow-glow relative">
                 <Icon className="w-7 h-7" />
                 <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white border-2 border-brand-500 text-brand-700 text-xs font-bold flex items-center justify-center">
                   {n}
@@ -634,8 +975,8 @@ function ProductPreview() {
           </div>
         </div>
         <div className="relative">
-          <div className="absolute -inset-4 bg-gradient-to-br from-indigo-500/20 via-violet-500/20 to-pink-500/20 rounded-3xl blur-3xl" />
-          <div className="relative rounded-3xl border border-ink-100 bg-white shadow-card-lg overflow-hidden">
+          <div className="absolute -inset-4 bg-gradient-to-br from-indigo-500/20 via-violet-500/20 to-pink-500/20 rounded-lg blur-3xl" />
+          <div className="relative rounded-lg border border-ink-100 bg-white shadow-card-lg overflow-hidden">
             <ChatMockup />
           </div>
         </div>
@@ -646,27 +987,76 @@ function ProductPreview() {
 
 function ChatMockup() {
   return (
-    <div className="bg-gradient-to-br from-ink-50 to-white p-6 sm:p-8">
-      <div className="flex items-center gap-3 pb-4 border-b border-ink-100">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-orange-400" />
-        <div>
+    <div className="bg-gradient-to-br from-ink-50 to-white">
+      {/* IG-style header */}
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-ink-100 bg-white">
+        <img
+          src="https://i.pravatar.cc/80?img=47"
+          alt=""
+          className="w-10 h-10 rounded-full object-cover"
+        />
+        <div className="flex-1">
           <p className="text-sm font-bold text-ink-900">@maya.fits</p>
           <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Active
-            now
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Active now
           </p>
         </div>
+        <Instagram className="w-4 h-4 text-ink-400" />
       </div>
-      <div className="space-y-3 mt-5">
+
+      {/* Conversation */}
+      <div className="px-5 py-5 space-y-2.5 max-h-[460px] overflow-hidden bg-[radial-gradient(ellipse_at_top_right,rgba(236,72,153,0.05),transparent_60%)]">
+        <div className="text-[10px] text-center text-ink-400 mb-1">
+          Today · 2:14 pm
+        </div>
+
         <Bubble side="them" text="hey! is the linen dress still in stock? 👀" />
+        <Bubble side="them" text="saw it on your reel yesterday, obsessed 😍" />
+
         <Bubble
           side="bot"
-          text="Hi Maya! Yes — last 3 in size M. Here's the link 👇"
+          text="Hi Maya! 💛 Yes — last 3 in size M. The linen midi is PKR 4,800 and ships free above 5k."
         />
+        <Bubble side="bot" text="Here's the direct checkout 👇" />
         <Bubble side="bot" text="🔗 botlify.shop/linen-dress" link />
-        <Bubble side="them" text="omg perfect, ordering rn 🔥" />
-        <div className="flex items-center gap-2 text-[11px] text-ink-400 pl-1">
-          <Bot className="w-3 h-3" /> Auto-replied by Botlify · 0.8s
+
+        <Bubble side="them" text="omg perfect. do you take cash on delivery?" />
+
+        <Bubble
+          side="bot"
+          text="Yep — COD across PK, 2-3 day delivery. Want me to reserve one for you?"
+        />
+
+        <Bubble side="them" text="yes pls reserve M 🙌" />
+
+        {/* Typing dots */}
+        <div className="flex justify-end">
+          <div className="px-3.5 py-2 rounded-md rounded-br-sm bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 shadow-sm">
+            <div className="flex items-center gap-1">
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                style={{ animationDelay: "120ms" }}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                style={{ animationDelay: "240ms" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-[11px] text-ink-400 pl-1 pt-2 border-t border-ink-100/60 mt-3">
+          <Bot className="w-3 h-3 text-brand-500" />
+          <span>
+            Auto-replied by{" "}
+            <span className="font-semibold text-brand-600">Botlify AI</span> ·
+            avg 0.8s · 12 replies today
+          </span>
         </div>
       </div>
     </div>
@@ -678,13 +1068,17 @@ function Bubble({ side, text, link }) {
   return (
     <div className={`flex ${them ? "justify-start" : "justify-end"}`}>
       <div
-        className={`max-w-[80%] px-3.5 py-2 rounded-2xl text-sm ${
+        className={`max-w-[80%] px-3.5 py-2 rounded-md text-sm leading-snug ${
           them
-            ? "bg-ink-100 text-ink-800 rounded-bl-sm"
+            ? "bg-white border border-ink-100 text-ink-800 rounded-bl-sm shadow-sm"
             : "bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 text-white rounded-br-sm shadow-sm"
         }`}
       >
-        {link ? <span className="underline">{text}</span> : text}
+        {link ? (
+          <span className="underline decoration-white/60">{text}</span>
+        ) : (
+          text
+        )}
       </div>
     </div>
   );
@@ -702,7 +1096,7 @@ function Comparison() {
           title="The honest comparison"
           subtitle="We don't promise features Instagram's API can't deliver. Here's exactly what you get vs the others."
         />
-        <div className="mt-12 rounded-2xl border border-ink-100 bg-white shadow-card overflow-hidden">
+        <div className="mt-12 rounded-lg border border-ink-100 bg-white shadow-card overflow-hidden">
           <div className="grid grid-cols-4 bg-ink-50 text-xs font-bold uppercase tracking-wider text-ink-500">
             <div className="px-4 sm:px-6 py-4">Feature</div>
             <div className="px-4 sm:px-6 py-4 text-center bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 text-white">
@@ -746,8 +1140,8 @@ function Cell({ on, highlight }) {
 
 function Testimonials() {
   return (
-    <section className="py-24 sm:py-28">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <section className="py-20 sm:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <SectionHeading
           eyebrow="Loved by creators"
           title={
@@ -758,15 +1152,15 @@ function Testimonials() {
               </span>
             </>
           }
-          subtitle="2,500+ creators trust Botlify with their Instagram inbox."
+          subtitle="2,500+ creators and brands trust Botlify with their Instagram inbox."
         />
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
+        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {TESTIMONIALS.map((t, i) => (
             <div
               key={i}
-              className="relative p-7 rounded-2xl border border-ink-100 bg-white hover:shadow-glow hover:-translate-y-1 transition"
+              className="relative p-6 rounded-lg border border-ink-100 bg-white hover:shadow-glow hover:-translate-y-1 hover:border-brand-200 transition group"
             >
-              <Quote className="absolute top-5 right-5 w-7 h-7 text-brand-100" />
+              <Quote className="absolute top-5 right-5 w-7 h-7 text-brand-100 group-hover:text-brand-200 transition" />
               <div className="flex items-center gap-1 text-amber-400 mb-3">
                 {[...Array(5)].map((_, j) => (
                   <Star key={j} className="w-4 h-4 fill-current" />
@@ -775,16 +1169,33 @@ function Testimonials() {
               <p className="text-ink-700 leading-relaxed text-[15px]">
                 "{t.quote}"
               </p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                  {t.name
-                    .split(" ")
-                    .map((s) => s[0])
-                    .join("")}
+
+              {t.metric && (
+                <div className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-brand-50 text-brand-700 border border-brand-100">
+                  <TrendingUp className="w-3 h-3" /> {t.metric}
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-ink-900">{t.name}</p>
-                  <p className="text-xs text-ink-500">{t.role}</p>
+              )}
+
+              <div className="mt-5 pt-5 border-t border-ink-100 flex items-center gap-3">
+                <img
+                  src={t.avatar}
+                  alt=""
+                  className="w-11 h-11 rounded-full object-cover ring-2 ring-white shadow"
+                  loading="lazy"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-ink-900 truncate">
+                    {t.name}
+                  </p>
+                  <p className="text-xs text-ink-500 truncate">
+                    {t.handle && (
+                      <span className="text-brand-600 font-medium">
+                        {t.handle}
+                      </span>
+                    )}
+                    {t.handle && " · "}
+                    {t.role}
+                  </p>
                 </div>
               </div>
             </div>
@@ -833,7 +1244,7 @@ function Limits() {
           {items.map((it) => (
             <div
               key={it.title}
-              className="p-5 rounded-2xl bg-white border border-ink-100"
+              className="p-5 rounded-lg bg-white border border-ink-100"
             >
               <p className="font-bold text-ink-900 text-sm">{it.title}</p>
               <p className="text-sm text-ink-500 mt-1.5 leading-relaxed">
@@ -868,7 +1279,7 @@ function FAQ() {
                 key={i}
                 type="button"
                 onClick={() => setOpen(active ? -1 : i)}
-                className={`w-full text-left rounded-2xl border transition ${active ? "border-brand-300 bg-gradient-to-br from-brand-50 to-white shadow-sm" : "border-ink-100 bg-white hover:border-ink-200"}`}
+                className={`w-full text-left rounded-lg border transition ${active ? "border-brand-300 bg-gradient-to-br from-brand-50 to-white shadow-sm" : "border-ink-100 bg-white hover:border-ink-200"}`}
               >
                 <div className="flex items-center justify-between gap-4 px-5 py-4">
                   <span className="font-semibold text-ink-900 text-[15px]">
@@ -932,9 +1343,9 @@ function Support() {
             <a
               key={title}
               href={href}
-              className="group p-7 rounded-2xl border border-ink-100 bg-white hover:border-brand-200 hover:shadow-glow hover:-translate-y-1 transition"
+              className="group p-7 rounded-lg border border-ink-100 bg-white hover:border-brand-200 hover:shadow-glow hover:-translate-y-1 transition"
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-md mb-4">
+              <div className="w-12 h-12 rounded-md bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-md mb-4">
                 <Icon className="w-6 h-6 text-white" />
               </div>
               <h3 className="font-bold text-ink-900 text-base">{title}</h3>
@@ -954,34 +1365,46 @@ function Support() {
 
 function FinalCTA() {
   return (
-    <section className="py-24 sm:py-28 relative overflow-hidden">
+    <section className="py-24 sm:py-32 relative overflow-hidden">
       <div className="absolute inset-0 bg-ink-950" />
-      <div className="absolute inset-0 bg-dark-mesh" />
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] rounded-full bg-brand-500/20 blur-[140px]" />
+      <div className="absolute inset-0 bg-mesh-dark" />
+      <div className="absolute inset-0 bg-grid-dark bg-grid-48 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-60" />
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[44rem] h-[44rem] rounded-full bg-brand-500/25 blur-[140px] animate-blob" />
+      <div
+        className="absolute -bottom-40 left-1/4 w-[28rem] h-[28rem] rounded-full bg-pink-500/20 blur-[120px] animate-blob"
+        style={{ animationDelay: "4s" }}
+      />
+
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.05]">
-          Ready to never miss a DM again?
+        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-dark text-xs font-semibold text-brand-200">
+          <Sparkles className="w-3 h-3" /> Limited launch pricing — locked
+          forever
+        </span>
+        <h2 className="mt-6 text-5xl sm:text-7xl font-black text-white tracking-tighter leading-[0.95] text-balance">
+          Ready to never <br className="hidden sm:block" />
+          <span className="text-gradient-animated">miss a DM again?</span>
         </h2>
-        <p className="mt-5 text-ink-300 text-lg max-w-xl mx-auto">
+        <p className="mt-6 text-ink-300 text-lg max-w-xl mx-auto leading-relaxed">
           Join 2,500+ creators automating Instagram with Botlify. Start free —
           upgrade when you outgrow it.
         </p>
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
             to="/register"
-            className="btn-primary !px-8 !py-3.5 text-base shadow-glow"
+            className="btn-primary shine-on-hover !px-9 !py-4 text-base shadow-glow-lg"
           >
             Get started — it's free <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             to="/pricing"
-            className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20 !px-8 !py-3.5 text-base"
+            className="btn glass-dark !text-white hover:!bg-white/10 !px-9 !py-4 text-base"
           >
             View pricing
           </Link>
         </div>
-        <p className="mt-6 text-xs text-ink-400">
-          No credit card required · Cancel anytime
+        <p className="mt-6 text-xs text-ink-400 flex items-center justify-center gap-2">
+          <Shield className="w-3.5 h-3.5" /> No credit card required · Cancel
+          anytime
         </p>
       </div>
     </section>

@@ -509,7 +509,7 @@ export default function InboxPage() {
       ) : (
         <div className="hidden md:flex flex-1 items-center justify-center text-center">
           <div>
-            <div className="w-14 h-14 rounded-2xl bg-brand-gradient mx-auto mb-3 flex items-center justify-center shadow-glow">
+            <div className="w-14 h-14 rounded-lg bg-brand-gradient mx-auto mb-3 flex items-center justify-center shadow-glow">
               <MessageCircle className="w-6 h-6 text-white" />
             </div>
             <p className="text-ink-700 font-medium">Pick a conversation</p>
@@ -539,7 +539,7 @@ function MessageBubble({ msg }) {
     <div className={`flex ${isOutbound ? "justify-end" : "justify-start"}`}>
       <div
         className={clsx(
-          "max-w-[70%] rounded-2xl px-3.5 py-2.5 text-sm",
+          "max-w-[70%] rounded-lg px-3.5 py-2.5 text-sm",
           isOutbound
             ? "bg-brand-gradient text-white rounded-br-sm"
             : "bg-white text-ink-800 border border-ink-100 rounded-bl-sm shadow-sm",

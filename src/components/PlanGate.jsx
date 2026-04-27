@@ -48,7 +48,7 @@ export default function PlanGate({
       <div className="pointer-events-none opacity-40 select-none">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-md">
         <div className="text-center max-w-sm px-6 py-8">
           <div className="inline-flex w-14 h-14 items-center justify-center rounded-full bg-brand-gradient mb-3 shadow-glow">
             <Icon className="w-6 h-6 text-white" />

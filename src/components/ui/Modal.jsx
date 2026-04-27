@@ -99,7 +99,7 @@ export default function Modal({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className={clsx(
-              "relative w-full bg-white rounded-2xl shadow-card-lg overflow-hidden focus:outline-none",
+              "relative w-full bg-white rounded-lg shadow-card-lg overflow-hidden focus:outline-none",
               sizes[size],
             )}
             role="dialog"

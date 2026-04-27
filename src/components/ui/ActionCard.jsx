@@ -35,14 +35,14 @@ export default function ActionCard({
     <Wrapper
       {...props}
       className={clsx(
-        "group relative overflow-hidden rounded-2xl border border-ink-100 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-lg",
+        "group relative overflow-hidden rounded-lg border border-ink-100 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-lg",
         accentMap[accent],
         className,
       )}
     >
       <div
         className={clsx(
-          "w-10 h-10 rounded-xl flex items-center justify-center mb-3",
+          "w-10 h-10 rounded-md flex items-center justify-center mb-3",
           iconBgMap[accent],
         )}
       >

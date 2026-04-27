@@ -54,7 +54,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-3">
               <div
                 className={clsx(
-                  "w-12 h-12 rounded-xl flex items-center justify-center",
+                  "w-12 h-12 rounded-md flex items-center justify-center",
                   plan.premium ? "bg-white/10" : "bg-brand-gradient",
                 )}
               >

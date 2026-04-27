@@ -195,7 +195,7 @@ export default function CompetitorsPage() {
 
       {snapshotModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5">
+          <div className="bg-white rounded-md max-w-md w-full p-5">
             <h2 className="text-lg font-semibold mb-4">
               Add Snapshot — @{snapshotModal.username}
             </h2>

@@ -60,7 +60,7 @@ export default function AiBotPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-premium-gradient flex items-center justify-center shadow-glow">
+            <div className="w-10 h-10 rounded-md bg-premium-gradient flex items-center justify-center shadow-glow">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>

@@ -112,7 +112,7 @@ export default function TeamPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full">
+          <div className="bg-white rounded-md max-w-md w-full">
             <div className="flex items-center justify-between p-5 border-b border-ink-100">
               <h2 className="text-lg font-semibold">Invite Team Member</h2>
               <button

@@ -101,7 +101,7 @@ function ShopifyCard() {
   return (
     <div className="card">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
+        <div className="w-14 h-14 rounded-md bg-emerald-500 flex items-center justify-center text-white">
           <ShoppingBag className="w-7 h-7" />
         </div>
         <div className="flex-1">
@@ -287,7 +287,7 @@ function MailchimpCard() {
   return (
     <div className="card">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl bg-yellow-400 flex items-center justify-center text-black">
+        <div className="w-14 h-14 rounded-md bg-yellow-400 flex items-center justify-center text-black">
           <Mail className="w-7 h-7" />
         </div>
         <div className="flex-1">

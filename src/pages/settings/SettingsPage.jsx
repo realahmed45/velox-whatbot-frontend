@@ -336,7 +336,7 @@ function InstagramSettings({ workspace, onSave }) {
         <button
           onClick={startOAuth}
           disabled={oauthLoading}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-md hover:opacity-90 transition disabled:opacity-60"
         >
           {oauthLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

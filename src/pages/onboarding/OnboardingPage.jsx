@@ -84,7 +84,7 @@ export default function OnboardingPage() {
         {/* Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-9 h-9 bg-brand-gradient rounded-xl flex items-center justify-center shadow-glow">
+            <div className="w-9 h-9 bg-brand-gradient rounded-md flex items-center justify-center shadow-glow">
               <Instagram className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-ink-900">Botlify</span>
@@ -190,7 +190,7 @@ function Step1({ onNext, loading, setLoading }) {
 
   return (
     <div>
-      <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
+      <div className="w-10 h-10 bg-brand-50 rounded-md flex items-center justify-center mb-4">
         <Building2 className="w-5 h-5 text-brand-600" />
       </div>
       <h2 className="text-xl font-bold text-ink-900 mb-1">
@@ -265,7 +265,7 @@ function Step2({ workspace, onNext, onSkip }) {
 
   return (
     <div>
-      <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
+      <div className="w-10 h-10 bg-brand-50 rounded-md flex items-center justify-center mb-4">
         <Instagram className="w-5 h-5 text-brand-600" />
       </div>
       <h2 className="text-xl font-bold mb-1">Connect Instagram</h2>
@@ -276,7 +276,7 @@ function Step2({ workspace, onNext, onSkip }) {
       <button
         onClick={startOAuth}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-brand-gradient text-white font-semibold py-3 rounded-xl shadow-glow hover:shadow-hero transition disabled:opacity-60 mb-3"
+        className="w-full flex items-center justify-center gap-2 bg-brand-gradient text-white font-semibold py-3 rounded-md shadow-glow hover:shadow-hero transition disabled:opacity-60 mb-3"
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -374,7 +374,7 @@ function Step3({ workspace, onNext, onSkip }) {
 
   return (
     <div>
-      <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
+      <div className="w-10 h-10 bg-purple-50 rounded-md flex items-center justify-center mb-4">
         <Bot className="w-5 h-5 text-purple-600" />
       </div>
       <h2 className="text-xl font-bold mb-1">Pick a starter template</h2>

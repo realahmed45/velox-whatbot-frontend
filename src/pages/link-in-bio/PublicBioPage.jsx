@@ -86,7 +86,7 @@ export default function PublicBioPage() {
               <button
                 key={link._id}
                 onClick={() => clickLink(link)}
-                className="w-full py-4 px-6 rounded-2xl bg-white/10 backdrop-blur hover:bg-white/20 hover:scale-[1.02] text-center font-semibold transition-all shadow-lg"
+                className="w-full py-4 px-6 rounded-lg bg-white/10 backdrop-blur hover:bg-white/20 hover:scale-[1.02] text-center font-semibold transition-all shadow-lg"
                 style={
                   page.theme === "light"
                     ? {

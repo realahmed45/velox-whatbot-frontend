@@ -100,7 +100,7 @@ export default function NodePalette({ onClose }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-ink-200 shadow-lg p-3 w-48">
+    <div className="bg-white rounded-md border border-ink-200 shadow-lg p-3 w-48">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
           Nodes

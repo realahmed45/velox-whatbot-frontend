@@ -124,18 +124,31 @@ export default function OverviewPage() {
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* ── Hero / welcome ───────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-pink-600 p-6 sm:p-8 shadow-hero">
-        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-pink-300/20 blur-3xl" />
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-indigo-600 via-violet-600 to-pink-600 p-6 sm:p-9 shadow-hero">
+        {/* Grid + animated blobs */}
+        <div className="absolute inset-0 bg-grid-dark bg-grid-32 opacity-40" />
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/15 blur-3xl animate-blob" />
+        <div
+          className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-pink-300/30 blur-3xl animate-blob"
+          style={{ animationDelay: "5s" }}
+        />
+        <div className="absolute top-1/3 right-1/4 w-2 h-2 rounded-full bg-white/60 animate-pulse" />
+        <div
+          className="absolute bottom-1/4 left-1/3 w-1 h-1 rounded-full bg-white/40 animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="text-white">
-            <p className="text-xs uppercase tracking-[0.25em] font-bold text-white/70 mb-1.5">
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-white/70 mb-2 flex items-center gap-2">
+              <span className="w-6 h-px bg-white/40" />
               {greeting}
             </p>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
-              Welcome back, {firstName} <span className="inline-block">👋</span>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">
+              Welcome back, {firstName}{" "}
+              <span className="inline-block animate-pulse-soft">👋</span>
             </h1>
-            <p className="mt-2 text-white/80 text-sm sm:text-base max-w-lg">
+            <p className="mt-3 text-white/85 text-sm sm:text-base max-w-lg leading-relaxed">
               {isConnected
                 ? `@${ig?.username} is connected. Botlify is replying to DMs in real time.`
                 : "Let's get your Instagram automating in under six minutes."}
@@ -143,28 +156,32 @@ export default function OverviewPage() {
           </div>
           <div className="flex items-center gap-3">
             {isConnected && ig?.profilePicture ? (
-              <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20">
-                <img
-                  src={ig.profilePicture}
-                  alt=""
-                  className="w-10 h-10 rounded-full ring-2 ring-white/40 object-cover"
-                />
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg glass-dark !bg-white/15">
+                <div className="relative">
+                  <img
+                    src={ig.profilePicture}
+                    alt=""
+                    className="w-11 h-11 rounded-full ring-2 ring-white/50 object-cover"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
+                </div>
                 <div className="text-white">
                   <p className="text-sm font-bold leading-tight">
                     @{ig.username}
                   </p>
-                  <p className="text-[11px] text-white/70 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />{" "}
-                    Live
+                  <p className="text-[11px] text-white/80 mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                    Bot active · Live
                   </p>
                 </div>
               </div>
             ) : (
               <button
                 onClick={startOAuth}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-brand-700 font-semibold text-sm hover:bg-white/90 transition shadow-lg"
+                className="shine-on-hover inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-white text-brand-700 font-semibold text-sm hover:bg-white/95 transition shadow-xl"
               >
                 <Instagram className="w-4 h-4" /> Connect Instagram
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -173,10 +190,10 @@ export default function OverviewPage() {
 
       {/* ── Onboarding strip ─────────────────────────────────── */}
       {!onboardingDone && (
-        <div className="rounded-3xl border border-brand-100 bg-gradient-to-br from-brand-50/80 via-white to-accent-50/40 p-5 sm:p-7 shadow-card">
+        <div className="rounded-lg border border-brand-100 bg-gradient-to-br from-brand-50/80 via-white to-accent-50/40 p-5 sm:p-7 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-brand-gradient flex items-center justify-center shadow-glow">
+              <div className="w-12 h-12 rounded-lg bg-brand-gradient flex items-center justify-center shadow-glow">
                 <Rocket className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -207,7 +224,7 @@ export default function OverviewPage() {
             {steps.map((s) => (
               <div
                 key={s.id}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-md border transition ${
                   s.done
                     ? "bg-emerald-50/60 border-emerald-100"
                     : "bg-white border-ink-100 hover:border-brand-200"
@@ -346,8 +363,8 @@ export default function OverviewPage() {
       </div>
 
       {/* ── Help banner ──────────────────────────────────────── */}
-      <div className="rounded-3xl border border-ink-100 bg-white p-6 sm:p-7 shadow-card flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-md">
+      <div className="rounded-lg border border-ink-100 bg-white p-6 sm:p-7 shadow-card flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-md">
           <Play className="w-6 h-6 text-white fill-white" />
         </div>
         <div className="flex-1">
@@ -374,27 +391,34 @@ export default function OverviewPage() {
 function StatCard({ icon: Icon, label, value, gradient, spark }) {
   const max = Math.max(...spark);
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-ink-100 bg-white p-5 shadow-card hover:shadow-glow hover:-translate-y-0.5 transition-all">
-      <div className="flex items-start justify-between mb-3">
+    <div className="group relative overflow-hidden rounded-lg border border-ink-100 bg-white/80 backdrop-blur-md p-5 shadow-card hover:shadow-glow-lg hover:-translate-y-1 transition-all duration-500">
+      {/* gradient corner glow */}
+      <div
+        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-30 blur-2xl transition-opacity duration-500`}
+      />
+      <div className="relative flex items-start justify-between mb-3">
         <div
-          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}
+          className={`w-11 h-11 rounded-md bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}
         >
           <Icon className="w-5 h-5 text-white" />
         </div>
-        <div className="flex items-end gap-0.5 h-8 opacity-70">
+        <div className="flex items-end gap-0.5 h-9 opacity-80">
           {spark.map((h, i) => (
             <div
               key={i}
               className={`w-1 rounded-t bg-gradient-to-t ${gradient}`}
-              style={{ height: `${(h / max) * 100}%` }}
+              style={{
+                height: `${(h / max) * 100}%`,
+                opacity: 0.45 + i * 0.08,
+              }}
             />
           ))}
         </div>
       </div>
-      <p className="text-2xl sm:text-3xl font-black text-ink-900 tracking-tight">
+      <p className="relative text-3xl sm:text-4xl font-black text-ink-900 tracking-tighter">
         {value}
       </p>
-      <p className="text-[11px] sm:text-xs text-ink-500 mt-0.5 uppercase tracking-wider font-semibold">
+      <p className="relative text-[11px] sm:text-xs text-ink-500 mt-1 uppercase tracking-wider font-semibold">
         {label}
       </p>
     </div>
@@ -405,11 +429,16 @@ function QuickAction({ icon: Icon, title, desc, to, gradient }) {
   return (
     <Link
       to={to}
-      className="group relative overflow-hidden rounded-2xl border border-ink-100 bg-white p-5 shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300"
+      className="group relative overflow-hidden rounded-lg border border-ink-100 bg-white/80 backdrop-blur-md p-5 shadow-card hover:shadow-glow-lg hover:-translate-y-1.5 transition-all duration-500 shine-on-hover"
     >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500" />
       <div
-        className={`relative w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}
+        className={`absolute inset-0 opacity-0 group-hover:opacity-[0.04] transition bg-gradient-to-br ${gradient}`}
+      />
+      <div
+        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-25 blur-2xl transition-opacity duration-500`}
+      />
+      <div
+        className={`relative w-12 h-12 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500`}
       >
         <Icon className="w-5 h-5 text-white" />
       </div>
@@ -426,10 +455,10 @@ function DiscoverCard({ icon: Icon, title, desc, to }) {
   return (
     <Link
       to={to}
-      className="group rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-card hover:border-brand-200 hover:shadow-glow transition-all"
+      className="group rounded-lg border border-ink-100 bg-white p-5 sm:p-6 shadow-card hover:border-brand-200 hover:shadow-glow transition-all"
     >
       <div className="flex items-start gap-4">
-        <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-gradient transition-colors">
+        <div className="w-11 h-11 rounded-md bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-gradient transition-colors">
           <Icon className="w-5 h-5 text-brand-600 group-hover:text-white transition-colors" />
         </div>
         <div className="flex-1">

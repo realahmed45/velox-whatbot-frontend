@@ -49,7 +49,7 @@ export function ConfirmProvider({ children }) {
           <div className="card max-w-md w-full p-6">
             <div className="flex gap-4">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${
                   state.danger
                     ? "bg-rose-100 text-rose-600"
                     : "bg-brand-100 text-brand-600"

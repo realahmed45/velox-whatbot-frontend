@@ -130,7 +130,7 @@ export default function DashboardLayout() {
             className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="lg:hidden fixed inset-y-0 left-0 w-60 z-50 shadow-xl">
+          <div className="lg:hidden fixed inset-y-0 left-0 w-64 z-50 shadow-xl">
             <Sidebar onNavigate={() => setMobileSidebarOpen(false)} />
           </div>
         </>

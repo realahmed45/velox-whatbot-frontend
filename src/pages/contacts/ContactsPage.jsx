@@ -164,7 +164,7 @@ export default function ContactsPage() {
                   <tr>
                     <td colSpan={6} className="py-12">
                       <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center mb-3">
+                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center mb-3">
                           <MessageSquare className="w-5 h-5 text-brand-600" />
                         </div>
                         <p className="text-sm font-semibold text-ink-800">
@@ -624,7 +624,7 @@ function AddContactModal({ onClose, onAdded }) {
 
   return (
     <div className="fixed inset-0 bg-ink-950/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-hero">
+      <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-hero">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-ink-900">Add contact</h2>
           <button
