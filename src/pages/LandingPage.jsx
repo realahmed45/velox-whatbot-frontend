@@ -399,21 +399,16 @@ function Hero() {
           </span>
 
           <h1 className="mt-6 text-4xl sm:text-7xl font-black tracking-tight leading-[1.05]">
-            An AI bot that{" "}
+            The AI chatbot that{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
               replies to every Instagram DM
-            </span>{" "}
-            in your voice — instantly.
+            </span>
+            .
           </h1>
 
           <p className="mt-6 text-base sm:text-xl text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            Train Botlify on your FAQs, offers and tone. The AI answers DMs
-            24/7, qualifies leads, sends links, and only pings you when it's
-            something real.
-            <span className="block mt-2 text-sm text-ink-500">
-              Plus: comment-to-DM, story replies, story mentions, broadcasts &
-              more.
-            </span>
+            Train it on your FAQs and offers. Botlify answers DMs 24/7,
+            qualifies leads, and only pings you when it's something real.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -831,7 +826,7 @@ function PlatformDarkSection() {
             {
               icon: Bot,
               title: "AI conversations",
-              desc: "GPT-powered replies in your voice.",
+              desc: "GPT-powered chatbot trained on your business.",
             },
             {
               icon: BarChart3,
@@ -920,8 +915,8 @@ function ProductPreview() {
   const items = [
     {
       icon: Bot,
-      title: "AI that sounds like you",
-      desc: "Train on your past messages. The AI replies in your voice — premium plan.",
+      title: "AI that knows your business",
+      desc: "Train the chatbot on your FAQs, products and offers — premium plan.",
     },
     {
       icon: MessagesSquare,

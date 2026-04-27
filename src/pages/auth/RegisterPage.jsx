@@ -9,10 +9,8 @@ import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
-    businessName: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,10 +21,6 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
     if (form.password.length < 8) {
       toast.error("Password must be at least 8 characters");
       return;
@@ -35,14 +29,13 @@ export default function RegisterPage() {
     try {
       const { data } = await api.post("/auth/register", {
         name: form.name,
-        businessName: form.businessName,
         email: form.email,
         password: form.password,
         ref: refCode || undefined,
       });
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome to Botlify!");
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -89,16 +82,6 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="label">Business name</label>
-          <input
-            className="input"
-            placeholder="My Brand"
-            required
-            value={form.businessName}
-            onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-          />
-        </div>
-        <div>
           <label className="label">Email address</label>
           <input
             className="input"
@@ -132,19 +115,6 @@ export default function RegisterPage() {
               )}
             </button>
           </div>
-        </div>
-        <div>
-          <label className="label">Confirm password</label>
-          <input
-            className="input"
-            type="password"
-            placeholder="Repeat password"
-            required
-            value={form.confirmPassword}
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
-          />
         </div>
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Creating account..." : "Create account"}
