@@ -21,13 +21,13 @@ const HIGHLIGHTS = [
   },
   {
     icon: Zap,
-    title: "Pick a trigger",
-    desc: "Keywords, comments, story replies, mentions — your choice.",
+    title: "Pick your automations",
+    desc: "DM auto-replies, comment-to-DM, story replies, mentions, broadcasts — turn on what you need.",
   },
   {
     icon: Bot,
-    title: "Let the AI take over",
-    desc: "Your chatbot replies 24/7, qualifies leads, and pings you for the real ones.",
+    title: "Let the AI handle the rest",
+    desc: "Your chatbot answers FAQs 24/7, qualifies leads, and pings you for the real conversations.",
   },
 ];
 
@@ -94,11 +94,12 @@ export default function WelcomeModal({ userName }) {
               id="welcome-title"
               className="mt-3 text-2xl sm:text-3xl font-black tracking-tight leading-tight"
             >
-              Hey {firstName} — let's get your AI chatbot live.
+              Hey {firstName} — welcome to your Instagram command center.
             </h2>
             <p className="mt-2 text-sm sm:text-base text-white/85 max-w-lg">
-              Most users finish setup in under 6 minutes. Here's exactly what
-              happens next.
+              Botlify is your all-in-one suite: AI chatbot, DM automations,
+              comment-to-DM, story replies, broadcasts and more. Most users go
+              live in under 6 minutes — here's how.
             </p>
           </div>
         </div>

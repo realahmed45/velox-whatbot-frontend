@@ -3,9 +3,10 @@ import { Bot, Sparkles, Shield, Check, Zap } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const POINTS = [
-  "AI chatbot that replies to every Instagram DM",
-  "Comments, stories, mentions — fully automated",
-  "Live in under 6 minutes. No code.",
+  "AI chatbot that handles every DM",
+  "Comment-to-DM, story replies & mentions",
+  "Broadcasts, drips, scheduled posts",
+  "Live in under 6 minutes — no code",
 ];
 
 export default function AuthLayout() {
@@ -32,11 +33,11 @@ export default function AuthLayout() {
 
         <div className="relative max-w-md">
           <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full glass-dark text-[11px] font-semibold text-brand-200">
-            <Sparkles className="w-3 h-3" /> AI Instagram automation
+            <Sparkles className="w-3 h-3" /> All-in-one Instagram automation
           </span>
           <h1 className="mt-5 text-4xl xl:text-5xl font-black tracking-tighter leading-[1.05]">
-            DMs that{" "}
-            <span className="text-gradient-animated">close themselves</span>.
+            One platform.{" "}
+            <span className="text-gradient-animated">Every DM, handled.</span>
           </h1>
           <ul className="mt-6 space-y-2.5">
             {POINTS.map((p) => (

@@ -395,20 +395,22 @@ function Hero() {
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/70 backdrop-blur border border-brand-200 text-xs font-semibold text-brand-700 shadow-sm">
             <Sparkles className="w-3 h-3" />
-            AI Instagram automation, finally simple
+            All-in-one Instagram automation
           </span>
 
           <h1 className="mt-6 text-4xl sm:text-7xl font-black tracking-tight leading-[1.05]">
             The AI chatbot that{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
-              replies to every Instagram DM
+              automates every Instagram DM
             </span>
             .
           </h1>
 
           <p className="mt-6 text-base sm:text-xl text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            Train it on your FAQs and offers. Botlify answers DMs 24/7,
-            qualifies leads, and only pings you when it's something real.
+            DM automation, comment-to-DM, story replies, mentions, broadcasts
+            and a smart AI bot — all in one place. Train it on your FAQs and
+            offers, and Botlify replies 24/7, qualifies leads, and only pings
+            you when it's something real.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

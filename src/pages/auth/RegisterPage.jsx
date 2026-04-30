@@ -9,6 +9,7 @@ import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
+    businessName: "",
     email: "",
     password: "",
   });
@@ -29,6 +30,7 @@ export default function RegisterPage() {
     try {
       const { data } = await api.post("/auth/register", {
         name: form.name,
+        businessName: form.businessName,
         email: form.email,
         password: form.password,
         ref: refCode || undefined,
@@ -79,6 +81,16 @@ export default function RegisterPage() {
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label">Business name</label>
+          <input
+            className="input"
+            placeholder="e.g. Linen Studio"
+            required
+            value={form.businessName}
+            onChange={(e) => setForm({ ...form, businessName: e.target.value })}
           />
         </div>
         <div>
