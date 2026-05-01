@@ -26,10 +26,16 @@ import {
   ChevronsRight,
   Crown,
   Instagram,
+  MessageCircle,
+  Layers,
+  Plus,
+  Check,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import api from "@/services/api";
+import toast from "react-hot-toast";
 import { clsx } from "clsx";
 
 const GROUPS = [
@@ -72,19 +78,21 @@ const GROUPS = [
         icon: Droplet,
         label: "Drip Campaigns",
       },
-      { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
+      { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways", channel: "ig" },
     ],
   },
   {
     id: "content",
     label: "Content",
+    channel: "ig",
     items: [
       {
         to: "/dashboard/scheduled-posts",
         icon: Calendar,
         label: "Scheduled Posts",
+        channel: "ig",
       },
-      { to: "/dashboard/link-in-bio", icon: Link2, label: "Link in Bio" },
+      { to: "/dashboard/link-in-bio", icon: Link2, label: "Link in Bio", channel: "ig" },
     ],
   },
   {
@@ -92,12 +100,13 @@ const GROUPS = [
     label: "Grow",
     items: [
       { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
-      { to: "/dashboard/competitors", icon: Target, label: "Competitors" },
+      { to: "/dashboard/competitors", icon: Target, label: "Competitors", channel: "ig" },
       {
         to: "/dashboard/hashtags",
         icon: Hash,
         label: "Hashtags",
         premium: true,
+        channel: "ig",
       },
     ],
   },
@@ -132,14 +141,41 @@ function loadJSON(key, fallback) {
 }
 
 export default function Sidebar({ onNavigate }) {
-  const { logout, user } = useAuthStore();
-  const { workspace } = useWorkspaceStore();
+  const { logout, user, activeWorkspace } = useAuthStore();
+  const { workspace, fetchWorkspace } = useWorkspaceStore();
   const navigate = useNavigate();
   const location = useLocation();
   const plan = workspace?.subscription?.plan || "starter";
-  const isConnected = workspace?.instagram?.status === "connected";
+  const igConnected = workspace?.instagram?.status === "connected";
+  const waConnected =
+    workspace?.whatsapp?.status === "connected" ||
+    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
   const igHandle = workspace?.instagram?.username;
   const igPic = workspace?.instagram?.profilePicture;
+  const activeChannel = workspace?.activeChannel || "instagram";
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  const switchChannel = async (next) => {
+    setSwitcherOpen(false);
+    if (next === activeChannel) return;
+    if (next === "whatsapp" && !waConnected) {
+      navigate("/onboarding/whatsapp");
+      return;
+    }
+    if (next === "instagram" && !igConnected) {
+      navigate("/onboarding/instagram");
+      return;
+    }
+    try {
+      await api.put(`/workspaces/${activeWorkspace}`, { activeChannel: next });
+      await fetchWorkspace(activeWorkspace);
+      toast.success(
+        `Now showing ${next === "both" ? "all channels" : next === "whatsapp" ? "WhatsApp" : "Instagram"}`,
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Couldn't switch");
+    }
+  };
 
   const [collapsedGroups, setCollapsedGroups] = useState(() =>
     loadJSON(STORAGE_KEY, {}),
@@ -243,7 +279,7 @@ export default function Sidebar({ onNavigate }) {
               <span
                 className={clsx(
                   "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-ink-950",
-                  isConnected ? "bg-emerald-400" : "bg-ink-500",
+                  igConnected || waConnected ? "bg-emerald-400" : "bg-ink-500",
                 )}
               />
             </div>
@@ -254,11 +290,65 @@ export default function Sidebar({ onNavigate }) {
               <p className="text-xs text-white font-medium truncate">
                 {igHandle
                   ? `@${igHandle}`
-                  : isConnected
+                  : igConnected || waConnected
                     ? "Connected"
                     : "Not connected"}
               </p>
             </div>
+          </div>
+
+          {/* Channel switcher pill */}
+          <div className="relative mt-3">
+            <button
+              type="button"
+              onClick={() => setSwitcherOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 transition"
+            >
+              <span className="flex items-center gap-1.5 min-w-0">
+                <ChannelIcon channel={activeChannel} className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-semibold text-white truncate">
+                  {channelLabel(activeChannel)}
+                </span>
+              </span>
+              <ChevronDown
+                className={clsx(
+                  "w-3 h-3 text-ink-400 transition-transform",
+                  switcherOpen && "rotate-180",
+                )}
+              />
+            </button>
+            {switcherOpen && (
+              <div className="absolute z-20 mt-1 left-0 right-0 bg-ink-900 border border-white/10 rounded-md shadow-xl overflow-hidden">
+                <ChannelOption
+                  channel="whatsapp"
+                  active={activeChannel === "whatsapp"}
+                  connected={waConnected}
+                  onClick={() => switchChannel("whatsapp")}
+                />
+                <ChannelOption
+                  channel="instagram"
+                  active={activeChannel === "instagram"}
+                  connected={igConnected}
+                  onClick={() => switchChannel("instagram")}
+                />
+                <ChannelOption
+                  channel="both"
+                  active={activeChannel === "both"}
+                  connected={igConnected && waConnected}
+                  onClick={() => switchChannel("both")}
+                />
+                <Link
+                  to="/onboarding/choose-channel"
+                  onClick={() => {
+                    setSwitcherOpen(false);
+                    onNavigate?.();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-[11px] text-brand-300 hover:bg-white/5 border-t border-white/5"
+                >
+                  <Plus className="w-3 h-3" /> Add channel
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Plan + DM usage meter */}
@@ -323,9 +413,24 @@ export default function Sidebar({ onNavigate }) {
       {/* Nav */}
       <nav className="relative flex-1 overflow-y-auto py-3 px-2 space-y-1 sidebar-scroll">
         {GROUPS.map((group) => {
-          const groupActive = isGroupActive(group.items);
+          // Channel filter — hide groups/items that don't apply to the active channel
+          const visibleItems = group.items.filter((item) => {
+            if (activeChannel === "both") return true;
+            const itemChan = item.channel; // undefined = both
+            if (!itemChan) return true;
+            return itemChan === (activeChannel === "whatsapp" ? "wa" : "ig");
+          });
+          if (visibleItems.length === 0) return null;
+          if (activeChannel !== "both" && group.channel) {
+            const groupChan = group.channel;
+            const wantWa = activeChannel === "whatsapp";
+            if ((groupChan === "ig" && wantWa) || (groupChan === "wa" && !wantWa))
+              return null;
+          }
+
+          const groupActive = isGroupActive(visibleItems);
           const isOpen = !collapsedGroups[group.id] || groupActive;
-          const showGroupHeader = group.items.length > 1 && !collapsed;
+          const showGroupHeader = visibleItems.length > 1 && !collapsed;
           return (
             <div key={group.id}>
               {showGroupHeader && (
@@ -353,11 +458,11 @@ export default function Sidebar({ onNavigate }) {
                   />
                 </button>
               )}
-              {collapsed && group.items.length > 1 && (
+              {collapsed && visibleItems.length > 1 && (
                 <div className="my-2 mx-3 h-px bg-white/5" />
               )}
               {(isOpen || collapsed) &&
-                group.items.map(
+                visibleItems.map(
                   ({ to, icon: Icon, label, end, premium, highlight }) => (
                     <NavLink
                       key={to}
@@ -468,5 +573,45 @@ export default function Sidebar({ onNavigate }) {
         )}
       </div>
     </aside>
+  );
+}
+
+function ChannelIcon({ channel, className = "w-4 h-4" }) {
+  if (channel === "whatsapp")
+    return <MessageCircle className={clsx(className, "text-emerald-400")} />;
+  if (channel === "instagram")
+    return <Instagram className={clsx(className, "text-pink-400")} />;
+  return <Layers className={clsx(className, "text-violet-400")} />;
+}
+
+function channelLabel(c) {
+  if (c === "whatsapp") return "WhatsApp";
+  if (c === "instagram") return "Instagram";
+  return "Both channels";
+}
+
+function ChannelOption({ channel, active, connected, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "w-full flex items-center justify-between gap-2 px-3 py-2 text-[11px] transition",
+        active
+          ? "bg-white/10 text-white"
+          : "text-ink-300 hover:bg-white/5 hover:text-white",
+      )}
+    >
+      <span className="flex items-center gap-2">
+        <ChannelIcon channel={channel} className="w-3.5 h-3.5" />
+        <span className="font-semibold">{channelLabel(channel)}</span>
+        {!connected && (
+          <span className="text-[9px] uppercase tracking-wider text-ink-500">
+            Setup
+          </span>
+        )}
+      </span>
+      {active && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+    </button>
   );
 }

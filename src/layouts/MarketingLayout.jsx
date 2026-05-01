@@ -1,7 +1,11 @@
 import { Link, Outlet } from "react-router-dom";
+import { LayoutDashboard } from "lucide-react";
 import Logo from "@/components/Logo";
+import { useAuthStore } from "@/store/authStore";
 
 export default function MarketingLayout() {
+  const token = useAuthStore((s) => s.token);
+  const isAuthed = !!token;
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-ink-100">
@@ -16,14 +20,25 @@ export default function MarketingLayout() {
             <Link to="/pricing" className="hover:text-ink-900">
               Pricing
             </Link>
+            <Link to="/guide" className="hover:text-ink-900">
+              Guide
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
-            <Link to="/login" className="btn-ghost text-sm">
-              Sign in
-            </Link>
-            <Link to="/register" className="btn-primary text-sm">
-              Start free
-            </Link>
+            {isAuthed ? (
+              <Link to="/dashboard" className="btn-primary text-sm shadow-glow">
+                <LayoutDashboard className="w-4 h-4" /> Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="btn-ghost text-sm">
+                  Sign in
+                </Link>
+                <Link to="/register" className="btn-primary text-sm">
+                  Start free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

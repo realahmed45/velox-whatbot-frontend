@@ -16,22 +16,23 @@ import {
   Settings as SettingsIcon,
   HelpCircle,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 
 const STEPS = [
   {
     id: 1,
-    icon: Instagram,
-    title: "Connect your Instagram",
-    eyebrow: "2 min",
+    icon: MessageCircle,
+    title: "Pick your channel — WhatsApp or Instagram",
+    eyebrow: "1 min",
     description:
-      "We use Meta's official Graph API. Your Instagram must be a Business or Creator account, linked to a Facebook Page. Botlify never stores your password — we use Meta's secure OAuth flow.",
+      "Botlify works on both WhatsApp Cloud API (official Meta) and Instagram Graph API. Pick one — or both. WhatsApp is the fastest way to launch (live in ~6 minutes, no app review for testing).",
     bullets: [
-      "Switch to Business / Creator account inside the IG app (free).",
-      "Link it to a Facebook Page you manage.",
-      "Click Connect Instagram in your dashboard and approve the permissions.",
+      "WhatsApp — bring a Meta Cloud API number (1,000 free conversations/month).",
+      "Instagram — connect a Business / Creator account via Meta OAuth.",
+      "You can switch or add channels anytime from the sidebar.",
     ],
-    cta: { label: "Connect Instagram", to: "/dashboard/automation" },
+    cta: { label: "Choose channel", to: "/onboarding/choose-channel" },
     helpLink: "/dashboard/integrations",
   },
   {
@@ -40,11 +41,11 @@ const STEPS = [
     title: "Pick your first trigger",
     eyebrow: "5 min",
     description:
-      "A trigger is what kicks off automation. The fastest win for most accounts is a comment-to-DM trigger on a high-traffic post — comment a keyword, get a DM with your link or offer.",
+      "A trigger is what kicks off automation. On WhatsApp, the win is keyword auto-replies + AI fallback. On Instagram, comment-to-DM on a high-traffic post is the fastest hook.",
     bullets: [
-      "Choose Comment → DM, Keyword DM, or Story Reply.",
-      "Pick the post (or all posts) and the keyword(s).",
-      "Set a friendly opening message.",
+      "WhatsApp — keyword reply, away message, or full AI bot fallback.",
+      "Instagram — Comment → DM, Keyword DM, Story Reply.",
+      "Set a friendly opening message and pick the post / keyword.",
     ],
     cta: { label: "Create a trigger", to: "/dashboard/automation" },
     helpLink: "/dashboard/flow-builder",
@@ -52,14 +53,14 @@ const STEPS = [
   {
     id: 3,
     icon: Bot,
-    title: "Configure the AI bot",
+    title: "Train the AI bot",
     eyebrow: "10 min",
     description:
-      "This is where Botlify shines. Train the AI in your own voice — paste your FAQs, your offers, your refund policy, your tone. The bot replies to every DM 24/7, answering questions, qualifying leads, and routing only complex chats to you.",
+      "This is where Botlify shines. Train one AI on your FAQs, offers, refund policy, and tone — it answers across both WhatsApp and Instagram. Free Groq + Llama 3.1 70B included.",
     bullets: [
       "Paste your business info, FAQs, and pricing.",
       "Pick a tone (friendly, professional, witty).",
-      "Set fallback rules — when to hand off to a human.",
+      "Set handoff keywords — bot pauses when a human is needed.",
     ],
     cta: { label: "Open AI Bot setup", to: "/dashboard/ai-bot" },
     helpLink: "/dashboard/ai-bot",
@@ -70,10 +71,10 @@ const STEPS = [
     title: "Test it on yourself",
     eyebrow: "3 min",
     description:
-      "Before you go live, send a DM from a test account (or a friend's IG). Watch it land in your Inbox, watch the AI reply, and tweak the responses if anything feels off.",
+      "Before going live, send a DM from a test account or your own phone. Watch it land in your Inbox, watch the AI reply, and tweak the responses if anything feels off.",
     bullets: [
-      "DM your account from another phone or a friend.",
-      "Watch the live conversation in Inbox.",
+      "WhatsApp — message your bot number from your own phone.",
+      "Instagram — DM your account from another IG.",
       "Edit the bot's training if needed — changes apply instantly.",
     ],
     cta: { label: "Open Inbox", to: "/dashboard/inbox" },
@@ -85,10 +86,10 @@ const STEPS = [
     title: "Go live & scale",
     eyebrow: "Ongoing",
     description:
-      "Turn the trigger ON, post about it on your story (\"Comment 'PRICE' to get details\"), and watch automated DMs roll in. Check Analytics weekly to see what's converting.",
+      "Turn automation ON, drive traffic, and watch automated chats roll in. Check Analytics weekly to see which triggers convert best.",
     bullets: [
-      "Toggle the automation Active.",
-      "Drive traffic — story polls, Reels, paid ads.",
+      "Toggle automation Active per channel.",
+      "Drive traffic — story polls, Reels, paid ads, click-to-WhatsApp.",
       "Review Analytics → optimise winning triggers.",
     ],
     cta: { label: "View Analytics", to: "/dashboard/analytics" },
@@ -120,7 +121,7 @@ export default function GuidePage() {
             </span>
           </h1>
           <p className="mt-4 text-ink-200 max-w-2xl text-base sm:text-lg">
-            Five focused steps. We'll walk you from connecting Instagram all the
+            Five focused steps. We'll walk you from picking a channel all the
             way to your AI bot replying to real DMs in your voice. Need help any
             step of the way? Scroll down — we're one click away.
           </p>

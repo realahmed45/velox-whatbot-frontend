@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import {
   MessageCircle,
   Zap,
@@ -305,6 +306,8 @@ export default function LandingPage() {
 
 function TopNav() {
   const [open, setOpen] = useState(false);
+  const token = useAuthStore((s) => s.token);
+  const isAuthed = !!token;
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/75 border-b border-ink-100">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-16">
@@ -332,12 +335,26 @@ function TopNav() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/login" className="hidden sm:inline-flex btn-ghost text-sm">
-            Sign in
-          </Link>
-          <Link to="/register" className="btn-primary text-sm shadow-glow">
-            Start free <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {isAuthed ? (
+            <Link
+              to="/dashboard"
+              className="btn-primary text-sm shadow-glow"
+            >
+              Dashboard <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex btn-ghost text-sm"
+              >
+                Sign in
+              </Link>
+              <Link to="/register" className="btn-primary text-sm shadow-glow">
+                Start free <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
+          )}
           <button
             className="md:hidden p-2 -mr-2 text-ink-700"
             onClick={() => setOpen(!open)}
@@ -370,9 +387,15 @@ function TopNav() {
             <a href="#support" onClick={() => setOpen(false)}>
               Support
             </a>
-            <Link to="/login" onClick={() => setOpen(false)}>
-              Sign in
-            </Link>
+            {isAuthed ? (
+              <Link to="/dashboard" onClick={() => setOpen(false)}>
+                Dashboard
+              </Link>
+            ) : (
+              <Link to="/login" onClick={() => setOpen(false)}>
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -395,22 +418,22 @@ function Hero() {
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/70 backdrop-blur border border-brand-200 text-xs font-semibold text-brand-700 shadow-sm">
             <Sparkles className="w-3 h-3" />
-            All-in-one Instagram automation
+            All-in-one WhatsApp & Instagram automation
           </span>
 
           <h1 className="mt-6 text-4xl sm:text-7xl font-black tracking-tight leading-[1.05]">
             The AI chatbot that{" "}
-            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
-              automates every Instagram DM
+            <span className="bg-gradient-to-r from-emerald-500 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+              automates every WhatsApp & Instagram DM
             </span>
             .
           </h1>
 
           <p className="mt-6 text-base sm:text-xl text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            DM automation, comment-to-DM, story replies, mentions, broadcasts
-            and a smart AI bot — all in one place. Train it on your FAQs and
-            offers, and Botlify replies 24/7, qualifies leads, and only pings
-            you when it's something real.
+            One bot. Two channels. WhatsApp Cloud API + Instagram Graph
+            integrated, with comment-to-DM, story replies, broadcasts, and a
+            smart AI trained on your FAQs. Botlify replies 24/7, qualifies
+            leads, and only pings you when it's something real.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -1453,7 +1476,7 @@ function Footer() {
         <div className="lg:col-span-2">
           <Logo size="md" className="text-white" />
           <p className="mt-4 text-sm text-ink-400 max-w-xs leading-relaxed">
-            Your all-in-one Instagram automation platform. Built for creators,
+            Your all-in-one WhatsApp & Instagram automation platform. Built for creators,
             agencies and brands who refuse to miss a lead.
           </p>
           <div className="mt-5 flex items-center gap-2 text-xs text-ink-500">

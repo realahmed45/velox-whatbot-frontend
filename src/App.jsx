@@ -53,6 +53,12 @@ const FlowBuilderPage = lazy(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
 );
 const OnboardingPage = lazy(() => import("@/pages/onboarding/OnboardingPage"));
+const ChooseChannelPage = lazy(() =>
+  import("@/pages/onboarding/ChooseChannelPage"),
+);
+const WhatsAppOnboardingPage = lazy(() =>
+  import("@/pages/onboarding/WhatsAppOnboardingPage"),
+);
 import VerifyEmailPage from "@/pages/auth/VerifyEmailPage";
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 
@@ -223,6 +229,30 @@ export default function App() {
 
               <Route
                 path="/onboarding"
+                element={
+                  <ProtectedRoute>
+                    <ChooseChannelPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/onboarding/choose-channel"
+                element={
+                  <ProtectedRoute>
+                    <ChooseChannelPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/onboarding/whatsapp"
+                element={
+                  <ProtectedRoute>
+                    <WhatsAppOnboardingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/onboarding/instagram"
                 element={
                   <ProtectedRoute>
                     <OnboardingPage />

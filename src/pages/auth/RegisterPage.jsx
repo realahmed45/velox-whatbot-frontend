@@ -37,7 +37,7 @@ export default function RegisterPage() {
       });
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome to Botlify!");
-      navigate("/onboarding");
+      navigate("/onboarding/choose-channel");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {

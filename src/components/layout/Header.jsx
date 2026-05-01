@@ -8,9 +8,10 @@ import {
   ChevronDown,
   Check,
   Sparkles,
+  Home,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -77,10 +78,17 @@ export default function Header({ onMenuClick, onSearchClick }) {
             âŒ˜K
           </span>
         </button>
+        <Link
+          to="/"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 text-xs font-semibold text-ink-600 transition"
+          title="Back to home"
+        >
+          <Home className="w-3.5 h-3.5" /> Home
+        </Link>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Guide me — prominent gradient pill */}
+        {/* Guide me ï¿½ prominent gradient pill */}
         <button
           onClick={() => navigate("/dashboard/guide")}
           className="relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-brand-gradient text-white text-xs sm:text-sm font-semibold shadow-glow hover:shadow-glow-lg hover:-translate-y-0.5 transition-all active:scale-95"
