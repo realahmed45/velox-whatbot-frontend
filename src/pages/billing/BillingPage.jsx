@@ -1,22 +1,24 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
-import { CheckCircle2, TrendingUp, Zap, Sparkles, Rocket, CreditCard } from "lucide-react";
+import {
+  CheckCircle2,
+  TrendingUp,
+  CreditCard,
+  AlertCircle,
+  Calendar,
+} from "lucide-react";
 import { clsx } from "clsx";
 import PricingPage from "../PricingPage";
 import PageHeader from "@/components/ui/PageHeader";
 
-const ICONS = { starter: Zap, growth: Rocket, scale: Sparkles };
-
 export default function BillingPage() {
-  const [current, setCurrent] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api
-      .get("/plans/current")
-      .then(({ data }) => {
-        setCurrent(data);
-      })
+      .get("/billing/subscription")
+      .then(({ data }) => setData(data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -25,10 +27,12 @@ export default function BillingPage() {
     return <div className="p-8 text-ink-400 text-sm">Loading…</div>;
   }
 
-  const plan = current?.plan;
-  const usage = current?.usage || {};
-  const limits = plan?.limits || {};
-  const Icon = ICONS[plan?.id] || Zap;
+  const sub = data?.subscription;
+  const usage = data?.usage || {};
+  const limits = data?.planLimits || {};
+  const planId = sub?.plan || limits.planId || "free";
+  const status = sub?.status || "trialing";
+  const isTrial = status === "trialing" || planId === "free";
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
@@ -38,111 +42,41 @@ export default function BillingPage() {
         subtitle="Manage your subscription and monitor usage"
       />
 
-      {/* Current plan card */}
-      {plan && (
-        <div
-          className={clsx(
-            "card p-6 mb-6",
-            plan.premium
-              ? "bg-gradient-to-br from-ink-900 to-ink-800 text-white border-accent-400/30"
-              : plan.recommended
-                ? "border-2 border-brand-500"
-                : "",
-          )}
-        >
-          <div className="flex items-start justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div
-                className={clsx(
-                  "w-12 h-12 rounded-md flex items-center justify-center",
-                  plan.premium ? "bg-white/10" : "bg-brand-gradient",
-                )}
-              >
-                <Icon
-                  className={clsx(
-                    "w-6 h-6",
-                    plan.premium ? "text-accent-300" : "text-white",
-                  )}
-                />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2
-                    className={clsx(
-                      "text-xl font-bold",
-                      plan.premium ? "text-white" : "text-ink-900",
-                    )}
-                  >
-                    {plan.name}
-                  </h2>
-                  <span
-                    className={clsx(
-                      "chip text-[10px]",
-                      plan.premium
-                        ? "bg-accent-400/20 text-accent-200"
-                        : "bg-brand-100 text-brand-700",
-                    )}
-                  >
-                    Current plan
-                  </span>
-                </div>
-                <p
-                  className={clsx(
-                    "text-sm mt-0.5",
-                    plan.premium ? "text-white/70" : "text-ink-500",
-                  )}
-                >
-                  {plan.tagline || ""}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p
-                className={clsx(
-                  "text-3xl font-bold",
-                  plan.premium ? "text-white" : "text-ink-900",
-                )}
-              >
-                {plan.currency || "PKR"}{" "}
-                {plan.priceMonthly?.toLocaleString() || 0}
-                <span
-                  className={clsx(
-                    "text-sm font-normal",
-                    plan.premium ? "text-white/50" : "text-ink-400",
-                  )}
-                >
-                  /mo
-                </span>
-              </p>
-              {plan.id === "starter" && (
-                <p className={clsx("text-xs mt-1", "text-ink-400")}>
-                  Free forever
-                </p>
-              )}
-            </div>
-          </div>
-
-          {plan.highlights?.length > 0 && (
-            <div className="grid sm:grid-cols-2 gap-2 mt-5">
-              {plan.highlights.slice(0, 4).map((h) => (
-                <div key={h} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2
-                    className={clsx(
-                      "w-4 h-4 flex-shrink-0 mt-0.5",
-                      plan.premium ? "text-accent-300" : "text-brand-600",
-                    )}
-                  />
-                  <span
-                    className={plan.premium ? "text-white/80" : "text-ink-700"}
-                  >
-                    {h}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Status banner */}
+      <div
+        className={clsx(
+          "card p-5 mb-6 flex items-start gap-3",
+          isTrial
+            ? "border-l-4 border-amber-400 bg-amber-50/40"
+            : "border-l-4 border-emerald-400 bg-emerald-50/40",
+        )}
+      >
+        {isTrial ? (
+          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+        ) : (
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5" />
+        )}
+        <div className="flex-1">
+          <h2 className="font-semibold text-ink-900">
+            {isTrial
+              ? "You're on the free trial"
+              : `${formatPlan(planId)} · ${capitalize(status)}`}
+          </h2>
+          <p className="text-sm text-ink-500 mt-0.5">
+            {isTrial
+              ? "Pick a plan below to unlock live WhatsApp numbers, unlimited messaging, and premium AI."
+              : sub?.currentPeriodEnd
+                ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
+                : "Subscription active."}
+          </p>
         </div>
-      )}
+        {sub?.billingCycle && (
+          <span className="chip bg-ink-100 text-ink-700 text-xs">
+            <Calendar className="w-3 h-3 mr-1" />
+            {capitalize(sub.billingCycle)}
+          </span>
+        )}
+      </div>
 
       {/* Usage card */}
       <div className="card p-6 mb-6">
@@ -152,14 +86,19 @@ export default function BillingPage() {
         </div>
         <div className="space-y-4">
           <UsageBar
-            label="DMs sent"
+            label="Messages sent"
             used={usage.messagesThisMonth || 0}
-            limit={limits.dmsPerMonth}
+            limit={limits.messages}
           />
           <UsageBar
-            label="Active triggers"
-            used={usage.activeTriggers || 0}
-            limit={limits.triggers}
+            label="Contacts"
+            used={usage.contactsCount || 0}
+            limit={limits.contacts}
+          />
+          <UsageBar
+            label="Active flows"
+            used={usage.activeFlows || 0}
+            limit={limits.flows}
           />
           <UsageBar
             label="Team seats"
@@ -171,20 +110,29 @@ export default function BillingPage() {
 
       {/* Embedded pricing */}
       <div className="card p-6">
+        <h3 className="font-semibold text-ink-900 mb-1">
+          {isTrial ? "Choose a plan" : "Change plan"}
+        </h3>
+        <p className="text-sm text-ink-500 mb-6">
+          Switch plans anytime. Annual billing saves ~17%.
+        </p>
         <PricingPage embedded />
       </div>
 
       <p className="text-xs text-ink-400 text-center mt-6">
-        Payment integrations (JazzCash / Easypaisa) are being finalized — plan
-        activation is free while we're in open beta.
+        Payments via Easypaisa · JazzCash · Card · Manual bank transfer.
       </p>
     </div>
   );
 }
 
 function UsageBar({ label, used, limit }) {
-  const unlimited = !limit || limit === -1 || limit === Infinity;
-  const pct = unlimited ? 0 : Math.min(100, Math.round((used / limit) * 100));
+  const unlimited =
+    !limit || limit === -1 || limit === Infinity || limit === "Infinity";
+  const numericLimit = unlimited ? 0 : Number(limit);
+  const pct = unlimited
+    ? 0
+    : Math.min(100, Math.round((used / numericLimit) * 100));
   const near = pct >= 80;
   return (
     <div>
@@ -196,7 +144,8 @@ function UsageBar({ label, used, limit }) {
             near ? "text-red-600" : "text-ink-500",
           )}
         >
-          {used.toLocaleString()} / {unlimited ? "∞" : limit.toLocaleString()}
+          {Number(used).toLocaleString()} /{" "}
+          {unlimited ? "∞" : numericLimit.toLocaleString()}
         </span>
       </div>
       <div className="h-2 bg-ink-100 rounded-full overflow-hidden">
@@ -214,4 +163,25 @@ function UsageBar({ label, used, limit }) {
       </div>
     </div>
   );
+}
+
+function formatPlan(id) {
+  const map = {
+    free: "Free trial",
+    ig_starter: "Instagram Starter",
+    ig_pro: "Instagram Pro",
+    wa_starter: "WhatsApp Starter",
+    wa_pro: "WhatsApp Pro",
+    bundle_pro: "Both Channels Pro",
+    bundle_business: "Both Channels Business",
+    starter: "Starter (legacy)",
+    growth: "Growth (legacy)",
+    scale: "Scale (legacy)",
+    business: "Business (legacy)",
+    agency: "Agency (legacy)",
+  };
+  return map[id] || id;
+}
+function capitalize(s) {
+  return s ? s[0].toUpperCase() + s.slice(1) : "";
 }

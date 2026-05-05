@@ -11,20 +11,28 @@ import {
   Users,
   TrendingUp,
   CheckCircle2,
-  AlertCircle,
-  Circle,
   ArrowRight,
   Rocket,
   Send,
-  Calendar,
   Workflow,
   Sparkles,
   BarChart3,
   Inbox,
-  Hash,
-  ExternalLink,
-  Play,
+  Bot,
+  Megaphone,
 } from "lucide-react";
+import WelcomeModal from "@/components/dashboard/WelcomeModal";
+
+function WhatsAppMark({ className = "w-5 h-5" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19.05 4.91A10 10 0 0 0 4.94 19.04L4 23l4.06-1.06a10 10 0 0 0 14.94-9A9.94 9.94 0 0 0 19.05 4.91zM12 21.02a8 8 0 0 1-4.08-1.12l-.29-.17l-2.41.63l.65-2.35l-.19-.3A8 8 0 1 1 20.02 13a7.94 7.94 0 0 1-8.02 8.02zm4.61-5.83c-.25-.13-1.49-.74-1.72-.82c-.23-.08-.4-.13-.57.13c-.17.25-.65.82-.8 1c-.15.17-.3.19-.55.06c-.25-.13-1.06-.39-2.02-1.24a7.6 7.6 0 0 1-1.4-1.74c-.15-.25 0-.39.11-.51c.11-.11.25-.3.38-.45c.13-.15.17-.25.25-.42c.08-.17 0-.32-.04-.45c-.06-.13-.57-1.38-.78-1.89c-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.45.06-.69.32c-.23.25-.9.88-.9 2.15c0 1.27.92 2.5 1.05 2.67c.13.17 1.81 2.77 4.39 3.88c.61.26 1.09.42 1.46.54c.61.19 1.17.17 1.61.1c.49-.07 1.49-.61 1.7-1.2c.21-.6.21-1.11.15-1.21c-.06-.1-.23-.16-.48-.29z"
+      />
+    </svg>
+  );
+}
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
@@ -34,12 +42,11 @@ export default function OverviewPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
 
-  /* OAuth callback toasts */
   useEffect(() => {
     const connected = searchParams.get("connected");
     const error = searchParams.get("error");
     if (connected === "true") {
-      toast.success("Instagram connected successfully! 🎉");
+      toast.success("Instagram connected successfully!");
       fetchWorkspace(activeWorkspace);
       setSearchParams({});
     } else if (error) {
@@ -63,8 +70,11 @@ export default function OverviewPage() {
       .catch(() => {});
   }, [activeWorkspace]);
 
-  const isConnected = workspace?.instagram?.status === "connected";
+  const channel = workspace?.activeChannel || "instagram";
+  const igConnected = workspace?.instagram?.status === "connected";
+  const waConnected = workspace?.whatsapp?.status === "connected";
   const ig = workspace?.instagram;
+  const wa = workspace?.whatsapp;
 
   const hasTriggers =
     (workspace?.keywordTriggers?.length || 0) > 0 ||
@@ -72,33 +82,48 @@ export default function OverviewPage() {
     (workspace?.storyReplyTriggers?.length || 0) > 0;
   const automationOn = workspace?.settings?.automationEnabled !== false;
 
+  const showIg = channel === "instagram" || channel === "both";
+  const showWa = channel === "whatsapp" || channel === "both";
+
+  const channelConnected =
+    (showIg && showWa && igConnected && waConnected) ||
+    (showIg && !showWa && igConnected) ||
+    (showWa && !showIg && waConnected);
+
   const steps = [
     {
       id: 1,
-      title: "Create your workspace",
+      title: "Workspace ready",
+      desc: "Account verified.",
       done: true,
-      cta: null,
-      path: null,
     },
     {
       id: 2,
-      title: "Connect Instagram",
-      done: isConnected,
+      title:
+        showIg && showWa
+          ? "Connect WhatsApp & Instagram"
+          : showWa
+            ? "Connect WhatsApp"
+            : "Connect Instagram",
+      desc: "Secure Meta-approved login.",
+      done: channelConnected,
       cta: "Connect",
       path: "/dashboard/settings",
     },
     {
       id: 3,
-      title: "Configure your first trigger",
+      title: "Add your first automation",
+      desc: "Pick a keyword, comment trigger or AI reply.",
       done: hasTriggers,
-      cta: "Open automation",
+      cta: "Open automations",
       path: "/dashboard/automation",
     },
     {
       id: 4,
-      title: "Go live",
-      done: isConnected && hasTriggers && automationOn,
-      cta: "Enable",
+      title: "Turn the bot on",
+      desc: "Flip the switch to start replying 24/7.",
+      done: channelConnected && hasTriggers && automationOn,
+      cta: "Go live",
       path: "/dashboard/automation",
     },
   ];
@@ -107,7 +132,7 @@ export default function OverviewPage() {
     workspace?.onboardingCompleted || completed === steps.length;
   const progress = Math.round((completed / steps.length) * 100);
 
-  const startOAuth = async () => {
+  const startIgOAuth = async () => {
     try {
       const { data } = await api.get("/instagram/connect/oauth-url");
       window.location.href = data.url;
@@ -117,106 +142,76 @@ export default function OverviewPage() {
   };
 
   const firstName = (user?.name || "").split(" ")[0] || "there";
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      {/* ── Hero / welcome ───────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-indigo-600 via-violet-600 to-pink-600 p-6 sm:p-9 shadow-hero">
-        {/* Grid + animated blobs */}
-        <div className="absolute inset-0 bg-grid-dark bg-grid-32 opacity-40" />
-        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/15 blur-3xl animate-blob" />
-        <div
-          className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-pink-300/30 blur-3xl animate-blob"
-          style={{ animationDelay: "5s" }}
-        />
-        <div className="absolute top-1/3 right-1/4 w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-        <div
-          className="absolute bottom-1/4 left-1/3 w-1 h-1 rounded-full bg-white/40 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        />
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
+      {!onboardingDone && <WelcomeModal userName={user?.name} />}
 
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div className="text-white">
-            <p className="text-xs uppercase tracking-[0.3em] font-bold text-white/70 mb-2 flex items-center gap-2">
-              <span className="w-6 h-px bg-white/40" />
-              {greeting}
-            </p>
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">
-              Welcome back, {firstName}{" "}
-              <span className="inline-block animate-pulse-soft">👋</span>
-            </h1>
-            <p className="mt-3 text-white/85 text-sm sm:text-base max-w-lg leading-relaxed">
-              {isConnected
-                ? `@${ig?.username} is connected. Botlify is replying to DMs in real time.`
-                : "Let's get your Instagram automating in under six minutes."}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {isConnected && ig?.profilePicture ? (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg glass-dark !bg-white/15">
-                <div className="relative">
-                  <img
-                    src={ig.profilePicture}
-                    alt=""
-                    className="w-11 h-11 rounded-full ring-2 ring-white/50 object-cover"
-                  />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse" />
-                </div>
-                <div className="text-white">
-                  <p className="text-sm font-bold leading-tight">
-                    @{ig.username}
-                  </p>
-                  <p className="text-[11px] text-white/80 mt-0.5 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-                    Bot active · Live
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={startOAuth}
-                className="shine-on-hover inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-white text-brand-700 font-semibold text-sm hover:bg-white/95 transition shadow-xl"
-              >
-                <Instagram className="w-4 h-4" /> Connect Instagram
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-ink-500">
+            Dashboard
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-ink-950 mt-1">
+            Hey, {firstName} 👋
+          </h1>
+          <p className="text-sm text-ink-500 mt-1">
+            {channelConnected
+              ? "Your automations are live. Here's what's happening."
+              : "Let's get your channel connected and your first automation running."}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {showIg && (
+            <ChannelStatus
+              tone="ig"
+              connected={igConnected}
+              label={
+                igConnected ? `@${ig?.username || "instagram"}` : "Instagram"
+              }
+              onConnect={startIgOAuth}
+            />
+          )}
+          {showWa && (
+            <ChannelStatus
+              tone="wa"
+              connected={waConnected}
+              label={
+                waConnected
+                  ? wa?.phoneNumber || wa?.displayName || "WhatsApp"
+                  : "WhatsApp"
+              }
+              onConnect={() => navigate("/onboarding/whatsapp")}
+            />
+          )}
         </div>
       </div>
 
-      {/* ── Onboarding strip ─────────────────────────────────── */}
+      {/* ── Onboarding (only if not done) ─────────────────── */}
       {!onboardingDone && (
-        <div className="rounded-lg border border-brand-100 bg-gradient-to-br from-brand-50/80 via-white to-accent-50/40 p-5 sm:p-7 shadow-card">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+        <div className="rounded-xl border border-ink-100 bg-white p-5 sm:p-6 shadow-card">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-brand-gradient flex items-center justify-center shadow-glow">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-pink-500 flex items-center justify-center">
                 <Rocket className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-ink-900 text-lg">
-                  Finish setting up
+                <h3 className="font-bold text-ink-900 text-base">
+                  Get live in ~6 minutes
                 </h3>
                 <p className="text-xs text-ink-500">
-                  {completed} of {steps.length} steps complete · keep going!
+                  {completed} of {steps.length} done
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-black bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
-                {progress}%
-              </div>
-              <p className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold">
-                Complete
-              </p>
-            </div>
+            <span className="text-2xl font-black tracking-tighter text-ink-900">
+              {progress}%
+            </span>
           </div>
-          <div className="h-2 bg-ink-100 rounded-full overflow-hidden mb-5">
+          <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden mb-5">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-full transition-all duration-700"
+              className="h-full bg-gradient-to-r from-emerald-500 to-pink-500 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -224,251 +219,246 @@ export default function OverviewPage() {
             {steps.map((s) => (
               <div
                 key={s.id}
-                className={`flex items-center gap-3 px-4 py-3 rounded-md border transition ${
+                className={`flex items-start gap-3 p-3 rounded-lg border ${
                   s.done
-                    ? "bg-emerald-50/60 border-emerald-100"
-                    : "bg-white border-ink-100 hover:border-brand-200"
-                }`}
+                    ? "bg-emerald-50/50 border-emerald-100"
+                    : "bg-white border-ink-100 hover:border-ink-300"
+                } transition`}
               >
-                {s.done ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                ) : (
-                  <Circle className="w-5 h-5 text-ink-300 flex-shrink-0" />
-                )}
-                <span
-                  className={`text-sm flex-1 ${s.done ? "text-ink-400 line-through" : "text-ink-800 font-medium"}`}
+                <div
+                  className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${
+                    s.done
+                      ? "bg-emerald-500 text-white"
+                      : "bg-ink-50 text-ink-500"
+                  }`}
                 >
-                  {s.title}
-                </span>
-                {!s.done && s.cta && s.path && (
-                  <button
-                    onClick={() => navigate(s.path)}
-                    className="text-xs font-bold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1"
+                  {s.done ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <span className="text-xs font-bold">{s.id}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-bold ${
+                      s.done ? "text-ink-400 line-through" : "text-ink-900"
+                    }`}
                   >
-                    {s.cta} <ArrowRight className="w-3 h-3" />
-                  </button>
-                )}
+                    {s.title}
+                  </p>
+                  {!s.done && (
+                    <>
+                      <p className="text-xs text-ink-500 mt-0.5">{s.desc}</p>
+                      {s.cta && s.path && (
+                        <button
+                          onClick={() => navigate(s.path)}
+                          className="mt-1.5 text-xs font-bold text-ink-900 hover:underline inline-flex items-center gap-1"
+                        >
+                          {s.cta} <ArrowRight className="w-3 h-3" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Stats ────────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-ink-700 uppercase tracking-wider">
-            Performance
-          </h2>
-          <Link
-            to="/dashboard/analytics"
-            className="text-xs font-bold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1"
-          >
-            View analytics <ExternalLink className="w-3 h-3" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={MessageSquare}
-            label="DMs sent"
-            value={stats?.totalMessages ?? 0}
-            gradient="from-indigo-500 to-violet-500"
-            spark={[40, 60, 50, 75, 65, 90, 100]}
-          />
-          <StatCard
-            icon={Users}
-            label="Total contacts"
-            value={stats?.totalContacts ?? 0}
-            gradient="from-pink-500 to-rose-500"
-            spark={[20, 35, 45, 50, 65, 75, 90]}
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Reply rate"
-            value={stats?.replyRate ? `${stats.replyRate}%` : "—"}
-            gradient="from-emerald-500 to-teal-500"
-            spark={[55, 60, 70, 65, 80, 85, 95]}
-          />
-          <StatCard
-            icon={Sparkles}
-            label="Active triggers"
-            value={
-              (workspace?.keywordTriggers?.length || 0) +
-              (workspace?.postCommentTriggers?.length || 0) +
-              (workspace?.storyReplyTriggers?.length || 0)
-            }
-            gradient="from-amber-500 to-orange-500"
-            spark={[30, 40, 50, 60, 65, 70, 80]}
-          />
-        </div>
+      {/* ── Stats ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Stat
+          icon={MessageSquare}
+          label="Messages sent"
+          value={stats?.totalMessages ?? 0}
+          accent="emerald"
+        />
+        <Stat
+          icon={Users}
+          label="Total contacts"
+          value={stats?.totalContacts ?? 0}
+          accent="pink"
+        />
+        <Stat
+          icon={TrendingUp}
+          label="Reply rate"
+          value={stats?.replyRate ? `${stats.replyRate}%` : "—"}
+          accent="violet"
+        />
+        <Stat
+          icon={Sparkles}
+          label="Active triggers"
+          value={
+            (workspace?.keywordTriggers?.length || 0) +
+            (workspace?.postCommentTriggers?.length || 0) +
+            (workspace?.storyReplyTriggers?.length || 0)
+          }
+          accent="amber"
+        />
       </div>
 
-      {/* ── Quick actions ────────────────────────────────────── */}
+      {/* ── Quick actions ─────────────────────────────────── */}
       <div>
-        <h2 className="text-sm font-bold text-ink-700 uppercase tracking-wider mb-4">
+        <p className="text-xs font-bold uppercase tracking-wider text-ink-500 mb-3">
           Quick actions
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <QuickAction
+        </p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Action
             icon={Zap}
-            title="Setup automation"
-            desc="Triggers, keywords, welcome DMs"
+            title="Automations"
+            desc="Triggers & rules"
             to="/dashboard/automation"
-            gradient="from-indigo-500 to-violet-500"
           />
-          <QuickAction
+          <Action
+            icon={Bot}
+            title="AI chatbot"
+            desc="Train your bot"
+            to="/dashboard/ai-bot"
+          />
+          <Action
             icon={Workflow}
-            title="Build a flow"
-            desc="Drag-and-drop conversation builder"
+            title="Flow builder"
+            desc="Drag & drop"
             to="/dashboard/flow-builder"
-            gradient="from-pink-500 to-rose-500"
           />
-          <QuickAction
+          <Action
             icon={Send}
-            title="Send broadcast"
-            desc="Mass DM your contacts"
+            title="Broadcasts"
+            desc="Mass messages"
             to="/dashboard/broadcasts"
-            gradient="from-emerald-500 to-teal-500"
-          />
-          <QuickAction
-            icon={Calendar}
-            title="Schedule post"
-            desc="Plan IG posts & stories"
-            to="/dashboard/scheduled-posts"
-            gradient="from-amber-500 to-orange-500"
           />
         </div>
       </div>
 
-      {/* ── Discover row ─────────────────────────────────────── */}
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-5">
-        <DiscoverCard
+      {/* ── Discover ─────────────────────────────────────── */}
+      <div className="grid lg:grid-cols-3 gap-3">
+        <Discover
           icon={Inbox}
-          title="Unified inbox"
-          desc="Every comment, DM and story-reply in one place. Assign and resolve."
+          title="Inbox"
+          desc="Every DM, comment & reply in one place."
           to="/dashboard/inbox"
         />
-        <DiscoverCard
+        <Discover
           icon={BarChart3}
           title="Analytics"
-          desc="See which trigger drives sales and which ad delivered each lead."
+          desc="See what's converting."
           to="/dashboard/analytics"
         />
-        <DiscoverCard
-          icon={Hash}
-          title="Hashtag tracker"
-          desc="Monitor your brand hashtags and auto-DM mentions."
-          to="/dashboard/hashtags"
+        <Discover
+          icon={Megaphone}
+          title="Contacts"
+          desc="Tag, segment & target."
+          to="/dashboard/contacts"
         />
-      </div>
-
-      {/* ── Help banner ──────────────────────────────────────── */}
-      <div className="rounded-lg border border-ink-100 bg-white p-6 sm:p-7 shadow-card flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center shadow-md">
-          <Play className="w-6 h-6 text-white fill-white" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-ink-900 text-base">
-            New to Botlify? Watch the 60-second tour.
-          </h3>
-          <p className="text-sm text-ink-500 mt-1">
-            From connecting Instagram to your first auto-reply — in plain
-            English.
-          </p>
-        </div>
-        <a href="mailto:support@botlify.site" className="btn-secondary text-sm">
-          Contact support
-        </a>
       </div>
     </div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────
- * Sub-components
- * ──────────────────────────────────────────────────────────── */
-
-function StatCard({ icon: Icon, label, value, gradient, spark }) {
-  const max = Math.max(...spark);
-  return (
-    <div className="group relative overflow-hidden rounded-lg border border-ink-100 bg-white/80 backdrop-blur-md p-5 shadow-card hover:shadow-glow-lg hover:-translate-y-1 transition-all duration-500">
-      {/* gradient corner glow */}
+/* ─── Channel status pill ─── */
+function ChannelStatus({ tone, connected, label, onConnect }) {
+  const isWa = tone === "wa";
+  if (connected) {
+    return (
       <div
-        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-30 blur-2xl transition-opacity duration-500`}
-      />
-      <div className="relative flex items-start justify-between mb-3">
+        className={`inline-flex items-center gap-2 px-3 py-2 rounded-md border ${
+          isWa
+            ? "bg-emerald-50 border-emerald-100 text-emerald-800"
+            : "bg-pink-50 border-pink-100 text-pink-800"
+        } text-xs font-bold`}
+      >
+        {isWa ? (
+          <WhatsAppMark className="w-4 h-4" />
+        ) : (
+          <Instagram className="w-4 h-4" />
+        )}
+        <span>{label}</span>
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${
+            isWa ? "bg-emerald-500" : "bg-pink-500"
+          } animate-pulse`}
+        />
+      </div>
+    );
+  }
+  return (
+    <button
+      onClick={onConnect}
+      className={`inline-flex items-center gap-2 px-3 py-2 rounded-md border border-dashed ${
+        isWa
+          ? "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+          : "border-pink-300 text-pink-700 hover:bg-pink-50"
+      } text-xs font-bold transition`}
+    >
+      {isWa ? (
+        <WhatsAppMark className="w-4 h-4" />
+      ) : (
+        <Instagram className="w-4 h-4" />
+      )}
+      Connect {label}
+    </button>
+  );
+}
+
+/* ─── Stat card ─── */
+function Stat({ icon: Icon, label, value, accent }) {
+  const tones = {
+    emerald: "text-emerald-600 bg-emerald-50",
+    pink: "text-pink-600 bg-pink-50",
+    violet: "text-violet-600 bg-violet-50",
+    amber: "text-amber-600 bg-amber-50",
+  };
+  return (
+    <div className="rounded-xl border border-ink-100 bg-white p-4 shadow-card hover:shadow-md transition">
+      <div className="flex items-center justify-between">
         <div
-          className={`w-11 h-11 rounded-md bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center ${tones[accent]}`}
         >
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-        <div className="flex items-end gap-0.5 h-9 opacity-80">
-          {spark.map((h, i) => (
-            <div
-              key={i}
-              className={`w-1 rounded-t bg-gradient-to-t ${gradient}`}
-              style={{
-                height: `${(h / max) * 100}%`,
-                opacity: 0.45 + i * 0.08,
-              }}
-            />
-          ))}
+          <Icon className="w-4 h-4" />
         </div>
       </div>
-      <p className="relative text-3xl sm:text-4xl font-black text-ink-900 tracking-tighter">
+      <p className="mt-3 text-2xl font-black text-ink-950 tracking-tighter">
         {value}
       </p>
-      <p className="relative text-[11px] sm:text-xs text-ink-500 mt-1 uppercase tracking-wider font-semibold">
+      <p className="text-[11px] uppercase font-bold text-ink-500 tracking-wider mt-1">
         {label}
       </p>
     </div>
   );
 }
 
-function QuickAction({ icon: Icon, title, desc, to, gradient }) {
+/* ─── Quick action ─── */
+function Action({ icon: Icon, title, desc, to }) {
   return (
     <Link
       to={to}
-      className="group relative overflow-hidden rounded-lg border border-ink-100 bg-white/80 backdrop-blur-md p-5 shadow-card hover:shadow-glow-lg hover:-translate-y-1.5 transition-all duration-500 shine-on-hover"
+      className="group rounded-xl border border-ink-100 bg-white p-4 shadow-card hover:border-ink-300 hover:shadow-md transition"
     >
-      <div
-        className={`absolute inset-0 opacity-0 group-hover:opacity-[0.04] transition bg-gradient-to-br ${gradient}`}
-      />
-      <div
-        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-25 blur-2xl transition-opacity duration-500`}
-      />
-      <div
-        className={`relative w-12 h-12 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500`}
-      >
-        <Icon className="w-5 h-5 text-white" />
+      <div className="w-9 h-9 rounded-lg bg-ink-50 group-hover:bg-ink-950 flex items-center justify-center transition-colors">
+        <Icon className="w-4 h-4 text-ink-700 group-hover:text-white transition-colors" />
       </div>
-      <h3 className="relative mt-4 font-bold text-ink-900 text-sm">{title}</h3>
-      <p className="relative text-xs text-ink-500 mt-1 leading-relaxed">
-        {desc}
-      </p>
-      <ArrowRight className="relative w-4 h-4 text-ink-300 mt-3 group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
+      <p className="mt-3 text-sm font-bold text-ink-900">{title}</p>
+      <p className="text-xs text-ink-500 mt-0.5">{desc}</p>
     </Link>
   );
 }
 
-function DiscoverCard({ icon: Icon, title, desc, to }) {
+/* ─── Discover card ─── */
+function Discover({ icon: Icon, title, desc, to }) {
   return (
     <Link
       to={to}
-      className="group rounded-lg border border-ink-100 bg-white p-5 sm:p-6 shadow-card hover:border-brand-200 hover:shadow-glow transition-all"
+      className="group flex items-center gap-3 rounded-xl border border-ink-100 bg-white p-4 hover:border-ink-300 transition"
     >
-      <div className="flex items-start gap-4">
-        <div className="w-11 h-11 rounded-md bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-gradient transition-colors">
-          <Icon className="w-5 h-5 text-brand-600 group-hover:text-white transition-colors" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-ink-900 text-sm flex items-center justify-between gap-2">
-            {title}
-            <ArrowRight className="w-4 h-4 text-ink-300 group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
-          </h3>
-          <p className="text-xs text-ink-500 mt-1 leading-relaxed">{desc}</p>
-        </div>
+      <div className="w-10 h-10 rounded-lg bg-ink-50 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-ink-700" />
       </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-ink-900">{title}</p>
+        <p className="text-xs text-ink-500 mt-0.5 truncate">{desc}</p>
+      </div>
+      <ArrowRight className="w-4 h-4 text-ink-300 group-hover:text-ink-900 group-hover:translate-x-0.5 transition" />
     </Link>
   );
 }

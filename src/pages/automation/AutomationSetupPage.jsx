@@ -92,23 +92,65 @@ export default function AutomationSetupPage() {
 
   const activeTab = TABS.find((t) => t.id === tab);
 
+  const channel = workspace?.activeChannel || "instagram";
+  const showIg = channel === "instagram" || channel === "both";
+  const showWa = channel === "whatsapp" || channel === "both";
+
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto">
       <div className="mb-6">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-brand-gradient rounded-md flex items-center justify-center shadow-glow flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-pink-500 rounded-md flex items-center justify-center flex-shrink-0">
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
-              Automation
+              Automations
             </h1>
             <p className="text-ink-500 text-sm mt-1">
-              Set up triggers that auto-reply to Instagram comments, DMs,
-              stories & more.
+              Set up everything Botlify can do for you — comment-to-DM, AI
+              chatbot, broadcasts, story replies and more.
             </p>
           </div>
         </div>
+      </div>
+
+      {/* What you can automate — channel showcase */}
+      <div className="mb-6 grid lg:grid-cols-2 gap-4">
+        {showIg && (
+          <AutomationTypeCard
+            tone="ig"
+            title="On Instagram"
+            items={[
+              "Comment → DM",
+              "DM keyword auto-reply",
+              "Story replies",
+              "Story mentions",
+              "Share-to-story trigger",
+              "AI chatbot",
+              "Live comment reply",
+              "Welcome DM",
+              "Tracked link DMs",
+            ]}
+          />
+        )}
+        {showWa && (
+          <AutomationTypeCard
+            tone="wa"
+            title="On WhatsApp"
+            items={[
+              "Keyword auto-reply",
+              "AI chatbot",
+              "Welcome message",
+              "Bulk broadcasts",
+              "Drip sequences",
+              "Cart recovery",
+              "Order confirmation",
+              "Drag-drop flows",
+              "Business hours",
+            ]}
+          />
+        )}
       </div>
 
       <div className="mb-5">
@@ -1171,6 +1213,69 @@ function HoursTab({ cfg, save, setCfg }) {
           <Save className="w-4 h-4" /> Save away
         </button>
       </Card>
+    </div>
+  );
+}
+
+/* ─── Automation type showcase card ─── */
+function AutomationTypeCard({ tone, title, items }) {
+  const isWa = tone === "wa";
+  return (
+    <div
+      className={`rounded-xl border ${
+        isWa
+          ? "border-emerald-100 bg-emerald-50/30"
+          : "border-pink-100 bg-pink-50/30"
+      } p-4`}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className={`w-7 h-7 rounded-md flex items-center justify-center ${
+            isWa
+              ? "bg-emerald-500"
+              : "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400"
+          }`}
+        >
+          {isWa ? (
+            <svg
+              viewBox="0 0 24 24"
+              className="w-4 h-4 text-white"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M19.05 4.91A10 10 0 0 0 4.94 19.04L4 23l4.06-1.06a10 10 0 0 0 14.94-9A9.94 9.94 0 0 0 19.05 4.91zM12 21.02a8 8 0 0 1-4.08-1.12l-.29-.17l-2.41.63l.65-2.35l-.19-.3A8 8 0 1 1 20.02 13a7.94 7.94 0 0 1-8.02 8.02zm4.61-5.83c-.25-.13-1.49-.74-1.72-.82c-.23-.08-.4-.13-.57.13c-.17.25-.65.82-.8 1c-.15.17-.3.19-.55.06c-.25-.13-1.06-.39-2.02-1.24a7.6 7.6 0 0 1-1.4-1.74c-.15-.25 0-.39.11-.51c.11-.11.25-.3.38-.45c.13-.15.17-.25.25-.42c.08-.17 0-.32-.04-.45c-.06-.13-.57-1.38-.78-1.89c-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.45.06-.69.32c-.23.25-.9.88-.9 2.15c0 1.27.92 2.5 1.05 2.67c.13.17 1.81 2.77 4.39 3.88c.61.26 1.09.42 1.46.54c.61.19 1.17.17 1.61.1c.49-.07 1.49-.61 1.7-1.2c.21-.6.21-1.11.15-1.21c-.06-.1-.23-.16-.48-.29z"
+              />
+            </svg>
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              className="w-4 h-4 text-white"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M12 2.16c3.2 0 3.58 0 4.85.07c1.17.05 1.8.25 2.23.41c.56.22.96.48 1.38.9c.42.42.68.82.9 1.38c.16.42.36 1.06.41 2.23c.07 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23a3.7 3.7 0 0 1-.9 1.38a3.7 3.7 0 0 1-1.38.9c-.42.16-1.06.36-2.23.41c-1.27.07-1.65.07-4.85.07s-3.58 0-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9a3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23c-.07-1.27-.07-1.65-.07-4.85s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23c.22-.56.48-.96.9-1.38c.42-.42.82-.68 1.38-.9c.42-.16 1.06-.36 2.23-.41c1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07a8.94 8.94 0 0 0-2.96.57a5.96 5.96 0 0 0-2.16 1.4A5.96 5.96 0 0 0 .54 4.2a8.94 8.94 0 0 0-.57 2.95C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95a8.94 8.94 0 0 0 .57 2.96a5.96 5.96 0 0 0 1.4 2.16a5.96 5.96 0 0 0 2.16 1.4a8.94 8.94 0 0 0 2.95.57C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07a8.94 8.94 0 0 0 2.96-.57a6.22 6.22 0 0 0 3.56-3.56a8.94 8.94 0 0 0 .57-2.95c.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95a8.94 8.94 0 0 0-.57-2.96a5.96 5.96 0 0 0-1.4-2.16a5.96 5.96 0 0 0-2.16-1.4a8.94 8.94 0 0 0-2.95-.57C15.67.01 15.26 0 12 0m0 5.84A6.16 6.16 0 1 0 18.16 12A6.16 6.16 0 0 0 12 5.84M12 16a4 4 0 1 1 4-4a4 4 0 0 1-4 4m6.41-11.85a1.44 1.44 0 1 0 1.44 1.44a1.44 1.44 0 0 0-1.44-1.44"
+              />
+            </svg>
+          )}
+        </div>
+        <p className="text-sm font-bold text-ink-900">{title}</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((it, i) => (
+          <span
+            key={i}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+              isWa
+                ? "bg-white border-emerald-200 text-emerald-800"
+                : "bg-white border-pink-200 text-pink-800"
+            }`}
+          >
+            {it}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
