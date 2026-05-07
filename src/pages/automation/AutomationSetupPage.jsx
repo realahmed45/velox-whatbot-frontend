@@ -30,18 +30,89 @@ import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
 import PageHeader from "@/components/ui/PageHeader";
 import { clsx } from "clsx";
 
-const TABS = [
-  { id: "welcome", label: "Welcome DM", icon: MessageCircle, plan: "starter" },
-  { id: "comment_kw", label: "Comment keywords", icon: Hash, plan: "starter" },
-  { id: "dm_kw", label: "DM keywords", icon: MessageCircle, plan: "starter" },
-  { id: "story_reply", label: "Story replies", icon: Heart, plan: "growth" },
-  { id: "story_mention", label: "Story mentions", icon: Heart, plan: "growth" },
-  { id: "share", label: "Share to story", icon: Share2, plan: "growth" },
-  { id: "ref_url", label: "Tracked links", icon: LinkIcon, plan: "growth" },
-  { id: "live", label: "Live comments", icon: Radio, plan: "growth" },
-  { id: "starters", label: "Chat starters", icon: Target, plan: "growth" },
-  { id: "fallback", label: "Fallback reply", icon: CircleDot, plan: "starter" },
-  { id: "hours", label: "Business hours", icon: Clock, plan: "growth" },
+// Each tab declares which channel(s) it applies to.
+// Story replies, comments, share-to-story, live, tracked links, chat starters
+// only exist on Instagram. Welcome / keyword / fallback / hours work on both.
+const ALL_TABS = [
+  {
+    id: "welcome",
+    label: "Welcome DM",
+    waLabel: "Welcome message",
+    icon: MessageCircle,
+    plan: "starter",
+    channels: ["instagram", "whatsapp"],
+  },
+  {
+    id: "comment_kw",
+    label: "Comment keywords",
+    icon: Hash,
+    plan: "starter",
+    channels: ["instagram"],
+  },
+  {
+    id: "dm_kw",
+    label: "DM keywords",
+    waLabel: "Keyword auto-reply",
+    icon: MessageCircle,
+    plan: "starter",
+    channels: ["instagram", "whatsapp"],
+  },
+  {
+    id: "story_reply",
+    label: "Story replies",
+    icon: Heart,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "story_mention",
+    label: "Story mentions",
+    icon: Heart,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "share",
+    label: "Share to story",
+    icon: Share2,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "ref_url",
+    label: "Tracked links",
+    icon: LinkIcon,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "live",
+    label: "Live comments",
+    icon: Radio,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "starters",
+    label: "Chat starters",
+    icon: Target,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "fallback",
+    label: "Fallback reply",
+    icon: CircleDot,
+    plan: "starter",
+    channels: ["instagram", "whatsapp"],
+  },
+  {
+    id: "hours",
+    label: "Business hours",
+    icon: Clock,
+    plan: "growth",
+    channels: ["instagram", "whatsapp"],
+  },
 ];
 
 export default function AutomationSetupPage() {
@@ -50,11 +121,29 @@ export default function AutomationSetupPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [cfg, setCfg] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const channel = workspace?.activeChannel || "instagram";
+  const showIg = channel === "instagram" || channel === "both";
+  const showWa = channel === "whatsapp" || channel === "both";
+
+  // Filter tabs by current channel + use channel-specific labels
+  const TABS = ALL_TABS.filter((t) =>
+    channel === "both" ? true : t.channels.includes(channel),
+  ).map((t) =>
+    channel === "whatsapp" && t.waLabel ? { ...t, label: t.waLabel } : t,
+  );
+
   const [tab, setTab] = useState(() => {
     const t = searchParams.get("tab");
-    return TABS.some((x) => x.id === t) ? t : "welcome";
+    return TABS.some((x) => x.id === t) ? t : TABS[0]?.id || "welcome";
   });
-  const [saving, setSaving] = useState(false);
+
+  // If channel changes and current tab no longer applies, reset to first valid
+  useEffect(() => {
+    if (!TABS.some((t) => t.id === tab)) setTab(TABS[0]?.id || "welcome");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channel]);
 
   // Sync tab → URL so deep links and back/forward work
   useEffect(() => {
@@ -116,16 +205,23 @@ export default function AutomationSetupPage() {
 
   const activeTab = TABS.find((t) => t.id === tab);
 
-  const channel = workspace?.activeChannel || "instagram";
-  const showIg = channel === "instagram" || channel === "both";
-  const showWa = channel === "whatsapp" || channel === "both";
+  const channelName =
+    channel === "whatsapp"
+      ? "WhatsApp"
+      : channel === "both"
+        ? "Instagram & WhatsApp"
+        : "Instagram";
+  const headerSubtitle =
+    channel === "whatsapp"
+      ? "Set up your WhatsApp automations — welcome message, keyword auto-reply, fallback responses and business hours."
+      : "Set up your Instagram automations — comment-to-DM, story replies, DM keywords, tracked links and more.";
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <PageHeader
         icon={Zap}
-        title="Automations"
-        subtitle="Set up everything Botlify can do for you — comment-to-DM, AI chatbot, broadcasts, story replies and more."
+        title={`${channelName} Automations`}
+        subtitle={headerSubtitle}
       />
 
       {/* What you can automate — channel showcase */}
@@ -166,11 +262,13 @@ export default function AutomationSetupPage() {
         )}
       </div>
 
-      <div className="mb-5">
-        <InstagramConstraintsInfo compact />
-      </div>
+      {showIg && (
+        <div className="mb-5">
+          <InstagramConstraintsInfo compact />
+        </div>
+      )}
 
-      <DiagnosticsPanel workspaceId={activeWorkspace} />
+      {showIg && <DiagnosticsPanel workspaceId={activeWorkspace} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
         {/* Tabs */}
