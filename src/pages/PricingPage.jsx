@@ -11,6 +11,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Bot,
+  Loader2,
 } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -48,6 +49,7 @@ export default function PricingPage({ embedded = false }) {
   const [tab, setTab] = useState("both");
   const [annual, setAnnual] = useState(false);
   const [currency, setCurrency] = useState("PKR");
+  const [selecting, setSelecting] = useState(null); // planKey being activated
 
   useEffect(() => {
     api
@@ -81,7 +83,7 @@ export default function PricingPage({ embedded = false }) {
     return `Rs ${pkr.toLocaleString()}`;
   };
 
-  const handlePick = (plan) => {
+  const handlePick = async (plan) => {
     if (!plan) return;
     if (plan.key === "free") {
       if (isAuthenticated) navigate("/dashboard");
@@ -92,7 +94,28 @@ export default function PricingPage({ embedded = false }) {
       navigate("/register?plan=" + plan.key);
       return;
     }
-    // In-app: kick off checkout
+    // Embedded in dashboard: directly activate plan (no payment gateway yet)
+    if (embedded) {
+      setSelecting(plan.key);
+      try {
+        await api.post("/billing/select-plan", {
+          plan: plan.key,
+          billingCycle: annual ? "annual" : "monthly",
+        });
+        toast.success(`Switched to ${plan.name}!`);
+        // Reload page to reflect new plan limits
+        setTimeout(() => window.location.reload(), 800);
+      } catch (err) {
+        toast.error(
+          err.response?.data?.message ||
+            "Failed to switch plan. Please try again.",
+        );
+      } finally {
+        setSelecting(null);
+      }
+      return;
+    }
+    // Public pricing page: go to register/billing
     navigate(
       `/dashboard/billing?plan=${plan.key}&cycle=${annual ? "annual" : "monthly"}`,
     );
@@ -305,8 +328,9 @@ export default function PricingPage({ embedded = false }) {
 
                   <button
                     onClick={() => handlePick(p)}
+                    disabled={selecting === p.key}
                     className={clsx(
-                      "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium text-sm transition",
+                      "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium text-sm transition disabled:opacity-60 disabled:cursor-wait",
                       p.premium
                         ? "bg-accent-400 text-ink-900 hover:bg-accent-300"
                         : p.recommended
@@ -314,12 +338,20 @@ export default function PricingPage({ embedded = false }) {
                           : "bg-ink-900 text-white hover:bg-ink-800",
                     )}
                   >
-                    {isFree
-                      ? isAuthenticated
-                        ? "Go to dashboard"
-                        : "Start free trial"
-                      : `Get ${p.name}`}
-                    <ArrowRight className="w-4 h-4" />
+                    {selecting === p.key ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+                      </>
+                    ) : isFree ? (
+                      isAuthenticated ? (
+                        "Go to dashboard"
+                      ) : (
+                        "Start free trial"
+                      )
+                    ) : (
+                      `Get ${p.name}`
+                    )}
+                    {selecting !== p.key && <ArrowRight className="w-4 h-4" />}
                   </button>
 
                   {isBundle && !p.premium && (

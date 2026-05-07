@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
           api.get("/analytics/flow-performance"),
           api.get("/analytics/roi?days=30"),
         ]);
-        setOverview(ov.data);
+        setOverview(ov.data?.overview || ov.data);
         setMsgData(msg.data.data || []);
         setPeakData(peak.data.data || []);
         setFlowData(flows.data.flows || []);

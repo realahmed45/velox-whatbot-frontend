@@ -73,7 +73,7 @@ export default function OverviewPage() {
     if (!activeWorkspace) return;
     api
       .get("/analytics/overview")
-      .then(({ data }) => setStats(data))
+      .then(({ data }) => setStats(data?.overview || data))
       .catch(() => {});
   }, [activeWorkspace]);
 
@@ -309,7 +309,7 @@ function ChannelCard({
                   <p className="text-lg font-black text-ink-900">
                     {typeof v === "number" ? v.toLocaleString() : v}
                   </p>
-                  <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide capitalize">
+                  <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide">
                     {k}
                   </p>
                 </div>

@@ -1,10 +1,10 @@
 ﻿/**
- * WhatsApp Onboarding â€” Embedded-signup flow (Botlify Cloud Pro)
+ * WhatsApp Onboarding - Embedded-signup flow (Botlify Cloud Pro)
  *
  * Two paths offered to the user:
- *   1. "Use my own WhatsApp number"  â€” opens upstream embedded signup,
+ *   1. "Use my own WhatsApp number"  - opens upstream embedded signup,
  *      customer authorizes their existing business number, returns connected.
- *   2. "Get a free instant number"   â€” upstream provisions a US WhatsApp
+ *   2. "Get a free instant number"   - upstream provisions a US WhatsApp
  *      number for them in seconds. No verification.
  *
  * The same page also handles the post-signup redirect: when the user is
@@ -180,8 +180,8 @@ export default function WhatsAppOnboardingPage() {
             <p className="text-xs text-ink-500">
               {phase === "choose" &&
                 "Choose how you'd like to set up your WhatsApp number"}
-              {phase === "redirecting" && "Opening the secure setup pageâ€¦"}
-              {phase === "finalizing" && "Almost done â€” finishing setupâ€¦"}
+              {phase === "redirecting" && "Opening the secure setup page..."}
+              {phase === "finalizing" && "Almost done - finishing setup..."}
               {phase === "done" && "WhatsApp connected successfully!"}
               {phase === "failed" && "Something went wrong"}
             </p>
@@ -219,12 +219,12 @@ export default function WhatsAppOnboardingPage() {
   );
 }
 
-// â”€â”€â”€ Step 1: Choose path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Step 1: Choose path ----------------------------------------------------
 
 function ChooseStep({ busy, onStart }) {
   return (
     <div className="space-y-4">
-      {/* Path A â€” bring own number */}
+      {/* Path A - bring own number */}
       <button
         type="button"
         disabled={busy}
@@ -273,16 +273,16 @@ function ChooseStep({ busy, onStart }) {
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 group-hover:text-emerald-800">
             {busy ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Startingâ€¦
+                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
               </>
             ) : (
-              <>Connect via Facebook â†’</>
+              <>Connect via Facebook →</>
             )}
           </span>
         </div>
       </button>
 
-      {/* Path B â€” instant number */}
+      {/* Path B - instant number */}
       <button
         type="button"
         disabled={busy}
@@ -326,10 +326,10 @@ function ChooseStep({ busy, onStart }) {
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 group-hover:text-violet-800">
             {busy ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Startingâ€¦
+                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
               </>
             ) : (
-              <>Get instant number â†’</>
+              <>Get instant number →</>
             )}
           </span>
         </div>
@@ -343,7 +343,7 @@ function ChooseStep({ busy, onStart }) {
   );
 }
 
-// â”€â”€â”€ Step 2a: Redirecting away â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Step 2a: Redirecting away ----------------------------------------------
 
 function RedirectingStep() {
   return (
@@ -351,7 +351,7 @@ function RedirectingStep() {
       <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto" />
       <div>
         <h2 className="text-lg font-semibold text-ink-900">
-          Opening secure setupâ€¦
+          Opening secure setup...
         </h2>
         <p className="text-sm text-ink-500 mt-1">
           You'll be redirected to a secure page to authorize your WhatsApp
@@ -362,7 +362,7 @@ function RedirectingStep() {
   );
 }
 
-// â”€â”€â”€ Step 2b: Finalizing after redirect back â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Step 2b: Finalizing after redirect back --------------------------------
 
 function FinalizingStep() {
   return (
@@ -370,7 +370,7 @@ function FinalizingStep() {
       <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto" />
       <div>
         <h2 className="text-lg font-semibold text-ink-900">
-          Wrapping things upâ€¦
+          Wrapping things up...
         </h2>
         <p className="text-sm text-ink-500 mt-1">
           We're connecting your number to your workspace. Just a moment.
@@ -380,7 +380,7 @@ function FinalizingStep() {
   );
 }
 
-// â”€â”€â”€ Step 3: Done â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Step 3: Done -----------------------------------------------------------
 
 function DoneStep({ onFinish }) {
   return (
@@ -405,7 +405,7 @@ function DoneStep({ onFinish }) {
   );
 }
 
-// â”€â”€â”€ Step 3 (failure): Failed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Step 3 (failure): Failed -----------------------------------------------
 
 function FailedStep({ message, onRetry }) {
   return (
@@ -427,7 +427,7 @@ function FailedStep({ message, onRetry }) {
   );
 }
 
-// â”€â”€â”€ Upgrade prompt (when plan doesn't allow WA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Upgrade prompt (when plan doesn't allow WA) ----------------------------
 
 function UpgradePrompt({ onBilling, onBack }) {
   return (
@@ -450,7 +450,7 @@ function UpgradePrompt({ onBilling, onBack }) {
             onClick={onBilling}
             className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition"
           >
-            View plans â†’
+            View plans →
           </button>
           <button
             onClick={onBack}
