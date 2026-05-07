@@ -1,8 +1,11 @@
 /**
  * Botlify App Header
- * - Setup Instagram + Setup WhatsApp buttons (visible when not connected)
+ * - Channel switcher (Instagram | WhatsApp) when at least one is connected
+ * - Setup Instagram + Setup WhatsApp buttons when not connected
  * - User avatar dropdown
  * - Search shortcut
+ *
+ * Design: rectangular, no rounded corners — clean enterprise look.
  */
 import {
   Menu,
@@ -20,13 +23,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
+import toast from "react-hot-toast";
 
 export default function Header({ onMenuClick, onSearchClick }) {
-  const { workspace } = useWorkspaceStore();
+  const { workspace, setActiveChannel } = useWorkspaceStore();
   const { user, logout, activeWorkspace, setActiveWorkspace } = useAuthStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [wsOpen, setWsOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const menuRef = useRef(null);
   const wsRef = useRef(null);
 
@@ -41,7 +46,12 @@ export default function Header({ onMenuClick, onSearchClick }) {
   }, []);
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected = workspace?.whatsapp?.status === "connected";
+  const waConnected =
+    workspace?.whatsapp?.status === "connected" ||
+    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
+
+  const activeChannel = workspace?.activeChannel || "instagram";
+  const showSwitcher = igConnected || waConnected;
 
   const workspaces = user?.workspaces || [];
   const igPic = igConnected ? workspace?.instagram?.profilePicture : null;
@@ -67,37 +77,81 @@ export default function Header({ onMenuClick, onSearchClick }) {
     }
   };
 
+  const switchChannel = async (channel) => {
+    if (channel === activeChannel || switching) return;
+    setSwitching(true);
+    try {
+      await setActiveChannel(channel);
+      navigate("/dashboard");
+    } catch (e) {
+      toast.error("Could not switch dashboard");
+    } finally {
+      setSwitching(false);
+    }
+  };
+
   return (
-    <header className="h-14 bg-white border-b border-ink-100 flex items-center justify-between px-4 sm:px-5 flex-shrink-0 z-10">
-      {/* Left: mobile menu + search */}
+    <header className="h-14 bg-white border-b border-ink-200 flex items-center justify-between px-4 sm:px-5 flex-shrink-0 z-10">
+      {/* Left: mobile menu + search + channel switcher */}
       <div className="flex items-center gap-2">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-lg text-ink-500 hover:bg-ink-50"
+          className="lg:hidden p-2 text-ink-500 hover:bg-ink-50"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
         <button
           onClick={onSearchClick}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-ink-200 bg-ink-50 hover:bg-white hover:border-ink-300 text-xs text-ink-400 transition"
+          className="flex items-center gap-2 px-3 py-1.5 border border-ink-200 bg-ink-50 hover:bg-white hover:border-ink-300 text-xs text-ink-500 transition"
           aria-label="Search"
         >
           <Search className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Search…</span>
-          <kbd className="hidden md:inline text-[10px] px-1.5 py-0.5 rounded bg-white border border-ink-200 font-mono text-ink-400">
+          <kbd className="hidden md:inline text-[10px] px-1.5 py-0.5 bg-white border border-ink-200 font-mono text-ink-400">
             ⌘K
           </kbd>
         </button>
+
+        {/* Channel switcher — shown only when at least one channel is connected */}
+        {showSwitcher && (
+          <div className="hidden sm:flex items-center border border-ink-200 bg-white ml-1">
+            <ChannelTab
+              icon={Instagram}
+              label="Instagram"
+              active={activeChannel === "instagram"}
+              connected={igConnected}
+              onClick={() =>
+                igConnected
+                  ? switchChannel("instagram")
+                  : navigate("/dashboard/onboarding/instagram")
+              }
+              accent="pink"
+            />
+            <span className="w-px h-6 bg-ink-200" />
+            <ChannelTab
+              icon={MessageSquare}
+              label="WhatsApp"
+              active={activeChannel === "whatsapp"}
+              connected={waConnected}
+              onClick={() =>
+                waConnected
+                  ? switchChannel("whatsapp")
+                  : navigate("/dashboard/onboarding/whatsapp")
+              }
+              accent="emerald"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Right: channel setup pills + user menu */}
+      {/* Right: setup pills + user menu */}
       <div className="flex items-center gap-2">
         {/* Setup Instagram — shown when not yet connected */}
         {!igConnected && (
           <button
             onClick={startIgOAuth}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-pink-200 hover:border-pink-400 hover:bg-pink-50 text-xs font-semibold text-pink-600 transition"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-pink-300 hover:border-pink-500 hover:bg-pink-50 text-xs font-semibold text-pink-600 transition"
           >
             <Instagram className="w-3.5 h-3.5" />
             Setup Instagram
@@ -108,7 +162,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
         {!waConnected && (
           <button
             onClick={() => navigate("/dashboard/onboarding/whatsapp")}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 text-xs font-semibold text-emerald-600 transition"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 text-xs font-semibold text-emerald-600 transition"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             Setup WhatsApp
@@ -120,13 +174,13 @@ export default function Header({ onMenuClick, onSearchClick }) {
           <div className="relative hidden sm:block" ref={wsRef}>
             <button
               onClick={() => setWsOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 text-xs text-ink-700 transition max-w-[140px]"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-ink-200 hover:bg-ink-50 text-xs text-ink-700 transition max-w-[140px]"
             >
               <span className="truncate">{workspace?.name || "Workspace"}</span>
               <ChevronDown className="w-3 h-3 text-ink-400 flex-shrink-0" />
             </button>
             {wsOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white border border-ink-100 rounded-xl shadow-lg py-1.5 z-50">
+              <div className="absolute right-0 mt-2 w-52 bg-white border border-ink-200 shadow-lg py-1.5 z-50">
                 <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-ink-400 font-semibold">
                   Switch workspace
                 </p>
@@ -138,7 +192,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
                     <button
                       key={id}
                       onClick={() => switchWorkspace(id)}
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-ink-50 text-ink-700 rounded-md mx-1"
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-ink-50 text-ink-700"
                     >
                       <span className="truncate">{name}</span>
                       {isActive && (
@@ -156,24 +210,20 @@ export default function Header({ onMenuClick, onSearchClick }) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-transparent hover:ring-violet-200 transition"
+            className="w-8 h-8 flex items-center justify-center overflow-hidden ring-2 ring-transparent hover:ring-violet-200 transition"
             aria-label="Account menu"
           >
             {igPic ? (
-              <img
-                src={igPic}
-                alt=""
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              <img src={igPic} alt="" className="w-8 h-8 object-cover" />
             ) : (
-              <span className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
+              <span className="w-8 h-8 bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
                 {initial}
               </span>
             )}
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-white border border-ink-100 rounded-xl shadow-lg py-1.5 z-50">
+            <div className="absolute right-0 mt-2 w-52 bg-white border border-ink-200 shadow-lg py-1.5 z-50">
               {/* User info */}
               <div className="px-3 py-2 border-b border-ink-100 mb-1">
                 <p className="text-xs font-semibold text-ink-900 truncate">
@@ -217,16 +267,48 @@ export default function Header({ onMenuClick, onSearchClick }) {
   );
 }
 
+function ChannelTab({ icon: Icon, label, active, connected, onClick, accent }) {
+  const accents = {
+    pink: {
+      activeBg: "bg-pink-600 text-white",
+      activeBar: "border-pink-600",
+      idle: "text-pink-700 hover:bg-pink-50",
+    },
+    emerald: {
+      activeBg: "bg-emerald-600 text-white",
+      activeBar: "border-emerald-600",
+      idle: "text-emerald-700 hover:bg-emerald-50",
+    },
+  };
+  const a = accents[accent];
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition ${
+        active ? a.activeBg : a.idle
+      } ${!connected ? "opacity-60" : ""}`}
+      title={connected ? `Switch to ${label} dashboard` : `Connect ${label}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span className="hidden md:inline">{label}</span>
+      {connected && (
+        <span
+          className={`w-1.5 h-1.5 ${active ? "bg-white" : "bg-emerald-500"}`}
+        />
+      )}
+    </button>
+  );
+}
+
 function MenuItem({ icon: Icon, label, onClick, danger }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-md mx-1 transition ${
+      className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition ${
         danger
           ? "text-rose-600 hover:bg-rose-50"
           : "text-ink-700 hover:bg-ink-50"
       }`}
-      style={{ width: "calc(100% - 8px)" }}
     >
       <Icon className="w-3.5 h-3.5 flex-shrink-0" />
       {label}

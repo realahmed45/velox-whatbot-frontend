@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
@@ -46,10 +47,32 @@ const TABS = [
 export default function AutomationSetupPage() {
   const { activeWorkspace } = useAuthStore();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cfg, setCfg] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("welcome");
+  const [tab, setTab] = useState(() => {
+    const t = searchParams.get("tab");
+    return TABS.some((x) => x.id === t) ? t : "welcome";
+  });
   const [saving, setSaving] = useState(false);
+
+  // Sync tab → URL so deep links and back/forward work
+  useEffect(() => {
+    const current = searchParams.get("tab");
+    if (current !== tab) {
+      const next = new URLSearchParams(searchParams);
+      next.set("tab", tab);
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Sync URL → tab when user navigates externally (e.g. dashboard tile click)
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && TABS.some((x) => x.id === t) && t !== tab) setTab(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const plan = workspace?.subscription?.plan || "starter";
 

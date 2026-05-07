@@ -35,4 +35,20 @@ export const useWorkspaceStore = create((set, get) => ({
   },
 
   setWorkspace: (workspace) => set({ workspace }),
+
+  // Persist active channel to backend + update local store
+  setActiveChannel: async (channel) => {
+    const ws = get().workspace;
+    if (!ws?._id) return;
+    // Optimistic update
+    set({ workspace: { ...ws, activeChannel: channel } });
+    try {
+      await api.put(`/workspaces/${ws._id}`, { activeChannel: channel });
+    } catch (err) {
+      console.error("setActiveChannel error", err);
+      // revert
+      set({ workspace: ws });
+      throw err;
+    }
+  },
 }));
