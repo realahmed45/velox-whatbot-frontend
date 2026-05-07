@@ -6,12 +6,15 @@ import toast from "react-hot-toast";
 import {
   Save,
   Instagram,
+  MessageSquare,
   AlertCircle,
   Loader2,
   Trash2,
+  RefreshCw,
   Settings as SettingsIcon,
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useNavigate } from "react-router-dom";
 
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
@@ -21,6 +24,7 @@ export default function SettingsPage() {
   const TABS = [
     { id: "general", label: "General" },
     { id: "instagram", label: "Instagram" },
+    { id: "whatsapp", label: "WhatsApp" },
     { id: "automation", label: "Automation" },
     { id: "branding", label: "Branding" },
   ];
@@ -52,6 +56,12 @@ export default function SettingsPage() {
       )}
       {tab === "instagram" && (
         <InstagramSettings
+          workspace={workspace}
+          onSave={() => fetchWorkspace(activeWorkspace)}
+        />
+      )}
+      {tab === "whatsapp" && (
+        <WhatsAppSettings
           workspace={workspace}
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
@@ -351,6 +361,100 @@ function InstagramSettings({ workspace, onSave }) {
         <p className="text-xs text-ink-400">
           Connected {new Date(ig.connectedAt).toLocaleDateString()}
         </p>
+      )}
+    </div>
+  );
+}
+
+function WhatsAppSettings({ workspace, onSave }) {
+  const wa = workspace?.whatsapp;
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+
+  const connected =
+    wa?.status === "connected" || (wa?.type && wa.type !== "none");
+
+  const disconnect = async () => {
+    if (
+      !window.confirm(
+        "Disconnect WhatsApp? Your number will be unlinked and automations will stop.",
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      await api.delete("/whatsapp/disconnect");
+      toast.success("WhatsApp disconnected");
+      onSave();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to disconnect");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card p-6 space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-sm text-ink-900 truncate">
+              {connected
+                ? wa?.phoneNumber || wa?.displayName || "WhatsApp connected"
+                : "Not connected"}
+            </p>
+            <span
+              className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                connected
+                  ? "bg-green-100 text-green-700"
+                  : "bg-ink-100 text-ink-500"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-green-500" : "bg-ink-400"}`}
+              />
+              {connected ? "Connected" : "Disconnected"}
+            </span>
+          </div>
+        </div>
+        {connected && (
+          <button
+            onClick={disconnect}
+            disabled={busy}
+            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+          >
+            <Trash2 className="w-3 h-3" />
+            Disconnect
+          </button>
+        )}
+      </div>
+
+      {connected ? (
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate("/dashboard/onboarding/whatsapp")}
+            className="w-full flex items-center justify-center gap-2 border border-ink-200 hover:bg-ink-50 text-ink-700 font-medium py-2.5 rounded-md text-sm transition"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Reconnect / Switch number
+          </button>
+          {wa?.connectedAt && (
+            <p className="text-xs text-ink-400 text-center">
+              Connected {new Date(wa.connectedAt).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={() => navigate("/dashboard/onboarding/whatsapp")}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-3 rounded-md hover:opacity-90 transition"
+        >
+          <MessageSquare className="w-4 h-4" />
+          Connect WhatsApp
+        </button>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 /**
@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 export default function GoogleSignInButton({ label = "Continue with Google" }) {
   const { login } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleSuccess = async (credentialResponse) => {
     try {
@@ -32,8 +33,20 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
 
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome!");
+
       const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
-      navigate(ws ? "/dashboard" : "/onboarding");
+      const channelHint = searchParams.get("channel");
+
+      if (!ws) {
+        // No workspace yet → choose-channel onboarding
+        if (channelHint === "whatsapp")
+          navigate("/dashboard/onboarding/whatsapp");
+        else if (channelHint === "instagram")
+          navigate("/dashboard/onboarding/instagram");
+        else navigate("/dashboard/onboarding/choose-channel");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Google sign-in failed");
     }

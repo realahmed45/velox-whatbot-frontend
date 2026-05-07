@@ -32,8 +32,11 @@ const STEPS = [
       "Instagram — connect a Business / Creator account via Meta OAuth.",
       "You can switch or add channels anytime from the sidebar.",
     ],
-    cta: { label: "Choose channel", to: "/onboarding/choose-channel" },
-    helpLink: "/dashboard/integrations",
+    cta: {
+      label: "Choose channel",
+      to: "/dashboard/onboarding/choose-channel",
+    },
+    helpLink: "/dashboard/settings",
   },
   {
     id: 2,

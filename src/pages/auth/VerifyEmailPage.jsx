@@ -17,24 +17,18 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (!token) return;
 
-    console.log(
-      "[VerifyEmail] Token found in URL, calling /auth/verify-email...",
-    );
     api
       .post("/auth/verify-email", { token })
       .then((res) => {
-        console.log("[VerifyEmail] Verification success", res.data);
-        // Log the user in automatically
-        const { user, token: accessToken } = res.data;
-        login(user, accessToken, null);
+        const { user, token: accessToken, refreshToken } = res.data;
+        login(user, accessToken, refreshToken || null);
         setStatus("success");
-        setTimeout(() => navigate("/onboarding"), 2000);
+        setTimeout(
+          () => navigate("/dashboard/onboarding/choose-channel"),
+          2000,
+        );
       })
       .catch((err) => {
-        console.error(
-          "[VerifyEmail] Verification failed",
-          err.response?.data || err.message,
-        );
         setErrorMsg(
           err.response?.data?.message ||
             "Verification failed. The link may have expired.",

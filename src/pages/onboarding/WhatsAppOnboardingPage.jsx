@@ -1,674 +1,465 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+﻿/**
+ * WhatsApp Onboarding â€” Embedded-signup flow (Botlify Cloud Pro)
+ *
+ * Two paths offered to the user:
+ *   1. "Use my own WhatsApp number"  â€” opens upstream embedded signup,
+ *      customer authorizes their existing business number, returns connected.
+ *   2. "Get a free instant number"   â€” upstream provisions a US WhatsApp
+ *      number for them in seconds. No verification.
+ *
+ * The same page also handles the post-signup redirect: when the user is
+ * sent back here with `?status=completed&phone_number_id=...` we finalize
+ * the connection on the backend and show success.
+ */
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import {
+  MessageSquare,
+  ArrowLeft,
+  Check,
+  Loader2,
+  CreditCard,
+  Phone,
+  Sparkles,
+  ShieldCheck,
+  AlertTriangle,
+} from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import {
-  MessageCircle,
-  Check,
-  ArrowRight,
-  ArrowLeft,
-  Shield,
-  ExternalLink,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  Loader2,
-  Send,
-  Rocket,
-  Smartphone,
-  RefreshCw,
-  QrCode,
-  Sparkles,
-  Zap,
-} from "lucide-react";
 
-/**
- * WhatsApp onboarding wizard.
- *
- * Two paths:
- *  • "Quick connect" (default)  → Botlify Cloud, QR-scan onboarding (~2 min)
- *  • "Official API"             → Meta Cloud API (advanced, for verified businesses)
- */
+const FAILURE_MESSAGES = {
+  facebook_auth_failed: "Facebook login was cancelled. You can try again.",
+  phone_verification_failed:
+    "Phone verification failed. Please try again or use a different number.",
+  waba_limit_reached:
+    "This number has reached the maximum allowed WhatsApp Business accounts.",
+  token_exchange_failed: "Authorization failed. Please try again.",
+  link_expired: "This connection link expired. Please start over.",
+  already_used:
+    "This connection link has already been used. Please start over.",
+};
+
 export default function WhatsAppOnboardingPage() {
-  const [step, setStep] = useState(1);
-  const [provider, setProvider] = useState("cloud"); // "cloud" | "meta"
-
-  // Cloud (white-labeled) creds
-  const [cloud, setCloud] = useState({
-    idInstance: "",
-    apiTokenInstance: "",
-    displayName: "",
-  });
-
-  // Meta creds
-  const [meta, setMeta] = useState({
-    phoneNumberId: "",
-    accessToken: "",
-    wabaId: "",
-    displayName: "",
-    phoneNumber: "",
-  });
-
-  const [show, setShow] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  // QR scan state (cloud only)
-  const [qrImage, setQrImage] = useState(null);
-  const [qrStatus, setQrStatus] = useState("idle"); // idle | pending | authorized | error
-  const [qrLoading, setQrLoading] = useState(false);
-  const qrPollRef = useRef(null);
-
-  // Test step
-  const [testNumber, setTestNumber] = useState("");
-  const [testing, setTesting] = useState(false);
-
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { activeWorkspace } = useAuthStore();
   const { fetchWorkspace } = useWorkspaceStore();
 
-  // ─── stop polling when leaving page or finishing ─────────
-  useEffect(() => () => stopPolling(), []);
+  const callbackStatus = searchParams.get("status"); // completed | failed | undefined
+  const phoneNumberIdParam = searchParams.get("phone_number_id");
+  const businessAccountIdParam = searchParams.get("business_account_id");
+  const displayPhoneNumberParam = searchParams.get("display_phone_number");
+  const errorCodeParam = searchParams.get("error_code");
 
-  const stopPolling = () => {
-    if (qrPollRef.current) {
-      clearInterval(qrPollRef.current);
-      qrPollRef.current = null;
-    }
-  };
+  // 'choose' | 'redirecting' | 'finalizing' | 'done' | 'failed' | 'upgrade'
+  const [phase, setPhase] = useState(() => {
+    if (callbackStatus === "completed") return "finalizing";
+    if (callbackStatus === "failed") return "failed";
+    return "choose";
+  });
+  const [busy, setBusy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  const startPolling = () => {
-    stopPolling();
-    qrPollRef.current = setInterval(refreshQr, 5000);
-  };
-
-  const refreshQr = async () => {
-    try {
-      const { data } = await api.get("/whatsapp/cloud/qr");
-      if (data.status === "authorized") {
-        setQrStatus("authorized");
-        setQrImage(null);
-        stopPolling();
-        await fetchWorkspace(activeWorkspace);
-        toast.success("Phone linked successfully!");
-        setStep(4);
-      } else if (data.qr) {
-        setQrImage(data.qr);
-        setQrStatus("pending");
-      } else {
-        setQrStatus(data.status || "pending");
+  // Run finalize call once when we land back from upstream signup
+  useEffect(() => {
+    if (phase !== "finalizing") return;
+    let cancelled = false;
+    (async () => {
+      if (!phoneNumberIdParam) {
+        setErrorMessage(
+          "We couldn't read the connection details. Please try connecting again.",
+        );
+        setPhase("failed");
+        return;
       }
-    } catch (err) {
-      // soft-fail; keep polling
-    }
-  };
-
-  // ─── Submit credentials ──────────────────────────────────
-  const onboard = async () => {
-    setSaving(true);
-    try {
-      let payload;
-      if (provider === "cloud") {
-        if (!cloud.idInstance.trim() || !cloud.apiTokenInstance.trim()) {
-          setSaving(false);
-          return toast.error("Both fields are required");
-        }
-        payload = {
-          type: "cloud",
-          idInstance: cloud.idInstance.trim(),
-          apiTokenInstance: cloud.apiTokenInstance.trim(),
-          displayName: cloud.displayName.trim(),
-        };
-      } else {
-        payload = { type: "meta", ...meta };
+      try {
+        await api.post("/whatsapp/connect/finalize", {
+          phoneNumberId: phoneNumberIdParam,
+          businessAccountId: businessAccountIdParam || undefined,
+          displayPhoneNumber: displayPhoneNumberParam
+            ? decodeURIComponent(displayPhoneNumberParam)
+            : undefined,
+        });
+        if (cancelled) return;
+        if (activeWorkspace) await fetchWorkspace(activeWorkspace);
+        setPhase("done");
+        // Clean the URL so refresh doesn't re-finalize
+        setSearchParams({}, { replace: true });
+      } catch (err) {
+        if (cancelled) return;
+        setErrorMessage(
+          err.response?.data?.message ||
+            "Could not finalize your connection. Please try again.",
+        );
+        setPhase("failed");
       }
-      const { data } = await api.post("/whatsapp/onboard", payload);
-      await fetchWorkspace(activeWorkspace);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
-      if (provider === "cloud") {
-        if (data.cloudState === "authorized") {
-          toast.success("Already linked!");
-          setStep(4);
-        } else {
-          toast.success("Credentials saved — scan the code to link");
-          setStep(3);
-          setQrLoading(true);
-          await refreshQr();
-          setQrLoading(false);
-          startPolling();
-        }
-      } else {
-        toast.success("WhatsApp connected!");
-        setStep(4);
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Connection failed");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const stepIndex = useMemo(() => {
+    if (phase === "done") return 3;
+    if (phase === "redirecting" || phase === "finalizing") return 2;
+    return 1;
+  }, [phase]);
 
-  const sendTest = async () => {
-    if (!testNumber.trim()) return toast.error("Enter a phone number");
-    setTesting(true);
+  const startConnect = async ({ instant }) => {
+    setBusy(true);
+    setErrorMessage(null);
     try {
-      await api.post("/whatsapp/test", { phone: testNumber });
-      toast.success("Test message sent! Check WhatsApp.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send");
-    } finally {
-      setTesting(false);
-    }
-  };
-
-  const finish = async () => {
-    stopPolling();
-    try {
-      await api.put(`/workspaces/${activeWorkspace}`, {
-        settings: { automationEnabled: true },
+      const { data } = await api.post("/whatsapp/connect/provision", {
+        instant: !!instant,
       });
-    } catch {}
-    navigate("/dashboard?welcome=wa");
+      if (!data?.redirectUrl) {
+        throw new Error("Missing redirect URL");
+      }
+      setPhase("redirecting");
+      // Hand off to upstream embedded signup
+      window.location.assign(data.redirectUrl);
+    } catch (err) {
+      const code = err.response?.data?.code;
+      if (err.response?.status === 402 || code === "PLAN_UPGRADE_REQUIRED") {
+        setPhase("upgrade");
+      } else {
+        setErrorMessage(
+          err.response?.data?.message ||
+            "Could not start the connection. Please try again.",
+        );
+        toast.error(
+          err.response?.data?.message ||
+            "Could not start the connection. Please try again.",
+        );
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const totalSteps = provider === "cloud" ? 4 : 3;
+  if (phase === "upgrade") {
+    return (
+      <UpgradePrompt
+        onBilling={() => navigate("/dashboard/billing")}
+        onBack={() => setPhase("choose")}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ink-50 via-white to-emerald-50/40 p-6 sm:p-10">
-      <div className="max-w-3xl mx-auto">
-        {/* ── Header ─────────────────────────────────────── */}
+    <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
+      <div className="w-full max-w-2xl">
+        {/* Header bar */}
         <div className="flex items-center justify-between mb-8">
           <Link
-            to="/onboarding/choose-channel"
-            className="text-xs text-ink-400 hover:text-ink-700 inline-flex items-center gap-1"
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-700 transition"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to channel
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to dashboard
           </Link>
-          <div className="flex items-center gap-2 text-xs text-ink-500">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-              <span key={i} className="flex items-center gap-2">
-                <span
-                  className={`w-2 h-2 rounded-full ${step >= i + 1 ? "bg-emerald-500" : "bg-ink-200"}`}
-                />
-                {i < totalSteps - 1 && (
-                  <span
-                    className={`w-8 h-px ${step >= i + 2 ? "bg-emerald-500" : "bg-ink-200"}`}
-                  />
-                )}
-              </span>
+          <div className="flex gap-2">
+            {[1, 2, 3].map((n) => (
+              <span
+                key={n}
+                className={`w-6 h-1.5 rounded-full transition-colors ${stepIndex >= n ? "bg-emerald-500" : "bg-ink-200"}`}
+              />
             ))}
           </div>
         </div>
 
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
-            <MessageCircle className="w-3 h-3" /> WhatsApp setup · Step {step}{" "}
-            of {totalSteps}
+        {/* Title */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
+            <MessageSquare className="w-5 h-5 text-white" />
           </div>
-          <h1 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-ink-900">
-            {step === 1 && "How do you want to connect?"}
-            {step === 2 && "Add your details"}
-            {step === 3 && "Scan to link your phone"}
-            {step === 4 && "You're live 🎉"}
-          </h1>
-          <p className="mt-2 text-sm text-ink-500 max-w-lg mx-auto">
-            {step === 1 &&
-              "Most users go with Quick Connect — it takes about 2 minutes."}
-            {step === 2 &&
-              "We never store your details in plain text — everything is encrypted at rest."}
-            {step === 3 &&
-              "Open WhatsApp on your phone → Linked Devices → scan this code."}
-            {step === 4 &&
-              "Send a test message to confirm everything works, then go to your dashboard."}
-          </p>
+          <div>
+            <h1 className="text-xl font-bold text-ink-900">Connect WhatsApp</h1>
+            <p className="text-xs text-ink-500">
+              {phase === "choose" &&
+                "Choose how you'd like to set up your WhatsApp number"}
+              {phase === "redirecting" && "Opening the secure setup pageâ€¦"}
+              {phase === "finalizing" && "Almost done â€” finishing setupâ€¦"}
+              {phase === "done" && "WhatsApp connected successfully!"}
+              {phase === "failed" && "Something went wrong"}
+            </p>
+          </div>
         </div>
 
-        {/* ── STEP 1 — provider ──────────────────────────── */}
-        {step === 1 && (
-          <div className="space-y-4">
-            <ProviderCard
-              active={provider === "cloud"}
-              onClick={() => setProvider("cloud")}
-              title="Quick Connect"
-              tagline="Use your existing WhatsApp by scanning a QR code — like WhatsApp Web."
-              badge="Recommended"
-              icon={QrCode}
-              bullets={[
-                "Live in 2 minutes — no Facebook approval needed",
-                "Works with any WhatsApp number you already own",
-                "Full automation: AI replies, broadcasts, flows, comment-to-DM",
-                "Encrypted end-to-end through Botlify Cloud",
-              ]}
-            />
-            <ProviderCard
-              active={provider === "meta"}
-              onClick={() => setProvider("meta")}
-              title="Official WhatsApp Business API"
-              tagline="For verified businesses with a Meta Business account."
-              badge="Advanced"
-              icon={Shield}
-              bullets={[
-                "Best for businesses with a verified Meta page",
-                "Higher messaging limits & official green-tick eligibility",
-                "Requires a Meta-issued Phone Number ID + Access Token",
-              ]}
-              link={{
-                href: "https://developers.facebook.com/docs/whatsapp/cloud-api/get-started",
-                label: "How to get Meta credentials",
-              }}
-            />
-
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={() => setStep(2)}
-                className="btn-primary !px-7 !py-3 shadow-glow"
-              >
-                Continue <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+        {phase === "choose" && (
+          <ChooseStep busy={busy} onStart={startConnect} />
         )}
 
-        {/* ── STEP 2 — credentials ───────────────────────── */}
-        {step === 2 && (
-          <div className="bg-white rounded-lg border border-ink-100 p-6 sm:p-8 shadow-card">
-            {provider === "cloud" ? (
-              <div className="space-y-4">
-                <div className="rounded-md bg-emerald-50 border border-emerald-200 p-3 flex gap-3">
-                  <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-xs text-emerald-800">
-                    <strong>Two fields, that's it.</strong> Get your free
-                    Connection ID & Key from your{" "}
-                    <a
-                      href="https://console.green-api.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline font-semibold"
-                    >
-                      Botlify Cloud console
-                    </a>
-                    , paste them below, and you'll scan a QR on the next step.
-                  </div>
-                </div>
+        {phase === "redirecting" && <RedirectingStep />}
 
-                <Field
-                  label="Display name (optional)"
-                  value={cloud.displayName}
-                  onChange={(v) => setCloud({ ...cloud, displayName: v })}
-                  placeholder="My Brand"
-                />
-                <Field
-                  label="Connection ID"
-                  value={cloud.idInstance}
-                  onChange={(v) => setCloud({ ...cloud, idInstance: v })}
-                  placeholder="1101234567"
-                  helper="The numeric ID from your Botlify Cloud console"
-                />
-                <Field
-                  label="Connection Key"
-                  value={cloud.apiTokenInstance}
-                  onChange={(v) => setCloud({ ...cloud, apiTokenInstance: v })}
-                  placeholder="••••••••••••••••••••••••••••••••"
-                  type={show ? "text" : "password"}
-                  rightIcon={show ? EyeOff : Eye}
-                  onRightClick={() => setShow(!show)}
-                />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Field
-                  label="Display name"
-                  value={meta.displayName}
-                  onChange={(v) => setMeta({ ...meta, displayName: v })}
-                  placeholder="My Brand"
-                />
-                <Field
-                  label="WhatsApp phone number"
-                  value={meta.phoneNumber}
-                  onChange={(v) => setMeta({ ...meta, phoneNumber: v })}
-                  placeholder="+923001234567"
-                  helper="In E.164 format (with country code)"
-                />
-                <Field
-                  label="Phone Number ID"
-                  value={meta.phoneNumberId}
-                  onChange={(v) => setMeta({ ...meta, phoneNumberId: v })}
-                  placeholder="123456789012345"
-                  helper="From developers.facebook.com → your app → WhatsApp → API Setup"
-                />
-                <Field
-                  label="WABA ID (optional)"
-                  value={meta.wabaId}
-                  onChange={(v) => setMeta({ ...meta, wabaId: v })}
-                  placeholder="WhatsApp Business Account ID"
-                />
-                <Field
-                  label="Permanent Access Token"
-                  value={meta.accessToken}
-                  onChange={(v) => setMeta({ ...meta, accessToken: v })}
-                  placeholder="EAAxxxxxxxxxxxx..."
-                  type={show ? "text" : "password"}
-                  rightIcon={show ? EyeOff : Eye}
-                  onRightClick={() => setShow(!show)}
-                  helper="System User → Add Asset → Generate Token"
-                />
-              </div>
-            )}
+        {phase === "finalizing" && <FinalizingStep />}
 
-            <div className="flex items-center justify-between pt-6 mt-6 border-t border-ink-100">
-              <button
-                onClick={() => setStep(1)}
-                className="text-sm font-semibold text-ink-500 hover:text-ink-800 inline-flex items-center gap-1"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <button
-                onClick={onboard}
-                disabled={saving}
-                className="btn-primary !px-7 !py-3 shadow-glow disabled:opacity-60"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Connecting…
-                  </>
-                ) : provider === "cloud" ? (
-                  <>
-                    Continue to QR <ArrowRight className="w-4 h-4" />
-                  </>
-                ) : (
-                  <>
-                    Connect WhatsApp <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="mt-5 p-3 rounded-md bg-ink-50 text-[11px] text-ink-500 flex items-start gap-2">
-              <Shield className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <div>
-                Credentials are AES-256 encrypted at rest. We never log or share
-                them.
-              </div>
-            </div>
-          </div>
+        {phase === "done" && (
+          <DoneStep onFinish={() => navigate("/dashboard")} />
         )}
 
-        {/* ── STEP 3 — QR (cloud only) ───────────────────── */}
-        {step === 3 && provider === "cloud" && (
-          <div className="bg-white rounded-lg border border-ink-100 p-6 sm:p-8 shadow-card">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              {/* QR card */}
-              <div className="relative">
-                <div className="aspect-square w-full max-w-xs mx-auto bg-white border-2 border-ink-100 rounded-lg flex items-center justify-center p-4 shadow-card">
-                  {qrLoading || (qrStatus === "idle" && !qrImage) ? (
-                    <div className="flex flex-col items-center gap-3 text-ink-400">
-                      <Loader2 className="w-10 h-10 animate-spin text-emerald-500" />
-                      <p className="text-xs">Preparing your link code…</p>
-                    </div>
-                  ) : qrImage ? (
-                    <img
-                      src={
-                        qrImage.startsWith("data:")
-                          ? qrImage
-                          : `data:image/png;base64,${qrImage}`
-                      }
-                      alt="WhatsApp link code"
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 text-ink-400">
-                      <QrCode className="w-12 h-12" />
-                      <p className="text-xs text-center">
-                        Couldn't generate code.
-                        <br />
-                        Try refreshing.
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={refreshQr}
-                  className="mt-3 mx-auto flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" /> Refresh code
-                </button>
-              </div>
-
-              {/* Steps */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-ink-900 flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-emerald-500" /> On your
-                  phone
-                </h3>
-                <ol className="space-y-3 text-sm text-ink-600">
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                      1
-                    </span>
-                    Open <strong>WhatsApp</strong> on the phone you want to
-                    automate
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                      2
-                    </span>
-                    Tap <strong>⋮ Menu</strong> (Android) or{" "}
-                    <strong>Settings</strong> (iPhone) →{" "}
-                    <strong>Linked Devices</strong>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                      3
-                    </span>
-                    Tap <strong>Link a device</strong> and point your camera at
-                    the code
-                  </li>
-                </ol>
-
-                <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                  <strong>Heads up:</strong> use a phone you own. The number you
-                  link becomes your bot's WhatsApp number.
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-ink-400">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Waiting for scan…
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-6 mt-6 border-t border-ink-100">
-              <button
-                onClick={() => {
-                  stopPolling();
-                  setStep(2);
-                }}
-                className="text-sm font-semibold text-ink-500 hover:text-ink-800 inline-flex items-center gap-1"
-              >
-                <ArrowLeft className="w-4 h-4" /> Edit credentials
-              </button>
-              <button
-                onClick={refreshQr}
-                className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1"
-              >
-                <RefreshCw className="w-4 h-4" /> Check status
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 4 (or 3 for meta) — done + test ───────── */}
-        {((provider === "cloud" && step === 4) ||
-          (provider === "meta" && step === 4)) && (
-          <div className="bg-white rounded-lg border border-ink-100 p-6 sm:p-8 shadow-card">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-md bg-gradient-to-br from-emerald-500 to-green-600 shadow-glow mb-5">
-              <Check className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-center text-xl font-bold text-ink-900">
-              Connected successfully
-            </h3>
-            <p className="text-center text-sm text-ink-500 mt-2">
-              Send a test message to confirm everything works end-to-end.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <Field
-                label="Test phone number (your own)"
-                value={testNumber}
-                onChange={setTestNumber}
-                placeholder="+923001234567"
-                helper="The number must be on WhatsApp"
-              />
-              <button
-                onClick={sendTest}
-                disabled={testing}
-                className="btn-secondary w-full !py-3 disabled:opacity-60"
-              >
-                {testing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Sending…
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" /> Send test message
-                  </>
-                )}
-              </button>
-            </div>
-
-            <button
-              onClick={finish}
-              className="btn-primary w-full !py-3.5 mt-6 shadow-glow"
-            >
-              <Rocket className="w-4 h-4" /> Go to my dashboard
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+        {phase === "failed" && (
+          <FailedStep
+            message={
+              errorMessage ||
+              FAILURE_MESSAGES[errorCodeParam] ||
+              "We couldn't complete your WhatsApp setup."
+            }
+            onRetry={() => {
+              setSearchParams({}, { replace: true });
+              setErrorMessage(null);
+              setPhase("choose");
+            }}
+          />
         )}
       </div>
     </div>
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────
-function ProviderCard({
-  active,
-  onClick,
-  title,
-  tagline,
-  badge,
-  bullets,
-  warning,
-  link,
-  icon: Icon,
-}) {
+// â”€â”€â”€ Step 1: Choose path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function ChooseStep({ busy, onStart }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full text-left bg-white rounded-lg p-5 border-2 transition ${
-        active
-          ? "border-emerald-500 shadow-glow"
-          : "border-ink-100 hover:border-emerald-300"
-      }`}
-    >
-      <div className="flex items-start gap-4">
-        {Icon && (
-          <div
-            className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${
-              active
-                ? "bg-emerald-500 text-white"
-                : "bg-emerald-50 text-emerald-600"
-            }`}
-          >
-            <Icon className="w-5 h-5" />
+    <div className="space-y-4">
+      {/* Path A â€” bring own number */}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onStart({ instant: false })}
+        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-emerald-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
+      >
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+            <Phone className="w-5 h-5 text-emerald-600" />
           </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-ink-900">{title}</h3>
-            {badge && (
-              <span
-                className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md ${
-                  badge === "Recommended"
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-ink-100 text-ink-600"
-                }`}
-              >
-                {badge}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm sm:text-base font-semibold text-ink-900">
+                Use my own WhatsApp number
+              </h3>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                Recommended
               </span>
-            )}
-          </div>
-          <p className="text-xs text-ink-500 mt-0.5">{tagline}</p>
-          <ul className="mt-3 space-y-1.5">
-            {bullets.map((b) => (
-              <li
-                key={b}
-                className="text-xs text-ink-600 flex items-start gap-2"
-              >
-                <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-          {warning && (
-            <div className="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-start gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-              <span>{warning}</span>
             </div>
-          )}
-          {link && (
-            <a
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {link.label} <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
+            <p className="text-xs sm:text-sm text-ink-500 mt-1">
+              Connect your existing business number. You'll log in with Facebook
+              and verify ownership with a one-time code. Takes about
+              2&nbsp;minutes.
+            </p>
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Official
+                WhatsApp Cloud
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" /> No bans, no
+                QR drops
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Broadcasts
+                & templates
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Phone can
+                be offline
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </button>
+        <div className="mt-4 sm:mt-5 flex items-center justify-end">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 group-hover:text-emerald-800">
+            {busy ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Startingâ€¦
+              </>
+            ) : (
+              <>Connect via Facebook â†’</>
+            )}
+          </span>
+        </div>
+      </button>
+
+      {/* Path B â€” instant number */}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onStart({ instant: true })}
+        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-violet-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
+      >
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-violet-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-ink-900">
+              Get a free instant number
+            </h3>
+            <p className="text-xs sm:text-sm text-ink-500 mt-1">
+              We'll provision a brand-new US WhatsApp number for you in about
+              5&nbsp;seconds. Great for testing, agencies, or B2B outreach. No
+              Facebook account needed.
+            </p>
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-violet-500" /> Live in
+                seconds
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-violet-500" /> No
+                verification
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-violet-500" /> US dial code
+                (+1)
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-violet-500" /> Full API
+                access
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 sm:mt-5 flex items-center justify-end">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 group-hover:text-violet-800">
+            {busy ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Startingâ€¦
+              </>
+            ) : (
+              <>Get instant number â†’</>
+            )}
+          </span>
+        </div>
+      </button>
+
+      <p className="text-[11px] text-ink-400 text-center pt-2">
+        Both options use the official WhatsApp Cloud platform. Your number won't
+        get banned and stays online 24/7.
+      </p>
+    </div>
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  helper,
-  type = "text",
-  rightIcon: RightIcon,
-  onRightClick,
-}) {
+// â”€â”€â”€ Step 2a: Redirecting away â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function RedirectingStep() {
   return (
-    <div>
-      <label className="block text-xs font-bold text-ink-700 mb-1.5">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-3.5 py-2.5 text-sm rounded-md border border-ink-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition"
-        />
-        {RightIcon && (
-          <button
-            type="button"
-            onClick={onRightClick}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
-          >
-            <RightIcon className="w-4 h-4" />
-          </button>
-        )}
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-4">
+      <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto" />
+      <div>
+        <h2 className="text-lg font-semibold text-ink-900">
+          Opening secure setupâ€¦
+        </h2>
+        <p className="text-sm text-ink-500 mt-1">
+          You'll be redirected to a secure page to authorize your WhatsApp
+          number. This page will reload once you're done.
+        </p>
       </div>
-      {helper && <p className="text-[11px] text-ink-400 mt-1">{helper}</p>}
+    </div>
+  );
+}
+
+// â”€â”€â”€ Step 2b: Finalizing after redirect back â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function FinalizingStep() {
+  return (
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-4">
+      <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto" />
+      <div>
+        <h2 className="text-lg font-semibold text-ink-900">
+          Wrapping things upâ€¦
+        </h2>
+        <p className="text-sm text-ink-500 mt-1">
+          We're connecting your number to your workspace. Just a moment.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// â”€â”€â”€ Step 3: Done â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function DoneStep({ onFinish }) {
+  return (
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-5">
+      <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto">
+        <Check className="w-7 h-7 text-emerald-500" />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-ink-900">You're all set!</h2>
+        <p className="text-sm text-ink-500 mt-1">
+          WhatsApp is connected. Start automating replies, building flows, and
+          sending broadcasts from your dashboard.
+        </p>
+      </div>
+      <button
+        onClick={onFinish}
+        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition"
+      >
+        Go to Dashboard
+      </button>
+    </div>
+  );
+}
+
+// â”€â”€â”€ Step 3 (failure): Failed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function FailedStep({ message, onRetry }) {
+  return (
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-5">
+      <div className="w-14 h-14 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto">
+        <AlertTriangle className="w-7 h-7 text-amber-500" />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-ink-900">Setup didn't finish</h2>
+        <p className="text-sm text-ink-500 mt-1">{message}</p>
+      </div>
+      <button
+        onClick={onRetry}
+        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
+// â”€â”€â”€ Upgrade prompt (when plan doesn't allow WA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function UpgradePrompt({ onBilling, onBack }) {
+  return (
+    <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-5">
+        <div className="w-14 h-14 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto">
+          <CreditCard className="w-7 h-7 text-amber-500" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-ink-900">
+            WhatsApp needs a paid plan
+          </h2>
+          <p className="text-sm text-ink-500 mt-1.5">
+            Connecting a live WhatsApp number requires a WhatsApp Starter plan
+            or higher. Upgrade to get instant access.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onBilling}
+            className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition"
+          >
+            View plans â†’
+          </button>
+          <button
+            onClick={onBack}
+            className="w-full py-2.5 rounded-xl border border-ink-200 text-ink-600 text-sm font-medium hover:bg-ink-50 transition"
+          >
+            Go back
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

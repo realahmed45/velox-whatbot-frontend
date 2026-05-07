@@ -7,17 +7,8 @@ import {
   Inbox,
   Users,
   Send,
-  Droplet,
-  Gift,
-  Calendar,
-  Link2,
   Sparkles,
   BarChart2,
-  Target,
-  Hash,
-  Plug,
-  UserPlus,
-  Award,
   Settings as SettingsIcon,
   CreditCard,
   Plus,
@@ -26,7 +17,6 @@ import {
 
 /**
  * Global command palette (⌘K / Ctrl+K).
- * Every destination in the app is reachable here in <2 keystrokes.
  */
 const ENTRIES = [
   {
@@ -55,55 +45,11 @@ const ENTRIES = [
     to: "/dashboard/broadcasts",
     group: "Go to",
   },
-  {
-    label: "Drip Campaigns",
-    icon: Droplet,
-    to: "/dashboard/drip-campaigns",
-    group: "Go to",
-  },
-  {
-    label: "Giveaways",
-    icon: Gift,
-    to: "/dashboard/giveaways",
-    group: "Go to",
-  },
-  {
-    label: "Scheduled Posts",
-    icon: Calendar,
-    to: "/dashboard/scheduled-posts",
-    group: "Go to",
-  },
-  {
-    label: "Link in Bio",
-    icon: Link2,
-    to: "/dashboard/link-in-bio",
-    group: "Go to",
-  },
   { label: "AI Bot", icon: Sparkles, to: "/dashboard/ai-bot", group: "Go to" },
   {
     label: "Analytics",
     icon: BarChart2,
     to: "/dashboard/analytics",
-    group: "Go to",
-  },
-  {
-    label: "Competitors",
-    icon: Target,
-    to: "/dashboard/competitors",
-    group: "Go to",
-  },
-  { label: "Hashtags", icon: Hash, to: "/dashboard/hashtags", group: "Go to" },
-  {
-    label: "Integrations",
-    icon: Plug,
-    to: "/dashboard/integrations",
-    group: "Go to",
-  },
-  { label: "Team", icon: UserPlus, to: "/dashboard/team", group: "Go to" },
-  {
-    label: "Referrals",
-    icon: Award,
-    to: "/dashboard/referral",
     group: "Go to",
   },
   {
@@ -113,7 +59,7 @@ const ENTRIES = [
     group: "Go to",
   },
   {
-    label: "Billing & Plan",
+    label: "Plan & Billing",
     icon: CreditCard,
     to: "/dashboard/billing",
     group: "Go to",
@@ -126,21 +72,21 @@ const ENTRIES = [
     group: "Quick actions",
   },
   {
-    label: "Schedule a post",
-    icon: Plus,
-    to: "/dashboard/scheduled-posts?new=1",
-    group: "Quick actions",
-  },
-  {
     label: "Create flow",
     icon: Plus,
     to: "/dashboard/flow-builder?new=1",
     group: "Quick actions",
   },
   {
-    label: "Invite a teammate",
+    label: "Connect Instagram",
     icon: Plus,
-    to: "/dashboard/team?invite=1",
+    to: "/dashboard/onboarding/instagram",
+    group: "Quick actions",
+  },
+  {
+    label: "Connect WhatsApp",
+    icon: Plus,
+    to: "/dashboard/onboarding/whatsapp",
     group: "Quick actions",
   },
 ];

@@ -13,9 +13,11 @@ import {
   Instagram,
   StickyNote,
   Tag as TagIcon,
+  Users,
 } from "lucide-react";
 import dayjs from "dayjs";
 import { clsx } from "clsx";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState([]);
@@ -78,28 +80,23 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="flex h-full bg-ink-50">
-      <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-ink-900">Contacts</h1>
-            <p className="text-sm text-ink-500">
-              {total.toLocaleString()} total
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={exportCSV} className="btn-secondary text-sm">
-              <Download className="w-4 h-4" /> Export
-            </button>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="btn-primary text-sm"
-            >
-              <Plus className="w-4 h-4" /> Add contact
-            </button>
-          </div>
-        </div>
+    <div className="flex h-full">
+      <div className="flex-1 flex flex-col p-4 sm:p-8 overflow-hidden max-w-6xl mx-auto w-full">
+        <PageHeader
+          icon={Users}
+          title="Contacts"
+          subtitle={`${total.toLocaleString()} total`}
+        >
+          <button onClick={exportCSV} className="btn-secondary text-sm">
+            <Download className="w-4 h-4" /> Export
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="btn-primary text-sm"
+          >
+            <Plus className="w-4 h-4" /> Add contact
+          </button>
+        </PageHeader>
 
         {/* Filters */}
         <div className="flex items-center gap-3 mb-4">

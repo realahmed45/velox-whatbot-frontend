@@ -82,9 +82,10 @@ export default function ChooseChannelPage() {
       await fetchWorkspace(activeWorkspace);
       toast.success("Channel saved");
       // Route to channel-specific onboarding
-      if (selected === "whatsapp") navigate("/onboarding/whatsapp");
-      else if (selected === "instagram") navigate("/onboarding/instagram");
-      else navigate("/onboarding/whatsapp"); // both → start with WA
+      if (selected === "whatsapp") navigate("/dashboard/onboarding/whatsapp");
+      else if (selected === "instagram")
+        navigate("/dashboard/onboarding/instagram");
+      else navigate("/dashboard/onboarding/whatsapp"); // both → start with WA
     } catch (err) {
       toast.error(err.response?.data?.message || "Couldn't save your choice");
     } finally {
@@ -95,7 +96,7 @@ export default function ChooseChannelPage() {
   const firstName = (user?.name || "").split(" ")[0] || "there";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ink-50 via-white to-brand-50/40 p-6 sm:p-10">
+    <div className="px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">

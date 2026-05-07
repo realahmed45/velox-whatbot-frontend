@@ -14,6 +14,16 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      toast.error(
+        "Reset link is missing or expired. Please request a new one.",
+      );
+      return;
+    }
+    if (form.password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -33,11 +43,27 @@ export default function ResetPasswordPage() {
     }
   };
 
+  if (!token) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-ink-900 mb-1">Link expired</h2>
+        <p className="text-ink-500 text-sm mb-6">
+          This password reset link is missing or invalid. Please request a new
+          one.
+        </p>
+        <button
+          onClick={() => navigate("/forgot-password")}
+          className="btn-primary w-full"
+        >
+          Request new link
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h2 className="text-2xl font-bold text-ink-900 mb-1">
-        Set new password
-      </h2>
+      <h2 className="text-2xl font-bold text-ink-900 mb-1">Set new password</h2>
       <p className="text-ink-500 text-sm mb-6">
         Choose a strong password for your account.
       </p>

@@ -20,21 +20,16 @@ const ROUTE_TITLES = {
   "/dashboard/automation": "Automation",
   "/dashboard/flow-builder": "Flow Builder",
   "/dashboard/broadcasts": "Broadcasts",
-  "/dashboard/scheduled-posts": "Scheduled Posts",
-  "/dashboard/drip-campaigns": "Drip Campaigns",
-  "/dashboard/giveaways": "Giveaways",
-  "/dashboard/competitors": "Competitors",
-  "/dashboard/integrations": "Integrations",
-  "/dashboard/apps": "Apps",
-  "/dashboard/referral": "Referrals",
-  "/dashboard/team": "Team",
-  "/dashboard/hashtags": "Hashtags",
-  "/dashboard/link-in-bio": "Link in Bio",
   "/dashboard/analytics": "Analytics",
   "/dashboard/ai-bot": "AI Bot",
   "/dashboard/settings": "Settings",
   "/dashboard/billing": "Billing",
   "/dashboard/pricing": "Pricing",
+  "/dashboard/guide": "Guide",
+  "/dashboard/onboarding": "Get Started",
+  "/dashboard/onboarding/choose-channel": "Choose Channel",
+  "/dashboard/onboarding/whatsapp": "Connect WhatsApp",
+  "/dashboard/onboarding/instagram": "Connect Instagram",
 };
 
 export default function DashboardLayout() {
@@ -121,7 +116,7 @@ export default function DashboardLayout() {
       </a>
 
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onNavigate={() => {}} />
       </div>
 
       {mobileSidebarOpen && (

@@ -1,209 +1,74 @@
-﻿import { NavLink, useNavigate, Link, useLocation } from "react-router-dom";
+/**
+ * Botlify Sidebar — simplified, clean, 3-colour theme
+ * Violet (#8b5cf6) · Rose (#ec4899) · Ink/Slate (neutral)
+ */
+import { NavLink, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Zap,
-  Workflow,
   Inbox,
   Users,
   BarChart2,
   LogOut,
-  Sparkles,
   CreditCard,
   Send,
-  Calendar,
-  Droplet,
-  Gift,
-  Target,
-  Plug,
-  Hash,
-  Link2,
-  UserPlus,
-  Award,
   Settings as SettingsIcon,
-  ChevronDown,
   Bot,
+  Instagram,
+  MessageSquare,
   ChevronsLeft,
   ChevronsRight,
   Crown,
-  Instagram,
-  MessageCircle,
-  Layers,
-  Plus,
-  Check,
+  Workflow,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import api from "@/services/api";
-import toast from "react-hot-toast";
 import { clsx } from "clsx";
 
-const GROUPS = [
-  {
-    id: "overview",
-    label: "Overview",
-    items: [
-      {
-        to: "/dashboard",
-        icon: LayoutDashboard,
-        label: "Dashboard",
-        end: true,
-      },
-      {
-        to: "/dashboard/guide",
-        icon: Sparkles,
-        label: "Guide me",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    id: "automate",
-    label: "Automate",
-    items: [
-      { to: "/dashboard/automation", icon: Zap, label: "Automation" },
-      { to: "/dashboard/flow-builder", icon: Workflow, label: "Flow Builder" },
-      { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot", premium: true },
-    ],
-  },
-  {
-    id: "engage",
-    label: "Engage",
-    items: [
-      { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
-      { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
-      { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
-      {
-        to: "/dashboard/drip-campaigns",
-        icon: Droplet,
-        label: "Drip Campaigns",
-      },
-      { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways", channel: "ig" },
-    ],
-  },
-  {
-    id: "content",
-    label: "Content",
-    channel: "ig",
-    items: [
-      {
-        to: "/dashboard/scheduled-posts",
-        icon: Calendar,
-        label: "Scheduled Posts",
-        channel: "ig",
-      },
-      { to: "/dashboard/link-in-bio", icon: Link2, label: "Link in Bio", channel: "ig" },
-    ],
-  },
-  {
-    id: "grow",
-    label: "Grow",
-    items: [
-      { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
-      { to: "/dashboard/competitors", icon: Target, label: "Competitors", channel: "ig" },
-      {
-        to: "/dashboard/hashtags",
-        icon: Hash,
-        label: "Hashtags",
-        premium: true,
-        channel: "ig",
-      },
-    ],
-  },
-  {
-    id: "connect",
-    label: "Connect",
-    items: [
-      { to: "/dashboard/integrations", icon: Plug, label: "Integrations" },
-      { to: "/dashboard/team", icon: UserPlus, label: "Team" },
-      { to: "/dashboard/referral", icon: Award, label: "Referrals" },
-    ],
-  },
-  {
-    id: "account",
-    label: "Account",
-    items: [
-      { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
-      { to: "/dashboard/billing", icon: CreditCard, label: "Billing & Plan" },
-    ],
-  },
+// ─── Navigation ────────────────────────────────────────────────────────────
+const MAIN_NAV = [
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
+  { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
+  { to: "/dashboard/automation", icon: Zap, label: "Automation" },
+  { to: "/dashboard/flow-builder", icon: Workflow, label: "Flow Builder" },
+  { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
+  { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
+  { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
 ];
 
-const STORAGE_KEY = "botlify-sidebar-groups";
+const BOTTOM_NAV = [
+  { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing" },
+  { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
+];
+
 const COLLAPSE_KEY = "botlify-sidebar-collapsed";
 
-function loadJSON(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export default function Sidebar({ onNavigate }) {
-  const { logout, user, activeWorkspace } = useAuthStore();
-  const { workspace, fetchWorkspace } = useWorkspaceStore();
+  const { logout, user } = useAuthStore();
+  const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
-  const location = useLocation();
-  const plan = workspace?.subscription?.plan || "starter";
-  const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected =
-    workspace?.whatsapp?.status === "connected" ||
-    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
-  const igHandle = workspace?.instagram?.username;
-  const igPic = workspace?.instagram?.profilePicture;
-  const activeChannel = workspace?.activeChannel || "instagram";
-  const [switcherOpen, setSwitcherOpen] = useState(false);
 
-  const switchChannel = async (next) => {
-    setSwitcherOpen(false);
-    if (next === activeChannel) return;
-    if (next === "whatsapp" && !waConnected) {
-      navigate("/onboarding/whatsapp");
-      return;
-    }
-    if (next === "instagram" && !igConnected) {
-      navigate("/onboarding/instagram");
-      return;
-    }
+  const [collapsed, setCollapsed] = useState(() => {
     try {
-      await api.put(`/workspaces/${activeWorkspace}`, { activeChannel: next });
-      await fetchWorkspace(activeWorkspace);
-      toast.success(
-        `Now showing ${next === "both" ? "all channels" : next === "whatsapp" ? "WhatsApp" : "Instagram"}`,
-      );
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Couldn't switch");
+      return JSON.parse(localStorage.getItem(COLLAPSE_KEY)) ?? false;
+    } catch {
+      return false;
     }
-  };
+  });
 
-  const [collapsedGroups, setCollapsedGroups] = useState(() =>
-    loadJSON(STORAGE_KEY, {}),
-  );
-  const [collapsed, setCollapsed] = useState(() =>
-    loadJSON(COLLAPSE_KEY, false),
-  );
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(collapsedGroups));
-  }, [collapsedGroups]);
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsed));
   }, [collapsed]);
-
-  const toggleGroup = (id) =>
-    setCollapsedGroups((c) => ({ ...c, [id]: !c[id] }));
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const isGroupActive = (items) =>
-    items.some((i) =>
-      i.end ? location.pathname === i.to : location.pathname.startsWith(i.to),
-    );
-
+  // Plan / usage
+  const plan = workspace?.subscription?.plan || "free";
   const usage = useMemo(() => {
     const used = workspace?.usage?.messagesThisMonth || 0;
     const limit = workspace?.usage?.messagesLimit || 500;
@@ -211,36 +76,51 @@ export default function Sidebar({ onNavigate }) {
     return { used, limit, pct };
   }, [workspace]);
 
-  const planLabel =
-    plan === "scale" ? "Scale" : plan === "growth" ? "Growth" : "Starter";
+  const igConnected = workspace?.instagram?.status === "connected";
+  const waConnected = workspace?.whatsapp?.status === "connected";
+  const igHandle = workspace?.instagram?.username;
+  const waNumber =
+    workspace?.whatsapp?.phoneNumber || workspace?.whatsapp?.displayName;
+
+  const isPremium = [
+    "wa_pro",
+    "bundle_pro",
+    "bundle_business",
+    "ig_pro",
+    "scale",
+  ].includes(plan);
+
+  const initial = (
+    workspace?.name?.[0] ||
+    user?.name?.[0] ||
+    user?.email?.[0] ||
+    "B"
+  ).toUpperCase();
 
   return (
     <aside
       className={clsx(
-        "relative flex-shrink-0 flex flex-col h-full text-ink-200 transition-[width] duration-300",
-        "bg-ink-950 border-r border-white/5",
-        collapsed ? "w-[72px]" : "w-64",
+        "relative flex-shrink-0 flex flex-col h-full transition-[width] duration-300 overflow-hidden",
+        "bg-[#0a0a14] border-r border-white/[0.06]",
+        collapsed ? "w-[68px]" : "w-[220px]",
       )}
     >
-      {/* Animated background */}
-      <div className="pointer-events-none absolute inset-0 bg-mesh-dark opacity-70" />
-      <div className="pointer-events-none absolute inset-0 bg-grid-dark bg-grid-32 opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-      <div className="pointer-events-none absolute -top-24 -left-12 w-64 h-64 rounded-full bg-brand-500/15 blur-[80px]" />
-      <div className="pointer-events-none absolute bottom-10 -right-12 w-56 h-56 rounded-full bg-accent-500/15 blur-[80px]" />
+      {/* Subtle violet glow at top */}
+      <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-violet-500/10 blur-3xl" />
 
-      {/* Header / logo + collapse */}
-      <div className="relative h-16 flex items-center justify-between px-4 border-b border-white/5">
+      {/* ── Logo ──────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between h-14 px-3.5 border-b border-white/[0.06] flex-shrink-0">
         <Link
           to="/dashboard"
           onClick={onNavigate}
-          className="flex items-center gap-2 min-w-0"
-          aria-label="Botlify home"
+          className="flex items-center gap-2.5 min-w-0"
         >
-          <span className="w-8 h-8 rounded-md bg-brand-gradient flex items-center justify-center shadow-glow flex-shrink-0">
+          {/* Logo mark */}
+          <span className="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-lg">
             <Bot className="w-4 h-4 text-white" />
           </span>
           {!collapsed && (
-            <span className="font-bold text-white tracking-tight truncate">
+            <span className="font-bold text-white text-sm tracking-tight">
               Botlify
             </span>
           )}
@@ -248,370 +128,255 @@ export default function Sidebar({ onNavigate }) {
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-ink-400 hover:text-white hover:bg-white/10 transition"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-white/30 hover:text-white hover:bg-white/8 transition"
+          title={collapsed ? "Expand" : "Collapse"}
         >
           {collapsed ? (
-            <ChevronsRight className="w-4 h-4" />
+            <ChevronsRight className="w-3.5 h-3.5" />
           ) : (
-            <ChevronsLeft className="w-4 h-4" />
+            <ChevronsLeft className="w-3.5 h-3.5" />
           )}
         </button>
       </div>
 
-      {/* Workspace card */}
-      {workspace && !collapsed && (
-        <div className="relative mx-3 mt-3 p-3 rounded-md bg-white/5 backdrop-blur border border-white/10 overflow-hidden hover:border-white/20 transition group">
-          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-brand-500/20 blur-2xl group-hover:bg-brand-500/30 transition" />
-          <div className="relative flex items-center gap-2.5">
-            <div className="relative flex-shrink-0">
-              {igPic ? (
-                <img
-                  src={igPic}
-                  alt=""
-                  className="w-9 h-9 rounded-md object-cover ring-1 ring-white/10"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-md bg-brand-gradient flex items-center justify-center shadow-glow">
-                  <Instagram className="w-4 h-4 text-white" />
-                </div>
+      {/* ── Channel status pills ───────────────────────────────── */}
+      {!collapsed && (
+        <div className="px-3 pt-3 flex gap-1.5 flex-shrink-0">
+          <ChannelPill
+            icon={Instagram}
+            label={igConnected ? `@${igHandle}` : "Instagram"}
+            connected={igConnected}
+            onClick={() => {
+              onNavigate?.();
+              navigate(
+                igConnected
+                  ? "/dashboard/settings#instagram"
+                  : "/dashboard/onboarding/instagram",
+              );
+            }}
+          />
+          <ChannelPill
+            icon={MessageSquare}
+            label={waConnected ? waNumber || "WhatsApp" : "WhatsApp"}
+            connected={waConnected}
+            onClick={() => {
+              onNavigate?.();
+              navigate(
+                waConnected
+                  ? "/dashboard/automation"
+                  : "/dashboard/onboarding/whatsapp",
+              );
+            }}
+          />
+        </div>
+      )}
+      {collapsed && (
+        <div className="px-1.5 pt-2 space-y-1 flex-shrink-0">
+          <button
+            title={
+              igConnected ? `Instagram: @${igHandle}` : "Connect Instagram"
+            }
+            onClick={() =>
+              navigate(
+                igConnected
+                  ? "/dashboard/settings#instagram"
+                  : "/dashboard/onboarding/instagram",
+              )
+            }
+            className="w-full flex items-center justify-center"
+          >
+            <span
+              className={clsx(
+                "w-8 h-8 rounded-md flex items-center justify-center",
+                igConnected
+                  ? "bg-pink-500/20 text-pink-400"
+                  : "bg-white/5 text-white/30",
               )}
-              <span
-                className={clsx(
-                  "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-ink-950",
-                  igConnected || waConnected ? "bg-emerald-400" : "bg-ink-500",
-                )}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-ink-400 font-bold truncate">
-                {workspace.name}
-              </p>
-              <p className="text-xs text-white font-medium truncate">
-                {igHandle
-                  ? `@${igHandle}`
-                  : igConnected || waConnected
-                    ? "Connected"
-                    : "Not connected"}
-              </p>
-            </div>
-          </div>
-
-          {/* Channel switcher pill */}
-          <div className="relative mt-3">
-            <button
-              type="button"
-              onClick={() => setSwitcherOpen((v) => !v)}
-              className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 transition"
             >
-              <span className="flex items-center gap-1.5 min-w-0">
-                <ChannelIcon channel={activeChannel} className="w-3.5 h-3.5" />
-                <span className="text-[11px] font-semibold text-white truncate">
-                  {channelLabel(activeChannel)}
-                </span>
-              </span>
-              <ChevronDown
-                className={clsx(
-                  "w-3 h-3 text-ink-400 transition-transform",
-                  switcherOpen && "rotate-180",
-                )}
-              />
-            </button>
-            {switcherOpen && (
-              <div className="absolute z-20 mt-1 left-0 right-0 bg-ink-900 border border-white/10 rounded-md shadow-xl overflow-hidden">
-                <ChannelOption
-                  channel="whatsapp"
-                  active={activeChannel === "whatsapp"}
-                  connected={waConnected}
-                  onClick={() => switchChannel("whatsapp")}
-                />
-                <ChannelOption
-                  channel="instagram"
-                  active={activeChannel === "instagram"}
-                  connected={igConnected}
-                  onClick={() => switchChannel("instagram")}
-                />
-                <ChannelOption
-                  channel="both"
-                  active={activeChannel === "both"}
-                  connected={igConnected && waConnected}
-                  onClick={() => switchChannel("both")}
-                />
-                <Link
-                  to="/onboarding/choose-channel"
-                  onClick={() => {
-                    setSwitcherOpen(false);
-                    onNavigate?.();
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 text-[11px] text-brand-300 hover:bg-white/5 border-t border-white/5"
-                >
-                  <Plus className="w-3 h-3" /> Add channel
-                </Link>
-              </div>
-            )}
-          </div>
+              <Instagram className="w-3.5 h-3.5" />
+            </span>
+          </button>
+          <button
+            title={
+              waConnected
+                ? `WhatsApp: ${waNumber || "connected"}`
+                : "Connect WhatsApp"
+            }
+            onClick={() =>
+              navigate(
+                waConnected ? "/dashboard" : "/dashboard/onboarding/whatsapp",
+              )
+            }
+            className="w-full flex items-center justify-center"
+          >
+            <span
+              className={clsx(
+                "w-8 h-8 rounded-md flex items-center justify-center",
+                waConnected
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "bg-white/5 text-white/30",
+              )}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+            </span>
+          </button>
+        </div>
+      )}
 
-          {/* Plan + DM usage meter */}
-          <div className="relative mt-3 pt-3 border-t border-white/10">
-            <div className="flex items-center justify-between text-[10px] mb-1.5">
-              <span className="inline-flex items-center gap-1 font-semibold text-ink-300">
-                {plan === "scale" && (
-                  <Crown className="w-3 h-3 text-amber-400" />
-                )}
-                {planLabel} plan
+      {/* ── Main nav ──────────────────────────────────────────── */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+        {MAIN_NAV.map((item) => (
+          <SidebarLink
+            key={item.to}
+            {...item}
+            collapsed={collapsed}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </nav>
+
+      {/* ── Bottom section ────────────────────────────────────── */}
+      <div className="px-2 pb-2 space-y-0.5 border-t border-white/[0.06] pt-2 flex-shrink-0">
+        {/* Usage bar */}
+        {!collapsed && (
+          <div className="px-2 py-2 mb-1">
+            <div className="flex justify-between text-[10px] text-white/30 mb-1">
+              <span className="flex items-center gap-1">
+                {isPremium && <Crown className="w-3 h-3 text-amber-400" />}
+                <span className="capitalize">{planLabel(plan)}</span>
               </span>
-              <span className="text-ink-400">{usage.pct}%</span>
+              <span>{usage.pct}%</span>
             </div>
-            <div className="h-1.5 rounded-md bg-white/10 overflow-hidden">
+            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
               <div
                 className={clsx(
-                  "h-full rounded-md transition-all",
+                  "h-full rounded-full transition-all",
                   usage.pct > 90
-                    ? "bg-gradient-to-r from-rose-500 to-red-500"
+                    ? "bg-red-500"
                     : usage.pct > 70
-                      ? "bg-gradient-to-r from-amber-400 to-orange-500"
-                      : "bg-gradient-to-r from-brand-400 to-accent-400",
+                      ? "bg-amber-400"
+                      : "bg-gradient-to-r from-violet-500 to-pink-500",
                 )}
                 style={{ width: `${usage.pct}%` }}
               />
             </div>
-            <div className="flex items-center justify-between mt-1.5">
-              <span className="text-[10px] text-ink-400">
-                {usage.used.toLocaleString()} /{" "}
-                {usage.limit > 0 ? usage.limit.toLocaleString() : "∞"} DMs
-              </span>
-              {plan !== "scale" && (
-                <Link
-                  to="/dashboard/billing"
-                  onClick={onNavigate}
-                  className="text-[10px] font-semibold text-brand-300 hover:text-white transition"
-                >
-                  Upgrade →
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Collapsed plan badge */}
-      {workspace && collapsed && (
-        <div
-          className="relative mx-auto mt-3"
-          title={`${planLabel} · ${usage.pct}%`}
-        >
-          <div className="w-10 h-10 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
-            {plan === "scale" ? (
-              <Crown className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Sparkles className="w-4 h-4 text-brand-300" />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Nav */}
-      <nav className="relative flex-1 overflow-y-auto py-3 px-2 space-y-1 sidebar-scroll">
-        {GROUPS.map((group) => {
-          // Channel filter — hide groups/items that don't apply to the active channel
-          const visibleItems = group.items.filter((item) => {
-            if (activeChannel === "both") return true;
-            const itemChan = item.channel; // undefined = both
-            if (!itemChan) return true;
-            return itemChan === (activeChannel === "whatsapp" ? "wa" : "ig");
-          });
-          if (visibleItems.length === 0) return null;
-          if (activeChannel !== "both" && group.channel) {
-            const groupChan = group.channel;
-            const wantWa = activeChannel === "whatsapp";
-            if ((groupChan === "ig" && wantWa) || (groupChan === "wa" && !wantWa))
-              return null;
-          }
-
-          const groupActive = isGroupActive(visibleItems);
-          const isOpen = !collapsedGroups[group.id] || groupActive;
-          const showGroupHeader = visibleItems.length > 1 && !collapsed;
-          return (
-            <div key={group.id}>
-              {showGroupHeader && (
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  className={clsx(
-                    "w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] transition",
-                    groupActive
-                      ? "text-brand-300"
-                      : "text-ink-500 hover:text-ink-300",
-                  )}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    {groupActive && (
-                      <span className="w-1 h-1 rounded-full bg-brand-400 shadow-glow" />
-                    )}
-                    {group.label}
-                  </span>
-                  <ChevronDown
-                    className={clsx(
-                      "w-3 h-3 transition-transform",
-                      isOpen ? "rotate-0" : "-rotate-90",
-                    )}
-                  />
-                </button>
-              )}
-              {collapsed && visibleItems.length > 1 && (
-                <div className="my-2 mx-3 h-px bg-white/5" />
-              )}
-              {(isOpen || collapsed) &&
-                visibleItems.map(
-                  ({ to, icon: Icon, label, end, premium, highlight }) => (
-                    <NavLink
-                      key={to}
-                      to={to}
-                      end={end}
-                      onClick={onNavigate}
-                      title={collapsed ? label : undefined}
-                      className={({ isActive }) =>
-                        clsx(
-                          "group relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium mb-0.5 transition-all duration-200",
-                          collapsed && "justify-center px-0",
-                          isActive
-                            ? "bg-gradient-to-r from-brand-500/20 to-accent-500/10 text-white shadow-inner-glow border border-white/10"
-                            : highlight
-                              ? "text-accent-300 hover:bg-white/5 hover:text-white"
-                              : "text-ink-300 hover:bg-white/5 hover:text-white",
-                        )
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          {isActive && !collapsed && (
-                            <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-md bg-gradient-to-b from-brand-400 to-accent-400 shadow-glow" />
-                          )}
-                          <span
-                            className={clsx(
-                              "flex-shrink-0 flex items-center justify-center",
-                              collapsed ? "w-9 h-9 rounded-md" : "",
-                              isActive && collapsed
-                                ? "bg-brand-gradient shadow-glow"
-                                : "",
-                            )}
-                          >
-                            <Icon
-                              className={clsx(
-                                "w-4 h-4",
-                                isActive
-                                  ? "text-white"
-                                  : highlight
-                                    ? "text-accent-300"
-                                    : "text-ink-400 group-hover:text-white",
-                              )}
-                            />
-                          </span>
-                          {!collapsed && (
-                            <>
-                              <span className="flex-1 truncate">{label}</span>
-                              {highlight && !isActive && (
-                                <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-accent-500/15 text-accent-300 border border-accent-400/20 font-bold">
-                                  New
-                                </span>
-                              )}
-                              {premium && plan !== "scale" && !isActive && (
-                                <Crown className="w-3 h-3 text-amber-400" />
-                              )}
-                            </>
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  ),
-                )}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* User footer */}
-      <div className="relative p-3 border-t border-white/5 bg-black/20">
-        {!collapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-brand-gradient rounded-md flex items-center justify-center text-white font-semibold text-sm shadow-glow flex-shrink-0">
-              {user?.name?.[0]?.toUpperCase() ||
-                user?.email?.[0]?.toUpperCase() ||
-                "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {user?.name || "You"}
-              </p>
-              <p className="text-[11px] text-ink-400 truncate">{user?.email}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 rounded-md text-ink-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-9 h-9 bg-brand-gradient rounded-md flex items-center justify-center text-white font-semibold text-sm shadow-glow">
-              {user?.name?.[0]?.toUpperCase() ||
-                user?.email?.[0]?.toUpperCase() ||
-                "U"}
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 rounded-md text-ink-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
         )}
+
+        {BOTTOM_NAV.map((item) => (
+          <SidebarLink
+            key={item.to}
+            {...item}
+            collapsed={collapsed}
+            onNavigate={onNavigate}
+          />
+        ))}
+
+        {/* User + logout */}
+        <div
+          className={clsx(
+            "mt-1 flex items-center gap-2.5 px-2 py-2 rounded-md",
+            "text-white/40 text-xs",
+            collapsed && "justify-center",
+          )}
+        >
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-[10px] text-white font-bold flex-shrink-0">
+            {initial}
+          </div>
+          {!collapsed && (
+            <span className="flex-1 truncate min-w-0 text-white/50">
+              {user?.name?.split(" ")[0] || user?.email?.split("@")[0] || "You"}
+            </span>
+          )}
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-md text-white/30 hover:text-rose-400 hover:bg-white/5 transition"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </aside>
   );
 }
 
-function ChannelIcon({ channel, className = "w-4 h-4" }) {
-  if (channel === "whatsapp")
-    return <MessageCircle className={clsx(className, "text-emerald-400")} />;
-  if (channel === "instagram")
-    return <Instagram className={clsx(className, "text-pink-400")} />;
-  return <Layers className={clsx(className, "text-violet-400")} />;
+// ─── Sub-components ─────────────────────────────────────────────────────────
+
+function SidebarLink({ to, icon: Icon, label, end, collapsed, onNavigate }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onNavigate}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        clsx(
+          "flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all duration-150",
+          collapsed && "justify-center px-0 w-full",
+          isActive
+            ? "bg-violet-500/15 text-violet-300 shadow-[inset_0_0_0_1px_rgba(139,92,246,0.25)]"
+            : "text-white/40 hover:text-white/80 hover:bg-white/5",
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <span
+            className={clsx(
+              "flex-shrink-0",
+              collapsed &&
+                "w-9 h-9 flex items-center justify-center rounded-md",
+              collapsed && isActive && "bg-violet-500/20",
+            )}
+          >
+            <Icon
+              className={clsx("w-4 h-4", isActive ? "text-violet-400" : "")}
+            />
+          </span>
+          {!collapsed && <span>{label}</span>}
+        </>
+      )}
+    </NavLink>
+  );
 }
 
-function channelLabel(c) {
-  if (c === "whatsapp") return "WhatsApp";
-  if (c === "instagram") return "Instagram";
-  return "Both channels";
-}
-
-function ChannelOption({ channel, active, connected, onClick }) {
+function ChannelPill({ icon: Icon, label, connected, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={clsx(
-        "w-full flex items-center justify-between gap-2 px-3 py-2 text-[11px] transition",
-        active
-          ? "bg-white/10 text-white"
-          : "text-ink-300 hover:bg-white/5 hover:text-white",
+        "flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-medium transition",
+        connected
+          ? "bg-white/8 text-white/70 hover:bg-white/12 border border-white/10"
+          : "bg-white/4 text-white/25 hover:text-white/50 hover:bg-white/8 border border-white/5 border-dashed",
       )}
     >
-      <span className="flex items-center gap-2">
-        <ChannelIcon channel={channel} className="w-3.5 h-3.5" />
-        <span className="font-semibold">{channelLabel(channel)}</span>
-        {!connected && (
-          <span className="text-[9px] uppercase tracking-wider text-ink-500">
-            Setup
-          </span>
+      <span
+        className={clsx(
+          "w-1.5 h-1.5 rounded-full flex-shrink-0",
+          connected ? "bg-emerald-400" : "bg-white/20",
         )}
-      </span>
-      {active && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+      />
+      <Icon className="w-3 h-3 flex-shrink-0" />
+      <span className="truncate">{connected ? label : "Connect"}</span>
     </button>
   );
+}
+
+function planLabel(id) {
+  const map = {
+    free: "Free trial",
+    ig_starter: "IG Starter",
+    ig_pro: "IG Pro",
+    wa_starter: "WA Starter",
+    wa_pro: "WA Pro",
+    bundle_pro: "Bundle Pro",
+    bundle_business: "Business",
+    starter: "Starter",
+    growth: "Growth",
+    scale: "Scale",
+  };
+  return map[id] || id;
 }

@@ -5,7 +5,8 @@ const DEV = import.meta.env.DEV;
 
 const api = axios.create({
   baseURL:
-    import.meta.env.VITE_API_URL || "https://botlify-backend.onrender.com/api",
+    import.meta.env.VITE_API_URL ||
+    "https://botlify-whatbot-backend.onrender.com/api",
   headers: { "Content-Type": "application/json" },
 });
 

@@ -4,7 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
-import ConnectInstagramGate from "@/components/ConnectInstagramGate";
+import ConnectChannelGate from "@/components/ConnectChannelGate";
 
 // Layouts
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -16,8 +16,9 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
+const VerifyEmailPage = lazy(() => import("@/pages/auth/VerifyEmailPage"));
 
-// App Pages (lazy-loaded for smaller main bundle)
+// App Pages (lazy-loaded)
 const OverviewPage = lazy(() => import("@/pages/dashboard/OverviewPage"));
 const AutomationSetupPage = lazy(
   () => import("@/pages/automation/AutomationSetupPage"),
@@ -26,25 +27,6 @@ const AnalyticsPage = lazy(() => import("@/pages/analytics/AnalyticsPage"));
 const InboxPage = lazy(() => import("@/pages/inbox/InboxPage"));
 const ContactsPage = lazy(() => import("@/pages/contacts/ContactsPage"));
 const BroadcastsPage = lazy(() => import("@/pages/broadcasts/BroadcastsPage"));
-const ScheduledPostsPage = lazy(
-  () => import("@/pages/content/ScheduledPostsPage"),
-);
-const DripCampaignsPage = lazy(() => import("@/pages/drip/DripCampaignsPage"));
-const GiveawaysPage = lazy(() => import("@/pages/giveaways/GiveawaysPage"));
-const CompetitorsPage = lazy(
-  () => import("@/pages/competitors/CompetitorsPage"),
-);
-const IntegrationsPage = lazy(
-  () => import("@/pages/integrations/IntegrationsPage"),
-);
-const AppsIntegrationsPage = lazy(
-  () => import("@/pages/integrations/AppsIntegrationsPage"),
-);
-const ReferralPage = lazy(() => import("@/pages/referral/ReferralPage"));
-const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
-const HashtagsPage = lazy(() => import("@/pages/hashtags/HashtagsPage"));
-const LinkInBioPage = lazy(() => import("@/pages/link-in-bio/LinkInBioPage"));
-import PublicBioPage from "@/pages/link-in-bio/PublicBioPage";
 const AiBotPage = lazy(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazy(() => import("@/pages/PricingPage"));
 const GuidePage = lazy(() => import("@/pages/GuidePage"));
@@ -52,20 +34,25 @@ const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const FlowBuilderPage = lazy(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
 );
-const OnboardingPage = lazy(() => import("@/pages/onboarding/OnboardingPage"));
-const ChooseChannelPage = lazy(() =>
-  import("@/pages/onboarding/ChooseChannelPage"),
-);
-const WhatsAppOnboardingPage = lazy(() =>
-  import("@/pages/onboarding/WhatsAppOnboardingPage"),
-);
-import VerifyEmailPage from "@/pages/auth/VerifyEmailPage";
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
+
+// Onboarding
+const ChooseChannelPage = lazy(
+  () => import("@/pages/onboarding/ChooseChannelPage"),
+);
+const WhatsAppOnboardingPage = lazy(
+  () => import("@/pages/onboarding/WhatsAppOnboardingPage"),
+);
+const InstagramOnboardingPage = lazy(
+  () => import("@/pages/onboarding/InstagramOnboardingPage"),
+);
 
 // Public
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
-import PrivacyPage from "@/pages/PrivacyPage";
-import TermsPage from "@/pages/TermsPage";
+const PublicBioPage = lazy(() => import("@/pages/link-in-bio/PublicBioPage"));
+const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
+const TermsPage = lazy(() => import("@/pages/TermsPage"));
+const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuthStore();
@@ -112,7 +99,7 @@ export default function App() {
                 <Route path="/terms" element={<TermsPage />} />
               </Route>
 
-              {/* Guest Routes */}
+              {/* Guest Routes (auth) */}
               <Route element={<AuthLayout />}>
                 <Route
                   path="/login"
@@ -146,6 +133,7 @@ export default function App() {
                     </GuestRoute>
                   }
                 />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
               </Route>
 
               {/* App Routes */}
@@ -159,109 +147,84 @@ export default function App() {
               >
                 <Route index element={<OverviewPage />} />
                 <Route path="automation" element={<AutomationSetupPage />} />
-                <Route
-                  path="inbox"
-                  element={
-                    <ConnectInstagramGate>
-                      <InboxPage />
-                    </ConnectInstagramGate>
-                  }
-                />
                 <Route path="contacts" element={<ContactsPage />} />
-                <Route
-                  path="broadcasts"
-                  element={
-                    <ConnectInstagramGate>
-                      <BroadcastsPage />
-                    </ConnectInstagramGate>
-                  }
-                />
-                <Route
-                  path="scheduled-posts"
-                  element={
-                    <ConnectInstagramGate>
-                      <ScheduledPostsPage />
-                    </ConnectInstagramGate>
-                  }
-                />
-                <Route
-                  path="drip-campaigns"
-                  element={
-                    <ConnectInstagramGate>
-                      <DripCampaignsPage />
-                    </ConnectInstagramGate>
-                  }
-                />
-                <Route
-                  path="giveaways"
-                  element={
-                    <ConnectInstagramGate>
-                      <GiveawaysPage />
-                    </ConnectInstagramGate>
-                  }
-                />
-                <Route path="competitors" element={<CompetitorsPage />} />
-                <Route path="integrations" element={<IntegrationsPage />} />
-                <Route path="apps" element={<AppsIntegrationsPage />} />
-                <Route path="referral" element={<ReferralPage />} />
-                <Route path="team" element={<TeamPage />} />
-                <Route path="hashtags" element={<HashtagsPage />} />
-                <Route path="link-in-bio" element={<LinkInBioPage />} />
-                <Route
-                  path="analytics"
-                  element={
-                    <ConnectInstagramGate>
-                      <AnalyticsPage />
-                    </ConnectInstagramGate>
-                  }
-                />
                 <Route path="ai-bot" element={<AiBotPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="billing" element={<BillingPage />} />
+                <Route path="pricing" element={<PricingPage embedded />} />
+                <Route path="guide" element={<GuidePage />} />
                 <Route path="flow-builder" element={<FlowBuilderPage />} />
                 <Route
                   path="flow-builder/:flowId"
                   element={<FlowBuilderPage />}
                 />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="billing" element={<BillingPage />} />
-                <Route path="pricing" element={<PricingPage embedded />} />
-                <Route path="guide" element={<GuidePage />} />
+
+                {/* Channel-gated pages */}
+                <Route
+                  path="inbox"
+                  element={
+                    <ConnectChannelGate feature="Inbox">
+                      <InboxPage />
+                    </ConnectChannelGate>
+                  }
+                />
+                <Route
+                  path="broadcasts"
+                  element={
+                    <ConnectChannelGate feature="Broadcasts">
+                      <BroadcastsPage />
+                    </ConnectChannelGate>
+                  }
+                />
+                <Route
+                  path="analytics"
+                  element={
+                    <ConnectChannelGate feature="Analytics">
+                      <AnalyticsPage />
+                    </ConnectChannelGate>
+                  }
+                />
+
+                {/* Onboarding inside dashboard shell */}
+                <Route
+                  path="onboarding"
+                  element={
+                    <Navigate
+                      to="/dashboard/onboarding/choose-channel"
+                      replace
+                    />
+                  }
+                />
+                <Route
+                  path="onboarding/choose-channel"
+                  element={<ChooseChannelPage />}
+                />
+                <Route
+                  path="onboarding/whatsapp"
+                  element={<WhatsAppOnboardingPage />}
+                />
+                <Route
+                  path="onboarding/instagram"
+                  element={<InstagramOnboardingPage />}
+                />
               </Route>
 
+              {/* Legacy /onboarding/* → redirect into dashboard */}
               <Route
                 path="/onboarding"
                 element={
-                  <ProtectedRoute>
-                    <ChooseChannelPage />
-                  </ProtectedRoute>
+                  <Navigate to="/dashboard/onboarding/choose-channel" replace />
                 }
               />
               <Route
-                path="/onboarding/choose-channel"
+                path="/onboarding/*"
                 element={
-                  <ProtectedRoute>
-                    <ChooseChannelPage />
-                  </ProtectedRoute>
+                  <Navigate to="/dashboard/onboarding/choose-channel" replace />
                 }
               />
-              <Route
-                path="/onboarding/whatsapp"
-                element={
-                  <ProtectedRoute>
-                    <WhatsAppOnboardingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/onboarding/instagram"
-                element={
-                  <ProtectedRoute>
-                    <OnboardingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* 404 catch-all */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </ConfirmProvider>

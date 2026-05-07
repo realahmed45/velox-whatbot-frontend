@@ -78,14 +78,11 @@ export default function ScheduledPostsPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("[Upload] Response:", data);
-
       if (!data.url) {
         throw new Error("No URL returned from upload");
       }
 
       setImageUrl(data.url);
-      console.log("[Upload] Image URL set to:", data.url);
       toast.success("Image uploaded!");
 
       // Clear file input
@@ -153,9 +150,6 @@ export default function ScheduledPostsPage() {
 
   const createPost = async (e) => {
     e.preventDefault();
-
-    console.log("[Create Post] imageUrl:", imageUrl);
-    console.log("[Create Post] scheduledTime:", scheduledTime);
 
     if (!imageUrl) {
       toast.error("Please upload an image");
@@ -381,19 +375,10 @@ const generateAICaptions = async () => {
                       src={imageUrl}
                       alt="Preview"
                       className="w-full rounded-lg border"
-                      onError={(e) => {
-                        console.error(
-                          "[Image Preview] Failed to load:",
-                          imageUrl,
-                        );
+                      onError={() => {
                         toast.error("Failed to load image preview");
                       }}
-                      onLoad={() => {
-                        console.log(
-                          "[Image Preview] Loaded successfully:",
-                          imageUrl,
-                        );
-                      }}
+                      onLoad={() => {}}
                     />
                     <button
                       type="button"

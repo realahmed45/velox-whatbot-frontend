@@ -79,7 +79,7 @@ export default function OnboardingPage() {
   }, [searchParams, setActiveWorkspace]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 flex items-center justify-center p-6">
+    <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
       <div className="w-full max-w-xl">
         {/* Branding */}
         <div className="text-center mb-8">

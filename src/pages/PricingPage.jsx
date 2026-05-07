@@ -60,9 +60,7 @@ export default function PricingPage({ embedded = false }) {
   const visiblePlans = useMemo(() => {
     // Always show the free trial in every tab as the entry option.
     const free = plans.find((p) => p.key === "free");
-    const inTab = plans.filter(
-      (p) => p.channel === tab && p.key !== "free",
-    );
+    const inTab = plans.filter((p) => p.channel === tab && p.key !== "free");
     if (tab === "both") {
       // For bundle tab: show free + all bundle plans
       return [free, ...inTab].filter(Boolean);
@@ -95,11 +93,13 @@ export default function PricingPage({ embedded = false }) {
       return;
     }
     // In-app: kick off checkout
-    navigate(`/dashboard/billing?plan=${plan.key}&cycle=${annual ? "annual" : "monthly"}`);
+    navigate(
+      `/dashboard/billing?plan=${plan.key}&cycle=${annual ? "annual" : "monthly"}`,
+    );
   };
 
   return (
-    <div className={embedded ? "" : "min-h-screen bg-canvas py-16 px-4"}>
+    <div className={embedded ? "" : "py-16 px-4"}>
       <div className={embedded ? "" : "max-w-7xl mx-auto"}>
         {!embedded && (
           <div className="text-center mb-10">

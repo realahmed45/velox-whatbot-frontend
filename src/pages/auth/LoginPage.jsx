@@ -21,7 +21,7 @@ export default function LoginPage() {
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome back!");
       const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
-      navigate(ws ? "/dashboard" : "/onboarding");
+      navigate(ws ? "/dashboard" : "/dashboard/onboarding/choose-channel");
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {

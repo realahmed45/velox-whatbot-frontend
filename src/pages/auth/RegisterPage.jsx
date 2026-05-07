@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
+  const channelHint = searchParams.get("channel"); // whatsapp | instagram | both
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +38,12 @@ export default function RegisterPage() {
       });
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome to Botlify!");
-      navigate("/onboarding/choose-channel");
+      // Honor channel intent from landing CTAs
+      if (channelHint === "whatsapp")
+        navigate("/dashboard/onboarding/whatsapp");
+      else if (channelHint === "instagram")
+        navigate("/dashboard/onboarding/instagram");
+      else navigate("/dashboard/onboarding/choose-channel");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {

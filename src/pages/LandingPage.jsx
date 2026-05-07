@@ -464,7 +464,7 @@ function TwoChannels() {
                 desc: "Segment customers and target the right offers.",
               },
             ]}
-            cta="/onboarding/whatsapp"
+            cta="/register?channel=whatsapp"
             ctaLabel="Set up WhatsApp"
           />
           <ChannelCard
@@ -504,14 +504,14 @@ function TwoChannels() {
                 desc: "Catch every brand mention and reply automatically.",
               },
             ]}
-            cta="/onboarding/instagram"
+            cta="/register?channel=instagram"
             ctaLabel="Set up Instagram"
           />
         </div>
 
         <div className="mt-8 text-center">
           <Link
-            to="/onboarding/choose-channel"
+            to="/register?channel=both"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-ink-950 text-white font-bold text-sm hover:bg-ink-900 transition"
           >
             <Rocket className="w-4 h-4" /> Or set up both at once

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
 import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
+import PageHeader from "@/components/ui/PageHeader";
 import { clsx } from "clsx";
 
 const TABS = [
@@ -97,23 +98,12 @@ export default function AutomationSetupPage() {
   const showWa = channel === "whatsapp" || channel === "both";
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-pink-500 rounded-md flex items-center justify-center flex-shrink-0">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
-              Automations
-            </h1>
-            <p className="text-ink-500 text-sm mt-1">
-              Set up everything Botlify can do for you — comment-to-DM, AI
-              chatbot, broadcasts, story replies and more.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+      <PageHeader
+        icon={Zap}
+        title="Automations"
+        subtitle="Set up everything Botlify can do for you — comment-to-DM, AI chatbot, broadcasts, story replies and more."
+      />
 
       {/* What you can automate — channel showcase */}
       <div className="mb-6 grid lg:grid-cols-2 gap-4">
