@@ -42,7 +42,8 @@ const ICONS = {
 
 export default function PricingPage({ embedded = false }) {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const token = useAuthStore((s) => s.token);
+  const isAuthenticated = !!token;
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
