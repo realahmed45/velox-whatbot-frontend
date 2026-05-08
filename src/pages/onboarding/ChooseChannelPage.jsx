@@ -81,11 +81,8 @@ export default function ChooseChannelPage() {
       });
       await fetchWorkspace(activeWorkspace);
       toast.success("Channel saved");
-      // Route to channel-specific onboarding
-      if (selected === "whatsapp") navigate("/dashboard/onboarding/whatsapp");
-      else if (selected === "instagram")
-        navigate("/dashboard/onboarding/instagram");
-      else navigate("/dashboard/onboarding/whatsapp"); // both → start with WA
+      // Step 2 of 3: pricing for the chosen channel before connecting.
+      navigate(`/onboarding/pricing?channel=${selected}`);
     } catch (err) {
       toast.error(err.response?.data?.message || "Couldn't save your choice");
     } finally {

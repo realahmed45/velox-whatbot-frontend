@@ -124,7 +124,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
               onClick={() =>
                 igConnected
                   ? switchChannel("instagram")
-                  : navigate("/dashboard/onboarding/instagram")
+                  : navigate("/onboarding/instagram")
               }
               accent="pink"
             />
@@ -137,7 +137,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
               onClick={() =>
                 waConnected
                   ? switchChannel("whatsapp")
-                  : navigate("/dashboard/onboarding/whatsapp")
+                  : navigate("/onboarding/whatsapp")
               }
               accent="emerald"
             />
@@ -147,8 +147,8 @@ export default function Header({ onMenuClick, onSearchClick }) {
 
       {/* Right: setup pills + user menu */}
       <div className="flex items-center gap-2">
-        {/* Setup Instagram — shown when not yet connected */}
-        {!igConnected && (
+        {/* Setup Instagram — only if NOTHING is connected yet (one-platform-only UX) */}
+        {!igConnected && !waConnected && (
           <button
             onClick={startIgOAuth}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-pink-300 hover:border-pink-500 hover:bg-pink-50 text-xs font-semibold text-pink-600 transition"
@@ -158,10 +158,10 @@ export default function Header({ onMenuClick, onSearchClick }) {
           </button>
         )}
 
-        {/* Setup WhatsApp — shown when not yet connected */}
-        {!waConnected && (
+        {/* Setup WhatsApp — only if NOTHING is connected yet */}
+        {!waConnected && !igConnected && (
           <button
-            onClick={() => navigate("/dashboard/onboarding/whatsapp")}
+            onClick={() => navigate("/onboarding/whatsapp")}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 text-xs font-semibold text-emerald-600 transition"
           >
             <MessageSquare className="w-3.5 h-3.5" />

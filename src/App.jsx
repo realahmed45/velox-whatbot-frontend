@@ -11,6 +11,7 @@ import RequireOnboarding from "@/components/RequireOnboarding";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 import MarketingLayout from "@/layouts/MarketingLayout";
+import OnboardingLayout from "@/layouts/OnboardingLayout";
 
 // Auth Pages
 import LoginPage from "@/pages/auth/LoginPage";
@@ -40,6 +41,9 @@ const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 // Onboarding
 const ChooseChannelPage = lazy(
   () => import("@/pages/onboarding/ChooseChannelPage"),
+);
+const OnboardingPricingPage = lazy(
+  () => import("@/pages/onboarding/OnboardingPricingPage"),
 );
 const WhatsAppOnboardingPage = lazy(
   () => import("@/pages/onboarding/WhatsAppOnboardingPage"),
@@ -188,43 +192,54 @@ export default function App() {
                   }
                 />
 
-                {/* Onboarding inside dashboard shell */}
+                {/* Onboarding inside dashboard shell — kept as redirects for back-compat */}
                 <Route
                   path="onboarding"
-                  element={
-                    <Navigate
-                      to="/dashboard/onboarding/choose-channel"
-                      replace
-                    />
-                  }
+                  element={<Navigate to="/onboarding/choose-channel" replace />}
                 />
                 <Route
                   path="onboarding/choose-channel"
-                  element={<ChooseChannelPage />}
+                  element={<Navigate to="/onboarding/choose-channel" replace />}
                 />
                 <Route
                   path="onboarding/whatsapp"
-                  element={<WhatsAppOnboardingPage />}
+                  element={<Navigate to="/onboarding/whatsapp" replace />}
                 />
                 <Route
                   path="onboarding/instagram"
-                  element={<InstagramOnboardingPage />}
+                  element={<Navigate to="/onboarding/instagram" replace />}
                 />
               </Route>
 
-              {/* Legacy /onboarding/* → redirect into dashboard */}
+              {/* Top-level full-screen onboarding (no sidebar, ManyChat-style) */}
               <Route
-                path="/onboarding"
                 element={
-                  <Navigate to="/dashboard/onboarding/choose-channel" replace />
+                  <ProtectedRoute>
+                    <OnboardingLayout />
+                  </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/onboarding/*"
-                element={
-                  <Navigate to="/dashboard/onboarding/choose-channel" replace />
-                }
-              />
+              >
+                <Route
+                  path="/onboarding"
+                  element={<Navigate to="/onboarding/choose-channel" replace />}
+                />
+                <Route
+                  path="/onboarding/choose-channel"
+                  element={<ChooseChannelPage />}
+                />
+                <Route
+                  path="/onboarding/pricing"
+                  element={<OnboardingPricingPage />}
+                />
+                <Route
+                  path="/onboarding/whatsapp"
+                  element={<WhatsAppOnboardingPage />}
+                />
+                <Route
+                  path="/onboarding/instagram"
+                  element={<InstagramOnboardingPage />}
+                />
+              </Route>
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFoundPage />} />

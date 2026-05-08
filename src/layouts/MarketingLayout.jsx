@@ -8,14 +8,20 @@ export default function MarketingLayout() {
   const isAuthed = !!token;
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-ink-100">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-16">
-          <Link to="/">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-ink-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center">
             <Logo size="md" />
           </Link>
-          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-ink-600">
-            <Link to="/" className="hover:text-ink-900">
-              Home
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-ink-600">
+            <Link to="/#platforms" className="hover:text-ink-900">
+              Platforms
+            </Link>
+            <Link to="/#automations" className="hover:text-ink-900">
+              Automations
+            </Link>
+            <Link to="/#results" className="hover:text-ink-900">
+              Results
             </Link>
             <Link to="/pricing" className="hover:text-ink-900">
               Pricing
@@ -31,7 +37,10 @@ export default function MarketingLayout() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="btn-ghost text-sm">
+                <Link
+                  to="/login"
+                  className="hidden sm:inline-flex btn-ghost text-sm"
+                >
                   Sign in
                 </Link>
                 <Link to="/register" className="btn-primary text-sm">

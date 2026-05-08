@@ -1,44 +1,26 @@
+/**
+ * Public + embedded pricing page.
+ *
+ * Three plans only: Basic ($8 — one platform), Pro ($15 — both),
+ * Business ($39 — 3 WA numbers + IG). Every plan is paid; 3-day free
+ * trial included. The Basic card has a WhatsApp/Instagram toggle so
+ * the user picks which platform they want.
+ */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Check,
   Sparkles,
-  Zap,
-  Rocket,
   MessageSquare,
   Instagram,
-  Layers,
   ArrowRight,
   ShieldCheck,
-  Bot,
   Loader2,
 } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { clsx } from "clsx";
-
-/**
- * Public + embedded pricing page.
- * Renders three tabs: Instagram · WhatsApp · Both channels.
- * Plans come from GET /api/billing/plans (single source of truth).
- */
-
-const CHANNELS = [
-  { key: "instagram", label: "Instagram", icon: Instagram },
-  { key: "whatsapp", label: "WhatsApp", icon: MessageSquare },
-  { key: "both", label: "Both channels", icon: Layers, highlight: true },
-];
-
-const ICONS = {
-  free: Sparkles,
-  ig_starter: Zap,
-  ig_pro: Rocket,
-  wa_starter: Zap,
-  wa_pro: Rocket,
-  bundle_pro: Sparkles,
-  bundle_business: Sparkles,
-};
 
 export default function PricingPage({ embedded = false }) {
   const navigate = useNavigate();
@@ -47,320 +29,167 @@ export default function PricingPage({ embedded = false }) {
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("both");
-  const [annual, setAnnual] = useState(false);
-  const [currency, setCurrency] = useState("PKR");
-  const [selecting, setSelecting] = useState(null); // planKey being activated
+  const [errored, setErrored] = useState(false);
+  const [basicChannel, setBasicChannel] = useState("whatsapp"); // wa | ig toggle inside Basic card
+  const [selecting, setSelecting] = useState(null);
 
   useEffect(() => {
+    let alive = true;
+    const t = setTimeout(() => {
+      if (alive) setErrored(true);
+    }, 12000);
     api
       .get("/billing/plans")
-      .then(({ data }) => setPlans(data.plans || []))
-      .catch(() => setPlans([]))
-      .finally(() => setLoading(false));
+      .then(({ data }) => alive && setPlans(data.plans || []))
+      .catch(() => alive && setErrored(true))
+      .finally(() => {
+        if (alive) {
+          setLoading(false);
+          clearTimeout(t);
+        }
+      });
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
   }, []);
 
-  const visiblePlans = useMemo(() => {
-    const inTab = plans.filter((p) => p.channel === tab);
-    if (tab === "both") {
-      return inTab;
-    }
-    // Single-channel tab: show that channel's basic + bundle upsells
-    const bundles = plans.filter((p) => p.channel === "both");
-    return [...inTab, ...bundles];
-  }, [plans, tab]);
-
-  const formatPrice = (plan) => {
-    if (!plan) return "—";
-    if (plan.monthlyPrice === 0) return "Free";
-    if (currency === "USD") {
-      const usd = annual ? Math.round(plan.usd * 10) : plan.usd;
-      return `$${usd.toLocaleString()}`;
-    }
-    const pkr = annual ? plan.annualPrice : plan.monthlyPrice;
-    return `Rs ${pkr.toLocaleString()}`;
-  };
+  const basic = useMemo(() => {
+    const key = basicChannel === "instagram" ? "ig_starter" : "wa_starter";
+    return plans.find((p) => p.key === key);
+  }, [plans, basicChannel]);
+  const pro = useMemo(() => plans.find((p) => p.key === "bundle_pro"), [plans]);
+  const business = useMemo(
+    () => plans.find((p) => p.key === "bundle_business"),
+    [plans],
+  );
 
   const handlePick = async (plan) => {
     if (!plan) return;
-    if (plan.key === "free") {
-      if (isAuthenticated) navigate("/dashboard");
-      else navigate("/register");
-      return;
-    }
     if (!isAuthenticated) {
       navigate("/register?plan=" + plan.key);
       return;
     }
-    // Embedded in dashboard: directly activate plan (no payment gateway yet)
     if (embedded) {
       setSelecting(plan.key);
       try {
         await api.post("/billing/select-plan", {
           plan: plan.key,
-          billingCycle: annual ? "annual" : "monthly",
+          billingCycle: "monthly",
         });
-        toast.success(`Switched to ${plan.name}!`);
-        // Reload page to reflect new plan limits
+        toast.success(`Switched to ${plan.name}`);
         setTimeout(() => window.location.reload(), 800);
       } catch (err) {
-        toast.error(
-          err.response?.data?.message ||
-            "Failed to switch plan. Please try again.",
-        );
+        toast.error(err.response?.data?.message || "Failed to switch plan");
       } finally {
         setSelecting(null);
       }
       return;
     }
-    // Public pricing page: go to register/billing
-    navigate(
-      `/dashboard/billing?plan=${plan.key}&cycle=${annual ? "annual" : "monthly"}`,
-    );
+    navigate(`/dashboard/billing?plan=${plan.key}`);
   };
+
+  const cards = [basic, pro, business].filter(Boolean);
 
   return (
     <div className={embedded ? "" : "py-16 px-4"}>
-      <div className={embedded ? "" : "max-w-7xl mx-auto"}>
+      <div className={embedded ? "" : "max-w-5xl mx-auto"}>
         {!embedded && (
           <div className="text-center mb-10">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink-900">
-              Simple pricing for every channel
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100">
+              <Sparkles className="w-3 h-3" /> 3-day free trial on every plan
+            </span>
+            <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
+              Simple, honest pricing
             </h1>
-            <p className="mt-4 text-lg text-ink-500 max-w-2xl mx-auto">
-              Start with a 7-day free trial. No card required. Cancel anytime.
+            <p className="mt-3 text-base text-ink-500 max-w-xl mx-auto">
+              Pick the plan that matches the channels you want to automate.
+              Cancel anytime — no surprises.
             </p>
           </div>
         )}
 
-        {/* Channel tabs */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-lg bg-ink-100 p-1">
-            {CHANNELS.map((c) => {
-              const Icon = c.icon;
-              const active = tab === c.key;
-              return (
-                <button
-                  key={c.key}
-                  onClick={() => setTab(c.key)}
-                  className={clsx(
-                    "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition",
-                    active
-                      ? "bg-white text-ink-900 shadow-sm"
-                      : "text-ink-500 hover:text-ink-700",
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  {c.label}
-                  {c.highlight && active && (
-                    <span className="ml-1 chip text-[10px] bg-brand-100 text-brand-700">
-                      Best value
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+        {loading && !errored && (
+          <div className="text-center text-ink-400 py-16 inline-flex items-center justify-center gap-2 w-full">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading plans…
           </div>
-        </div>
+        )}
 
-        {/* Cycle / currency toggles */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-sm">
-          <div className="inline-flex items-center gap-2 bg-ink-100 rounded-md p-1">
+        {errored && (
+          <div className="max-w-md mx-auto bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+            <p className="text-sm font-bold text-amber-800">
+              Couldn't load live pricing
+            </p>
+            <p className="text-xs text-amber-700 mt-1.5">
+              Sign up and we'll start your 3-day free trial — pick a plan
+              anytime from Billing.
+            </p>
             <button
-              onClick={() => setAnnual(false)}
-              className={clsx(
-                "px-3 py-1 rounded",
-                !annual ? "bg-white shadow-sm text-ink-900" : "text-ink-500",
-              )}
+              onClick={() =>
+                isAuthenticated ? navigate("/dashboard") : navigate("/register")
+              }
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-lg transition"
             >
-              Monthly
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              className={clsx(
-                "px-3 py-1 rounded inline-flex items-center gap-2",
-                annual ? "bg-white shadow-sm text-ink-900" : "text-ink-500",
-              )}
-            >
-              Annual
-              <span className="chip text-[10px] bg-emerald-100 text-emerald-700">
-                Save 17%
-              </span>
+              {isAuthenticated ? "Go to dashboard" : "Start free trial"}
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="inline-flex items-center gap-2 bg-ink-100 rounded-md p-1">
-            {["PKR", "USD"].map((c) => (
-              <button
-                key={c}
-                onClick={() => setCurrency(c)}
-                className={clsx(
-                  "px-3 py-1 rounded",
-                  currency === c
-                    ? "bg-white shadow-sm text-ink-900"
-                    : "text-ink-500",
-                )}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* Plan cards */}
-        {loading ? (
-          <div className="text-center text-ink-400 py-16">Loading plans…</div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visiblePlans.map((p) => {
-              const Icon = ICONS[p.key] || Zap;
-              const isFree = p.key === "free";
-              const isBundle = p.channel === "both" && !isFree;
-              return (
-                <div
-                  key={p.key}
-                  className={clsx(
-                    "card p-6 flex flex-col",
-                    p.recommended && "border-2 border-brand-500 relative",
-                    p.premium &&
-                      "bg-gradient-to-br from-ink-900 to-ink-800 text-white",
-                  )}
-                >
-                  {p.recommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="chip bg-brand-gradient text-white text-[11px] px-3 py-1 shadow">
-                        Most popular
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
+        {!loading && !errored && cards.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Basic */}
+            {basic && (
+              <PlanCard
+                plan={basic}
+                onPick={handlePick}
+                selecting={selecting === basic.key}
+                topSlot={
+                  <div className="inline-flex rounded-md bg-ink-100 p-0.5 mb-4">
+                    <button
+                      onClick={() => setBasicChannel("whatsapp")}
                       className={clsx(
-                        "w-10 h-10 rounded-md flex items-center justify-center",
-                        p.premium ? "bg-white/10" : "bg-brand-gradient",
+                        "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition",
+                        basicChannel === "whatsapp"
+                          ? "bg-white text-emerald-700 shadow-sm"
+                          : "text-ink-500",
                       )}
                     >
-                      <Icon
-                        className={clsx(
-                          "w-5 h-5",
-                          p.premium ? "text-accent-300" : "text-white",
-                        )}
-                      />
-                    </div>
-                    <div>
-                      <h3
-                        className={clsx(
-                          "text-lg font-bold",
-                          p.premium ? "text-white" : "text-ink-900",
-                        )}
-                      >
-                        {p.name}
-                      </h3>
-                      <p
-                        className={clsx(
-                          "text-xs",
-                          p.premium ? "text-white/60" : "text-ink-400",
-                        )}
-                      >
-                        {p.tagline}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <div
+                      <MessageSquare className="w-3 h-3" /> WhatsApp
+                    </button>
+                    <button
+                      onClick={() => setBasicChannel("instagram")}
                       className={clsx(
-                        "text-3xl font-bold",
-                        p.premium ? "text-white" : "text-ink-900",
+                        "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition",
+                        basicChannel === "instagram"
+                          ? "bg-white text-pink-700 shadow-sm"
+                          : "text-ink-500",
                       )}
                     >
-                      {formatPrice(p)}
-                      {!isFree && (
-                        <span
-                          className={clsx(
-                            "text-sm font-normal ml-1",
-                            p.premium ? "text-white/50" : "text-ink-400",
-                          )}
-                        >
-                          /{annual ? "year" : "mo"}
-                        </span>
-                      )}
-                    </div>
-                    {!isFree && (
-                      <p
-                        className={clsx(
-                          "text-xs mt-1",
-                          p.premium ? "text-white/50" : "text-ink-400",
-                        )}
-                      >
-                        {currency === "PKR"
-                          ? `≈ $${(annual ? p.usd * 10 : p.usd).toLocaleString()} ${annual ? "/yr" : "/mo"}`
-                          : `≈ Rs ${(annual ? p.annualPrice : p.monthlyPrice).toLocaleString()} ${annual ? "/yr" : "/mo"}`}
-                      </p>
-                    )}
-                    {isFree && (
-                      <p className="text-xs text-ink-400 mt-1">
-                        7 days · no card required
-                      </p>
-                    )}
+                      <Instagram className="w-3 h-3" /> Instagram
+                    </button>
                   </div>
-
-                  <ul className="space-y-2 mb-6 flex-1">
-                    {(p.highlights || []).slice(0, 7).map((h, i) => (
-                      <li
-                        key={i}
-                        className={clsx(
-                          "flex items-start gap-2 text-sm",
-                          p.premium ? "text-white/80" : "text-ink-700",
-                        )}
-                      >
-                        <Check
-                          className={clsx(
-                            "w-4 h-4 flex-shrink-0 mt-0.5",
-                            p.premium ? "text-accent-300" : "text-brand-600",
-                          )}
-                        />
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handlePick(p)}
-                    disabled={selecting === p.key}
-                    className={clsx(
-                      "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium text-sm transition disabled:opacity-60 disabled:cursor-wait",
-                      p.premium
-                        ? "bg-accent-400 text-ink-900 hover:bg-accent-300"
-                        : p.recommended
-                          ? "bg-brand-gradient text-white hover:opacity-90"
-                          : "bg-ink-900 text-white hover:bg-ink-800",
-                    )}
-                  >
-                    {selecting === p.key ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Activating…
-                      </>
-                    ) : isFree ? (
-                      isAuthenticated ? (
-                        "Go to dashboard"
-                      ) : (
-                        "Start free trial"
-                      )
-                    ) : (
-                      `Get ${p.name}`
-                    )}
-                    {selecting !== p.key && <ArrowRight className="w-4 h-4" />}
-                  </button>
-
-                  {isBundle && !p.premium && (
-                    <p className="text-[11px] text-center text-ink-400 mt-2">
-                      <Bot className="inline w-3 h-3 mr-1" />
-                      Includes premium AI on both channels
-                    </p>
-                  )}
-                </div>
-              );
-            })}
+                }
+              />
+            )}
+            {/* Pro */}
+            {pro && (
+              <PlanCard
+                plan={pro}
+                onPick={handlePick}
+                selecting={selecting === pro.key}
+                highlight
+              />
+            )}
+            {/* Business */}
+            {business && (
+              <PlanCard
+                plan={business}
+                onPick={handlePick}
+                selecting={selecting === business.key}
+                premium
+              />
+            )}
           </div>
         )}
 
@@ -371,6 +200,121 @@ export default function PricingPage({ embedded = false }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function PlanCard({ plan, onPick, selecting, topSlot, highlight, premium }) {
+  return (
+    <div
+      className={clsx(
+        "relative rounded-2xl p-6 flex flex-col border transition",
+        highlight
+          ? "border-brand-500 shadow-glow bg-white"
+          : premium
+            ? "bg-gradient-to-br from-ink-900 to-ink-800 text-white border-ink-800"
+            : "border-ink-100 bg-white hover:border-ink-200",
+      )}
+    >
+      {highlight && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="px-3 py-1 rounded-full bg-brand-gradient text-white text-[11px] font-bold shadow">
+            Most popular
+          </span>
+        </div>
+      )}
+
+      {topSlot}
+
+      <h3
+        className={clsx(
+          "text-xl font-black tracking-tight",
+          premium ? "text-white" : "text-ink-900",
+        )}
+      >
+        {plan.name}
+      </h3>
+      <p
+        className={clsx(
+          "text-xs mt-0.5",
+          premium ? "text-white/60" : "text-ink-500",
+        )}
+      >
+        {plan.tagline}
+      </p>
+
+      <div className="mt-4">
+        <div className="flex items-baseline gap-1">
+          <span
+            className={clsx(
+              "text-4xl font-black",
+              premium ? "text-white" : "text-ink-900",
+            )}
+          >
+            ${plan.usd}
+          </span>
+          <span
+            className={clsx(
+              "text-sm",
+              premium ? "text-white/50" : "text-ink-400",
+            )}
+          >
+            /mo
+          </span>
+        </div>
+        <p
+          className={clsx(
+            "text-[11px] mt-0.5",
+            premium ? "text-white/50" : "text-ink-400",
+          )}
+        >
+          ≈ Rs {plan.monthlyPrice?.toLocaleString()} /mo · 3-day free trial
+        </p>
+      </div>
+
+      <ul className="mt-5 space-y-2 flex-1">
+        {(plan.highlights || []).slice(0, 7).map((h) => (
+          <li
+            key={h}
+            className={clsx(
+              "flex items-start gap-2 text-xs",
+              premium ? "text-white/80" : "text-ink-700",
+            )}
+          >
+            <Check
+              className={clsx(
+                "w-3.5 h-3.5 flex-shrink-0 mt-0.5",
+                premium ? "text-emerald-300" : "text-emerald-500",
+              )}
+            />
+            <span>{h}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => onPick(plan)}
+        disabled={selecting}
+        className={clsx(
+          "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
+          highlight
+            ? "bg-brand-gradient text-white hover:opacity-90"
+            : premium
+              ? "bg-white text-ink-900 hover:bg-ink-100"
+              : "bg-ink-900 text-white hover:bg-ink-800",
+        )}
+      >
+        {selecting ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+          </>
+        ) : (
+          <>
+            Start {plan.name.split("—")[0].trim()}
+            <ArrowRight className="w-4 h-4" />
+          </>
+        )}
+      </button>
     </div>
   );
 }
