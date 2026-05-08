@@ -244,18 +244,29 @@ export default function WhatsAppOnboardingPage() {
         )}
 
         {phase === "failed" && (
-          <FailedStep
-            message={
-              errorMessage ||
-              FAILURE_MESSAGES[errorCodeParam] ||
-              "We couldn't complete your WhatsApp setup."
-            }
-            onRetry={() => {
-              setSearchParams({}, { replace: true });
-              setErrorMessage(null);
-              setPhase("choose");
-            }}
-          />
+          <div className="space-y-4">
+            <FailedStep
+              message={
+                errorMessage ||
+                FAILURE_MESSAGES[errorCodeParam] ||
+                "We couldn't complete your WhatsApp setup."
+              }
+              onRetry={() => {
+                setSearchParams({}, { replace: true });
+                setErrorMessage(null);
+                setPhase("choose");
+              }}
+            />
+            <PhoneCaptureStep
+              busy={busy}
+              errorMessage={null}
+              onSubmit={(phoneNumber) => {
+                setSearchParams({}, { replace: true });
+                setErrorMessage(null);
+                startWasender({ reset: true, phoneNumber });
+              }}
+            />
+          </div>
         )}
       </div>
     </div>
