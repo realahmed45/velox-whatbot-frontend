@@ -406,6 +406,16 @@ function DetailPanel({ contact, onClose, onUpdate, onDelete }) {
       setSaving(false);
     }
   };
+
+  const setStatus = async (status) => {
+    try {
+      const { data } = await api.put(`/contacts/${contact._id}`, { status });
+      onUpdate(data.contact);
+      toast.success("Status updated");
+    } catch {
+      toast.error("Failed");
+    }
+  };
   const addTag = async () => {
     const t = tagInput.trim().toLowerCase();
     if (!t) return;
@@ -538,6 +548,48 @@ function DetailPanel({ contact, onClose, onUpdate, onDelete }) {
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
+        </div>
+
+        {/* CRM lifecycle status */}
+        <div>
+          <label className="label">Lifecycle stage</label>
+          <div className="grid grid-cols-4 gap-1">
+            {[
+              {
+                v: "new",
+                label: "New",
+                color: "bg-blue-100 text-blue-700 border-blue-200",
+              },
+              {
+                v: "active",
+                label: "Active",
+                color: "bg-amber-100 text-amber-700 border-amber-200",
+              },
+              {
+                v: "customer",
+                label: "Customer",
+                color: "bg-emerald-100 text-emerald-700 border-emerald-200",
+              },
+              {
+                v: "lost",
+                label: "Lost",
+                color: "bg-ink-100 text-ink-600 border-ink-200",
+              },
+            ].map((s) => (
+              <button
+                key={s.v}
+                onClick={() => setStatus(s.v)}
+                className={clsx(
+                  "text-[10px] font-bold py-1.5 border transition",
+                  contact.status === s.v
+                    ? s.color
+                    : "bg-white text-ink-500 border-ink-200 hover:bg-ink-50",
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={save}

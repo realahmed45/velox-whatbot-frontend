@@ -42,6 +42,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { clsx } from "clsx";
+import ActivationCard from "@/components/ActivationCard";
 
 function WhatsAppIcon({ className = "w-5 h-5" }) {
   return (
@@ -59,24 +60,99 @@ function WhatsAppIcon({ className = "w-5 h-5" }) {
 // Custom automation tiles per channel — link directly into AutomationSetupPage
 // with the ?tab= query so the tab opens immediately.
 const IG_AUTOMATIONS = [
-  { id: "welcome", label: "Welcome DM", desc: "First-time DM auto reply", icon: MessageCircle },
-  { id: "comment_kw", label: "Comment → DM", desc: "Reply to post comments by keyword", icon: Hash },
-  { id: "dm_kw", label: "DM keywords", desc: "Trigger replies on DM keywords", icon: MessageCircle },
-  { id: "story_reply", label: "Story replies", desc: "Auto-reply to story responses", icon: Heart },
-  { id: "story_mention", label: "Story mentions", desc: "Reply when tagged in stories", icon: Heart },
-  { id: "share", label: "Share to story", desc: "Trigger when post is shared to story", icon: Share2 },
-  { id: "ref_url", label: "Tracked links", desc: "Send DM from referral URL", icon: LinkIcon },
-  { id: "live", label: "Live comments", desc: "Reply to live broadcast comments", icon: Radio },
-  { id: "starters", label: "Chat starters", desc: "Ice-breakers in your DM thread", icon: Target },
-  { id: "fallback", label: "Fallback reply", desc: "Catch-all when no rule matches", icon: CircleDot },
-  { id: "hours", label: "Business hours", desc: "Respond differently after hours", icon: Clock },
+  {
+    id: "welcome",
+    label: "Welcome DM",
+    desc: "First-time DM auto reply",
+    icon: MessageCircle,
+  },
+  {
+    id: "comment_kw",
+    label: "Comment → DM",
+    desc: "Reply to post comments by keyword",
+    icon: Hash,
+  },
+  {
+    id: "dm_kw",
+    label: "DM keywords",
+    desc: "Trigger replies on DM keywords",
+    icon: MessageCircle,
+  },
+  {
+    id: "story_reply",
+    label: "Story replies",
+    desc: "Auto-reply to story responses",
+    icon: Heart,
+  },
+  {
+    id: "story_mention",
+    label: "Story mentions",
+    desc: "Reply when tagged in stories",
+    icon: Heart,
+  },
+  {
+    id: "share",
+    label: "Share to story",
+    desc: "Trigger when post is shared to story",
+    icon: Share2,
+  },
+  {
+    id: "ref_url",
+    label: "Tracked links",
+    desc: "Send DM from referral URL",
+    icon: LinkIcon,
+  },
+  {
+    id: "live",
+    label: "Live comments",
+    desc: "Reply to live broadcast comments",
+    icon: Radio,
+  },
+  {
+    id: "starters",
+    label: "Chat starters",
+    desc: "Ice-breakers in your DM thread",
+    icon: Target,
+  },
+  {
+    id: "fallback",
+    label: "Fallback reply",
+    desc: "Catch-all when no rule matches",
+    icon: CircleDot,
+  },
+  {
+    id: "hours",
+    label: "Business hours",
+    desc: "Respond differently after hours",
+    icon: Clock,
+  },
 ];
 
 const WA_AUTOMATIONS = [
-  { id: "welcome", label: "Welcome message", desc: "First message a contact gets", icon: MessageCircle },
-  { id: "dm_kw", label: "Keyword auto-reply", desc: "Reply when message matches keyword", icon: Hash },
-  { id: "fallback", label: "Fallback reply", desc: "Catch-all when no rule matches", icon: CircleDot },
-  { id: "hours", label: "Business hours", desc: "Respond differently after hours", icon: Clock },
+  {
+    id: "welcome",
+    label: "Welcome message",
+    desc: "First message a contact gets",
+    icon: MessageCircle,
+  },
+  {
+    id: "dm_kw",
+    label: "Keyword auto-reply",
+    desc: "Reply when message matches keyword",
+    icon: Hash,
+  },
+  {
+    id: "fallback",
+    label: "Fallback reply",
+    desc: "Catch-all when no rule matches",
+    icon: CircleDot,
+  },
+  {
+    id: "hours",
+    label: "Business hours",
+    desc: "Respond differently after hours",
+    icon: Clock,
+  },
 ];
 
 export default function OverviewPage() {
@@ -103,7 +179,9 @@ export default function OverviewPage() {
           "We couldn't find an Instagram Business or Creator account on your profile.",
         invalid_state: "Connection failed — please try again.",
       };
-      toast.error(msgs[error] || "Instagram connection failed. Please try again.");
+      toast.error(
+        msgs[error] || "Instagram connection failed. Please try again.",
+      );
       setSearchParams({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,10 +224,14 @@ export default function OverviewPage() {
     }
   };
 
-  const automations = activeChannel === "whatsapp" ? WA_AUTOMATIONS : IG_AUTOMATIONS;
+  const automations =
+    activeChannel === "whatsapp" ? WA_AUTOMATIONS : IG_AUTOMATIONS;
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
+      {/* Activation checklist (auto-hides when complete or dismissed) */}
+      <ActivationCard />
+
       {/* ── Greeting + active channel ─────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -231,8 +313,18 @@ export default function OverviewPage() {
 
       {/* ── Stats row ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={MessageSquare} label="Messages" value={stats?.totalMessages ?? 0} color="violet" />
-        <StatCard icon={Users} label="Contacts" value={stats?.totalContacts ?? 0} color="pink" />
+        <StatCard
+          icon={MessageSquare}
+          label="Messages"
+          value={stats?.totalMessages ?? 0}
+          color="violet"
+        />
+        <StatCard
+          icon={Users}
+          label="Contacts"
+          value={stats?.totalContacts ?? 0}
+          color="pink"
+        />
         <StatCard
           icon={TrendingUp}
           label="Reply rate"
@@ -305,13 +397,48 @@ export default function OverviewPage() {
         accent="ink"
       >
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <ActionTile icon={Inbox} title="Inbox" desc="Live conversations" to="/dashboard/inbox" />
-          <ActionTile icon={Users} title="Contacts" desc="Your audience" to="/dashboard/contacts" />
-          <ActionTile icon={Send} title="Broadcasts" desc="Bulk send" to="/dashboard/broadcasts" />
-          <ActionTile icon={BarChart2} title="Analytics" desc="Performance" to="/dashboard/analytics" />
-          <ActionTile icon={Workflow} title="Flow Builder" desc="Visual flows" to="/dashboard/flow-builder" />
-          <ActionTile icon={SettingsIcon} title="Settings" desc="Workspace" to="/dashboard/settings" />
-          <ActionTile icon={CreditCard} title="Plan & Billing" desc="Subscription" to="/dashboard/billing" />
+          <ActionTile
+            icon={Inbox}
+            title="Inbox"
+            desc="Live conversations"
+            to="/dashboard/inbox"
+          />
+          <ActionTile
+            icon={Users}
+            title="Contacts"
+            desc="Your audience"
+            to="/dashboard/contacts"
+          />
+          <ActionTile
+            icon={Send}
+            title="Broadcasts"
+            desc="Bulk send"
+            to="/dashboard/broadcasts"
+          />
+          <ActionTile
+            icon={BarChart2}
+            title="Analytics"
+            desc="Performance"
+            to="/dashboard/analytics"
+          />
+          <ActionTile
+            icon={Workflow}
+            title="Flow Builder"
+            desc="Visual flows"
+            to="/dashboard/flow-builder"
+          />
+          <ActionTile
+            icon={SettingsIcon}
+            title="Settings"
+            desc="Workspace"
+            to="/dashboard/settings"
+          />
+          <ActionTile
+            icon={CreditCard}
+            title="Plan & Billing"
+            desc="Subscription"
+            to="/dashboard/billing"
+          />
         </div>
       </Section>
     </div>
@@ -344,7 +471,14 @@ function Section({ title, subtitle, accent = "ink", children }) {
 }
 
 // ─── Channel Toggle (rectangular pill pair) ──────────────────────────────────
-function ChannelToggle({ icon: Icon, label, active, connected, onClick, accent }) {
+function ChannelToggle({
+  icon: Icon,
+  label,
+  active,
+  connected,
+  onClick,
+  accent,
+}) {
   const styles = {
     pink: {
       activeBg: "bg-pink-600 text-white",
@@ -465,7 +599,10 @@ function ChannelCard({
           {stats && (
             <div className="grid grid-cols-2 gap-2 mb-4">
               {Object.entries(stats).map(([k, v]) => (
-                <div key={k} className="bg-ink-50 border border-ink-100 p-2.5 text-center">
+                <div
+                  key={k}
+                  className="bg-ink-50 border border-ink-100 p-2.5 text-center"
+                >
                   <p className="text-lg font-black text-ink-900">
                     {typeof v === "number" ? v.toLocaleString() : v}
                   </p>
@@ -486,7 +623,9 @@ function ChannelCard({
         </>
       ) : (
         <>
-          <p className="text-xs text-ink-500 mb-4 leading-relaxed">{connectDesc}</p>
+          <p className="text-xs text-ink-500 mb-4 leading-relaxed">
+            {connectDesc}
+          </p>
           <button
             onClick={onConnect}
             className={clsx(

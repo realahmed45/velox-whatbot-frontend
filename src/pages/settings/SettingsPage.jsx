@@ -26,6 +26,7 @@ export default function SettingsPage() {
     { id: "instagram", label: "Instagram" },
     { id: "whatsapp", label: "WhatsApp" },
     { id: "automation", label: "Automation" },
+    { id: "ai-knowledge", label: "AI Knowledge" },
     { id: "branding", label: "Branding" },
   ];
 
@@ -68,6 +69,12 @@ export default function SettingsPage() {
       )}
       {tab === "automation" && (
         <AutomationSettings
+          workspace={workspace}
+          onSave={() => fetchWorkspace(activeWorkspace)}
+        />
+      )}
+      {tab === "ai-knowledge" && (
+        <AiKnowledgeSettings
           workspace={workspace}
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
@@ -456,6 +463,116 @@ function WhatsAppSettings({ workspace, onSave }) {
           Connect WhatsApp
         </button>
       )}
+    </div>
+  );
+}
+
+function AiKnowledgeSettings({ workspace, onSave }) {
+  const { activeWorkspace } = useAuthStore();
+  const [content, setContent] = useState(workspace?.aiKnowledge?.content || "");
+  const [enabled, setEnabled] = useState(!!workspace?.aiKnowledge?.enabled);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setContent(workspace?.aiKnowledge?.content || "");
+    setEnabled(!!workspace?.aiKnowledge?.enabled);
+  }, [workspace]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
+        content,
+        enabled,
+      });
+      toast.success("AI knowledge saved");
+      onSave?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const charCount = content.length;
+  const limit = 8000;
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-200 p-5 rounded-2xl">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow shrink-0">
+            <span className="text-white font-bold text-sm">AI</span>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-ink-900">
+              AI Smart Reply Knowledge
+            </h3>
+            <p className="text-xs text-ink-600 mt-0.5">
+              Paste your FAQs, pricing, return policy, store hours, anything
+              your bot should know. When a customer asks something not handled
+              by your flows or keywords, the AI replies based on this content.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-ink-100 rounded-2xl p-5 space-y-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            className="w-4 h-4 rounded border-ink-300 text-violet-600 focus:ring-violet-500"
+          />
+          <span className="text-sm font-semibold text-ink-900">
+            Enable AI smart replies
+          </span>
+        </label>
+
+        <div>
+          <label className="text-xs font-semibold text-ink-700 mb-1.5 block">
+            Your business knowledge
+          </label>
+          <textarea
+            className="w-full text-sm p-3 border border-ink-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-100 outline-none transition resize-y"
+            rows={14}
+            maxLength={limit}
+            placeholder={`Example:\n\nWe are open Mon–Sat 9am–9pm.\nDelivery in Lahore: 2–3 hours, free over Rs 2,000.\nReturn policy: 7 days, original packaging.\n\nPricing:\n- Basic plan: $8/mo\n- Pro: $15/mo\n\nFAQ:\nQ: Do you ship outside Pakistan?\nA: Yes, via DHL...\n`}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <div className="flex justify-between items-center mt-1.5 text-[11px] text-ink-400">
+            <span>Plain text only. No images, no links to private docs.</span>
+            <span
+              className={
+                charCount > limit * 0.9 ? "text-amber-600 font-bold" : ""
+              }
+            >
+              {charCount.toLocaleString()} / {limit.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={save}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {saving ? "Saving…" : "Save knowledge"}
+        </button>
+      </div>
+
+      <div className="text-[11px] text-ink-500 px-1">
+        💡 Tip: Keep it factual, scannable, and 1,000–3,000 characters. The bot
+        reads this every time before replying — concise content = faster and
+        more accurate answers.
+      </div>
     </div>
   );
 }

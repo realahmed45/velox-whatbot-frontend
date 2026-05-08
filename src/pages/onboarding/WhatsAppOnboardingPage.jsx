@@ -23,6 +23,8 @@ import {
   Sparkles,
   ShieldCheck,
   AlertTriangle,
+  QrCode,
+  Smartphone,
 } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -140,6 +142,24 @@ export default function WhatsAppOnboardingPage() {
     }
   };
 
+  // Wasender QR-scan flow ($6/mo paid managed gateway)
+  const startWasender = async ({ reset = false } = {}) => {
+    setBusy(true);
+    setErrorMessage(null);
+    try {
+      await api.post("/whatsapp/wasender/connect", { reset });
+      setPhase("qr");
+    } catch (err) {
+      setErrorMessage(
+        err.response?.data?.message ||
+          "Could not start the QR session. Please try again.",
+      );
+      toast.error("Could not start QR session");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (phase === "upgrade") {
     return (
       <UpgradePrompt
@@ -180,6 +200,7 @@ export default function WhatsAppOnboardingPage() {
             <p className="text-xs text-ink-500">
               {phase === "choose" &&
                 "Choose how you'd like to set up your WhatsApp number"}
+              {phase === "qr" && "Scan the QR code with WhatsApp on your phone"}
               {phase === "redirecting" && "Opening the secure setup page..."}
               {phase === "finalizing" && "Almost done - finishing setup..."}
               {phase === "done" && "WhatsApp connected successfully!"}
@@ -189,7 +210,22 @@ export default function WhatsAppOnboardingPage() {
         </div>
 
         {phase === "choose" && (
-          <ChooseStep busy={busy} onStart={startConnect} />
+          <ChooseStep
+            busy={busy}
+            onStart={startConnect}
+            onScanQr={() => startWasender({ reset: false })}
+          />
+        )}
+
+        {phase === "qr" && (
+          <WasenderQrStep
+            onCancel={() => setPhase("choose")}
+            onDone={async () => {
+              if (activeWorkspace) await fetchWorkspace(activeWorkspace);
+              setPhase("done");
+            }}
+            onReset={() => startBaileys({ reset: true })}
+          />
         )}
 
         {phase === "redirecting" && <RedirectingStep />}
@@ -221,9 +257,69 @@ export default function WhatsAppOnboardingPage() {
 
 // --- Step 1: Choose path ----------------------------------------------------
 
-function ChooseStep({ busy, onStart }) {
+function ChooseStep({ busy, onStart, onScanQr }) {
   return (
     <div className="space-y-4">
+      {/* Path C - QR scan (free, self-hosted Baileys) */}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onScanQr}
+        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-teal-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
+      >
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0">
+            <QrCode className="w-5 h-5 text-teal-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm sm:text-base font-semibold text-ink-900">
+                Scan QR with my phone
+              </h3>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">
+                Recommended · 30 sec
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-ink-500 mt-1">
+              Link your existing WhatsApp number by scanning a QR code — like
+              WhatsApp Web. No Facebook signup, no verification. Powered by an
+              official paid gateway for stability and lower ban risk.
+            </p>
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-teal-500" /> Live in 30
+                seconds
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-teal-500" /> Works with any
+                number
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-teal-500" /> Send & receive
+                media
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-teal-500" /> Bot, flows &
+                broadcasts
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 sm:mt-5 flex items-center justify-end">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 group-hover:text-teal-800">
+            {busy ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
+              </>
+            ) : (
+              <>
+                <Smartphone className="w-4 h-4" /> Scan QR code →
+              </>
+            )}
+          </span>
+        </div>
+      </button>
+
       {/* Path A - bring own number */}
       <button
         type="button"
@@ -339,6 +435,132 @@ function ChooseStep({ busy, onStart }) {
         Both options use the official WhatsApp Cloud platform. Your number won't
         get banned and stays online 24/7.
       </p>
+    </div>
+  );
+}
+
+// --- Step 2c: Wasender QR scan ---------------------------------------------
+
+function WasenderQrStep({ onCancel, onDone, onReset }) {
+  const [state, setState] = useState({ status: "connecting" });
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer;
+    const poll = async () => {
+      try {
+        const { data } = await api.get("/whatsapp/wasender/qr");
+        if (cancelled) return;
+        setState(data || {});
+        if (data?.status === "connected") {
+          setTimeout(() => !cancelled && onDone(), 1200);
+          return;
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setState({ status: "error", lastError: err.message });
+      }
+      timer = setTimeout(() => setTick((t) => t + 1), 2500);
+    };
+    poll();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [tick, onDone]);
+
+  const status = state.status || "connecting";
+
+  return (
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-6 sm:p-8 space-y-5">
+      {status === "connected" ? (
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto">
+            <Check className="w-7 h-7 text-emerald-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-ink-900">
+              Connected successfully!
+            </h2>
+            {state.phoneNumber && (
+              <p className="text-sm text-ink-500 mt-1">
+                {state.displayName ? `${state.displayName} · ` : ""}+
+                {state.phoneNumber}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : status === "qr" && state.qr ? (
+        <>
+          <div className="flex flex-col items-center gap-4">
+            <div className="p-3 rounded-2xl bg-white border-2 border-teal-100 shadow-sm">
+              <img
+                src={state.qr}
+                alt="WhatsApp QR code"
+                className="w-64 h-64"
+              />
+            </div>
+            <p className="text-xs text-ink-400">
+              Refreshing automatically every 20 seconds
+            </p>
+          </div>
+          <div className="bg-teal-50 border border-teal-100 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-teal-900 mb-2">
+              How to scan
+            </h3>
+            <ol className="text-xs text-teal-800 space-y-1.5 list-decimal list-inside">
+              <li>Open WhatsApp on your phone</li>
+              <li>
+                Tap <b>Menu</b> (Android) or <b>Settings</b> (iPhone) →{" "}
+                <b>Linked Devices</b>
+              </li>
+              <li>
+                Tap <b>Link a Device</b> and point your camera at this screen
+              </li>
+            </ol>
+          </div>
+        </>
+      ) : status === "error" || status === "logged_out" ? (
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-7 h-7 text-amber-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-ink-900">
+              {status === "logged_out"
+                ? "Session was logged out"
+                : "Couldn't connect"}
+            </h2>
+            <p className="text-sm text-ink-500 mt-1">
+              {state.lastError ||
+                "Something went wrong. Try resetting the session and scanning again."}
+            </p>
+          </div>
+          <button
+            onClick={onReset}
+            className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition"
+          >
+            Reset & try again
+          </button>
+        </div>
+      ) : (
+        <div className="text-center space-y-4 py-8">
+          <Loader2 className="w-8 h-8 text-teal-500 animate-spin mx-auto" />
+          <p className="text-sm text-ink-500">
+            Generating QR code, this takes a few seconds...
+          </p>
+        </div>
+      )}
+
+      {status !== "connected" && (
+        <button
+          onClick={onCancel}
+          className="w-full py-2 text-xs text-ink-400 hover:text-ink-700 transition"
+        >
+          Cancel and go back
+        </button>
+      )}
     </div>
   );
 }

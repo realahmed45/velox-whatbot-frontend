@@ -61,16 +61,13 @@ export default function PricingPage({ embedded = false }) {
   }, []);
 
   const visiblePlans = useMemo(() => {
-    // Always show the free trial in every tab as the entry option.
-    const free = plans.find((p) => p.key === "free");
-    const inTab = plans.filter((p) => p.channel === tab && p.key !== "free");
+    const inTab = plans.filter((p) => p.channel === tab);
     if (tab === "both") {
-      // For bundle tab: show free + all bundle plans
-      return [free, ...inTab].filter(Boolean);
+      return inTab;
     }
-    // For single-channel tabs: show free + that channel's plans + bundle_pro upsell
-    const bundle = plans.find((p) => p.key === "bundle_pro");
-    return [free, ...inTab, bundle].filter(Boolean);
+    // Single-channel tab: show that channel's basic + bundle upsells
+    const bundles = plans.filter((p) => p.channel === "both");
+    return [...inTab, ...bundles];
   }, [plans, tab]);
 
   const formatPrice = (plan) => {

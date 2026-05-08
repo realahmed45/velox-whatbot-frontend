@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 import ConnectChannelGate from "@/components/ConnectChannelGate";
+import RequireOnboarding from "@/components/RequireOnboarding";
 
 // Layouts
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -141,7 +142,9 @@ export default function App() {
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout />
+                    <RequireOnboarding>
+                      <DashboardLayout />
+                    </RequireOnboarding>
                   </ProtectedRoute>
                 }
               >
