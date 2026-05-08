@@ -28,6 +28,7 @@ const AutomationSetupPage = lazy(
 const AnalyticsPage = lazy(() => import("@/pages/analytics/AnalyticsPage"));
 const InboxPage = lazy(() => import("@/pages/inbox/InboxPage"));
 const ContactsPage = lazy(() => import("@/pages/contacts/ContactsPage"));
+const OrdersPage = lazy(() => import("@/pages/orders/OrdersPage"));
 const BroadcastsPage = lazy(() => import("@/pages/broadcasts/BroadcastsPage"));
 const AiBotPage = lazy(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazy(() => import("@/pages/PricingPage"));
@@ -155,6 +156,7 @@ export default function App() {
                 <Route index element={<OverviewPage />} />
                 <Route path="automation" element={<AutomationSetupPage />} />
                 <Route path="contacts" element={<ContactsPage />} />
+                <Route path="orders" element={<OrdersPage />} />
                 <Route path="ai-bot" element={<AiBotPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="billing" element={<BillingPage />} />

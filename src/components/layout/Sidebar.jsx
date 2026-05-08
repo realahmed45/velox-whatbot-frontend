@@ -35,6 +35,7 @@ import {
   Target,
   CircleDot,
   Clock,
+  ShoppingCart,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -135,6 +136,12 @@ const WA_AUTOMATIONS = [
 const TOOLS = [
   { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
+  {
+    to: "/dashboard/orders",
+    icon: ShoppingCart,
+    label: "Orders",
+    badgeKey: "newOrders",
+  },
   { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
   { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
 ];
@@ -225,6 +232,44 @@ export default function Sidebar({ onNavigate }) {
   const waConnected =
     workspace?.whatsapp?.status === "connected" ||
     (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
+
+  // Live "new orders" badge — fetched once + bumped via socket
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    if (!workspace?._id || !workspace?.smartOrders?.enabled) return;
+    (async () => {
+      try {
+        const api = (await import("@/services/api")).default;
+        const { data } = await api.get("/orders?status=new&limit=1");
+        if (!cancelled) setNewOrderCount(data.statusCounts?.new || 0);
+      } catch (_) {
+        /* ignore */
+      }
+    })();
+    let socket;
+    (async () => {
+      const { initSocket } = await import("@/services/socket");
+      socket = initSocket();
+      if (!socket) return;
+      const onNew = () => setNewOrderCount((c) => c + 1);
+      const onUpdated = ({ order }) => {
+        if (order?.status && order.status !== "new") {
+          setNewOrderCount((c) => Math.max(0, c - 1));
+        }
+      };
+      socket.on("order:new", onNew);
+      socket.on("order:updated", onUpdated);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [workspace?._id, workspace?.smartOrders?.enabled]);
+
+  // Reset count when user visits orders page
+  useEffect(() => {
+    if (location.pathname === "/dashboard/orders") setNewOrderCount(0);
+  }, [location.pathname]);
 
   const isPremium = [
     "wa_pro",
@@ -408,6 +453,11 @@ export default function Sidebar({ onNavigate }) {
             <SidebarLink
               key={item.to}
               {...item}
+              badge={
+                item.badgeKey === "newOrders" && newOrderCount > 0
+                  ? newOrderCount
+                  : null
+              }
               theme={theme}
               collapsed={collapsed}
               onNavigate={onNavigate}
@@ -541,6 +591,7 @@ function SidebarLink({
   collapsed,
   onNavigate,
   theme,
+  badge,
 }) {
   const location = useLocation();
 
@@ -578,6 +629,14 @@ function SidebarLink({
         )}
       />
       {!collapsed && <span className="truncate">{label}</span>}
+      {!collapsed && badge ? (
+        <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
+      {collapsed && badge ? (
+        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500" />
+      ) : null}
     </NavLink>
   );
 }

@@ -12,6 +12,7 @@ import {
   Trash2,
   RefreshCw,
   Settings as SettingsIcon,
+  ShoppingCart,
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ export default function SettingsPage() {
     { id: "whatsapp", label: "WhatsApp" },
     { id: "automation", label: "Automation" },
     { id: "ai-knowledge", label: "AI Knowledge" },
+    { id: "smart-orders", label: "Smart Orders" },
     { id: "branding", label: "Branding" },
   ];
 
@@ -75,6 +77,12 @@ export default function SettingsPage() {
       )}
       {tab === "ai-knowledge" && (
         <AiKnowledgeSettings
+          workspace={workspace}
+          onSave={() => fetchWorkspace(activeWorkspace)}
+        />
+      )}
+      {tab === "smart-orders" && (
+        <SmartOrdersSettings
           workspace={workspace}
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
@@ -572,6 +580,170 @@ function AiKnowledgeSettings({ workspace, onSave }) {
         💡 Tip: Keep it factual, scannable, and 1,000–3,000 characters. The bot
         reads this every time before replying — concise content = faster and
         more accurate answers.
+      </div>
+    </div>
+  );
+}
+
+function SmartOrdersSettings({ workspace, onSave }) {
+  const { activeWorkspace } = useAuthStore();
+  const [enabled, setEnabled] = useState(!!workspace?.smartOrders?.enabled);
+  const [catalog, setCatalog] = useState(workspace?.smartOrders?.catalog || "");
+  const [paymentInstructions, setPaymentInstructions] = useState(
+    workspace?.smartOrders?.paymentInstructions || "",
+  );
+  const [notifyPhone, setNotifyPhone] = useState(
+    workspace?.smartOrders?.notifyPhone || "",
+  );
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setEnabled(!!workspace?.smartOrders?.enabled);
+    setCatalog(workspace?.smartOrders?.catalog || "");
+    setPaymentInstructions(workspace?.smartOrders?.paymentInstructions || "");
+    setNotifyPhone(workspace?.smartOrders?.notifyPhone || "");
+  }, [workspace]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put(`/workspaces/${activeWorkspace}/smart-orders`, {
+        enabled,
+        catalog,
+        paymentInstructions,
+        notifyPhone,
+      });
+      toast.success("Smart Orders settings saved");
+      onSave?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const catalogLimit = 5000;
+  const charCount = catalog.length;
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 p-5 rounded-2xl">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow shrink-0">
+            <ShoppingCart className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-ink-900">
+              Smart Orders — turn DMs into orders
+            </h3>
+            <p className="text-xs text-ink-600 mt-0.5">
+              When enabled, your AI will recognise buying intent in chat,
+              collect customer details (name, address, items, payment), and
+              automatically create an Order in your dashboard. No payments are
+              processed — you fulfill offline however you already do.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-ink-100 rounded-2xl p-5 space-y-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            className="w-4 h-4 rounded border-ink-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <span className="text-sm font-semibold text-ink-900">
+            Enable Smart Orders
+          </span>
+        </label>
+
+        <div>
+          <label className="text-xs font-semibold text-ink-700 mb-1.5 block">
+            What you sell{" "}
+            <span className="text-ink-400">(one product per line)</span>
+          </label>
+          <textarea
+            className="w-full text-sm font-mono p-3 border border-ink-200 rounded-lg focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition resize-y"
+            rows={10}
+            maxLength={catalogLimit}
+            placeholder={`Black Hoodie — 2500 PKR — sizes S/M/L\nWhite T-shirt — 1200 PKR — sizes M/L/XL\nLeather Wallet — 3500 PKR — black or brown\nDelivery: 200 PKR within Karachi, 350 PKR rest of PK`}
+            value={catalog}
+            onChange={(e) => setCatalog(e.target.value)}
+          />
+          <div className="flex justify-between items-center mt-1.5 text-[11px] text-ink-400">
+            <span>
+              Format: <b>Name — Price — note</b>. The AI reads this and uses the
+              exact prices.
+            </span>
+            <span
+              className={
+                charCount > catalogLimit * 0.9 ? "text-amber-600 font-bold" : ""
+              }
+            >
+              {charCount.toLocaleString()} / {catalogLimit.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-ink-700 mb-1.5 block">
+            Payment instructions
+          </label>
+          <textarea
+            className="w-full text-sm p-3 border border-ink-200 rounded-lg focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition resize-y"
+            rows={3}
+            maxLength={1000}
+            placeholder={`Cash on Delivery, or JazzCash to 03001234567 (Ahmed Ali)`}
+            value={paymentInstructions}
+            onChange={(e) => setPaymentInstructions(e.target.value)}
+          />
+          <p className="text-[11px] text-ink-400 mt-1">
+            The AI will share these with the customer when collecting their
+            preferred payment method. We never process the payment ourselves.
+          </p>
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-ink-700 mb-1.5 block">
+            WhatsApp notify number{" "}
+            <span className="text-ink-400">(optional)</span>
+          </label>
+          <input
+            type="tel"
+            value={notifyPhone}
+            onChange={(e) => setNotifyPhone(e.target.value)}
+            placeholder="+923001234567"
+            className="w-full text-sm p-2.5 border border-ink-200 rounded-lg focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none"
+          />
+          <p className="text-[11px] text-ink-400 mt-1">
+            We'll DM this number every time a new order is captured + a daily
+            summary at 9 AM. Leave blank to disable.
+          </p>
+        </div>
+
+        <button
+          onClick={save}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {saving ? "Saving…" : "Save Smart Orders"}
+        </button>
+      </div>
+
+      <div className="text-[11px] text-ink-500 px-1">
+        💡 Tip: Be specific in your catalog. Instead of "T-shirt" write
+        <i>
+          {" "}
+          "Cotton T-shirt — 1200 PKR — sizes S/M/L/XL, colors: Black/White/Navy"
+        </i>
+        — the AI will handle variant questions automatically.
       </div>
     </div>
   );
