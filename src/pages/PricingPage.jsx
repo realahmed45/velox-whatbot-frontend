@@ -64,10 +64,18 @@ export default function PricingPage({ embedded = false }) {
     [plans],
   );
 
+  // Map plan key → channel hint for the post-signup flow
+  const planToChannel = (key) => {
+    if (key === "wa_starter") return "whatsapp";
+    if (key === "ig_starter") return "instagram";
+    return "both"; // bundle_pro / bundle_business
+  };
+
   const handlePick = async (plan) => {
     if (!plan) return;
     if (!isAuthenticated) {
-      navigate("/register?plan=" + plan.key);
+      const channel = planToChannel(plan.key);
+      navigate(`/register?plan=${plan.key}&channel=${channel}`);
       return;
     }
     if (embedded) {
@@ -86,7 +94,10 @@ export default function PricingPage({ embedded = false }) {
       }
       return;
     }
-    navigate(`/dashboard/billing?plan=${plan.key}`);
+    // Logged in but on PUBLIC pricing page — go straight into onboarding
+    // pricing step with that plan pre-selected.
+    const channel = planToChannel(plan.key);
+    navigate(`/onboarding/pricing?channel=${channel}&plan=${plan.key}`);
   };
 
   const cards = [basic, pro, business].filter(Boolean);

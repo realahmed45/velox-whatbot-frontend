@@ -150,15 +150,23 @@ export default function WhatsAppOnboardingPage() {
       await api.post("/whatsapp/wasender/connect", { reset });
       setPhase("qr");
     } catch (err) {
-      setErrorMessage(
+      const msg =
         err.response?.data?.message ||
-          "Could not start the QR session. Please try again.",
-      );
-      toast.error("Could not start QR session");
+        "Could not start the QR session. Please try again.";
+      setErrorMessage(msg);
+      toast.error(msg);
+      setPhase("failed");
     } finally {
       setBusy(false);
     }
   };
+
+  // Auto-start QR session as soon as the user lands on this page (single-path UX)
+  useEffect(() => {
+    if (phase !== "choose") return;
+    startWasender({ reset: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (phase === "upgrade") {
     return (
@@ -198,8 +206,7 @@ export default function WhatsAppOnboardingPage() {
           <div>
             <h1 className="text-xl font-bold text-ink-900">Connect WhatsApp</h1>
             <p className="text-xs text-ink-500">
-              {phase === "choose" &&
-                "Choose how you'd like to set up your WhatsApp number"}
+              {phase === "choose" && "Generating your QR code…"}
               {phase === "qr" && "Scan the QR code with WhatsApp on your phone"}
               {phase === "redirecting" && "Opening the secure setup page..."}
               {phase === "finalizing" && "Almost done - finishing setup..."}
@@ -209,13 +216,7 @@ export default function WhatsAppOnboardingPage() {
           </div>
         </div>
 
-        {phase === "choose" && (
-          <ChooseStep
-            busy={busy}
-            onStart={startConnect}
-            onScanQr={() => startWasender({ reset: false })}
-          />
-        )}
+        {phase === "choose" && <StartingQrStep />}
 
         {phase === "qr" && (
           <WasenderQrStep
@@ -224,7 +225,7 @@ export default function WhatsAppOnboardingPage() {
               if (activeWorkspace) await fetchWorkspace(activeWorkspace);
               setPhase("done");
             }}
-            onReset={() => startBaileys({ reset: true })}
+            onReset={() => startWasender({ reset: true })}
           />
         )}
 
@@ -247,6 +248,7 @@ export default function WhatsAppOnboardingPage() {
               setSearchParams({}, { replace: true });
               setErrorMessage(null);
               setPhase("choose");
+              startWasender({ reset: true });
             }}
           />
         )}
@@ -255,190 +257,26 @@ export default function WhatsAppOnboardingPage() {
   );
 }
 
-// --- Step 1: Choose path ----------------------------------------------------
+// --- Step 1: Starting QR session (single-path) ----------------------------
 
-function ChooseStep({ busy, onStart, onScanQr }) {
+function StartingQrStep() {
   return (
-    <div className="space-y-4">
-      {/* Path C - QR scan (free, self-hosted Baileys) */}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={onScanQr}
-        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-teal-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0">
-            <QrCode className="w-5 h-5 text-teal-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-semibold text-ink-900">
-                Scan QR with my phone
-              </h3>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">
-                Recommended · 30 sec
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-ink-500 mt-1">
-              Link your existing WhatsApp number by scanning a QR code — like
-              WhatsApp Web. No Facebook signup, no verification. Powered by an
-              official paid gateway for stability and lower ban risk.
-            </p>
-            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-teal-500" /> Live in 30
-                seconds
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-teal-500" /> Works with any
-                number
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-teal-500" /> Send & receive
-                media
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-teal-500" /> Bot, flows &
-                broadcasts
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-4 sm:mt-5 flex items-center justify-end">
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 group-hover:text-teal-800">
-            {busy ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
-              </>
-            ) : (
-              <>
-                <Smartphone className="w-4 h-4" /> Scan QR code →
-              </>
-            )}
-          </span>
-        </div>
-      </button>
-
-      {/* Path A - bring own number */}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => onStart({ instant: false })}
-        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-emerald-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-            <Phone className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-semibold text-ink-900">
-                Use my own WhatsApp number
-              </h3>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
-                Recommended
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-ink-500 mt-1">
-              Connect your existing business number. You'll log in with Facebook
-              and verify ownership with a one-time code. Takes about
-              2&nbsp;minutes.
-            </p>
-            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Official
-                WhatsApp Cloud
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> No bans, no
-                QR drops
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Broadcasts
-                & templates
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Phone can
-                be offline
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-4 sm:mt-5 flex items-center justify-end">
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 group-hover:text-emerald-800">
-            {busy ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
-              </>
-            ) : (
-              <>Connect via Facebook →</>
-            )}
-          </span>
-        </div>
-      </button>
-
-      {/* Path B - instant number */}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => onStart({ instant: true })}
-        className="group w-full text-left bg-white rounded-2xl border border-ink-100 hover:border-violet-300 hover:shadow-md transition p-5 sm:p-6 disabled:opacity-60 disabled:cursor-wait"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-violet-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm sm:text-base font-semibold text-ink-900">
-              Get a free instant number
-            </h3>
-            <p className="text-xs sm:text-sm text-ink-500 mt-1">
-              We'll provision a brand-new US WhatsApp number for you in about
-              5&nbsp;seconds. Great for testing, agencies, or B2B outreach. No
-              Facebook account needed.
-            </p>
-            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-[11px] text-ink-500">
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-violet-500" /> Live in
-                seconds
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-violet-500" /> No
-                verification
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-violet-500" /> US dial code
-                (+1)
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-violet-500" /> Full API
-                access
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-4 sm:mt-5 flex items-center justify-end">
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 group-hover:text-violet-800">
-            {busy ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Starting...
-              </>
-            ) : (
-              <>Get instant number →</>
-            )}
-          </span>
-        </div>
-      </button>
-
-      <p className="text-[11px] text-ink-400 text-center pt-2">
-        Both options use the official WhatsApp Cloud platform. Your number won't
-        get banned and stays online 24/7.
-      </p>
+    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-4">
+      <div className="w-12 h-12 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto">
+        <Loader2 className="w-6 h-6 text-teal-600 animate-spin" />
+      </div>
+      <div>
+        <h2 className="text-base font-bold text-ink-900">
+          Preparing your QR code…
+        </h2>
+        <p className="text-xs text-ink-500 mt-1">
+          We're setting up a secure WhatsApp session for your workspace. This
+          takes a few seconds.
+        </p>
+      </div>
     </div>
   );
 }
-
 // --- Step 2c: Wasender QR scan ---------------------------------------------
 
 function WasenderQrStep({ onCancel, onDone, onReset }) {

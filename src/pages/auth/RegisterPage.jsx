@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
   const channelHint = searchParams.get("channel"); // whatsapp | instagram | both
+  const planHint = searchParams.get("plan"); // wa_starter | ig_starter | bundle_pro | bundle_business
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,12 +39,23 @@ export default function RegisterPage() {
       });
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome to Botlify!");
-      // Honor channel intent from landing CTAs
-      if (channelHint === "whatsapp")
-        navigate("/dashboard/onboarding/whatsapp");
-      else if (channelHint === "instagram")
-        navigate("/dashboard/onboarding/instagram");
-      else navigate("/dashboard/onboarding/choose-channel");
+
+      // If they picked a plan on /pricing before signup, activate it now
+      if (planHint) {
+        try {
+          await api.post("/billing/select-plan", {
+            plan: planHint,
+            billingCycle: "monthly",
+          });
+        } catch {
+          /* non-fatal — they can pick from billing later */
+        }
+      }
+
+      // Route them straight to the right onboarding step based on plan/channel.
+      if (channelHint === "whatsapp") navigate("/onboarding/whatsapp");
+      else if (channelHint === "instagram") navigate("/onboarding/instagram");
+      else navigate("/onboarding/choose-channel");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {

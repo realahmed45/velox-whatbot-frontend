@@ -27,12 +27,14 @@ export default function OnboardingPricingPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const channel = params.get("channel") || "whatsapp"; // whatsapp | instagram | both
+  const planHint = params.get("plan"); // optional pre-selection from /pricing
   const { activeWorkspace } = useAuthStore();
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
   const [picking, setPicking] = useState(null);
+  const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -57,6 +59,28 @@ export default function OnboardingPricingPage() {
       clearTimeout(t);
     };
   }, []);
+
+  // If user came from public /pricing with a chosen plan, auto-activate and skip ahead.
+  useEffect(() => {
+    if (autoApplied || !planHint || plans.length === 0) return;
+    const plan = plans.find((p) => p.key === planHint);
+    if (!plan) return;
+    setAutoApplied(true);
+    (async () => {
+      try {
+        await api.post("/billing/select-plan", {
+          plan: plan.key,
+          billingCycle: "monthly",
+        });
+        toast.success(`${plan.name} activated — let's connect your channel`);
+      } catch {
+        /* non-fatal — let them continue */
+      }
+      if (channel === "instagram")
+        navigate("/onboarding/instagram", { replace: true });
+      else navigate("/onboarding/whatsapp", { replace: true });
+    })();
+  }, [planHint, plans, autoApplied, channel, navigate]);
 
   // Filter plans for the chosen channel + always include bundle upsells
   const visiblePlans = useMemo(() => {
