@@ -142,12 +142,18 @@ export default function WhatsAppOnboardingPage() {
     }
   };
 
-  // Wasender QR-scan flow ($6/mo paid managed gateway)
-  const startWasender = async ({ reset = false } = {}) => {
+  // Wasender QR-scan flow ($6/mo paid managed gateway).
+  // Requires the customer's WhatsApp phone number (E.164) up front — Wasender's
+  // create-session API rejects requests without it.
+  const startWasender = async ({ reset = false, phoneNumber } = {}) => {
+    if (!phoneNumber) {
+      toast.error("Please enter your WhatsApp phone number first.");
+      return;
+    }
     setBusy(true);
     setErrorMessage(null);
     try {
-      await api.post("/whatsapp/wasender/connect", { reset });
+      await api.post("/whatsapp/wasender/connect", { reset, phoneNumber });
       setPhase("qr");
     } catch (err) {
       const msg =
@@ -155,18 +161,10 @@ export default function WhatsAppOnboardingPage() {
         "Could not start the QR session. Please try again.";
       setErrorMessage(msg);
       toast.error(msg);
-      setPhase("failed");
     } finally {
       setBusy(false);
     }
   };
-
-  // Auto-start QR session as soon as the user lands on this page (single-path UX)
-  useEffect(() => {
-    if (phase !== "choose") return;
-    startWasender({ reset: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (phase === "upgrade") {
     return (
@@ -206,7 +204,7 @@ export default function WhatsAppOnboardingPage() {
           <div>
             <h1 className="text-xl font-bold text-ink-900">Connect WhatsApp</h1>
             <p className="text-xs text-ink-500">
-              {phase === "choose" && "Generating your QR code…"}
+              {phase === "choose" && "Enter your number to generate a QR code"}
               {phase === "qr" && "Scan the QR code with WhatsApp on your phone"}
               {phase === "redirecting" && "Opening the secure setup page..."}
               {phase === "finalizing" && "Almost done - finishing setup..."}
@@ -216,7 +214,15 @@ export default function WhatsAppOnboardingPage() {
           </div>
         </div>
 
-        {phase === "choose" && <StartingQrStep />}
+        {phase === "choose" && (
+          <PhoneCaptureStep
+            busy={busy}
+            errorMessage={errorMessage}
+            onSubmit={(phoneNumber) =>
+              startWasender({ reset: false, phoneNumber })
+            }
+          />
+        )}
 
         {phase === "qr" && (
           <WasenderQrStep
@@ -248,7 +254,6 @@ export default function WhatsAppOnboardingPage() {
               setSearchParams({}, { replace: true });
               setErrorMessage(null);
               setPhase("choose");
-              startWasender({ reset: true });
             }}
           />
         )}
@@ -257,24 +262,88 @@ export default function WhatsAppOnboardingPage() {
   );
 }
 
-// --- Step 1: Starting QR session (single-path) ----------------------------
+// --- Step 1: Capture WhatsApp phone number (single-path) ------------------
 
-function StartingQrStep() {
+function PhoneCaptureStep({ busy, errorMessage, onSubmit }) {
+  const [phone, setPhone] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const cleaned = phone.replace(/[^\d+]/g, "");
+    const digits = cleaned.replace(/[^\d]/g, "");
+    if (digits.length < 8) {
+      toast.error(
+        "Enter your full number with country code, e.g. +923001234567",
+      );
+      return;
+    }
+    onSubmit("+" + digits);
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-8 text-center space-y-4">
-      <div className="w-12 h-12 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto">
-        <Loader2 className="w-6 h-6 text-teal-600 animate-spin" />
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white rounded-2xl border border-ink-100 shadow-sm p-6 sm:p-8 space-y-5"
+    >
+      <div className="flex items-start gap-4">
+        <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0">
+          <Smartphone className="w-5 h-5 text-teal-600" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-base sm:text-lg font-bold text-ink-900">
+            What's your WhatsApp number?
+          </h2>
+          <p className="text-xs text-ink-500 mt-1">
+            Enter the phone number you'll use to scan the QR code. Include your
+            country code.
+          </p>
+        </div>
       </div>
+
       <div>
-        <h2 className="text-base font-bold text-ink-900">
-          Preparing your QR code…
-        </h2>
-        <p className="text-xs text-ink-500 mt-1">
-          We're setting up a secure WhatsApp session for your workspace. This
-          takes a few seconds.
+        <label className="block text-xs font-semibold text-ink-700 mb-1.5">
+          WhatsApp phone number
+        </label>
+        <input
+          type="tel"
+          autoFocus
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="+92 300 1234567"
+          disabled={busy}
+          className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-60"
+        />
+        <p className="text-[11px] text-ink-400 mt-1.5">
+          Format: country code + number (no spaces required). Example:
+          +14155551234
         </p>
       </div>
-    </div>
+
+      {errorMessage && (
+        <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs text-rose-700">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-4 py-3 disabled:opacity-60 disabled:cursor-wait transition"
+      >
+        {busy ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Generating QR code…
+          </>
+        ) : (
+          <>
+            <QrCode className="w-4 h-4" />
+            Generate QR code
+          </>
+        )}
+      </button>
+    </form>
   );
 }
 // --- Step 2c: Wasender QR scan ---------------------------------------------
