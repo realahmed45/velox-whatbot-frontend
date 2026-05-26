@@ -34,8 +34,7 @@ export default function RequireOnboarding({ children }) {
   if (loading || !workspace) return children;
 
   const igConnected = workspace.instagram?.status === "connected";
-  const waConnected = workspace.whatsapp?.status === "connected";
-  const hasChannel = igConnected || waConnected;
+  const hasChannel = igConnected;
   const isExempt = EXEMPT_PATHS.some((p) => location.pathname.startsWith(p));
 
   if (!hasChannel && !isExempt) {

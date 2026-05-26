@@ -44,20 +44,7 @@ import {
 import { clsx } from "clsx";
 import ActivationCard from "@/components/ActivationCard";
 
-function WhatsAppIcon({ className = "w-5 h-5" }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M19.05 4.91A10 10 0 0 0 4.94 19.04L4 23l4.06-1.06a10 10 0 0 0 14.94-9A9.94 9.94 0 0 0 19.05 4.91zM12 21.02a8 8 0 0 1-4.08-1.12l-.29-.17-2.41.63.65-2.35-.19-.3A8 8 0 1 1 20.02 13a7.94 7.94 0 0 1-8.02 8.02zm4.61-5.83c-.25-.13-1.49-.74-1.72-.82-.23-.08-.4-.13-.57.13-.17.25-.65.82-.8 1-.15.17-.3.19-.55.06-.25-.13-1.06-.39-2.02-1.24a7.6 7.6 0 0 1-1.4-1.74c-.15-.25 0-.39.11-.51.11-.11.25-.3.38-.45.13-.15.17-.25.25-.42.08-.17 0-.32-.04-.45-.06-.13-.57-1.38-.78-1.89-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.45.06-.69.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.13.17 1.81 2.77 4.39 3.88.61.26 1.09.42 1.46.54.61.19 1.17.17 1.61.1.49-.07 1.49-.61 1.7-1.2.21-.6.21-1.11.15-1.21-.06-.1-.23-.16-.48-.29z" />
-    </svg>
-  );
-}
-
-// Custom automation tiles per channel — link directly into AutomationSetupPage
+// Custom automation tiles — link directly into AutomationSetupPage
 // with the ?tab= query so the tab opens immediately.
 const IG_AUTOMATIONS = [
   {
@@ -128,36 +115,10 @@ const IG_AUTOMATIONS = [
   },
 ];
 
-const WA_AUTOMATIONS = [
-  {
-    id: "welcome",
-    label: "Welcome message",
-    desc: "First message a contact gets",
-    icon: MessageCircle,
-  },
-  {
-    id: "dm_kw",
-    label: "Keyword auto-reply",
-    desc: "Reply when message matches keyword",
-    icon: Hash,
-  },
-  {
-    id: "fallback",
-    label: "Fallback reply",
-    desc: "Catch-all when no rule matches",
-    icon: CircleDot,
-  },
-  {
-    id: "hours",
-    label: "Business hours",
-    desc: "Respond differently after hours",
-    icon: Clock,
-  },
-];
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
-  const { workspace, fetchWorkspace, setActiveChannel } = useWorkspaceStore();
+  const { workspace, fetchWorkspace } = useWorkspaceStore();
   const [stats, setStats] = useState(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -196,16 +157,9 @@ export default function OverviewPage() {
   }, [activeWorkspace]);
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected =
-    workspace?.whatsapp?.status === "connected" ||
-    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
 
   const ig = workspace?.instagram;
-  const wa = workspace?.whatsapp;
   const firstName = (user?.name || "").split(" ")[0] || "there";
-  const activeChannel = workspace?.activeChannel || "instagram";
-  const channelLabel = activeChannel === "whatsapp" ? "WhatsApp" : "Instagram";
-  const channelAccent = activeChannel === "whatsapp" ? "emerald" : "pink";
 
   const startIgOAuth = async () => {
     try {
@@ -216,100 +170,46 @@ export default function OverviewPage() {
     }
   };
 
-  const switchTo = async (channel) => {
-    try {
-      await setActiveChannel(channel);
-    } catch {
-      toast.error("Could not switch dashboard");
-    }
-  };
-
-  const automations =
-    activeChannel === "whatsapp" ? WA_AUTOMATIONS : IG_AUTOMATIONS;
-
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
       {/* Activation checklist (auto-hides when complete or dismissed) */}
       <ActivationCard />
 
-      {/* ── Greeting + active channel ─────────────────────── */}
+      {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-ink-950">
             Hey, {firstName}
           </h1>
           <p className="text-sm text-ink-500 mt-1">
-            {igConnected || waConnected
-              ? `Viewing ${channelLabel} dashboard. Switch channels from the top bar.`
-              : "Connect a channel below to start automating."}
+            {igConnected
+              ? "Manage your Instagram account and automations from one place."
+              : "Connect Instagram below to start automating."}
           </p>
         </div>
-        {(igConnected || waConnected) && (
-          <div className="inline-flex items-center border border-ink-200 bg-white">
-            <ChannelToggle
-              icon={Instagram}
-              label="Instagram"
-              active={activeChannel === "instagram"}
-              connected={igConnected}
-              onClick={() => switchTo("instagram")}
-              accent="pink"
-            />
-            <span className="w-px h-7 bg-ink-200" />
-            <ChannelToggle
-              icon={MessageSquare}
-              label="WhatsApp"
-              active={activeChannel === "whatsapp"}
-              connected={waConnected}
-              onClick={() => switchTo("whatsapp")}
-              accent="emerald"
-            />
-          </div>
-        )}
       </div>
 
-      {/* ── Channel cards ─────────────────────────────────── */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <ChannelCard
-          name="Instagram"
-          icon={Instagram}
-          color="pink"
-          connected={igConnected}
-          connectedLabel={ig?.username ? `@${ig.username}` : "Connected"}
-          avatar={ig?.profilePicture}
-          stats={
-            igConnected
-              ? {
-                  messages: stats?.igMessages ?? stats?.totalMessages ?? "—",
-                  followers: ig?.followersCount ?? "—",
-                }
-              : null
-          }
-          connectLabel="Connect Instagram"
-          connectDesc="Link your Instagram Business or Creator account via Facebook."
-          onConnect={startIgOAuth}
-          onManage={() => switchTo("instagram")}
-        />
-
-        <ChannelCard
-          name="WhatsApp"
-          icon={WhatsAppIcon}
-          color="green"
-          connected={waConnected}
-          connectedLabel={wa?.phoneNumber || wa?.displayName || "Connected"}
-          stats={
-            waConnected
-              ? {
-                  messages: stats?.waMessages ?? stats?.totalMessages ?? "—",
-                  contacts: stats?.totalContacts ?? "—",
-                }
-              : null
-          }
-          connectLabel="Connect WhatsApp"
-          connectDesc="Connect your number in 2 minutes using Botlify Quick Connect."
-          onConnect={() => navigate("/dashboard/onboarding/whatsapp")}
-          onManage={() => switchTo("whatsapp")}
-        />
-      </div>
+      {/* ── Instagram channel card ─── */}
+      <ChannelCard
+        name="Instagram"
+        icon={Instagram}
+        color="pink"
+        connected={igConnected}
+        connectedLabel={ig?.username ? `@${ig.username}` : "Connected"}
+        avatar={ig?.profilePicture}
+        stats={
+          igConnected
+            ? {
+                messages: stats?.igMessages ?? stats?.totalMessages ?? "—",
+                followers: ig?.followersCount ?? "—",
+              }
+            : null
+        }
+        connectLabel="Connect Instagram"
+        connectDesc="Link your Instagram Business or Creator account."
+        onConnect={startIgOAuth}
+        onManage={() => navigate("/dashboard/settings")}
+      />
 
       {/* ── Stats row ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -345,8 +245,8 @@ export default function OverviewPage() {
       {/* ── Bot Automation ────────────────────────────────── */}
       <Section
         title="Bot Automation"
-        subtitle={`Smart AI replies for ${channelLabel} — train it once, let it handle conversations 24/7.`}
-        accent={channelAccent}
+        subtitle="Smart AI replies — train it once, let it handle conversations 24/7."
+        accent="ink"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <ActionTile
@@ -371,29 +271,32 @@ export default function OverviewPage() {
         </div>
       </Section>
 
-      {/* ── Custom Automations ────────────────────────────── */}
-      <Section
-        title="Custom Automations"
-        subtitle={`Rule-based triggers for ${channelLabel} — keywords, comments, story replies and more.`}
-        accent={channelAccent}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {automations.map((a) => (
-            <ActionTile
-              key={a.id}
-              icon={a.icon}
-              title={a.label}
-              desc={a.desc}
-              to={`/dashboard/automation?tab=${a.id}`}
-            />
-          ))}
-        </div>
-      </Section>
+      {/* ── Custom Automations (per connected channel) ─────── */}
+      {igConnected && (
+        <Section
+          title="Instagram Automations"
+          subtitle="Comment-to-DM, story replies, keyword triggers, and more."
+          accent="pink"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {IG_AUTOMATIONS.map((a) => (
+              <ActionTile
+                key={`ig-${a.id}`}
+                icon={a.icon}
+                title={a.label}
+                desc={a.desc}
+                to={`/dashboard/automation?tab=${a.id}&channel=instagram`}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
+
 
       {/* ── Tools & Insights ──────────────────────────────── */}
       <Section
         title="Tools & Insights"
-        subtitle="Inbox, contacts, broadcasts, analytics — everything else you need."
+        subtitle="Inbox, contacts, broadcasts, orders, analytics — everything else you need."
         accent="ink"
       >
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -414,6 +317,12 @@ export default function OverviewPage() {
             title="Broadcasts"
             desc="Bulk send"
             to="/dashboard/broadcasts"
+          />
+          <ActionTile
+            icon={Sparkles}
+            title="Smart Orders"
+            desc="AI order capture"
+            to="/dashboard/orders"
           />
           <ActionTile
             icon={BarChart2}
@@ -441,6 +350,9 @@ export default function OverviewPage() {
           />
         </div>
       </Section>
+
+      {/* No "Add another channel" CTA needed — the unified ChannelCards above
+          already render a Connect CTA for any disconnected channel. */}
     </div>
   );
 }
@@ -467,49 +379,6 @@ function Section({ title, subtitle, accent = "ink", children }) {
       </div>
       {children}
     </section>
-  );
-}
-
-// ─── Channel Toggle (rectangular pill pair) ──────────────────────────────────
-function ChannelToggle({
-  icon: Icon,
-  label,
-  active,
-  connected,
-  onClick,
-  accent,
-}) {
-  const styles = {
-    pink: {
-      activeBg: "bg-pink-600 text-white",
-      idle: "text-pink-700 hover:bg-pink-50",
-    },
-    emerald: {
-      activeBg: "bg-emerald-600 text-white",
-      idle: "text-emerald-700 hover:bg-emerald-50",
-    },
-  }[accent];
-  return (
-    <button
-      onClick={onClick}
-      disabled={!connected}
-      className={clsx(
-        "flex items-center gap-2 px-4 py-2 text-xs font-semibold transition",
-        active ? styles.activeBg : styles.idle,
-        !connected && "opacity-40 cursor-not-allowed",
-      )}
-    >
-      <Icon className="w-3.5 h-3.5" />
-      {label}
-      {connected && (
-        <span
-          className={clsx(
-            "w-1.5 h-1.5",
-            active ? "bg-white" : "bg-emerald-500",
-          )}
-        />
-      )}
-    </button>
   );
 }
 

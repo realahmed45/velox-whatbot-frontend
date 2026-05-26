@@ -1,26 +1,20 @@
 /**
- * Channel-agnostic connection gate.
- * Pages wrapped by this component render normally if EITHER Instagram
- * or WhatsApp is connected. Otherwise a single soft banner shows at the top
- * inviting the user to connect a channel.
- *
- * Replaces the IG-only `ConnectInstagramGate` post WA pivot.
+ * Instagram connection gate.
+ * Pages wrapped by this component render normally if Instagram is connected.
+ * Otherwise a soft banner invites the user to connect.
  */
-import { Instagram, MessageSquare } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Instagram } from "lucide-react";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import api from "@/services/api";
 import { useState } from "react";
 
 export default function ConnectChannelGate({ children, feature }) {
   const { workspace, loading } = useWorkspaceStore();
-  const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected = workspace?.whatsapp?.status === "connected";
 
-  if (loading || !workspace || igConnected || waConnected) return children;
+  if (loading || !workspace || igConnected) return children;
 
   const startIg = async () => {
     setConnecting(true);
@@ -41,31 +35,22 @@ export default function ConnectChannelGate({ children, feature }) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-violet-900">
             {feature
-              ? `${feature} needs a connected channel`
-              : "Connect a channel to see live data"}
+              ? `${feature} needs a connected Instagram account`
+              : "Connect Instagram to see live data"}
           </p>
           <p className="text-xs text-violet-700/80 mt-0.5">
-            Link Instagram or WhatsApp to start automating replies. Takes about
-            30 seconds.
+            Link your Instagram Business account to start automating. Takes
+            about 30 seconds.
           </p>
         </div>
-        <div className="flex flex-shrink-0 gap-2">
-          <button
-            onClick={startIg}
-            disabled={connecting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition disabled:opacity-60"
-          >
-            <Instagram className="w-3.5 h-3.5" />
-            Instagram
-          </button>
-          <button
-            onClick={() => navigate("/dashboard/onboarding/whatsapp")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            WhatsApp
-          </button>
-        </div>
+        <button
+          onClick={startIg}
+          disabled={connecting}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition disabled:opacity-60 flex-shrink-0"
+        >
+          <Instagram className="w-3.5 h-3.5" />
+          {connecting ? "Connecting…" : "Connect Instagram"}
+        </button>
       </div>
       {children}
     </div>

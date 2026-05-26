@@ -110,28 +110,6 @@ const IG_AUTOMATIONS = [
   },
 ];
 
-const WA_AUTOMATIONS = [
-  {
-    to: "/dashboard/automation?tab=welcome",
-    icon: MessageCircle,
-    label: "Welcome message",
-  },
-  {
-    to: "/dashboard/automation?tab=dm_kw",
-    icon: Hash,
-    label: "Keyword auto-reply",
-  },
-  {
-    to: "/dashboard/automation?tab=fallback",
-    icon: CircleDot,
-    label: "Fallback reply",
-  },
-  {
-    to: "/dashboard/automation?tab=hours",
-    icon: Clock,
-    label: "Business hours",
-  },
-];
 
 const TOOLS = [
   { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
@@ -152,41 +130,23 @@ const BOTTOM_NAV = [
 ];
 
 // ─── Per-channel theme ─────────────────────────────────────────────────────
-// Tones intentionally muted: rose (not hot pink) for IG, teal (not neon
-// green) for WA. Both feel premium against the dark surface.
-const THEMES = {
-  instagram: {
-    name: "Instagram",
-    short: "IG",
-    accentText: "text-rose-200",
-    accentIcon: "text-rose-300",
-    activeBg: "bg-rose-400/10",
-    activeRing: "shadow-[inset_2px_0_0_0_rgba(251,113,133,0.9)]",
-    sectionBar: "bg-rose-400/70",
-    sectionLabel: "text-rose-200/60",
-    glow: "bg-gradient-to-b from-rose-400/12 via-rose-400/3 to-transparent",
-    logoGrad: "from-rose-400 via-rose-500 to-fuchsia-600",
-    progress: "from-rose-400 to-fuchsia-500",
-    badge: "bg-rose-400/10 text-rose-200 border-rose-400/25",
-    pillActive: "bg-rose-400/15 text-rose-100 border-rose-400/35",
-    pillDot: "bg-rose-400",
-  },
-  whatsapp: {
-    name: "WhatsApp",
-    short: "WA",
-    accentText: "text-teal-200",
-    accentIcon: "text-teal-300",
-    activeBg: "bg-teal-400/10",
-    activeRing: "shadow-[inset_2px_0_0_0_rgba(45,212,191,0.9)]",
-    sectionBar: "bg-teal-400/70",
-    sectionLabel: "text-teal-200/60",
-    glow: "bg-gradient-to-b from-teal-400/12 via-teal-400/3 to-transparent",
-    logoGrad: "from-teal-400 via-teal-500 to-emerald-600",
-    progress: "from-teal-400 to-emerald-500",
-    badge: "bg-teal-400/10 text-teal-200 border-teal-400/25",
-    pillActive: "bg-teal-400/15 text-teal-100 border-teal-400/35",
-    pillDot: "bg-teal-400",
-  },
+// Single neutral theme — channel-agnostic ManyChat-style sidebar. The dashboard
+// shows all connected channels in one unified view, so the sidebar no longer
+// re-paints per channel.
+const THEME = {
+  name: "Botlify",
+  accentText: "text-violet-200",
+  accentIcon: "text-violet-300",
+  activeBg: "bg-white/[0.06]",
+  activeRing: "shadow-[inset_2px_0_0_0_rgba(139,92,246,0.9)]",
+  sectionBar: "bg-violet-400/70",
+  sectionLabel: "text-white/40",
+  glow: "bg-gradient-to-b from-violet-400/8 via-violet-400/2 to-transparent",
+  logoGrad: "from-violet-500 via-fuchsia-500 to-rose-500",
+  progress: "from-violet-400 to-fuchsia-500",
+  badge: "bg-violet-400/10 text-violet-200 border-violet-400/25",
+  pillActive: "bg-violet-400/15 text-violet-100 border-violet-400/35",
+  pillDot: "bg-violet-400",
 };
 
 export default function Sidebar({ onNavigate }) {
@@ -212,12 +172,8 @@ export default function Sidebar({ onNavigate }) {
     navigate("/login");
   };
 
-  // Active channel + theme
-  const activeChannel =
-    workspace?.activeChannel === "whatsapp" ? "whatsapp" : "instagram";
-  const theme = THEMES[activeChannel];
-  const automations =
-    activeChannel === "whatsapp" ? WA_AUTOMATIONS : IG_AUTOMATIONS;
+  // Single neutral theme — channel-agnostic
+  const theme = THEME;
 
   // Plan / usage
   const plan = workspace?.subscription?.plan || "free";
@@ -229,9 +185,11 @@ export default function Sidebar({ onNavigate }) {
   }, [workspace]);
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected =
-    workspace?.whatsapp?.status === "connected" ||
-    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
+
+  const automations = useMemo(
+    () => (igConnected ? IG_AUTOMATIONS : []),
+    [igConnected],
+  );
 
   // Live "new orders" badge — fetched once + bumped via socket
   const [newOrderCount, setNewOrderCount] = useState(0);
@@ -347,47 +305,8 @@ export default function Sidebar({ onNavigate }) {
         </button>
       </div>
 
-      {/* ── Channel pills ──────────────────────────────────────── */}
-      {!collapsed && (
-        <div className="relative px-4 pt-4 flex gap-2 flex-shrink-0">
-          <ChannelPill
-            icon={Instagram}
-            label={
-              igConnected
-                ? `@${workspace?.instagram?.username || "instagram"}`
-                : "Instagram"
-            }
-            connected={igConnected}
-            active={activeChannel === "instagram"}
-            accent="rose"
-            onClick={() => {
-              onNavigate?.();
-              navigate(
-                igConnected ? "/dashboard" : "/dashboard/onboarding/instagram",
-              );
-            }}
-          />
-          <ChannelPill
-            icon={MessageSquare}
-            label={
-              waConnected
-                ? workspace?.whatsapp?.phoneNumber ||
-                  workspace?.whatsapp?.displayName ||
-                  "WhatsApp"
-                : "WhatsApp"
-            }
-            connected={waConnected}
-            active={activeChannel === "whatsapp"}
-            accent="teal"
-            onClick={() => {
-              onNavigate?.();
-              navigate(
-                waConnected ? "/dashboard" : "/dashboard/onboarding/whatsapp",
-              );
-            }}
-          />
-        </div>
-      )}
+      {/* Channel pills removed — ManyChat-style sidebar is channel-agnostic.
+          Connected channels are surfaced on the dashboard home (OverviewPage). */}
 
       {/* ── Main nav (scrollable) ─────────────────────────────── */}
       <nav className="relative flex-1 overflow-y-auto py-3 px-2 space-y-3 sidebar-scroll">
@@ -422,25 +341,29 @@ export default function Sidebar({ onNavigate }) {
           ))}
         </div>
 
-        {/* Custom Automations — channel-specific */}
-        <NavSection
-          label="Custom Automations"
-          collapsed={collapsed}
-          theme={theme}
-          accent
-        />
-        <div className="space-y-0.5">
-          {automations.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              theme={theme}
+        {/* Custom Automations — union of connected channels' items */}
+        {automations.length > 0 && (
+          <>
+            <NavSection
+              label="Custom Automations"
               collapsed={collapsed}
-              onNavigate={onNavigate}
-              dense
+              theme={theme}
+              accent
             />
-          ))}
-        </div>
+            <div className="space-y-0.5">
+              {automations.map((item) => (
+                <SidebarLink
+                  key={item.to}
+                  {...item}
+                  theme={theme}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                  dense
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Tools */}
         <NavSection
@@ -638,49 +561,6 @@ function SidebarLink({
         <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500" />
       ) : null}
     </NavLink>
-  );
-}
-
-function ChannelPill({
-  icon: Icon,
-  label,
-  connected,
-  active,
-  onClick,
-  accent,
-}) {
-  const styles = {
-    rose: {
-      activeBg: "bg-rose-400/15 text-rose-100 border-rose-400/35",
-      idle: "bg-white/[0.03] text-white/45 border-white/10 hover:text-white/75 hover:border-white/20",
-      dot: "bg-rose-400",
-    },
-    teal: {
-      activeBg: "bg-teal-400/15 text-teal-100 border-teal-400/35",
-      idle: "bg-white/[0.03] text-white/45 border-white/10 hover:text-white/75 hover:border-white/20",
-      dot: "bg-teal-400",
-    },
-  }[accent];
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "flex-1 flex items-center gap-2 px-3 py-2.5 text-[11px] font-semibold transition border",
-        active && connected ? styles.activeBg : styles.idle,
-        !connected && "border-dashed",
-      )}
-    >
-      <span
-        className={clsx(
-          "w-1.5 h-1.5 flex-shrink-0",
-          connected ? (active ? styles.dot : "bg-emerald-400") : "bg-white/20",
-        )}
-      />
-      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-      <span className="truncate">{connected ? label : "Connect"}</span>
-    </button>
   );
 }
 

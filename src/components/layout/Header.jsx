@@ -1,6 +1,6 @@
 /**
  * Botlify App Header
- * - Channel switcher (Instagram | WhatsApp) when at least one is connected
+ * - Workspace (account) switcher — ManyChat-style multi-account UX.
  * - Setup Instagram + Setup WhatsApp buttons when not connected
  * - User avatar dropdown
  * - Search shortcut
@@ -23,15 +23,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
-import toast from "react-hot-toast";
 
 export default function Header({ onMenuClick, onSearchClick }) {
-  const { workspace, setActiveChannel } = useWorkspaceStore();
+  const { workspace } = useWorkspaceStore();
   const { user, logout, activeWorkspace, setActiveWorkspace } = useAuthStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [wsOpen, setWsOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
   const menuRef = useRef(null);
   const wsRef = useRef(null);
 
@@ -46,12 +44,6 @@ export default function Header({ onMenuClick, onSearchClick }) {
   }, []);
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const waConnected =
-    workspace?.whatsapp?.status === "connected" ||
-    (workspace?.whatsapp?.type && workspace.whatsapp.type !== "none");
-
-  const activeChannel = workspace?.activeChannel || "instagram";
-  const showSwitcher = igConnected || waConnected;
 
   const workspaces = user?.workspaces || [];
   const igPic = igConnected ? workspace?.instagram?.profilePicture : null;
@@ -74,19 +66,6 @@ export default function Header({ onMenuClick, onSearchClick }) {
       window.location.href = data.url;
     } catch {
       /* api interceptor shows error toast */
-    }
-  };
-
-  const switchChannel = async (channel) => {
-    if (channel === activeChannel || switching) return;
-    setSwitching(true);
-    try {
-      await setActiveChannel(channel);
-      navigate("/dashboard");
-    } catch (e) {
-      toast.error("Could not switch dashboard");
-    } finally {
-      setSwitching(false);
     }
   };
 
@@ -113,59 +92,21 @@ export default function Header({ onMenuClick, onSearchClick }) {
           </kbd>
         </button>
 
-        {/* Channel switcher — shown only when at least one channel is connected */}
-        {showSwitcher && (
-          <div className="hidden sm:flex items-center border border-ink-200 bg-white ml-1">
-            <ChannelTab
-              icon={Instagram}
-              label="Instagram"
-              active={activeChannel === "instagram"}
-              connected={igConnected}
-              onClick={() =>
-                igConnected
-                  ? switchChannel("instagram")
-                  : navigate("/onboarding/instagram")
-              }
-              accent="pink"
-            />
-            <span className="w-px h-6 bg-ink-200" />
-            <ChannelTab
-              icon={MessageSquare}
-              label="WhatsApp"
-              active={activeChannel === "whatsapp"}
-              connected={waConnected}
-              onClick={() =>
-                waConnected
-                  ? switchChannel("whatsapp")
-                  : navigate("/onboarding/whatsapp")
-              }
-              accent="emerald"
-            />
-          </div>
-        )}
+        {/* Channel switcher removed — ManyChat-style: unified account view,
+            no per-channel toggle. The dashboard shows all connected channels
+            at once; disconnected channels surface inline as Connect CTAs. */}
       </div>
 
       {/* Right: setup pills + user menu */}
       <div className="flex items-center gap-2">
-        {/* Setup Instagram — only if NOTHING is connected yet (one-platform-only UX) */}
-        {!igConnected && !waConnected && (
+        {/* Setup Instagram — shown when not yet connected */}
+        {!igConnected && (
           <button
             onClick={startIgOAuth}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-pink-300 hover:border-pink-500 hover:bg-pink-50 text-xs font-semibold text-pink-600 transition"
           >
             <Instagram className="w-3.5 h-3.5" />
             Setup Instagram
-          </button>
-        )}
-
-        {/* Setup WhatsApp — only if NOTHING is connected yet */}
-        {!waConnected && !igConnected && (
-          <button
-            onClick={() => navigate("/onboarding/whatsapp")}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 text-xs font-semibold text-emerald-600 transition"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            Setup WhatsApp
           </button>
         )}
 
@@ -264,39 +205,6 @@ export default function Header({ onMenuClick, onSearchClick }) {
         </div>
       </div>
     </header>
-  );
-}
-
-function ChannelTab({ icon: Icon, label, active, connected, onClick, accent }) {
-  const accents = {
-    pink: {
-      activeBg: "bg-pink-600 text-white",
-      activeBar: "border-pink-600",
-      idle: "text-pink-700 hover:bg-pink-50",
-    },
-    emerald: {
-      activeBg: "bg-emerald-600 text-white",
-      activeBar: "border-emerald-600",
-      idle: "text-emerald-700 hover:bg-emerald-50",
-    },
-  };
-  const a = accents[accent];
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition ${
-        active ? a.activeBg : a.idle
-      } ${!connected ? "opacity-60" : ""}`}
-      title={connected ? `Switch to ${label} dashboard` : `Connect ${label}`}
-    >
-      <Icon className="w-3.5 h-3.5" />
-      <span className="hidden md:inline">{label}</span>
-      {connected && (
-        <span
-          className={`w-1.5 h-1.5 ${active ? "bg-white" : "bg-emerald-500"}`}
-        />
-      )}
-    </button>
   );
 }
 

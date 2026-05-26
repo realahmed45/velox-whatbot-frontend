@@ -46,9 +46,6 @@ const ChooseChannelPage = lazy(
 const OnboardingPricingPage = lazy(
   () => import("@/pages/onboarding/OnboardingPricingPage"),
 );
-const WhatsAppOnboardingPage = lazy(
-  () => import("@/pages/onboarding/WhatsAppOnboardingPage"),
-);
 const InstagramOnboardingPage = lazy(
   () => import("@/pages/onboarding/InstagramOnboardingPage"),
 );
@@ -194,18 +191,10 @@ export default function App() {
                   }
                 />
 
-                {/* Onboarding inside dashboard shell — kept as redirects for back-compat */}
+                {/* Onboarding inside dashboard shell — redirects for back-compat */}
                 <Route
                   path="onboarding"
-                  element={<Navigate to="/onboarding/choose-channel" replace />}
-                />
-                <Route
-                  path="onboarding/choose-channel"
-                  element={<Navigate to="/onboarding/choose-channel" replace />}
-                />
-                <Route
-                  path="onboarding/whatsapp"
-                  element={<Navigate to="/onboarding/whatsapp" replace />}
+                  element={<Navigate to="/onboarding/instagram" replace />}
                 />
                 <Route
                   path="onboarding/instagram"
@@ -213,7 +202,7 @@ export default function App() {
                 />
               </Route>
 
-              {/* Top-level full-screen onboarding (no sidebar, ManyChat-style) */}
+              {/* Top-level full-screen onboarding (no sidebar) */}
               <Route
                 element={
                   <ProtectedRoute>
@@ -223,7 +212,7 @@ export default function App() {
               >
                 <Route
                   path="/onboarding"
-                  element={<Navigate to="/onboarding/choose-channel" replace />}
+                  element={<Navigate to="/onboarding/instagram" replace />}
                 />
                 <Route
                   path="/onboarding/choose-channel"
@@ -232,10 +221,6 @@ export default function App() {
                 <Route
                   path="/onboarding/pricing"
                   element={<OnboardingPricingPage />}
-                />
-                <Route
-                  path="/onboarding/whatsapp"
-                  element={<WhatsAppOnboardingPage />}
                 />
                 <Route
                   path="/onboarding/instagram"

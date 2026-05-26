@@ -123,16 +123,7 @@ export default function AutomationSetupPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const channel = workspace?.activeChannel || "instagram";
-  const showIg = channel === "instagram" || channel === "both";
-  const showWa = channel === "whatsapp" || channel === "both";
-
-  // Filter tabs by current channel + use channel-specific labels
-  const TABS = ALL_TABS.filter((t) =>
-    channel === "both" ? true : t.channels.includes(channel),
-  ).map((t) =>
-    channel === "whatsapp" && t.waLabel ? { ...t, label: t.waLabel } : t,
-  );
+  const TABS = ALL_TABS.filter((t) => t.channels.includes("instagram"));
 
   const [tab, setTab] = useState(() => {
     const t = searchParams.get("tab");
@@ -205,32 +196,23 @@ export default function AutomationSetupPage() {
 
   const activeTab = TABS.find((t) => t.id === tab);
 
-  const channelName =
-    channel === "whatsapp"
-      ? "WhatsApp"
-      : channel === "both"
-        ? "Instagram & WhatsApp"
-        : "Instagram";
   const headerSubtitle =
-    channel === "whatsapp"
-      ? "Set up your WhatsApp automations — welcome message, keyword auto-reply, fallback responses and business hours."
-      : "Set up your Instagram automations — comment-to-DM, story replies, DM keywords, tracked links and more.";
+    "Set up your Instagram automations — comment-to-DM, story replies, DM keywords, tracked links and more.";
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <PageHeader
         icon={Zap}
-        title={`${channelName} Automations`}
+        title="Instagram Automations"
         subtitle={headerSubtitle}
       />
 
       {/* What you can automate — channel showcase */}
-      <div className="mb-6 grid lg:grid-cols-2 gap-4">
-        {showIg && (
-          <AutomationTypeCard
-            tone="ig"
-            title="On Instagram"
-            items={[
+      <div className="mb-6">
+        <AutomationTypeCard
+          tone="ig"
+          title="On Instagram"
+          items={[
               "Comment → DM",
               "DM keyword auto-reply",
               "Story replies",
@@ -242,33 +224,13 @@ export default function AutomationSetupPage() {
               "Tracked link DMs",
             ]}
           />
-        )}
-        {showWa && (
-          <AutomationTypeCard
-            tone="wa"
-            title="On WhatsApp"
-            items={[
-              "Keyword auto-reply",
-              "AI chatbot",
-              "Welcome message",
-              "Bulk broadcasts",
-              "Drip sequences",
-              "Cart recovery",
-              "Order confirmation",
-              "Drag-drop flows",
-              "Business hours",
-            ]}
-          />
-        )}
       </div>
 
-      {showIg && (
-        <div className="mb-5">
-          <InstagramConstraintsInfo compact />
-        </div>
-      )}
+      <div className="mb-5">
+        <InstagramConstraintsInfo compact />
+      </div>
 
-      {showIg && <DiagnosticsPanel workspaceId={activeWorkspace} />}
+      <DiagnosticsPanel workspaceId={activeWorkspace} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
         {/* Tabs */}
