@@ -129,11 +129,11 @@ export default function AutomationSetupPage() {
     return TABS.some((x) => x.id === t) ? t : TABS[0]?.id || "welcome";
   });
 
-  // If channel changes and current tab no longer applies, reset to first valid
+  // Ensure current tab is valid (fallback to first if not found)
   useEffect(() => {
     if (!TABS.some((t) => t.id === tab)) setTab(TABS[0]?.id || "welcome");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channel]);
+  }, [tab]);
 
   // Sync tab → URL so deep links and back/forward work
   useEffect(() => {
