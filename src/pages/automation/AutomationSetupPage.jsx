@@ -37,10 +37,10 @@ const ALL_TABS = [
   {
     id: "welcome",
     label: "Welcome DM",
-    waLabel: "Welcome message",
+
     icon: MessageCircle,
     plan: "starter",
-    channels: ["instagram", "whatsapp"],
+    channels: ["instagram"],
   },
   {
     id: "comment_kw",
@@ -52,10 +52,9 @@ const ALL_TABS = [
   {
     id: "dm_kw",
     label: "DM keywords",
-    waLabel: "Keyword auto-reply",
     icon: MessageCircle,
     plan: "starter",
-    channels: ["instagram", "whatsapp"],
+    channels: ["instagram"],
   },
   {
     id: "story_reply",
@@ -104,14 +103,14 @@ const ALL_TABS = [
     label: "Fallback reply",
     icon: CircleDot,
     plan: "starter",
-    channels: ["instagram", "whatsapp"],
+    channels: ["instagram"],
   },
   {
     id: "hours",
     label: "Business hours",
     icon: Clock,
     plan: "growth",
-    channels: ["instagram", "whatsapp"],
+    channels: ["instagram"],
   },
 ];
 

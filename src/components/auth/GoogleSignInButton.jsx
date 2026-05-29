@@ -38,12 +38,7 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
       const channelHint = searchParams.get("channel");
 
       if (!ws) {
-        // No workspace yet → choose-channel onboarding
-        if (channelHint === "whatsapp")
-          navigate("/dashboard/onboarding/whatsapp");
-        else if (channelHint === "instagram")
-          navigate("/dashboard/onboarding/instagram");
-        else navigate("/dashboard/onboarding/choose-channel");
+        navigate("/dashboard/onboarding/instagram");
       } else {
         navigate("/dashboard");
       }

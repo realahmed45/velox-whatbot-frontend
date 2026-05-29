@@ -53,9 +53,7 @@ export default function RegisterPage() {
       }
 
       // Route them straight to the right onboarding step based on plan/channel.
-      if (channelHint === "whatsapp") navigate("/onboarding/whatsapp");
-      else if (channelHint === "instagram") navigate("/onboarding/instagram");
-      else navigate("/onboarding/choose-channel");
+      navigate("/onboarding/instagram");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {

@@ -64,7 +64,7 @@ export default function BillingPage() {
           </h2>
           <p className="text-sm text-ink-500 mt-0.5">
             {isTrial
-              ? "Pick a plan below to unlock live WhatsApp numbers, unlimited messaging, and premium AI."
+              ? "Pick a plan below to unlock unlimited Instagram automations and premium AI."
               : sub?.currentPeriodEnd
                 ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
                 : "Subscription active."}
@@ -168,17 +168,13 @@ function UsageBar({ label, used, limit }) {
 function formatPlan(id) {
   const map = {
     free: "Free trial",
-    ig_starter: "Instagram Starter",
+    ig_starter: "Basic — Instagram",
     ig_pro: "Instagram Pro",
-    wa_starter: "WhatsApp Starter",
-    wa_pro: "WhatsApp Pro",
-    bundle_pro: "Both Channels Pro",
-    bundle_business: "Both Channels Business",
     starter: "Starter (legacy)",
-    growth: "Growth (legacy)",
-    scale: "Scale (legacy)",
-    business: "Business (legacy)",
-    agency: "Agency (legacy)",
+    growth: "Basic (legacy)",
+    scale: "Pro (legacy)",
+    business: "Pro (legacy)",
+    agency: "Pro (legacy)",
   };
   return map[id] || id;
 }

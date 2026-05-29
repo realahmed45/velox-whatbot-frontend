@@ -229,13 +229,7 @@ export default function Sidebar({ onNavigate }) {
     if (location.pathname === "/dashboard/orders") setNewOrderCount(0);
   }, [location.pathname]);
 
-  const isPremium = [
-    "wa_pro",
-    "bundle_pro",
-    "bundle_business",
-    "ig_pro",
-    "scale",
-  ].includes(plan);
+  const isPremium = ["ig_pro", "scale"].includes(plan);
 
   const initial = (
     workspace?.name?.[0] ||
@@ -567,15 +561,11 @@ function SidebarLink({
 function planLabel(id) {
   const map = {
     free: "Free trial",
-    ig_starter: "IG Starter",
-    ig_pro: "IG Pro",
-    wa_starter: "WA Starter",
-    wa_pro: "WA Pro",
-    bundle_pro: "Bundle Pro",
-    bundle_business: "Business",
+    ig_starter: "Basic",
+    ig_pro: "Pro",
     starter: "Starter",
-    growth: "Growth",
-    scale: "Scale",
+    growth: "Basic",
+    scale: "Pro",
   };
   return map[id] || id;
 }

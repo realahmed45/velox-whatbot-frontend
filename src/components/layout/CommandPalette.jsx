@@ -83,12 +83,6 @@ const ENTRIES = [
     to: "/dashboard/onboarding/instagram",
     group: "Quick actions",
   },
-  {
-    label: "Connect WhatsApp",
-    icon: Plus,
-    to: "/dashboard/onboarding/whatsapp",
-    group: "Quick actions",
-  },
 ];
 
 export default function CommandPalette({ open, onClose }) {

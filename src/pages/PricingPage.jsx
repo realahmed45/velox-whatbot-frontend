@@ -1,21 +1,16 @@
 /**
- * Public + embedded pricing page.
- *
- * Three plans only: Basic ($8 — one platform), Pro ($15 — both),
- * Business ($39 — 3 WA numbers + IG). Every plan is paid; 3-day free
- * trial included. The Basic card has a WhatsApp/Instagram toggle so
- * the user picks which platform they want.
+ * Public + embedded pricing page — Instagram-only, two plans.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
   Sparkles,
-  MessageSquare,
   Instagram,
   ArrowRight,
   ShieldCheck,
   Loader2,
+  Zap,
 } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -30,7 +25,6 @@ export default function PricingPage({ embedded = false }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
-  const [basicChannel, setBasicChannel] = useState("whatsapp"); // wa | ig toggle inside Basic card
   const [selecting, setSelecting] = useState(null);
 
   useEffect(() => {
@@ -54,28 +48,13 @@ export default function PricingPage({ embedded = false }) {
     };
   }, []);
 
-  const basic = useMemo(() => {
-    const key = basicChannel === "instagram" ? "ig_starter" : "wa_starter";
-    return plans.find((p) => p.key === key);
-  }, [plans, basicChannel]);
-  const pro = useMemo(() => plans.find((p) => p.key === "bundle_pro"), [plans]);
-  const business = useMemo(
-    () => plans.find((p) => p.key === "bundle_business"),
-    [plans],
-  );
-
-  // Map plan key → channel hint for the post-signup flow
-  const planToChannel = (key) => {
-    if (key === "wa_starter") return "whatsapp";
-    if (key === "ig_starter") return "instagram";
-    return "both"; // bundle_pro / bundle_business
-  };
+  const starter = plans.find((p) => p.key === "ig_starter");
+  const pro = plans.find((p) => p.key === "ig_pro");
 
   const handlePick = async (plan) => {
     if (!plan) return;
     if (!isAuthenticated) {
-      const channel = planToChannel(plan.key);
-      navigate(`/register?plan=${plan.key}&channel=${channel}`);
+      navigate(`/register?plan=${plan.key}&channel=instagram`);
       return;
     }
     if (embedded) {
@@ -94,28 +73,22 @@ export default function PricingPage({ embedded = false }) {
       }
       return;
     }
-    // Logged in but on PUBLIC pricing page — go straight into onboarding
-    // pricing step with that plan pre-selected.
-    const channel = planToChannel(plan.key);
-    navigate(`/onboarding/pricing?channel=${channel}&plan=${plan.key}`);
+    navigate(`/onboarding/pricing?channel=instagram&plan=${plan.key}`);
   };
-
-  const cards = [basic, pro, business].filter(Boolean);
 
   return (
     <div className={embedded ? "" : "py-16 px-4"}>
-      <div className={embedded ? "" : "max-w-5xl mx-auto"}>
+      <div className={embedded ? "" : "max-w-4xl mx-auto"}>
         {!embedded && (
           <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100">
-              <Sparkles className="w-3 h-3" /> 3-day free trial on every plan
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 text-pink-700 text-xs font-bold border border-pink-100">
+              <Instagram className="w-3 h-3" /> Instagram automation · 3-day free trial
             </span>
             <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
               Simple, honest pricing
             </h1>
-            <p className="mt-3 text-base text-ink-500 max-w-xl mx-auto">
-              Pick the plan that matches the channels you want to automate.
-              Cancel anytime — no surprises.
+            <p className="mt-3 text-base text-ink-500 max-w-lg mx-auto">
+              One platform, all your Instagram automations. Start free for 3 days — no credit card needed.
             </p>
           </div>
         )}
@@ -128,12 +101,9 @@ export default function PricingPage({ embedded = false }) {
 
         {errored && (
           <div className="max-w-md mx-auto bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-            <p className="text-sm font-bold text-amber-800">
-              Couldn't load live pricing
-            </p>
+            <p className="text-sm font-bold text-amber-800">Couldn't load live pricing</p>
             <p className="text-xs text-amber-700 mt-1.5">
-              Sign up and we'll start your 3-day free trial — pick a plan
-              anytime from Billing.
+              Sign up and we'll start your 3-day free trial — pick a plan anytime from Billing.
             </p>
             <button
               onClick={() =>
@@ -147,43 +117,17 @@ export default function PricingPage({ embedded = false }) {
           </div>
         )}
 
-        {!loading && !errored && cards.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {!loading && !errored && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {/* Basic */}
-            {basic && (
+            {starter && (
               <PlanCard
-                plan={basic}
+                plan={starter}
                 onPick={handlePick}
-                selecting={selecting === basic.key}
-                topSlot={
-                  <div className="inline-flex rounded-md bg-ink-100 p-0.5 mb-4">
-                    <button
-                      onClick={() => setBasicChannel("whatsapp")}
-                      className={clsx(
-                        "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition",
-                        basicChannel === "whatsapp"
-                          ? "bg-white text-emerald-700 shadow-sm"
-                          : "text-ink-500",
-                      )}
-                    >
-                      <MessageSquare className="w-3 h-3" /> WhatsApp
-                    </button>
-                    <button
-                      onClick={() => setBasicChannel("instagram")}
-                      className={clsx(
-                        "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition",
-                        basicChannel === "instagram"
-                          ? "bg-white text-pink-700 shadow-sm"
-                          : "text-ink-500",
-                      )}
-                    >
-                      <Instagram className="w-3 h-3" /> Instagram
-                    </button>
-                  </div>
-                }
+                selecting={selecting === starter.key}
               />
             )}
-            {/* Pro */}
+            {/* Pro — highlighted */}
             {pro && (
               <PlanCard
                 plan={pro}
@@ -192,112 +136,96 @@ export default function PricingPage({ embedded = false }) {
                 highlight
               />
             )}
-            {/* Business */}
-            {business && (
-              <PlanCard
-                plan={business}
-                onPick={handlePick}
-                selecting={selecting === business.key}
-                premium
-              />
-            )}
           </div>
         )}
 
         {!embedded && (
-          <div className="mt-12 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            Secure checkout · Easypaisa · JazzCash · Card · Manual transfer
-          </div>
+          <>
+            {/* Feature comparison note */}
+            <div className="mt-10 max-w-2xl mx-auto bg-pink-50/60 border border-pink-100 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <Zap className="w-5 h-5 text-pink-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-ink-900">All plans include</p>
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    {[
+                      "Comment → DM automation",
+                      "Story reply triggers",
+                      "DM keyword auto-reply",
+                      "AI chatbot",
+                      "Visual flow builder",
+                      "3-day free trial",
+                      "Story mention alerts",
+                      "Real-time inbox",
+                    ].map((f) => (
+                      <div key={f} className="flex items-center gap-1.5 text-xs text-ink-600">
+                        <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              Secure checkout · Easypaisa · JazzCash · Card · Manual transfer
+            </div>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-function PlanCard({ plan, onPick, selecting, topSlot, highlight, premium }) {
+function PlanCard({ plan, onPick, selecting, highlight }) {
   return (
     <div
       className={clsx(
         "relative rounded-2xl p-6 flex flex-col border transition",
         highlight
-          ? "border-brand-500 shadow-glow bg-white"
-          : premium
-            ? "bg-gradient-to-br from-ink-900 to-ink-800 text-white border-ink-800"
-            : "border-ink-100 bg-white hover:border-ink-200",
+          ? "border-pink-400 shadow-[0_0_30px_rgba(236,72,153,0.2)] bg-white"
+          : "border-ink-100 bg-white hover:border-ink-200",
       )}
     >
       {highlight && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="px-3 py-1 rounded-full bg-brand-gradient text-white text-[11px] font-bold shadow">
+          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 text-white text-[11px] font-bold shadow">
             Most popular
           </span>
         </div>
       )}
 
-      {topSlot}
+      {/* Icon */}
+      <div
+        className={clsx(
+          "w-10 h-10 rounded-xl flex items-center justify-center mb-4",
+          highlight
+            ? "bg-gradient-to-br from-pink-500 via-fuchsia-500 to-violet-600"
+            : "bg-ink-100",
+        )}
+      >
+        <Instagram className={clsx("w-5 h-5", highlight ? "text-white" : "text-ink-600")} />
+      </div>
 
-      <h3
-        className={clsx(
-          "text-xl font-black tracking-tight",
-          premium ? "text-white" : "text-ink-900",
-        )}
-      >
-        {plan.name}
-      </h3>
-      <p
-        className={clsx(
-          "text-xs mt-0.5",
-          premium ? "text-white/60" : "text-ink-500",
-        )}
-      >
-        {plan.tagline}
-      </p>
+      <h3 className="text-xl font-black tracking-tight text-ink-900">{plan.name}</h3>
+      <p className="text-xs mt-0.5 text-ink-500">{plan.tagline}</p>
 
       <div className="mt-4">
         <div className="flex items-baseline gap-1">
-          <span
-            className={clsx(
-              "text-4xl font-black",
-              premium ? "text-white" : "text-ink-900",
-            )}
-          >
-            ${plan.usd}
-          </span>
-          <span
-            className={clsx(
-              "text-sm",
-              premium ? "text-white/50" : "text-ink-400",
-            )}
-          >
-            /mo
-          </span>
+          <span className="text-4xl font-black text-ink-900">${plan.usd}</span>
+          <span className="text-sm text-ink-400">/mo</span>
         </div>
-        <p
-          className={clsx(
-            "text-[11px] mt-0.5",
-            premium ? "text-white/50" : "text-ink-400",
-          )}
-        >
+        <p className="text-[11px] mt-0.5 text-ink-400">
           ≈ Rs {plan.monthlyPrice?.toLocaleString()} /mo · 3-day free trial
         </p>
       </div>
 
       <ul className="mt-5 space-y-2 flex-1">
-        {(plan.highlights || []).slice(0, 7).map((h) => (
-          <li
-            key={h}
-            className={clsx(
-              "flex items-start gap-2 text-xs",
-              premium ? "text-white/80" : "text-ink-700",
-            )}
-          >
-            <Check
-              className={clsx(
-                "w-3.5 h-3.5 flex-shrink-0 mt-0.5",
-                premium ? "text-emerald-300" : "text-emerald-500",
-              )}
-            />
+        {(plan.highlights || []).map((h) => (
+          <li key={h} className="flex items-start gap-2 text-xs text-ink-700">
+            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-emerald-500" />
             <span>{h}</span>
           </li>
         ))}
@@ -309,10 +237,8 @@ function PlanCard({ plan, onPick, selecting, topSlot, highlight, premium }) {
         className={clsx(
           "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
           highlight
-            ? "bg-brand-gradient text-white hover:opacity-90"
-            : premium
-              ? "bg-white text-ink-900 hover:bg-ink-100"
-              : "bg-ink-900 text-white hover:bg-ink-800",
+            ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 text-white hover:opacity-90"
+            : "bg-ink-900 text-white hover:bg-ink-800",
         )}
       >
         {selecting ? (
@@ -321,8 +247,7 @@ function PlanCard({ plan, onPick, selecting, topSlot, highlight, premium }) {
           </>
         ) : (
           <>
-            Start {plan.name.split("—")[0].trim()}
-            <ArrowRight className="w-4 h-4" />
+            Start {plan.name} <ArrowRight className="w-4 h-4" />
           </>
         )}
       </button>

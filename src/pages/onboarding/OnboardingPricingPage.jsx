@@ -26,7 +26,7 @@ import { clsx } from "clsx";
 export default function OnboardingPricingPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const channel = params.get("channel") || "whatsapp"; // whatsapp | instagram | both
+  const channel = params.get("channel") || "instagram";
   const planHint = params.get("plan"); // optional pre-selection from /pricing
   const { activeWorkspace } = useAuthStore();
 
@@ -76,24 +76,13 @@ export default function OnboardingPricingPage() {
       } catch {
         /* non-fatal — let them continue */
       }
-      if (channel === "instagram")
-        navigate("/onboarding/instagram", { replace: true });
-      else navigate("/onboarding/whatsapp", { replace: true });
+      navigate("/onboarding/instagram", { replace: true });
     })();
   }, [planHint, plans, autoApplied, channel, navigate]);
 
-  // Filter plans for the chosen channel + always include bundle upsells
-  const visiblePlans = useMemo(() => {
-    const inTab = plans.filter((p) => p.channel === channel);
-    if (channel === "both") return inTab;
-    const bundles = plans.filter((p) => p.channel === "both");
-    return [...inTab, ...bundles];
-  }, [plans, channel]);
+  const visiblePlans = useMemo(() => plans, [plans]);
 
-  const goConnect = () => {
-    if (channel === "instagram") navigate("/onboarding/instagram");
-    else navigate("/onboarding/whatsapp");
-  };
+  const goConnect = () => navigate("/onboarding/instagram");
 
   const pickPlan = async (plan) => {
     setPicking(plan.key);
@@ -115,12 +104,7 @@ export default function OnboardingPricingPage() {
     }
   };
 
-  const channelLabel =
-    channel === "instagram"
-      ? "Instagram"
-      : channel === "both"
-        ? "both channels"
-        : "WhatsApp";
+  const channelLabel = "Instagram";
 
   return (
     <div className="px-4 sm:px-6 py-8 sm:py-10">
@@ -174,7 +158,7 @@ export default function OnboardingPricingPage() {
         )}
 
         {!loading && !errored && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
             {visiblePlans.map((p) => (
               <PlanCard
                 key={p.key}

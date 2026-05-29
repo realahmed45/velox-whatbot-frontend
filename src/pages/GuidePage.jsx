@@ -6,7 +6,6 @@ import {
   Bot,
   PlayCircle,
   Mail,
-  MessageSquare,
   CheckCircle2,
   Circle,
   ArrowRight,
@@ -15,26 +14,24 @@ import {
   Rocket,
   Settings as SettingsIcon,
   HelpCircle,
-  Clock,
-  MessageCircle,
 } from "lucide-react";
 
 const STEPS = [
   {
     id: 1,
-    icon: MessageCircle,
-    title: "Pick your channel — WhatsApp or Instagram",
+    icon: Instagram,
+    title: "Connect your Instagram account",
     eyebrow: "1 min",
     description:
-      "Botlify works on both WhatsApp Cloud API (official Meta) and Instagram Graph API. Pick one — or both. WhatsApp is the fastest way to launch (live in ~6 minutes, no app review for testing).",
+      "Connect your Instagram Business or Creator account via the official Meta OAuth. It takes under a minute — no app review required.",
     bullets: [
-      "WhatsApp — bring a Meta Cloud API number (1,000 free conversations/month).",
-      "Instagram — connect a Business / Creator account via Meta OAuth.",
-      "You can switch or add channels anytime from the sidebar.",
+      "Click 'Connect Instagram' from the dashboard.",
+      "Authorize Botlify to manage messages and comments.",
+      "Your account goes live immediately after connecting.",
     ],
     cta: {
-      label: "Choose channel",
-      to: "/dashboard/onboarding/choose-channel",
+      label: "Connect Instagram",
+      to: "/dashboard/onboarding/instagram",
     },
     helpLink: "/dashboard/settings",
   },
@@ -44,11 +41,11 @@ const STEPS = [
     title: "Pick your first trigger",
     eyebrow: "5 min",
     description:
-      "A trigger is what kicks off automation. On WhatsApp, the win is keyword auto-replies + AI fallback. On Instagram, comment-to-DM on a high-traffic post is the fastest hook.",
+      "A trigger kicks off automation. The fastest win on Instagram is Comment → DM on a high-traffic post or reel.",
     bullets: [
-      "WhatsApp — keyword reply, away message, or full AI bot fallback.",
-      "Instagram — Comment → DM, Keyword DM, Story Reply.",
-      "Set a friendly opening message and pick the post / keyword.",
+      "Comment → DM — auto-DM anyone who comments a keyword.",
+      "DM keyword reply — instant reply for 'price', 'link', 'sizes'.",
+      "Story reply — respond automatically to story interactions.",
     ],
     cta: { label: "Create a trigger", to: "/dashboard/automation" },
     helpLink: "/dashboard/flow-builder",
@@ -59,7 +56,7 @@ const STEPS = [
     title: "Train the AI bot",
     eyebrow: "10 min",
     description:
-      "This is where Botlify shines. Train one AI on your FAQs, offers, refund policy, and tone — it answers across both WhatsApp and Instagram. Free Groq + Llama 3.1 70B included.",
+      "Train the AI on your FAQs, offers, refund policy, and brand tone. It answers Instagram DMs 24/7. Free Groq + Llama 3.1 70B included.",
     bullets: [
       "Paste your business info, FAQs, and pricing.",
       "Pick a tone (friendly, professional, witty).",
@@ -74,10 +71,10 @@ const STEPS = [
     title: "Test it on yourself",
     eyebrow: "3 min",
     description:
-      "Before going live, send a DM from a test account or your own phone. Watch it land in your Inbox, watch the AI reply, and tweak the responses if anything feels off.",
+      "Before going live, DM your account from another Instagram. Watch it land in your Inbox, watch the AI reply, and tweak if anything feels off.",
     bullets: [
-      "WhatsApp — message your bot number from your own phone.",
-      "Instagram — DM your account from another IG.",
+      "DM your brand account from a personal IG account.",
+      "Check the Inbox to see how messages are handled.",
       "Edit the bot's training if needed — changes apply instantly.",
     ],
     cta: { label: "Open Inbox", to: "/dashboard/inbox" },
@@ -89,11 +86,11 @@ const STEPS = [
     title: "Go live & scale",
     eyebrow: "Ongoing",
     description:
-      "Turn automation ON, drive traffic, and watch automated chats roll in. Check Analytics weekly to see which triggers convert best.",
+      "Turn automation ON, drive traffic, and watch automated DMs roll in. Check Analytics weekly to see which triggers convert best.",
     bullets: [
-      "Toggle automation Active per channel.",
-      "Drive traffic — story polls, Reels, paid ads, click-to-WhatsApp.",
-      "Review Analytics → optimise winning triggers.",
+      "Toggle automations Active from the Automations page.",
+      "Drive traffic — story polls, Reels, paid ads, link-in-bio.",
+      "Review Analytics → optimize winning triggers.",
     ],
     cta: { label: "View Analytics", to: "/dashboard/analytics" },
     helpLink: "/dashboard/analytics",
@@ -321,20 +318,18 @@ export default function GuidePage() {
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />
             </a>
             <a
-              href="https://wa.me/923000000000"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:support@botlify.site"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
-              <span className="w-10 h-10 rounded-md bg-emerald-500 flex items-center justify-center shadow">
-                <MessageSquare className="w-5 h-5 text-white" />
+              <span className="w-10 h-10 rounded-md bg-pink-500 flex items-center justify-center shadow">
+                <Mail className="w-5 h-5 text-white" />
               </span>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-ink-900">
-                  Chat with founder
+                  Email support
                 </div>
                 <div className="text-xs text-ink-500 truncate">
-                  WhatsApp — fastest way to get unstuck
+                  support@botlify.site — we reply fast
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />

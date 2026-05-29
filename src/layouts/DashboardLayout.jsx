@@ -27,8 +27,6 @@ const ROUTE_TITLES = {
   "/dashboard/pricing": "Pricing",
   "/dashboard/guide": "Guide",
   "/dashboard/onboarding": "Get Started",
-  "/dashboard/onboarding/choose-channel": "Choose Channel",
-  "/dashboard/onboarding/whatsapp": "Connect WhatsApp",
   "/dashboard/onboarding/instagram": "Connect Instagram",
 };
 
