@@ -39,6 +39,26 @@ const FlowBuilderPage = lazy(
 );
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 
+// Growth tools (lazy-loaded)
+const ScheduledPostsPage = lazy(
+  () => import("@/pages/content/ScheduledPostsPage"),
+);
+const DripCampaignsPage = lazy(() => import("@/pages/drip/DripCampaignsPage"));
+const GiveawaysPage = lazy(() => import("@/pages/giveaways/GiveawaysPage"));
+const LinkInBioPage = lazy(() => import("@/pages/link-in-bio/LinkInBioPage"));
+const HashtagsPage = lazy(() => import("@/pages/hashtags/HashtagsPage"));
+const CompetitorsPage = lazy(
+  () => import("@/pages/competitors/CompetitorsPage"),
+);
+const ReferralPage = lazy(() => import("@/pages/referral/ReferralPage"));
+const IntegrationsPage = lazy(
+  () => import("@/pages/integrations/IntegrationsPage"),
+);
+const AppsIntegrationsPage = lazy(
+  () => import("@/pages/integrations/AppsIntegrationsPage"),
+);
+const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
+
 // Onboarding
 const ChooseChannelPage = lazy(
   () => import("@/pages/onboarding/ChooseChannelPage"),
@@ -164,6 +184,21 @@ export default function App() {
                   path="flow-builder/:flowId"
                   element={<FlowBuilderPage />}
                 />
+
+                {/* Growth tools */}
+                <Route
+                  path="scheduled-posts"
+                  element={<ScheduledPostsPage />}
+                />
+                <Route path="drip" element={<DripCampaignsPage />} />
+                <Route path="giveaways" element={<GiveawaysPage />} />
+                <Route path="link-in-bio" element={<LinkInBioPage />} />
+                <Route path="hashtags" element={<HashtagsPage />} />
+                <Route path="competitors" element={<CompetitorsPage />} />
+                <Route path="referral" element={<ReferralPage />} />
+                <Route path="integrations" element={<IntegrationsPage />} />
+                <Route path="apps" element={<AppsIntegrationsPage />} />
+                <Route path="team" element={<TeamPage />} />
 
                 {/* Channel-gated pages */}
                 <Route

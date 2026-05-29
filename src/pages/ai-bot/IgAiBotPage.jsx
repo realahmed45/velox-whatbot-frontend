@@ -5,7 +5,8 @@
  * "comments", "story replies"). Tone presets reference creator/brand voice.
  * Persists to workspace.aiSettings.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Sparkles,
   Save,
@@ -20,6 +21,9 @@ import {
   Camera,
   Hash,
   AtSign,
+  Send,
+  X,
+  Play,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -78,6 +82,22 @@ export default function IgAiBotPage() {
   const [saving, setSaving] = useState(false);
   const [kwInput, setKwInput] = useState("");
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [testerOpen, setTesterOpen] = useState(false);
+
+  // Open the tester automatically when the sidebar "Test the bot" link is used.
+  useEffect(() => {
+    if (searchParams.get("test") === "1") setTesterOpen(true);
+  }, [searchParams]);
+
+  const closeTester = () => {
+    setTesterOpen(false);
+    if (searchParams.get("test")) {
+      searchParams.delete("test");
+      setSearchParams(searchParams, { replace: true });
+    }
+  };
 
   useEffect(() => {
     const stored = workspace?.aiSettings;
@@ -155,22 +175,31 @@ export default function IgAiBotPage() {
             </p>
           </div>
 
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={!!cfg.enabled}
-              onChange={(e) => set({ enabled: e.target.checked })}
-            />
-            <span className="w-11 h-6 bg-ink-200 peer-checked:bg-gradient-to-r peer-checked:from-rose-500 peer-checked:to-fuchsia-600 transition relative">
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white shadow transition ${cfg.enabled ? "translate-x-5" : ""}`}
+          <div className="flex flex-col items-end gap-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={!!cfg.enabled}
+                onChange={(e) => set({ enabled: e.target.checked })}
               />
-            </span>
-            <span className="text-xs font-bold text-ink-700">
-              {cfg.enabled ? "Live" : "Paused"}
-            </span>
-          </label>
+              <span className="w-11 h-6 bg-ink-200 peer-checked:bg-gradient-to-r peer-checked:from-rose-500 peer-checked:to-fuchsia-600 transition relative">
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white shadow transition ${cfg.enabled ? "translate-x-5" : ""}`}
+                />
+              </span>
+              <span className="text-xs font-bold text-ink-700">
+                {cfg.enabled ? "Live" : "Paused"}
+              </span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setTesterOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-ink-900 text-white hover:bg-ink-800 transition"
+            >
+              <Play className="w-3.5 h-3.5" /> Test the bot
+            </button>
+          </div>
         </div>
 
         {/* Stat row IG-style */}
@@ -427,6 +456,164 @@ export default function IgAiBotPage() {
               </>
             )}
           </button>
+        </div>
+      </div>
+
+      <BotTester open={testerOpen} onClose={closeTester} igHandle={igHandle} />
+    </div>
+  );
+}
+
+function BotTester({ open, onClose, igHandle }) {
+  const [msgs, setMsgs] = useState([]);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (open && msgs.length === 0) {
+      setMsgs([
+        {
+          from: "bot",
+          text: `Hey! I'm @${igHandle || "your.handle"}'s bot. Send a DM like a follower would — try a keyword, "hi", or a question — and I'll reply exactly how I would in real life. (Nothing is actually sent to Instagram.)`,
+        },
+      ]);
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [msgs, sending]);
+
+  const send = async () => {
+    const t = text.trim();
+    if (!t || sending) return;
+    setMsgs((m) => [...m, { from: "user", text: t }]);
+    setText("");
+    setSending(true);
+    try {
+      const { data } = await api.post("/instagram/test/trigger", {
+        triggerType: "direct_message",
+        text: t,
+        dryRun: true,
+      });
+      if (data.replies?.length) {
+        setMsgs((m) => [
+          ...m,
+          ...data.replies.map((r) => ({ from: "bot", text: r })),
+        ]);
+      } else {
+        setMsgs((m) => [
+          ...m,
+          {
+            from: "system",
+            text: "No automation matched this message. Add a keyword rule, enable the AI bot, or set a fallback reply.",
+          },
+        ]);
+      }
+    } catch (e) {
+      setMsgs((m) => [
+        ...m,
+        {
+          from: "system",
+          text: e?.response?.data?.message || "Test failed. Try again.",
+        },
+      ]);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-right">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 h-14 border-b border-ink-100 bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Bot className="w-5 h-5" />
+            <div className="leading-tight">
+              <p className="font-bold text-sm">Bot Tester</p>
+              <p className="text-[10px] text-white/80">
+                Live preview · nothing sent to Instagram
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center hover:bg-white/15"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 space-y-3 bg-ink-50"
+        >
+          {msgs.map((m, i) =>
+            m.from === "system" ? (
+              <div
+                key={i}
+                className="mx-auto max-w-[90%] text-center text-[11px] text-ink-500 bg-amber-50 border border-amber-200 px-3 py-2"
+              >
+                {m.text}
+              </div>
+            ) : (
+              <div
+                key={i}
+                className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] px-3 py-2 text-sm whitespace-pre-wrap ${
+                    m.from === "user"
+                      ? "bg-gradient-to-br from-rose-500 to-fuchsia-600 text-white rounded-2xl rounded-br-sm"
+                      : "bg-white border border-ink-100 text-ink-800 rounded-2xl rounded-bl-sm"
+                  }`}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ),
+          )}
+          {sending && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-ink-100 px-3 py-2 rounded-2xl rounded-bl-sm">
+                <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Composer */}
+        <div className="p-3 border-t border-ink-100 flex-shrink-0">
+          <p className="text-[10px] text-ink-400 mb-2">
+            Tip: save your changes above before testing — the tester uses your
+            last saved config.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              className="input flex-1"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && send()}
+              placeholder="Type a DM as a follower…"
+              autoFocus
+            />
+            <button
+              onClick={send}
+              disabled={sending || !text.trim()}
+              className="!py-2.5 !px-4 bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

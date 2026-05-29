@@ -36,6 +36,12 @@ import {
   CircleDot,
   Clock,
   ShoppingCart,
+  CalendarClock,
+  Droplet,
+  Gift,
+  Eye,
+  UserPlus,
+  Plug,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -124,7 +130,24 @@ const TOOLS = [
   { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
 ];
 
+// Growth / marketing tools
+const GROW = [
+  {
+    to: "/dashboard/scheduled-posts",
+    icon: CalendarClock,
+    label: "Scheduled Posts",
+  },
+  { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
+  { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
+  { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
+  { to: "/dashboard/hashtags", icon: Hash, label: "Hashtag Research" },
+  { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
+  { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
+  { to: "/dashboard/integrations", icon: Plug, label: "Integrations" },
+];
+
 const BOTTOM_NAV = [
+  { to: "/dashboard/team", icon: Users, label: "Team" },
   { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing" },
   { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
 ];
@@ -375,6 +398,20 @@ export default function Sidebar({ onNavigate }) {
                   ? newOrderCount
                   : null
               }
+              theme={theme}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+
+        {/* Grow */}
+        <NavSection label="Grow" collapsed={collapsed} theme={theme} />
+        <div className="space-y-0.5">
+          {GROW.map((item) => (
+            <SidebarLink
+              key={item.to}
+              {...item}
               theme={theme}
               collapsed={collapsed}
               onNavigate={onNavigate}
