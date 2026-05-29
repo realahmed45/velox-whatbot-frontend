@@ -2,35 +2,63 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
-import { Plus, Save, ArrowLeft, Trash2, Play, Pause, Workflow } from "lucide-react";
+import {
+  Plus,
+  Save,
+  ArrowLeft,
+  Play,
+  Pause,
+  Workflow,
+} from "lucide-react";
 import NodePalette from "./components/NodePalette";
 import NodeConfigPanel from "./components/NodeConfigPanel";
 import FlowListSidebar from "./components/FlowListSidebar";
-import { NODE_TYPES_MAP } from "./nodeTypes";
+import { NODE_TYPES_MAP, NODE_LABELS, nodeCategory } from "./nodeTypes";
 import EmptyState from "@/components/ui/EmptyState";
 
 let nodeIdCounter = 1;
 const getId = () => `node_${Date.now()}_${nodeIdCounter++}`;
 
-export default function FlowBuilderPage() {
+// Sensible starting config per node type so new nodes are valid immediately.
+const defaultData = (nodeType) => {
+  const base = { label: NODE_LABELS[nodeType] || nodeType };
+  switch (nodeType) {
+    case "keyword_trigger":
+      return { ...base, keywords: [], matchType: "contains" };
+    case "send_text":
+      return { ...base, message: "" };
+    case "delay":
+      return { ...base, delaySeconds: 3 };
+    case "condition":
+      return { ...base, conditionOperator: "equals" };
+    default:
+      return base;
+  }
+};
+
+function FlowBuilderInner() {
   const { flowId } = useParams();
   const { activeWorkspace } = useAuthStore();
   const navigate = useNavigate();
+  const { screenToFlowPosition } = useReactFlow();
 
   const [flows, setFlows] = useState([]);
   const [currentFlow, setCurrentFlow] = useState(null);
+  const [flowName, setFlowName] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -43,7 +71,11 @@ export default function FlowBuilderPage() {
   }, [activeWorkspace]);
   useEffect(() => {
     if (flowId) loadFlow(flowId);
-    else setCurrentFlow(null);
+    else {
+      setCurrentFlow(null);
+      setNodes([]);
+      setEdges([]);
+    }
   }, [flowId]);
 
   const loadFlows = async () => {
@@ -60,15 +92,17 @@ export default function FlowBuilderPage() {
       const { data } = await api.get(`/flows/${id}`);
       const flow = data.flow;
       setCurrentFlow(flow);
+      setFlowName(flow.name || "");
       setNodes(
-        flow.nodes.map((n) => ({
+        (flow.nodes || []).map((n) => ({
           id: n.id,
           type: n.nodeType,
           position: n.position || { x: 100, y: 100 },
-          data: { ...n.data, nodeType: n.nodeType },
+          data: { ...n.data },
         })),
       );
       setEdges(flow.edges || []);
+      setSelectedNode(null);
     } catch (err) {
       toast.error("Failed to load flow");
     }
@@ -76,39 +110,68 @@ export default function FlowBuilderPage() {
 
   const onConnect = useCallback((params) => {
     setEdges((eds) =>
-      addEdge({ ...params, animated: true, style: { stroke: "#16a34a" } }, eds),
+      addEdge(
+        { ...params, animated: true, style: { stroke: "#16a34a" } },
+        eds,
+      ),
     );
   }, []);
 
   const onNodeClick = useCallback((_, node) => setSelectedNode(node), []);
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
 
-  const onDrop = useCallback((event) => {
-    event.preventDefault();
-    const nodeType = event.dataTransfer.getData("nodeType");
-    if (!nodeType) return;
-    const bounds = reactFlowWrapper.current.getBoundingClientRect();
-    const position = {
-      x: event.clientX - bounds.left - 75,
-      y: event.clientY - bounds.top - 30,
-    };
-    const newNode = {
-      id: getId(),
-      type: nodeType,
-      position,
-      data: {
-        label: NODE_TYPES_MAP[nodeType]?.label || nodeType,
-        nodeType,
-        content: "",
-      },
-    };
-    setNodes((ns) => [...ns, newNode]);
-  }, []);
+  const addNodeAt = useCallback(
+    (nodeType, position) => {
+      const newNode = {
+        id: getId(),
+        type: nodeType,
+        position,
+        data: defaultData(nodeType),
+      };
+      setNodes((ns) => [...ns, newNode]);
+      setSelectedNode(newNode);
+    },
+    [setNodes],
+  );
+
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      const nodeType = event.dataTransfer.getData("nodeType");
+      if (!nodeType) return;
+      // screenToFlowPosition accounts for pan/zoom — drops land where you expect.
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      addNodeAt(nodeType, position);
+    },
+    [screenToFlowPosition, addNodeAt],
+  );
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
+  // Click-to-add drops the node near the centre of the visible canvas.
+  const addNodeCentered = useCallback(
+    (nodeType) => {
+      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+      const center = bounds
+        ? screenToFlowPosition({
+            x: bounds.left + bounds.width / 2,
+            y: bounds.top + bounds.height / 2,
+          })
+        : { x: 200, y: 200 };
+      // Slight scatter so stacked clicks don't overlap perfectly.
+      addNodeAt(nodeType, {
+        x: center.x + (Math.random() * 60 - 30),
+        y: center.y + (Math.random() * 60 - 30),
+      });
+    },
+    [screenToFlowPosition, addNodeAt],
+  );
 
   const updateNodeData = (nodeId, updates) => {
     setNodes((ns) =>
@@ -130,16 +193,25 @@ export default function FlowBuilderPage() {
 
   const createNewFlow = async () => {
     try {
+      // Seed with a keyword trigger so the canvas is never empty/confusing.
+      const triggerId = getId();
       const { data } = await api.post("/flows", {
         name: "New Flow",
-        trigger: { type: "keyword", keywords: [] },
-        nodes: [],
+        nodes: [
+          {
+            id: triggerId,
+            type: "trigger",
+            nodeType: "keyword_trigger",
+            position: { x: 250, y: 80 },
+            data: { label: "Keyword Trigger", keywords: [], matchType: "contains" },
+          },
+        ],
         edges: [],
       });
       setFlows((f) => [data.flow, ...f]);
-      navigate(`/dashboard/flows/${data.flow._id}`);
+      navigate(`/dashboard/flow-builder/${data.flow._id}`);
     } catch (err) {
-      toast.error("Failed to create flow");
+      toast.error(err.response?.data?.message || "Failed to create flow");
     }
   };
 
@@ -148,18 +220,31 @@ export default function FlowBuilderPage() {
     setSaving(true);
     try {
       const payload = {
+        name: flowName?.trim() || "Untitled Flow",
         nodes: nodes.map((n) => ({
           id: n.id,
+          type: nodeCategory(n.type),
           nodeType: n.type,
           position: n.position,
           data: n.data,
         })),
-        edges,
+        edges: edges.map((e) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          sourceHandle: e.sourceHandle || undefined,
+          targetHandle: e.targetHandle || undefined,
+          label: e.label || undefined,
+        })),
       };
-      await api.put(`/flows/${currentFlow._id}`, payload);
-      toast.success("Flow saved!");
+      const { data } = await api.put(`/flows/${currentFlow._id}`, payload);
+      setCurrentFlow(data.flow);
+      setFlows((fs) =>
+        fs.map((f) => (f._id === data.flow._id ? data.flow : f)),
+      );
+      toast.success("Flow saved");
     } catch (err) {
-      toast.error("Save failed");
+      toast.error(err.response?.data?.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -167,51 +252,64 @@ export default function FlowBuilderPage() {
 
   const toggleActive = async () => {
     if (!currentFlow) return;
+    // Persist the latest canvas before activating so we never run a stale flow.
+    if (currentFlow.status !== "active") await saveFlow();
     try {
       const newStatus = currentFlow.status === "active" ? "draft" : "active";
-      await api.put(`/flows/${currentFlow._id}`, { status: newStatus });
+      const { data } = await api.put(`/flows/${currentFlow._id}`, {
+        status: newStatus,
+      });
       setCurrentFlow((f) => ({ ...f, status: newStatus }));
+      setFlows((fs) =>
+        fs.map((f) => (f._id === currentFlow._id ? { ...f, status: newStatus } : f)),
+      );
       toast.success(
-        `Flow ${newStatus === "active" ? "activated" : "deactivated"}`,
+        newStatus === "active"
+          ? "Flow is live — it now runs on incoming DMs"
+          : "Flow deactivated",
       );
     } catch (err) {
       toast.error("Failed to toggle flow");
     }
   };
 
+  const hasTrigger = nodes.some(
+    (n) => n.type === "keyword_trigger" || n.type === "any_message_trigger",
+  );
+
   return (
     <div className="flex h-full">
-      {/* Flow list sidebar */}
       <FlowListSidebar
         flows={flows}
         currentFlowId={currentFlow?._id}
-        onSelect={(id) => navigate(`/dashboard/flows/${id}`)}
+        onSelect={(id) => navigate(`/dashboard/flow-builder/${id}`)}
         onNew={createNewFlow}
       />
 
-      {/* Canvas */}
       <div className="flex-1 flex flex-col relative" ref={reactFlowWrapper}>
         {currentFlow ? (
           <>
-            {/* Top bar */}
-            <div className="h-12 bg-white border-b border-ink-100 flex items-center justify-between px-4">
-              <div className="flex items-center gap-3">
+            <div className="h-12 bg-white border-b border-ink-100 flex items-center justify-between px-4 gap-3">
+              <div className="flex items-center gap-2 min-w-0">
                 <button
-                  onClick={() => navigate("/dashboard/flows")}
-                  className="btn-ghost p-1.5"
+                  onClick={() => navigate("/dashboard/flow-builder")}
+                  className="btn-ghost p-1.5 flex-shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-                <h2 className="font-semibold text-ink-800 text-sm">
-                  {currentFlow.name}
-                </h2>
+                <input
+                  value={flowName}
+                  onChange={(e) => setFlowName(e.target.value)}
+                  className="font-semibold text-ink-800 text-sm bg-transparent border-0 focus:ring-0 focus:outline-none focus:bg-ink-50 rounded px-1.5 py-0.5 min-w-0 max-w-[220px]"
+                  placeholder="Flow name"
+                />
                 <span
-                  className={`badge ${currentFlow.status === "active" ? "badge-green" : "badge-gray"}`}
+                  className={`badge flex-shrink-0 ${currentFlow.status === "active" ? "badge-green" : "badge-gray"}`}
                 >
                   {currentFlow.status}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => setShowPalette(!showPalette)}
                   className="btn-secondary text-xs gap-1"
@@ -221,7 +319,13 @@ export default function FlowBuilderPage() {
                 </button>
                 <button
                   onClick={toggleActive}
-                  className={`btn text-xs gap-1 ${currentFlow.status === "active" ? "bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100" : "btn-secondary"}`}
+                  disabled={!hasTrigger && currentFlow.status !== "active"}
+                  title={
+                    !hasTrigger
+                      ? "Add a trigger node before activating"
+                      : undefined
+                  }
+                  className={`btn text-xs gap-1 disabled:opacity-50 ${currentFlow.status === "active" ? "bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100" : "btn-secondary"}`}
                 >
                   {currentFlow.status === "active" ? (
                     <>
@@ -244,29 +348,42 @@ export default function FlowBuilderPage() {
               </div>
             </div>
 
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              onPaneClick={onPaneClick}
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-              nodeTypes={NODE_TYPES_MAP}
-              fitView
-              className="bg-ink-50"
-            >
-              <Background color="#e5e7eb" gap={20} />
-              <Controls />
-              <MiniMap />
-              {showPalette && (
-                <Panel position="top-left">
-                  <NodePalette onClose={() => setShowPalette(false)} />
-                </Panel>
-              )}
-            </ReactFlow>
+            {!hasTrigger && (
+              <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-800 flex items-center gap-2">
+                <Workflow className="w-3.5 h-3.5 flex-shrink-0" />
+                Add a <b>Trigger</b> node (Add Node → Triggers) so this flow knows
+                when to run.
+              </div>
+            )}
+
+            <div className="flex-1 min-h-0">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                nodeTypes={NODE_TYPES_MAP}
+                fitView
+                className="bg-ink-50"
+              >
+                <Background color="#e5e7eb" gap={20} />
+                <Controls />
+                <MiniMap pannable zoomable />
+                {showPalette && (
+                  <Panel position="top-left">
+                    <NodePalette
+                      onClose={() => setShowPalette(false)}
+                      onAdd={addNodeCentered}
+                    />
+                  </Panel>
+                )}
+              </ReactFlow>
+            </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center p-8">
@@ -286,7 +403,6 @@ export default function FlowBuilderPage() {
         )}
       </div>
 
-      {/* Config panel */}
       {selectedNode && (
         <NodeConfigPanel
           node={selectedNode}
@@ -296,5 +412,13 @@ export default function FlowBuilderPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function FlowBuilderPage() {
+  return (
+    <ReactFlowProvider>
+      <FlowBuilderInner />
+    </ReactFlowProvider>
   );
 }

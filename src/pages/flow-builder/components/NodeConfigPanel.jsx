@@ -1,43 +1,45 @@
 import { X, Trash2 } from "lucide-react";
 
+// Field keys here MUST match the backend Flow nodeData schema + the runtime
+// flow engine so config saves, reloads, and executes consistently.
 const FIELDS = {
+  keyword_trigger: [
+    {
+      key: "keywords",
+      label: "Trigger keywords (one per line)",
+      type: "keywords",
+      placeholder: "price\nhow much\norder",
+    },
+    {
+      key: "matchType",
+      label: "Match type",
+      type: "select",
+      options: ["contains", "exact", "starts_with", "ends_with"],
+    },
+  ],
+  any_message_trigger: [],
   send_text: [
     {
-      key: "content",
+      key: "message",
       label: "Message text",
       type: "textarea",
-      placeholder: "Hello {{name}}! How can I help?",
+      placeholder: "Hi {{name}}! How can I help?",
     },
   ],
   send_image: [
-    {
-      key: "url",
-      label: "Image URL",
-      type: "text",
-      placeholder: "https://...",
-    },
-    {
-      key: "caption",
-      label: "Caption (optional)",
-      type: "text",
-      placeholder: "Check this out!",
-    },
+    { key: "imageUrl", label: "Image URL", type: "text", placeholder: "https://..." },
+    { key: "caption", label: "Caption (optional)", type: "text", placeholder: "Check this out!" },
   ],
   send_file: [
-    { key: "url", label: "File URL", type: "text", placeholder: "https://..." },
-    {
-      key: "filename",
-      label: "File name",
-      type: "text",
-      placeholder: "document.pdf",
-    },
+    { key: "fileUrl", label: "File URL", type: "text", placeholder: "https://..." },
+    { key: "fileName", label: "File name", type: "text", placeholder: "document.pdf" },
   ],
   ask_question: [
     {
-      key: "content",
+      key: "questionText",
       label: "Question text",
       type: "textarea",
-      placeholder: "What is your name?",
+      placeholder: "What's your name?",
     },
     {
       key: "variableName",
@@ -61,24 +63,14 @@ const FIELDS = {
     },
   ],
   list_menu: [
-    {
-      key: "header",
-      label: "Header",
-      type: "text",
-      placeholder: "Our Services",
-    },
+    { key: "header", label: "Header", type: "text", placeholder: "Our Services" },
     {
       key: "content",
       label: "Body",
       type: "textarea",
-      placeholder: "Choose a service from the list below.",
+      placeholder: "Choose a service from the list.",
     },
-    {
-      key: "buttonText",
-      label: "Button text",
-      type: "text",
-      placeholder: "View options",
-    },
+    { key: "buttonText", label: "Button text", type: "text", placeholder: "View options" },
     {
       key: "itemsJson",
       label: "List items (one per line)",
@@ -87,20 +79,10 @@ const FIELDS = {
     },
   ],
   delay: [
-    {
-      key: "delaySeconds",
-      label: "Delay (seconds)",
-      type: "number",
-      placeholder: "3",
-    },
+    { key: "delaySeconds", label: "Delay (seconds, max 8)", type: "number", placeholder: "3" },
   ],
   tag_contact: [
-    {
-      key: "tag",
-      label: "Tag name",
-      type: "text",
-      placeholder: "VIP Customer",
-    },
+    { key: "tagName", label: "Tag name", type: "text", placeholder: "VIP Customer" },
   ],
   assign_agent: [
     {
@@ -112,38 +94,37 @@ const FIELDS = {
   ],
   condition: [
     {
-      key: "variable",
+      key: "conditionVariable",
       label: "Variable to check",
       type: "text",
-      placeholder: "customerBudget",
+      placeholder: "customerName",
     },
     {
-      key: "operator",
+      key: "conditionOperator",
       label: "Operator",
       type: "select",
       options: [
         "equals",
+        "not_equals",
         "contains",
+        "not_contains",
+        "starts_with",
+        "ends_with",
         "greater_than",
         "less_than",
-        "not_equals",
       ],
     },
-    {
-      key: "value",
-      label: "Compare value",
-      type: "text",
-      placeholder: "100000",
-    },
+    { key: "conditionValue", label: "Compare value", type: "text", placeholder: "VIP" },
   ],
-  keyword_trigger: [
-    {
-      key: "keywordsText",
-      label: "Keywords (one per line)",
-      type: "textarea",
-      placeholder: "hi\nhello\nstart",
-    },
-  ],
+  end_flow: [],
+};
+
+const HELP = {
+  keyword_trigger: "Starts the flow when an incoming DM matches one of these keywords.",
+  any_message_trigger: "Starts the flow on any incoming DM. Great as a catch-all.",
+  ask_question: "Sends the question, waits for the reply, and stores it. Use it later with {{variableName}}.",
+  condition: "Branches the flow. The green (Yes) path runs when the check passes, red (No) otherwise.",
+  delay: "Pauses briefly before the next step (capped at 8s for reliability).",
 };
 
 export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
@@ -174,7 +155,11 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Node label */}
+        {HELP[node.type] && (
+          <p className="text-xs text-ink-500 bg-ink-50 rounded-lg p-2.5 leading-snug">
+            {HELP[node.type]}
+          </p>
+        )}
         <div>
           <label className="label">Node label</label>
           <input
@@ -187,7 +172,23 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
         {fields.map(({ key, label, type, placeholder, options }) => (
           <div key={key}>
             <label className="label">{label}</label>
-            {type === "textarea" ? (
+            {type === "keywords" ? (
+              <textarea
+                className="input resize-none"
+                rows={3}
+                value={(data[key] || []).join("\n")}
+                onChange={(e) =>
+                  handleChange(
+                    key,
+                    e.target.value
+                      .split("\n")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
+                placeholder={placeholder}
+              />
+            ) : type === "textarea" ? (
               <textarea
                 className="input resize-none"
                 rows={3}
@@ -198,13 +199,12 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
             ) : type === "select" ? (
               <select
                 className="input"
-                value={data[key] || ""}
+                value={data[key] || options[0]}
                 onChange={(e) => handleChange(key, e.target.value)}
               >
-                <option value="">Select…</option>
                 {options.map((o) => (
                   <option key={o} value={o}>
-                    {o}
+                    {o.replace(/_/g, " ")}
                   </option>
                 ))}
               </select>
@@ -212,8 +212,13 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
               <input
                 className="input"
                 type={type}
-                value={data[key] || ""}
-                onChange={(e) => handleChange(key, e.target.value)}
+                value={data[key] ?? ""}
+                onChange={(e) =>
+                  handleChange(
+                    key,
+                    type === "number" ? Number(e.target.value) : e.target.value,
+                  )
+                }
                 placeholder={placeholder}
               />
             )}

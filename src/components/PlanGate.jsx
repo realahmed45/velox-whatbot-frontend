@@ -4,11 +4,27 @@ import { useNavigate } from "react-router-dom";
 /**
  * PlanGate — wraps feature UI; shows upsell overlay if workspace plan
  * doesn't include the feature.
+ *
+ * Ranks map BOTH the live plan ids (free / ig_starter / ig_pro) and the legacy
+ * tier names (starter / growth / scale) that the automation tabs use for their
+ * `requiredPlan` value, so an ig_starter/ig_pro subscriber isn't wrongly locked
+ * out of features their plan includes.
  */
-const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
+const PLAN_RANK = {
+  // live plan ids
+  free: 0,
+  ig_starter: 1,
+  ig_pro: 2,
+  // legacy / tier aliases
+  starter: 0,
+  growth: 1,
+  scale: 2,
+  business: 2,
+  agency: 2,
+};
 
 export default function PlanGate({
-  currentPlan = "starter",
+  currentPlan = "free",
   requiredPlan = "growth",
   feature = "",
   children,
