@@ -42,7 +42,10 @@ export default function InstagramOnboardingPage() {
       const { data } = await api.get("/instagram/connect/oauth-url");
       window.location.href = data.url;
     } catch (e) {
-      setError("Failed to start connection. Please try again.");
+      setError(
+        e.response?.data?.message ||
+          "Failed to start connection. Please try again.",
+      );
       setConnecting(false);
     }
   };
