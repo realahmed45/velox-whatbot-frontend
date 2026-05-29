@@ -6,8 +6,8 @@ import toast from "react-hot-toast";
 
 /**
  * Google Sign-in button used on Login + Register pages.
- * Decodes the JWT credential client-side to extract profile info,
- * then POSTs to /auth/google which creates/links the user and returns our JWT.
+ * Sends the raw Google credential (ID token) to /auth/google, where the
+ * backend verifies it against GOOGLE_CLIENT_ID before trusting the identity.
  */
 export default function GoogleSignInButton({ label = "Continue with Google" }) {
   const { login } = useAuthStore();
@@ -19,25 +19,17 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
       const credential = credentialResponse?.credential;
       if (!credential) throw new Error("No credential returned from Google");
 
-      // Decode JWT payload (base64url, middle segment)
-      const payload = JSON.parse(
-        atob(credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
-      );
-
-      const { data } = await api.post("/auth/google", {
-        googleId: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        avatar: payload.picture,
-      });
+      const ref = searchParams.get("ref") || undefined;
+      const { data } = await api.post("/auth/google", { credential, ref });
 
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome!");
 
       const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
-      const channelHint = searchParams.get("channel");
+      const igConnected =
+        data.user?.activeWorkspace?.instagram?.status === "connected";
 
-      if (!ws) {
+      if (data.isNew || !ws || !igConnected) {
         navigate("/dashboard/onboarding/instagram");
       } else {
         navigate("/dashboard");
