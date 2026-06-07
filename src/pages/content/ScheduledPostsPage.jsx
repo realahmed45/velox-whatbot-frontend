@@ -189,39 +189,39 @@ export default function ScheduledPostsPage() {
     }
   };
 
-  setAiTopic("");
-  setAiCaptions([]);
-}
-
-const generateAICaptions = async () => {
-  if (!aiTopic.trim()) {
-    toast.error("Describe what the post is about first");
-    return;
-  }
-  setAiLoading(true);
-  try {
-    const { data } = await api.post("/ai/caption", {
-      topic: aiTopic,
-      tone: aiTone,
-      count: 3,
-    });
-    setAiCaptions(data.captions || []);
-    if (!data.captions?.length) toast.error("No suggestions returned");
-  } catch (err) {
-    toast.error(err.response?.data?.message || "AI failed");
-  } finally {
-    setAiLoading(false);
-  }
   const resetForm = () => {
     setImageUrl("");
     setCaption("");
     setScheduledTime("");
+    setAiTopic("");
+    setAiCaptions([]);
+  };
+
+  const generateAICaptions = async () => {
+    if (!aiTopic.trim()) {
+      toast.error("Describe what the post is about first");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { data } = await api.post("/ai/caption", {
+        topic: aiTopic,
+        tone: aiTone,
+        count: 3,
+      });
+      setAiCaptions(data.captions || []);
+      if (!data.captions?.length) toast.error("No suggestions returned");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "AI failed");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const STATUS_BADGE = {
-    pending: "bg-blue-100 text-blue-700",
-    publishing: "bg-yellow-100 text-yellow-700",
-    published: "bg-green-100 text-green-700",
+    pending: "bg-brand-100 text-brand-700",
+    publishing: "bg-amber-100 text-amber-700",
+    published: "bg-emerald-100 text-emerald-700",
     failed: "bg-red-100 text-red-700",
     cancelled: "bg-ink-100 text-ink-700",
   };
@@ -517,20 +517,20 @@ const generateAICaptions = async () => {
               </p>
 
               <div className="space-y-3">
-                {smartTiming.recommendations.map((rec, i) => (
+                {(smartTiming.recommendations || []).map((rec, i) => (
                   <div
                     key={i}
-                    className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                    className="bg-brand-50 border border-brand-100 rounded-lg p-3"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-blue-900">
+                      <span className="font-medium text-ink-900">
                         {rec.time}
                       </span>
-                      <span className="text-xs text-blue-700 font-medium">
+                      <span className="text-xs text-brand-700 font-medium">
                         {rec.score}% engagement
                       </span>
                     </div>
-                    <p className="text-xs text-blue-700">{rec.reason}</p>
+                    <p className="text-xs text-ink-600">{rec.reason}</p>
                   </div>
                 ))}
               </div>

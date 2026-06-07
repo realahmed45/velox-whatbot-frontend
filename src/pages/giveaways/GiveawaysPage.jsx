@@ -132,7 +132,7 @@ export default function GiveawaysPage() {
                       </span>
                     </div>
                     <p className="text-xs text-ink-500 mt-1">
-                      Keyword: <b>{g.keyword}</b> · Post {g.postId.slice(-8)} ·
+                      Keyword: <b>{g.keyword}</b> · Post {g.postId?.slice(-8)} ·
                       Ends {dayjs(g.endsAt).format("MMM D, h:mm A")}
                     </p>
                     <div className="flex gap-4 mt-2 text-xs">

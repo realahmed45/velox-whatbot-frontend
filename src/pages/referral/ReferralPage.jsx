@@ -55,7 +55,7 @@ export default function ReferralPage() {
         subtitle={<>Invite friends. Earn <b>$5 credit</b> for every paid signup. No limit.</>}
       />
 
-      <div className="card bg-gradient-to-br from-brand-500 via-pink-500 to-orange-500 text-white mb-6">
+      <div className="card bg-gradient-to-br from-brand-400 via-brand-500 to-amber-500 text-white mb-6">
         <p className="text-xs uppercase tracking-wider opacity-80">
           Your referral link
         </p>
@@ -91,7 +91,7 @@ export default function ReferralPage() {
           icon={<Users className="w-5 h-5" />}
           label="Signups"
           value={data.signups}
-          color="text-sky-600"
+          color="text-brand-600"
         />
         <StatCard
           icon={<Check className="w-5 h-5" />}
@@ -109,7 +109,7 @@ export default function ReferralPage() {
           icon={<Gift className="w-5 h-5" />}
           label="Available credit"
           value={`$${data.creditsAvailable}`}
-          color="text-rose-600"
+          color="text-amber-600"
         />
       </div>
 

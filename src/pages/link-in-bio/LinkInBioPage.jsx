@@ -14,7 +14,7 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 
 const THEMES = [
-  { key: "brand", label: "Brand (Purple)" },
+  { key: "brand", label: "Brand (Orange)" },
   { key: "gradient", label: "Gradient" },
   { key: "light", label: "Light" },
   { key: "dark", label: "Dark" },
@@ -43,7 +43,7 @@ export default function LinkInBioPage() {
           bio: "",
           avatarUrl: "",
           theme: "brand",
-          accentColor: "#6366f1",
+          accentColor: "#ff5722",
           links: [],
           enabled: true,
         },
@@ -213,7 +213,7 @@ export default function LinkInBioPage() {
                 <input
                   type="color"
                   className="input h-10 p-1"
-                  value={page.accentColor || "#6366f1"}
+                  value={page.accentColor || "#ff5722"}
                   onChange={(e) =>
                     setPage({ ...page, accentColor: e.target.value })
                   }
@@ -300,7 +300,7 @@ export default function LinkInBioPage() {
               page.theme === "dark"
                 ? "bg-ink-900 text-white"
                 : page.theme === "gradient"
-                  ? "bg-gradient-to-br from-brand-500 via-pink-500 to-orange-500 text-white"
+                  ? "bg-gradient-to-br from-brand-400 via-brand-500 to-amber-500 text-white"
                   : page.theme === "light"
                     ? "bg-white text-ink-900 border-ink-200"
                     : "bg-brand-gradient text-white"

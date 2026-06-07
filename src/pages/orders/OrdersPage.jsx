@@ -33,9 +33,9 @@ const STATUS_TABS = [
 const STATUS_STYLES = {
   new: "bg-blue-50 text-blue-700 border-blue-200",
   confirmed: "bg-amber-50 text-amber-700 border-amber-200",
-  shipped: "bg-violet-50 text-violet-700 border-violet-200",
+  shipped: "bg-indigo-50 text-indigo-700 border-indigo-200",
   delivered: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  cancelled: "bg-rose-50 text-rose-700 border-rose-200",
+  cancelled: "bg-red-50 text-red-700 border-red-200",
 };
 
 const STATUS_LABEL = {
@@ -139,13 +139,20 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow">
-            <ShoppingCart className="w-5 h-5 text-white" />
-          </div>
+    <div className="relative min-h-full">
+      {/* Ambient glass backdrop */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/35 blur-[130px]" />
+        <div className="absolute bottom-0 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/25 blur-[130px]" />
+      </div>
+
+      <div className="relative p-4 sm:p-6 max-w-[1400px] mx-auto">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-brand-500 flex items-center justify-center shadow-glow">
+              <ShoppingCart className="w-5 h-5 text-white" />
+            </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-ink-900">
               Smart Orders
@@ -181,8 +188,8 @@ export default function OrdersPage() {
               onClick={() => setStatusFilter(t.id)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
                 isActive
-                  ? "bg-ink-900 text-white border-ink-900"
-                  : "bg-white text-ink-700 border-ink-200 hover:bg-ink-50"
+                  ? "bg-brand-500 text-white border-brand-500 shadow-glow"
+                  : "bg-white text-ink-700 border-ink-200 hover:border-brand-300 hover:text-brand-600"
               }`}
             >
               {t.label}
@@ -209,14 +216,14 @@ export default function OrdersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by customer, phone, address, or item…"
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-ink-200 rounded-lg focus:border-teal-400 focus:ring-2 focus:ring-teal-100 outline-none"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-ink-200 rounded-lg focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
           />
         </div>
       </form>
 
       {/* Layout: list + drawer */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4">
-        <div className="bg-white rounded-2xl border border-ink-100 overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 shadow-glass overflow-hidden">
           {loading && orders.length === 0 ? (
             <div className="p-12 text-center text-ink-400 text-sm">
               <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
@@ -247,26 +254,27 @@ export default function OrdersPage() {
               onStatusChange={updateStatus}
             />
           ) : (
-            <div className="bg-white rounded-2xl border border-ink-100 p-8 text-center text-ink-400 text-sm">
-              <Package className="w-8 h-8 mx-auto mb-2 text-ink-300" />
+            <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 shadow-glass p-8 text-center text-ink-400 text-sm">
+              <Package className="w-8 h-8 mx-auto mb-2 text-brand-300" />
               Select an order to view details
             </div>
           )}
         </div>
       </div>
 
-      {/* Drawer (mobile overlay) */}
-      {active && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/40 flex items-end">
-          <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-2xl p-4">
-            <OrderDrawer
-              order={active}
-              onClose={() => setActiveId(null)}
-              onStatusChange={updateStatus}
-            />
+        {/* Drawer (mobile overlay) */}
+        {active && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-ink-950/40 backdrop-blur-sm flex items-end">
+            <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-2xl p-4">
+              <OrderDrawer
+                order={active}
+                onClose={() => setActiveId(null)}
+                onStatusChange={updateStatus}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -275,11 +283,11 @@ function OrderRow({ order, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 hover:bg-ink-50 transition flex items-start gap-3 ${
-        active ? "bg-teal-50/50" : ""
+      className={`w-full text-left p-4 hover:bg-brand-50/40 transition flex items-start gap-3 ${
+        active ? "bg-brand-50/70 border-l-2 border-l-brand-500" : ""
       }`}
     >
-      <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center text-ink-700 text-xs font-bold shrink-0">
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
         {(order.customerName || "?").slice(0, 1).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
@@ -337,7 +345,7 @@ function OrderDrawer({ order, onClose, onStatusChange }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-ink-100 overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-glass overflow-hidden">
       <div className="p-4 border-b border-ink-100 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-ink-900">
@@ -449,7 +457,7 @@ function OrderDrawer({ order, onClose, onStatusChange }) {
               <ActionBtn
                 icon={Truck}
                 label="Mark Shipped"
-                color="violet"
+                color="indigo"
                 onClick={() => onStatusChange(order._id, "shipped")}
               />
             )}
@@ -488,12 +496,12 @@ function OrderDrawer({ order, onClose, onStatusChange }) {
             value={messageDraft}
             onChange={(e) => setMessageDraft(e.target.value)}
             placeholder="Type a custom message to the customer…"
-            className="w-full text-sm p-2.5 border border-ink-200 rounded-lg focus:border-teal-400 focus:ring-2 focus:ring-teal-100 outline-none resize-none"
+            className="w-full text-sm p-2.5 border border-ink-200 rounded-lg focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none resize-none"
           />
           <button
             onClick={sendQuickMessage}
             disabled={sending || !messageDraft.trim()}
-            className="mt-1.5 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-ink-900 hover:bg-ink-800 rounded-lg disabled:opacity-50"
+            className="mt-1.5 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-lg shadow-glow disabled:opacity-50 transition"
           >
             {sending ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -511,11 +519,11 @@ function OrderDrawer({ order, onClose, onStatusChange }) {
 function ActionBtn({ icon: Icon, label, color, onClick }) {
   const colors = {
     amber: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
-    violet:
-      "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100",
+    indigo:
+      "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
     emerald:
       "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
-    rose: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+    rose: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
   };
   return (
     <button
@@ -531,9 +539,11 @@ function ActionBtn({ icon: Icon, label, color, onClick }) {
 function EmptyState({ statusFilter }) {
   return (
     <div className="p-12 text-center">
-      <div className="w-12 h-12 rounded-full bg-ink-100 flex items-center justify-center mx-auto mb-3">
-        <ShoppingCart className="w-6 h-6 text-ink-400" />
-      </div>
+      <img
+        src="/logo.png"
+        alt=""
+        className="w-16 mx-auto mb-3 object-contain animate-float drop-shadow"
+      />
       <h3 className="text-sm font-semibold text-ink-900 mb-1">No orders yet</h3>
       <p className="text-xs text-ink-500 max-w-sm mx-auto">
         {statusFilter === "all"

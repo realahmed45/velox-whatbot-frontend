@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuthStore();
+  const { login, devLogin } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <div>
       <h2 className="text-3xl font-black text-ink-900 tracking-tighter">
-        Welcome <span className="text-gradient-animated">back</span>
+        Welcome <span className="text-brand-500">back</span>
       </h2>
       <p className="text-ink-500 text-sm mt-2 mb-7">
         Don't have an account?{" "}
@@ -105,6 +105,20 @@ export default function LoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          onClick={() => {
+            devLogin();
+            toast.success("Dev session — UI only (no backend)");
+            navigate("/dashboard");
+          }}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border border-dashed border-brand-300 text-brand-600 text-sm font-semibold hover:bg-brand-50 transition"
+        >
+          🔧 Enter as Dev (UI only · local)
+        </button>
+      )}
     </div>
   );
 }

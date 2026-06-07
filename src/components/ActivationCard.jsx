@@ -79,11 +79,11 @@ export default function ActivationCard() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-violet-50 via-white to-emerald-50 border border-violet-200/60 shadow-sm">
+    <div className="rounded-2xl bg-gradient-to-br from-brand-50/80 via-white/70 to-amber-50/80 backdrop-blur-xl border border-white/60 shadow-glass">
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-emerald-500 flex items-center justify-center shadow">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-glow">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -108,7 +108,7 @@ export default function ActivationCard() {
         {/* Progress bar */}
         <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden mb-4">
           <div
-            className="h-full bg-gradient-to-r from-violet-500 to-emerald-500 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-brand-500 to-amber-500 transition-all duration-500"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -120,7 +120,7 @@ export default function ActivationCard() {
               className={`flex items-center gap-3 p-3 rounded-lg border transition ${
                 s.done
                   ? "bg-emerald-50/50 border-emerald-100"
-                  : "bg-white border-ink-100 hover:border-violet-200 hover:shadow-sm cursor-pointer"
+                  : "bg-white border-ink-100 hover:border-brand-200 hover:shadow-sm cursor-pointer"
               }`}
               onClick={!s.done ? s.action : undefined}
             >

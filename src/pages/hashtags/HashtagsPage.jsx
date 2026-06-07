@@ -110,7 +110,7 @@ export default function HashtagsPage() {
             <HashtagGroup
               title="Big Reach"
               description="1M+ posts · high competition"
-              color="from-rose-500 to-pink-500"
+              color="from-brand-500 to-brand-600"
               hashtags={groups.big}
             />
             <HashtagGroup

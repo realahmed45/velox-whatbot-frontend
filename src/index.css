@@ -22,7 +22,7 @@
     @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98];
   }
   .btn-primary {
-    @apply btn bg-brand-gradient text-white shadow-md hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0;
+    @apply btn bg-brand-500 text-white shadow-md hover:bg-brand-600 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0;
   }
   .btn-secondary {
     @apply btn bg-white text-ink-800 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 hover:-translate-y-0.5;
@@ -197,7 +197,7 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #f43f5e);
+    background: linear-gradient(135deg, #ffa470, #ff7d3e, #ff5722, #f2440c);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -224,7 +224,7 @@
   }
   .tilt-card:hover {
     transform: perspective(1200px) rotateX(4deg) rotateY(-6deg) translateY(-6px);
-    box-shadow: 0 35px 80px -20px rgba(124, 58, 237, 0.45);
+    box-shadow: 0 35px 80px -20px rgba(242, 68, 12, 0.45);
   }
   .tilt-card-r:hover {
     transform: perspective(1200px) rotateX(4deg) rotateY(6deg) translateY(-6px);
@@ -260,17 +260,17 @@
     background-image:
       radial-gradient(
         at 18% 22%,
-        rgba(139, 92, 246, 0.18) 0px,
+        rgba(255, 87, 34, 0.18) 0px,
         transparent 50%
       ),
       radial-gradient(
         at 82% 78%,
-        rgba(236, 72, 153, 0.15) 0px,
+        rgba(245, 158, 11, 0.15) 0px,
         transparent 50%
       ),
       radial-gradient(
         at 50% 100%,
-        rgba(99, 102, 241, 0.12) 0px,
+        rgba(255, 125, 62, 0.12) 0px,
         transparent 50%
       );
   }
@@ -279,15 +279,15 @@
     background-image:
       radial-gradient(
         at 18% 22%,
-        rgba(139, 92, 246, 0.35) 0px,
+        rgba(255, 87, 34, 0.35) 0px,
         transparent 50%
       ),
       radial-gradient(
         at 82% 78%,
-        rgba(236, 72, 153, 0.25) 0px,
+        rgba(245, 158, 11, 0.25) 0px,
         transparent 50%
       ),
-      radial-gradient(at 50% 0%, rgba(99, 102, 241, 0.22) 0px, transparent 50%);
+      radial-gradient(at 50% 0%, rgba(255, 125, 62, 0.22) 0px, transparent 50%);
   }
 
   /* ── Marquee track ──────────────────────────────────────── */
@@ -308,8 +308,8 @@
   /* ── Glow ring (outer) ──────────────────────────────────── */
   .ring-glow {
     box-shadow:
-      0 0 0 1px rgba(139, 92, 246, 0.25),
-      0 0 24px 4px rgba(139, 92, 246, 0.4);
+      0 0 0 1px rgba(255, 87, 34, 0.25),
+      0 0 24px 4px rgba(255, 87, 34, 0.4);
   }
 
   /* ── Scroll reveal helper ───────────────────────────────── */
@@ -331,12 +331,12 @@
   .text-gradient-animated {
     background: linear-gradient(
       120deg,
-      #6366f1,
-      #8b5cf6,
-      #ec4899,
-      #f43f5e,
-      #8b5cf6,
-      #6366f1
+      #ffa470,
+      #ff7d3e,
+      #ff5722,
+      #f2440c,
+      #ff7d3e,
+      #ffa470
     );
     background-size: 300% 100%;
     -webkit-background-clip: text;

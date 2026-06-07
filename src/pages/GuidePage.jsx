@@ -14,6 +14,7 @@ import {
   Rocket,
   Settings as SettingsIcon,
   HelpCircle,
+  Clock,
 } from "lucide-react";
 
 const STEPS = [
@@ -321,7 +322,7 @@ export default function GuidePage() {
               href="mailto:support@botlify.site"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
-              <span className="w-10 h-10 rounded-md bg-pink-500 flex items-center justify-center shadow">
+              <span className="w-10 h-10 rounded-md bg-brand-400 flex items-center justify-center shadow">
                 <Mail className="w-5 h-5 text-white" />
               </span>
               <div className="flex-1 min-w-0">

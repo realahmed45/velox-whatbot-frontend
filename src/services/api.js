@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, DEV_TOKEN } from "@/store/authStore";
 
 const DEV = import.meta.env.DEV;
 
@@ -33,7 +33,19 @@ api.interceptors.response.use(
         err.response?.data?.message || err.message,
       );
     }
-    if (err.response?.status === 401 && !originalRequest._retry) {
+    // Only attempt the refresh/redirect dance for requests made as a
+    // logged-in user. Anonymous visitors hitting a 401 on a public page
+    // (e.g. /pricing) must never be force-redirected to /login.
+    // The DEV seed token is also exempt — it has no backend session, so 401s
+    // from API calls should just fail quietly and keep you in the UI.
+    const currentToken = useAuthStore.getState().token;
+    const isDevSession = currentToken === DEV_TOKEN;
+    if (
+      err.response?.status === 401 &&
+      !originalRequest._retry &&
+      !!currentToken &&
+      !isDevSession
+    ) {
       originalRequest._retry = true;
       try {
         const refreshToken = useAuthStore.getState().refreshToken;
