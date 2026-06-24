@@ -28,17 +28,17 @@ export default function ConnectChannelGate({ children, feature }) {
 
   return (
     <div>
-      <div className="mx-4 sm:mx-8 mt-4 sm:mt-6 mb-0 flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center">
+      <div className="mx-4 sm:mx-8 mt-4 sm:mt-6 mb-0 flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-xl bg-brand-50 border border-brand-100">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center shadow-glow">
           <Instagram className="w-4 h-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-violet-900">
+          <p className="text-sm font-semibold text-ink-900">
             {feature
               ? `${feature} needs a connected Instagram account`
               : "Connect Instagram to see live data"}
           </p>
-          <p className="text-xs text-violet-700/80 mt-0.5">
+          <p className="text-xs text-ink-500 mt-0.5">
             Link your Instagram Business account to start automating. Takes
             about 30 seconds.
           </p>
@@ -46,7 +46,7 @@ export default function ConnectChannelGate({ children, feature }) {
         <button
           onClick={startIg}
           disabled={connecting}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition disabled:opacity-60 flex-shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition disabled:opacity-60 flex-shrink-0 shadow-glow"
         >
           <Instagram className="w-3.5 h-3.5" />
           {connecting ? "Connecting…" : "Connect Instagram"}

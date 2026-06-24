@@ -29,8 +29,8 @@ const GROUPS = [
       { type: "send_text", label: "Send Text", icon: AlignLeft, color: "text-blue-600", bg: "bg-blue-50" },
       { type: "send_image", label: "Send Image", icon: Image, color: "text-purple-600", bg: "bg-purple-50" },
       { type: "send_file", label: "Send File", icon: FileText, color: "text-indigo-600", bg: "bg-indigo-50" },
-      { type: "ask_question", label: "Ask Question", icon: HelpCircle, color: "text-yellow-600", bg: "bg-yellow-50" },
-      { type: "button_menu", label: "Button Menu", icon: MousePointer, color: "text-orange-600", bg: "bg-orange-50" },
+      { type: "ask_question", label: "Ask Question", icon: HelpCircle, color: "text-amber-600", bg: "bg-amber-50" },
+      { type: "button_menu", label: "Button Menu", icon: MousePointer, color: "text-brand-600", bg: "bg-brand-50" },
       { type: "list_menu", label: "List Menu", icon: List, color: "text-pink-600", bg: "bg-pink-50" },
     ],
   },
@@ -39,7 +39,7 @@ const GROUPS = [
     nodes: [
       { type: "condition", label: "Condition", icon: GitBranch, color: "text-red-600", bg: "bg-red-50" },
       { type: "delay", label: "Delay", icon: Clock, color: "text-ink-600", bg: "bg-ink-50" },
-      { type: "tag_contact", label: "Tag Contact", icon: Tag, color: "text-green-600", bg: "bg-green-50" },
+      { type: "tag_contact", label: "Tag Contact", icon: Tag, color: "text-emerald-600", bg: "bg-emerald-50" },
       { type: "assign_agent", label: "Assign Agent", icon: User, color: "text-teal-600", bg: "bg-teal-50" },
       { type: "end_flow", label: "End Flow", icon: X, color: "text-ink-500", bg: "bg-ink-50" },
     ],
@@ -53,14 +53,14 @@ export default function NodePalette({ onClose, onAdd }) {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-ink-200 shadow-lg p-3 w-52 max-h-[70vh] overflow-y-auto">
+    <div className="bg-white/85 backdrop-blur-xl rounded-xl border border-white/60 shadow-glass p-3 w-52 max-h-[70vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
           Add a node
         </span>
         <button
           onClick={onClose}
-          className="p-0.5 rounded hover:bg-ink-100 text-ink-400"
+          className="p-0.5 rounded-lg hover:bg-ink-100 text-ink-400"
         >
           <X className="w-3 h-3" />
         </button>

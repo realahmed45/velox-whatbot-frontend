@@ -43,7 +43,6 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import ActivationCard from "@/components/ActivationCard";
-import SetupHub from "@/components/SetupHub";
 
 // Custom automation tiles — link directly into AutomationSetupPage
 // with the ?tab= query so the tab opens immediately.
@@ -133,13 +132,6 @@ export default function OverviewPage() {
       toast.success("Instagram connected successfully!");
       fetchWorkspace(activeWorkspace);
       setSearchParams({});
-    } else if (searchParams.get("shopify") === "connected") {
-      toast.success("Shopify connected! Products and order tracking are ready.");
-      fetchWorkspace(activeWorkspace);
-      setSearchParams({});
-    } else if (searchParams.get("shopify") === "error") {
-      toast.error("Shopify connection failed. Please try again.");
-      setSearchParams({});
     } else if (error) {
       const msgs = {
         cancelled: "Instagram connection was cancelled.",
@@ -179,12 +171,17 @@ export default function OverviewPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
-      {/* ManyChat-style setup hub — universal for every business */}
-      <SetupHub onConnectInstagram={startIgOAuth} />
+    <div className="relative min-h-full">
+      {/* Ambient glass backdrop — soft orange glows the cards refract over */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 right-0 w-[40rem] h-[40rem] rounded-full bg-brand-200/40 blur-[130px]" />
+        <div className="absolute top-1/3 -left-24 w-[32rem] h-[32rem] rounded-full bg-amber-200/30 blur-[130px]" />
+        <div className="absolute bottom-0 right-1/4 w-[28rem] h-[28rem] rounded-full bg-brand-100/40 blur-[130px]" />
+      </div>
 
-      {/* Quick wins checklist (legacy — hides when complete) */}
-      <ActivationCard />
+      <div className="relative p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
+        {/* Activation checklist (auto-hides when complete or dismissed) */}
+        <ActivationCard />
 
       {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -204,7 +201,7 @@ export default function OverviewPage() {
       <ChannelCard
         name="Instagram"
         icon={Instagram}
-        color="pink"
+        color="brand"
         connected={igConnected}
         connectedLabel={ig?.username ? `@${ig.username}` : "Connected"}
         avatar={ig?.profilePicture}
@@ -228,13 +225,13 @@ export default function OverviewPage() {
           icon={MessageSquare}
           label="Messages"
           value={stats?.totalMessages ?? 0}
-          color="violet"
+          color="brand"
         />
         <StatCard
           icon={Users}
           label="Contacts"
           value={stats?.totalContacts ?? 0}
-          color="pink"
+          color="brand"
         />
         <StatCard
           icon={TrendingUp}
@@ -253,39 +250,52 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* ── Automations (single entry — details live inside Automations page) ── */}
+      {/* ── Bot Automation ────────────────────────────────── */}
+      <Section
+        title="Bot Automation"
+        subtitle="Smart AI replies — train it once, let it handle conversations 24/7."
+        accent="ink"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <ActionTile
+            icon={Bot}
+            title="AI Bot"
+            desc="Configure your AI assistant — model, persona, tone, knowledge base."
+            to="/dashboard/ai-bot"
+            primary
+          />
+          <ActionTile
+            icon={Sparkles}
+            title="Test the bot"
+            desc="Send a message and see how the AI handles it before going live."
+            to="/dashboard/ai-bot?test=1"
+          />
+          <ActionTile
+            icon={Workflow}
+            title="Bot flows"
+            desc="Build branching conversation flows with the visual builder."
+            to="/dashboard/flow-builder"
+          />
+        </div>
+      </Section>
+
+      {/* ── Custom Automations (per connected channel) ─────── */}
       {igConnected && (
         <Section
-          title="Automations"
-          subtitle="Welcome messages, comment-to-DM, keywords, and story replies."
-          accent="pink"
+          title="Instagram Automations"
+          subtitle="Comment-to-DM, story replies, keyword triggers, and more."
+          accent="brand"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <ActionTile
-              icon={Zap}
-              title="All automations"
-              desc="Welcome DM, keywords, comments, stories, hours & more."
-              to="/dashboard/automation"
-              primary
-            />
-            <ActionTile
-              icon={Hash}
-              title="Comment → DM"
-              desc="Turn post comments into DMs automatically."
-              to="/dashboard/automation?tab=comment_kw"
-            />
-            <ActionTile
-              icon={MessageCircle}
-              title="DM keywords"
-              desc="Reply when someone sends a trigger word."
-              to="/dashboard/automation?tab=dm_kw"
-            />
-            <ActionTile
-              icon={Workflow}
-              title="Flows & templates"
-              desc="Custom flows and ready-made template packs."
-              to="/dashboard/automation"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {IG_AUTOMATIONS.map((a) => (
+              <ActionTile
+                key={`ig-${a.id}`}
+                icon={a.icon}
+                title={a.label}
+                desc={a.desc}
+                to={`/dashboard/automation?tab=${a.id}&channel=instagram`}
+              />
+            ))}
           </div>
         </Section>
       )}
@@ -330,9 +340,9 @@ export default function OverviewPage() {
           />
           <ActionTile
             icon={Workflow}
-            title="Automations"
-            desc="Gallery, flows & templates"
-            to="/dashboard/automation"
+            title="Flow Builder"
+            desc="Visual flows"
+            to="/dashboard/flow-builder"
           />
           <ActionTile
             icon={SettingsIcon}
@@ -349,8 +359,9 @@ export default function OverviewPage() {
         </div>
       </Section>
 
-      {/* No "Add another channel" CTA needed — the unified ChannelCards above
-          already render a Connect CTA for any disconnected channel. */}
+        {/* No "Add another channel" CTA needed — the unified ChannelCards above
+            already render a Connect CTA for any disconnected channel. */}
+      </div>
     </div>
   );
 }
@@ -358,14 +369,14 @@ export default function OverviewPage() {
 // ─── Section ─────────────────────────────────────────────────────────────────
 function Section({ title, subtitle, accent = "ink", children }) {
   const bar = {
-    pink: "bg-pink-600",
+    brand: "bg-brand-500",
     emerald: "bg-emerald-600",
     ink: "bg-ink-900",
-  }[accent];
+  }[accent] || "bg-ink-900";
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-3">
-        <span className={clsx("w-1 h-5", bar)} />
+        <span className={clsx("w-1 h-5 rounded-full", bar)} />
         <div>
           <h2 className="text-base font-black text-ink-950 tracking-tight uppercase">
             {title}
@@ -395,12 +406,12 @@ function ChannelCard({
   onManage,
 }) {
   const colorMap = {
-    pink: {
-      bg: "bg-gradient-to-br from-pink-500 to-rose-600",
-      badge: "bg-pink-50 text-pink-700 border-pink-200",
-      dot: "bg-pink-500",
-      border: "border-pink-200",
-      btn: "bg-pink-600 hover:bg-pink-700 text-white",
+    brand: {
+      bg: "bg-gradient-to-br from-brand-400 to-brand-600",
+      badge: "bg-brand-50 text-brand-700 border-brand-200",
+      dot: "bg-brand-500",
+      border: "border-brand-200",
+      btn: "bg-brand-500 hover:bg-brand-600 text-white",
     },
     green: {
       bg: "bg-gradient-to-br from-emerald-500 to-teal-600",
@@ -410,13 +421,13 @@ function ChannelCard({
       btn: "bg-emerald-600 hover:bg-emerald-700 text-white",
     },
   };
-  const c = colorMap[color];
+  const c = colorMap[color] || colorMap.brand;
 
   return (
     <div
       className={clsx(
-        "border bg-white p-5 transition-all",
-        connected ? c.border : "border-ink-200",
+        "rounded-2xl border bg-white/70 backdrop-blur-xl p-5 shadow-glass transition-all",
+        connected ? c.border : "border-white/60",
       )}
     >
       <div className="flex items-center gap-3 mb-4">
@@ -424,12 +435,12 @@ function ChannelCard({
           <img
             src={avatar}
             alt=""
-            className="w-10 h-10 object-cover ring-2 ring-white shadow"
+            className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow"
           />
         ) : (
           <div
             className={clsx(
-              "w-10 h-10 flex items-center justify-center shadow",
+              "w-10 h-10 rounded-xl flex items-center justify-center shadow",
               c.bg,
             )}
           >
@@ -440,7 +451,7 @@ function ChannelCard({
           <h3 className="font-bold text-ink-900 text-sm">{name}</h3>
           {connected ? (
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={clsx("w-1.5 h-1.5 animate-pulse", c.dot)} />
+              <span className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", c.dot)} />
               <span className="text-xs text-ink-500 truncate">
                 {connectedLabel}
               </span>
@@ -452,7 +463,7 @@ function ChannelCard({
         {connected && (
           <span
             className={clsx(
-              "px-2 py-0.5 text-[10px] font-semibold border uppercase tracking-wide",
+              "px-2 py-0.5 rounded-full text-[10px] font-semibold border uppercase tracking-wide",
               c.badge,
             )}
           >
@@ -468,7 +479,7 @@ function ChannelCard({
               {Object.entries(stats).map(([k, v]) => (
                 <div
                   key={k}
-                  className="bg-ink-50 border border-ink-100 p-2.5 text-center"
+                  className="rounded-lg bg-white/50 border border-white/60 p-2.5 text-center"
                 >
                   <p className="text-lg font-black text-ink-900">
                     {typeof v === "number" ? v.toLocaleString() : v}
@@ -482,7 +493,7 @@ function ChannelCard({
           )}
           <button
             onClick={onManage}
-            className="w-full flex items-center justify-center gap-2 py-2 bg-ink-950 hover:bg-ink-800 text-white text-sm font-semibold transition"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-ink-950 hover:bg-ink-800 text-white text-sm font-semibold transition"
           >
             Manage {name}
             <ArrowRight className="w-4 h-4" />
@@ -496,7 +507,7 @@ function ChannelCard({
           <button
             onClick={onConnect}
             className={clsx(
-              "w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition",
+              "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition shadow-glow",
               c.btn,
             )}
           >
@@ -512,20 +523,19 @@ function ChannelCard({
 // ─── Stat Card (rectangular) ─────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, color }) {
   const colors = {
-    violet: "bg-violet-50 text-violet-600 border-violet-100",
-    pink: "bg-pink-50 text-pink-600 border-pink-100",
+    brand: "bg-brand-50 text-brand-600 border-brand-100",
     emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
     amber: "bg-amber-50 text-amber-600 border-amber-100",
   };
   return (
-    <div className="border border-ink-200 bg-white p-4">
+    <div className="rounded-xl border border-white/60 bg-white/60 backdrop-blur-xl p-4 shadow-glass hover:bg-white/80 transition-colors">
       <div
         className={clsx(
-          "w-8 h-8 flex items-center justify-center mb-3 border",
-          colors[color],
+          "w-9 h-9 rounded-lg flex items-center justify-center mb-3 border",
+          colors[color] || colors.brand,
         )}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className="w-[18px] h-[18px]" />
       </div>
       <p className="text-2xl font-black text-ink-950">
         {typeof value === "number" ? value.toLocaleString() : value}
@@ -543,18 +553,18 @@ function ActionTile({ icon: Icon, title, desc, to, primary }) {
     <Link
       to={to}
       className={clsx(
-        "group flex items-start gap-3 p-4 border bg-white transition-all",
+        "group flex items-start gap-3 p-4 rounded-xl border bg-white/60 backdrop-blur-xl shadow-glass transition-all",
         primary
-          ? "border-violet-300 hover:border-violet-500 hover:bg-violet-50/40"
-          : "border-ink-200 hover:border-ink-400 hover:bg-ink-50/60",
+          ? "border-brand-300/70 hover:border-brand-500 hover:bg-white/85 hover:shadow-glow"
+          : "border-white/60 hover:border-brand-300 hover:bg-white/85",
       )}
     >
       <div
         className={clsx(
-          "w-9 h-9 flex items-center justify-center flex-shrink-0 transition-colors",
+          "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
           primary
-            ? "bg-violet-600 text-white"
-            : "bg-ink-100 text-ink-600 group-hover:bg-ink-900 group-hover:text-white",
+            ? "bg-brand-500 text-white"
+            : "bg-brand-50 text-brand-500 group-hover:bg-brand-500 group-hover:text-white",
         )}
       >
         <Icon className="w-4 h-4" />

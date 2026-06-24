@@ -25,9 +25,9 @@ import EmptyState from "@/components/ui/EmptyState";
 
 const STATUS_BADGE = {
   draft: "bg-ink-100 text-ink-600",
-  scheduled: "bg-fuchsia-100 text-fuchsia-700",
+  scheduled: "bg-brand-100 text-brand-700",
   sending: "bg-amber-100 text-amber-700",
-  sent: "bg-rose-100 text-rose-700",
+  sent: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-ink-100 text-ink-500",
   failed: "bg-red-100 text-red-700",
 };
@@ -81,15 +81,22 @@ export default function IgBroadcastsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-5">
-      {/* IG-flavoured hero */}
-      <div className="relative overflow-hidden border border-rose-200/60 bg-gradient-to-br from-rose-50 via-fuchsia-50 to-violet-50 p-6">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-fuchsia-300/30 blur-3xl" />
-        <div className="relative flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-start gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-fuchsia-600 flex items-center justify-center shadow-glow">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
+    <div className="relative min-h-full">
+      {/* Ambient glass backdrop */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/35 blur-[130px]" />
+        <div className="absolute bottom-0 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/25 blur-[130px]" />
+      </div>
+
+      <div className="relative p-4 sm:p-8 max-w-7xl mx-auto space-y-5">
+        {/* Hero */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass p-6">
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-300/25 blur-3xl" />
+          <div className="relative flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center shadow-glow">
+                <Send className="w-6 h-6 text-white" />
+              </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-ink-900">
                 Instagram DM Blasts
@@ -102,7 +109,7 @@ export default function IgBroadcastsPage() {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white font-bold text-sm px-5 py-2.5 flex items-center gap-2"
+            className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-5 py-2.5 rounded-lg shadow-glow flex items-center gap-2 transition"
           >
             <Plus className="w-4 h-4" />
             New blast
@@ -110,7 +117,7 @@ export default function IgBroadcastsPage() {
         </div>
 
         {/* 24h window warning */}
-        <div className="relative mt-4 bg-white/80 border border-amber-200 px-3 py-2.5 flex items-start gap-2">
+        <div className="relative mt-4 bg-amber-50/80 rounded-xl border border-amber-200 px-3 py-2.5 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
           <div className="text-xs text-ink-700">
             <strong className="text-amber-700">24-hour window:</strong>{" "}
@@ -132,7 +139,7 @@ export default function IgBroadcastsPage() {
           action={
             <button
               onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white px-4 py-2 font-bold text-sm flex items-center gap-2 mx-auto"
+              className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg shadow-glow font-bold text-sm flex items-center gap-2 mx-auto transition"
             >
               <Plus className="w-4 h-4" />
               Create blast
@@ -144,17 +151,17 @@ export default function IgBroadcastsPage() {
           {campaigns.map((c) => (
             <div
               key={c._id}
-              className="bg-white border border-rose-100 p-4 hover:border-rose-300 transition"
+              className="rounded-xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass p-4 hover:border-brand-300 hover:bg-white/90 transition"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <Camera className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
+                    <Camera className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
                     <h3 className="font-bold text-sm text-ink-900 truncate">
                       {c.name}
                     </h3>
                     <span
-                      className={`text-[10px] uppercase font-bold px-1.5 py-0.5 ${STATUS_BADGE[c.status] || ""}`}
+                      className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-full ${STATUS_BADGE[c.status] || ""}`}
                     >
                       {c.status}
                     </span>
@@ -164,7 +171,7 @@ export default function IgBroadcastsPage() {
                   </p>
                   <div className="flex items-center gap-3 text-[11px] text-ink-400">
                     <span className="flex items-center gap-1">
-                      <Heart className="w-3 h-3 text-rose-400" />
+                      <Send className="w-3 h-3 text-brand-400" />
                       {c.stats?.totalTargeted || 0} reached
                     </span>
                     {c.scheduledAt && (
@@ -179,7 +186,7 @@ export default function IgBroadcastsPage() {
                   {c.status === "draft" && (
                     <button
                       onClick={() => sendCampaign(c._id)}
-                      className="bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white text-[11px] font-bold px-2.5 py-1 flex items-center gap-1"
+                      className="bg-brand-500 hover:bg-brand-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition"
                     >
                       <Send className="w-3 h-3" />
                       Blast
@@ -188,7 +195,7 @@ export default function IgBroadcastsPage() {
                   {["draft", "scheduled"].includes(c.status) && (
                     <button
                       onClick={() => del(c._id)}
-                      className="text-ink-300 hover:text-rose-500 p-1"
+                      className="text-ink-300 hover:text-red-500 p-1 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -200,15 +207,16 @@ export default function IgBroadcastsPage() {
         </div>
       )}
 
-      {showModal && (
-        <CreateModal
-          onClose={() => setShowModal(false)}
-          onCreated={(c) => {
-            setCampaigns((cs) => [c, ...cs]);
-            setShowModal(false);
-          }}
-        />
-      )}
+        {showModal && (
+          <CreateModal
+            onClose={() => setShowModal(false)}
+            onCreated={(c) => {
+              setCampaigns((cs) => [c, ...cs]);
+              setShowModal(false);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -249,16 +257,16 @@ function CreateModal({ onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-md p-6 border-t-4 border-rose-500">
+    <div className="fixed inset-0 bg-ink-950/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-hero border-t-4 border-brand-500">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-rose-500" />
+            <Sparkles className="w-4 h-4 text-brand-500" />
             <h2 className="font-bold text-ink-900">New IG DM Blast</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-ink-400 hover:text-ink-700"
+            className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -319,21 +327,21 @@ function CreateModal({ onClose, onCreated }) {
               }
             />
           </div>
-          <div className="bg-amber-50 border border-amber-200 px-3 py-2 text-[11px] text-amber-800">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-800">
             Reminder: only followers who DM'd you within 24h will receive this.
           </div>
           <div className="flex gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-ink-200 text-ink-700 font-bold text-sm py-2"
+              className="flex-1 rounded-lg border border-ink-200 text-ink-700 font-bold text-sm py-2.5 hover:bg-ink-50 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white font-bold text-sm py-2 disabled:opacity-60"
+              className="flex-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm py-2.5 shadow-glow disabled:opacity-60 transition"
             >
               {loading ? "Creating…" : "Create blast"}
             </button>

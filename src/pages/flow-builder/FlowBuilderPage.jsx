@@ -111,7 +111,7 @@ function FlowBuilderInner() {
   const onConnect = useCallback((params) => {
     setEdges((eds) =>
       addEdge(
-        { ...params, animated: true, style: { stroke: "#16a34a" } },
+        { ...params, animated: true, style: { stroke: "#ff5722", strokeWidth: 2 } },
         eds,
       ),
     );
@@ -289,7 +289,7 @@ function FlowBuilderInner() {
       <div className="flex-1 flex flex-col relative" ref={reactFlowWrapper}>
         {currentFlow ? (
           <>
-            <div className="h-12 bg-white border-b border-ink-100 flex items-center justify-between px-4 gap-3">
+            <div className="h-12 bg-white/80 backdrop-blur-xl border-b border-ink-100 flex items-center justify-between px-4 gap-3 z-10">
               <div className="flex items-center gap-2 min-w-0">
                 <button
                   onClick={() => navigate("/dashboard/automation")}
@@ -325,7 +325,7 @@ function FlowBuilderInner() {
                       ? "Add a trigger node before activating"
                       : undefined
                   }
-                  className={`btn text-xs gap-1 disabled:opacity-50 ${currentFlow.status === "active" ? "bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100" : "btn-secondary"}`}
+                  className={`btn text-xs gap-1 disabled:opacity-50 ${currentFlow.status === "active" ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100" : "btn-secondary"}`}
                 >
                   {currentFlow.status === "active" ? (
                     <>

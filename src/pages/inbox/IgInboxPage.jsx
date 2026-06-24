@@ -1,9 +1,7 @@
 /**
- * Instagram Inbox — DM-style two-pane layout.
- *
- * Story-ring avatars, @username display, rose/fuchsia palette, IG-flavour
- * status pills ("Auto-DM", "You", "Resolved"). Calls /inbox?channel=instagram
- * so conversations from WhatsApp don't bleed in.
+ * Instagram Inbox — DM-style two-pane layout, Botlify orange/white theme.
+ * Responsive: list-only on mobile, swaps to the chat when a DM is opened.
+ * Calls /inbox?channel=instagram so WhatsApp conversations don't bleed in.
  */
 import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
@@ -13,17 +11,17 @@ import { initSocket } from "@/services/socket";
 import toast from "react-hot-toast";
 import {
   Send,
-  Bot,
   UserCheck,
   CheckCheck,
   Search,
   Pause,
   Play,
   X,
-  Heart,
   Plus,
   Sparkles,
   Instagram,
+  Inbox as InboxIcon,
+  ArrowLeft,
   Tag as TagIcon,
 } from "lucide-react";
 import dayjs from "dayjs";
@@ -32,13 +30,27 @@ import { clsx } from "clsx";
 dayjs.extend(relativeTime);
 
 const STATUS = {
-  bot_active: { label: "Auto-DM", cls: "bg-rose-100 text-rose-700" },
-  open: { label: "Open", cls: "bg-fuchsia-100 text-fuchsia-700" },
+  bot_active: { label: "Auto-DM", cls: "bg-brand-100 text-brand-700" },
+  open: { label: "Open", cls: "bg-ink-100 text-ink-600" },
   awaiting_human: { label: "Needs you", cls: "bg-amber-100 text-amber-700" },
-  human_active: { label: "You", cls: "bg-violet-100 text-violet-700" },
+  human_active: { label: "You", cls: "bg-emerald-100 text-emerald-700" },
   resolved: { label: "Done", cls: "bg-ink-100 text-ink-500" },
   closed: { label: "Closed", cls: "bg-ink-100 text-ink-500" },
 };
+
+function Avatar({ initial, size = "w-9 h-9", text = "text-[11px]" }) {
+  return (
+    <div
+      className={clsx(
+        size,
+        text,
+        "rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0",
+      )}
+    >
+      {initial}
+    </div>
+  );
+}
 
 export default function IgInboxPage() {
   const { activeWorkspace } = useAuthStore();
@@ -190,34 +202,34 @@ export default function IgInboxPage() {
   });
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-rose-50/30 to-fuchsia-50/20">
+    <div className="flex h-full bg-ink-50">
       {/* List pane */}
       <div
         className={clsx(
-          "flex-shrink-0 border-r border-rose-100 bg-white flex flex-col",
-          "w-full md:w-80",
+          "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col",
+          "w-full md:w-80 lg:w-[22rem]",
           activeConversationId && "hidden md:flex",
         )}
       >
-        {/* IG header */}
-        <div className="px-4 py-3 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-fuchsia-50">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-ink-100 bg-white/80 backdrop-blur-xl">
           <div className="flex items-center gap-2 mb-2.5">
-            <Instagram className="w-4 h-4 text-rose-600" />
-            <h2 className="font-black text-ink-900 text-sm">DMs</h2>
-            <span className="ml-auto text-[10px] uppercase tracking-wider font-bold text-rose-600">
+            <Instagram className="w-4 h-4 text-brand-500" />
+            <h2 className="font-black text-ink-900 text-base">DMs</h2>
+            <span className="ml-auto text-[10px] uppercase tracking-wider font-bold text-brand-600">
               {conversations.length} active
             </span>
           </div>
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-rose-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
             <input
-              className="input !pl-8 !text-xs !border-rose-200 focus:!border-rose-400"
+              className="input !pl-9 !text-sm"
               placeholder="Search @username or name…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-1 mt-2 overflow-x-auto">
+          <div className="flex gap-1.5 mt-2.5 overflow-x-auto pb-0.5">
             {[
               "all",
               "bot_active",
@@ -229,10 +241,10 @@ export default function IgInboxPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={clsx(
-                  "flex-shrink-0 px-2 py-1 text-[10px] font-bold transition border",
+                  "flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold transition border",
                   filter === f
-                    ? "bg-rose-500 text-white border-rose-500"
-                    : "border-rose-200 text-rose-700 hover:bg-rose-50",
+                    ? "bg-brand-500 text-white border-brand-500 shadow-glow"
+                    : "border-ink-200 text-ink-600 hover:border-brand-300 hover:text-brand-600",
                 )}
               >
                 {f === "all" ? "All" : STATUS[f]?.label || f}
@@ -244,8 +256,10 @@ export default function IgInboxPage() {
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 && (
             <div className="text-center py-12 px-4">
-              <Heart className="w-8 h-8 text-rose-300 mx-auto mb-2" />
-              <p className="text-xs text-ink-500 font-bold">No DMs yet</p>
+              <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
+                <InboxIcon className="w-6 h-6 text-brand-400" />
+              </div>
+              <p className="text-xs text-ink-600 font-bold">No DMs yet</p>
               <p className="text-[11px] text-ink-400 mt-1">
                 When followers slide in, they'll appear here.
               </p>
@@ -261,25 +275,16 @@ export default function IgInboxPage() {
                 key={conv._id}
                 onClick={() => setActiveConversation(conv._id)}
                 className={clsx(
-                  "w-full text-left p-3 border-b border-rose-50 hover:bg-rose-50/50 transition",
+                  "w-full text-left p-3 border-b border-ink-50 hover:bg-ink-50/70 transition",
                   activeConversationId === conv._id &&
-                    "bg-rose-50 border-l-2 border-l-rose-500",
+                    "bg-brand-50/70 border-l-2 border-l-brand-500",
                 )}
               >
-                <div className="flex items-start gap-2.5">
-                  {/* Story ring */}
-                  <div className="relative w-9 h-9 flex-shrink-0">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px]">
-                      <div className="w-full h-full bg-white p-[1.5px]">
-                        <div className="w-full h-full bg-gradient-to-br from-rose-500 to-fuchsia-600 flex items-center justify-center text-[11px] font-bold text-white">
-                          {initial}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex items-start gap-3">
+                  <Avatar initial={initial} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <p className="text-xs font-bold text-ink-900 truncate">
+                      <p className="text-[13px] font-bold text-ink-900 truncate">
                         {conv.contact?.name ||
                           conv.contact?.username ||
                           "Unknown"}
@@ -289,22 +294,22 @@ export default function IgInboxPage() {
                       </span>
                     </div>
                     {conv.contact?.username && (
-                      <p className="text-[10px] text-rose-600 font-medium">
+                      <p className="text-[10px] text-brand-600 font-medium">
                         @{conv.contact.username}
                       </p>
                     )}
                     <p className="text-[11px] text-ink-500 truncate mt-0.5">
                       {conv.lastMessage?.text || "…"}
                     </p>
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1 mt-1.5">
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 ${meta.cls}`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${meta.cls}`}
                       >
                         {meta.label}
                       </span>
                       {conv.botEnabled === false && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700">
-                          <Pause className="w-2.5 h-2.5 inline" /> off
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 inline-flex items-center gap-0.5">
+                          <Pause className="w-2.5 h-2.5" /> off
                         </span>
                       )}
                     </div>
@@ -318,30 +323,26 @@ export default function IgInboxPage() {
 
       {/* Chat pane */}
       {active ? (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Chat header */}
-          <div className="bg-white border-b border-rose-100 px-4 py-3">
+          <div className="bg-white/80 backdrop-blur-xl border-b border-ink-100 px-3 sm:px-4 py-3">
             <button
               onClick={() => setActiveConversation(null)}
-              className="md:hidden mb-2 text-xs text-rose-600 font-bold flex items-center gap-1"
+              className="md:hidden mb-2 text-xs text-brand-600 font-bold inline-flex items-center gap-1"
             >
-              ← All DMs
+              <ArrowLeft className="w-3.5 h-3.5" /> All DMs
             </button>
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 flex-shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[2px]">
-                    <div className="w-full h-full bg-white p-[2px]">
-                      <div className="w-full h-full bg-gradient-to-br from-rose-500 to-fuchsia-600 flex items-center justify-center text-xs font-bold text-white">
-                        {(active.contact?.name ||
-                          active.contact?.username ||
-                          "?")[0]?.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <p className="font-bold text-sm text-ink-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar
+                  initial={(active.contact?.name ||
+                    active.contact?.username ||
+                    "?")[0]?.toUpperCase()}
+                  size="w-10 h-10"
+                  text="text-xs"
+                />
+                <div className="min-w-0">
+                  <p className="font-bold text-sm text-ink-900 truncate">
                     {active.contact?.name ||
                       active.contact?.username ||
                       "Unknown"}
@@ -352,27 +353,27 @@ export default function IgInboxPage() {
                         href={`https://instagram.com/${active.contact.username}`}
                         target="_blank"
                         rel="noopener"
-                        className="text-[11px] text-rose-600 font-medium hover:underline"
+                        className="text-[11px] text-brand-600 font-medium hover:underline truncate"
                       >
                         @{active.contact.username}
                       </a>
                     )}
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 ${(STATUS[active.status] || STATUS.open).cls}`}
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${(STATUS[active.status] || STATUS.open).cls}`}
                     >
                       {(STATUS[active.status] || STATUS.open).label}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   onClick={toggleBot}
                   className={clsx(
-                    "text-[11px] font-bold px-2.5 py-1.5 border flex items-center gap-1",
+                    "text-[11px] font-bold px-2.5 py-1.5 rounded-lg border flex items-center gap-1 transition",
                     active.botEnabled === false
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-amber-50 text-amber-700 border-amber-200",
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
                   )}
                 >
                   {active.botEnabled === false ? (
@@ -388,7 +389,7 @@ export default function IgInboxPage() {
                 {active.status !== "human_active" && (
                   <button
                     onClick={takeover}
-                    className="text-[11px] font-bold px-2.5 py-1.5 bg-rose-500 text-white flex items-center gap-1"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition"
                   >
                     <UserCheck className="w-3 h-3" /> Take over
                   </button>
@@ -396,7 +397,7 @@ export default function IgInboxPage() {
                 {active.status !== "resolved" && active.status !== "closed" && (
                   <button
                     onClick={resolve}
-                    className="text-[11px] font-bold px-2.5 py-1.5 bg-ink-100 text-ink-700 flex items-center gap-1"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-ink-100 text-ink-700 hover:bg-ink-200 flex items-center gap-1 transition"
                   >
                     <CheckCheck className="w-3 h-3" /> Done
                   </button>
@@ -406,35 +407,38 @@ export default function IgInboxPage() {
 
             {/* Tag row */}
             <div className="flex items-center flex-wrap gap-1.5 mt-2.5">
-              <TagIcon className="w-3 h-3 text-rose-400" />
+              <TagIcon className="w-3 h-3 text-ink-400" />
               {(active.tags || []).map((t) => (
                 <span
                   key={t}
-                  className="text-[10px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 inline-flex items-center gap-0.5"
+                  className="text-[10px] font-bold rounded-full bg-brand-100 text-brand-700 px-2 py-0.5 inline-flex items-center gap-0.5"
                 >
                   #{t}
                   <button
                     onClick={() => removeTag(t)}
-                    className="hover:text-rose-900"
+                    className="hover:text-brand-900"
                   >
                     <X className="w-2.5 h-2.5" />
                   </button>
                 </span>
               ))}
-              <input
-                className="input text-[11px] !h-6 !py-0 !px-2 w-24"
-                placeholder="add tag…"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addTag())
-                }
-              />
+              <div className="relative">
+                <Plus className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-400" />
+                <input
+                  className="input text-[11px] !h-6 !py-0 !pl-6 !pr-2 w-28 rounded-full"
+                  placeholder="add tag…"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addTag())
+                  }
+                />
+              </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-gradient-to-b from-rose-50/40 to-white">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-ink-50/60">
             {activeMsgs.map((m) => (
               <Bubble key={m._id} msg={m} />
             ))}
@@ -442,15 +446,15 @@ export default function IgInboxPage() {
           </div>
 
           {/* Reply box */}
-          <div className="bg-white border-t border-rose-100 p-3">
+          <div className="bg-white/80 backdrop-blur-xl border-t border-ink-100 p-3">
             {active.botEnabled === false && (
-              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 mb-2">
+              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mb-2">
                 Auto-DM is paused — only your manual replies go out.
               </div>
             )}
             <div className="flex items-end gap-2">
               <textarea
-                className="input resize-none flex-1 text-sm !border-rose-200 focus:!border-rose-400"
+                className="input resize-none flex-1 text-sm"
                 rows={2}
                 placeholder="Send a DM…"
                 value={replyText}
@@ -465,7 +469,7 @@ export default function IgInboxPage() {
               <button
                 onClick={sendReply}
                 disabled={sending || !replyText.trim()}
-                className="bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white p-2.5 disabled:opacity-50"
+                className="bg-brand-500 hover:bg-brand-600 text-white p-3 rounded-lg shadow-glow disabled:opacity-50 transition flex-shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -473,18 +477,14 @@ export default function IgInboxPage() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-center bg-gradient-to-br from-rose-50/30 to-fuchsia-50/30">
+        <div className="hidden md:flex flex-1 items-center justify-center text-center bg-ink-50">
           <div>
-            <div className="relative w-16 h-16 mx-auto mb-3">
-              <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[3px]">
-                <div className="w-full h-full bg-white p-[3px]">
-                  <div className="w-full h-full bg-gradient-to-br from-rose-500 to-fuchsia-600 flex items-center justify-center">
-                    <Heart className="w-7 h-7 text-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-ink-700 font-bold">Select a DM</p>
+            <img
+              src="/logo.png"
+              alt=""
+              className="w-20 mx-auto mb-4 object-contain animate-float drop-shadow"
+            />
+            <p className="text-ink-800 font-bold">Select a DM</p>
             <p className="text-ink-400 text-sm mt-1">
               Or wait for a new message to slide in.
             </p>
@@ -501,7 +501,7 @@ function Bubble({ msg }) {
   if (msg.isInternalNote) {
     return (
       <div className="flex justify-center">
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-1.5 max-w-[70%] text-center">
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-1.5 rounded-xl max-w-[80%] text-center">
           📝 {msg.text}
         </div>
       </div>
@@ -511,10 +511,10 @@ function Bubble({ msg }) {
     <div className={`flex ${out ? "justify-end" : "justify-start"}`}>
       <div
         className={clsx(
-          "max-w-[70%] px-3.5 py-2.5 text-sm",
+          "max-w-[80%] sm:max-w-[70%] px-3.5 py-2.5 text-sm shadow-sm",
           out
-            ? "bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white rounded-[18px] rounded-br-[4px]"
-            : "bg-white text-ink-800 border border-rose-100 rounded-[18px] rounded-bl-[4px]",
+            ? "bg-brand-500 text-white rounded-[18px] rounded-br-md"
+            : "bg-white text-ink-800 border border-ink-100 rounded-[18px] rounded-bl-md",
         )}
       >
         {msg.type === "image" && msg.mediaUrl && (

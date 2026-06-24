@@ -64,7 +64,7 @@ export default function RegisterPage() {
   return (
     <div>
       <h2 className="text-3xl font-black text-ink-900 tracking-tighter">
-        Create your <span className="text-gradient-animated">account</span>
+        Create your <span className="text-brand-500">account</span>
       </h2>
       <p className="text-ink-500 text-sm mt-2 mb-7">
         Already have an account?{" "}

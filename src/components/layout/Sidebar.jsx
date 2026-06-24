@@ -1,12 +1,12 @@
 /**
- * Botlify Sidebar — channel-aware, rectangular, premium dark.
+ * Botlify Sidebar — premium, minimal, enterprise-grade.
  *
- * - Section dividers ("Bot Automation" / "Custom Automations" / "Tools")
- *   mirror the dashboard structure exactly.
- * - Custom Automations list differs per active channel (IG vs WA).
- * - Active-channel accent paints the highlight, top-bar glow and section
- *   bullets — pink (Instagram) or emerald (WhatsApp).
- * - Zero rounded corners. Sharp edges, thin borders, premium dark surface.
+ * Brand: #FF6B2C accent on a #111827 surface, #1F2937 cards.
+ * Design language: Linear / Stripe / Vercel / Notion / Intercom.
+ * - Sectioned nav (Automation / Management / Grow / Settings)
+ * - Active item: 4px orange left bar + soft orange tint + orange icon
+ * - Usage card + profile card pinned to the bottom
+ * - Collapsible with smooth micro-interactions
  */
 import { NavLink, useNavigate, Link, useLocation } from "react-router-dom";
 import {
@@ -19,28 +19,21 @@ import {
   Send,
   Settings as SettingsIcon,
   Bot,
-  Instagram,
-  MessageSquare,
   ChevronsLeft,
   ChevronsRight,
   Crown,
+  Workflow,
   Sparkles,
-  MessageCircle,
   Hash,
-  Heart,
-  Share2,
   Link as LinkIcon,
-  Radio,
-  Target,
-  CircleDot,
-  Clock,
-  ShoppingCart,
   CalendarClock,
   Droplet,
   Gift,
   Eye,
   UserPlus,
   Plug,
+  ShoppingCart,
+  ArrowUpRight,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -48,72 +41,73 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { clsx } from "clsx";
 
 const COLLAPSE_KEY = "botlify-sidebar-collapsed";
+const ACCENT = "#FF6B2C";
 
-// ─── Static items ──────────────────────────────────────────────────────────
-const TOP = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Home", end: true },
-];
-
-// ManyChat-style: Automations + Flows + AI in one section (no 11 sub-tabs in nav)
-const AUTOMATION = [
-  { to: "/dashboard/automation", icon: MessageSquare, label: "Automations" },
-  { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
-  { to: "/dashboard/ai-bot?test=1", icon: Sparkles, label: "Preview" },
-];
-
-const TOOLS = [
-  { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
-  { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
+// ─── Navigation model ────────────────────────────────────────────────────────
+const NAV = [
   {
-    to: "/dashboard/orders",
-    icon: ShoppingCart,
-    label: "Orders",
-    badgeKey: "newOrders",
+    section: null,
+    items: [
+      { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+    ],
   },
-  { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
-  { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
+  {
+    section: "Automation",
+    items: [
+      { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
+      { to: "/dashboard/ai-bot?test=1", icon: Sparkles, label: "Test Bot" },
+      { to: "/dashboard/flow-builder", icon: Workflow, label: "Bot Flows" },
+    ],
+  },
+  {
+    section: "Management",
+    items: [
+      { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
+      { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
+      {
+        to: "/dashboard/orders",
+        icon: ShoppingCart,
+        label: "Orders",
+        badgeKey: "newOrders",
+      },
+      { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
+      { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
+    ],
+  },
+  {
+    section: "Grow",
+    items: [
+      { to: "/dashboard/scheduled-posts", icon: CalendarClock, label: "Scheduled Posts" },
+      { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
+      { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
+      { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
+      { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
+      { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
+      { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
+      { to: "/dashboard/integrations", icon: Plug, label: "Integrations" },
+    ],
+  },
+  {
+    section: "Settings",
+    items: [
+      { to: "/dashboard/team", icon: Users, label: "Team" },
+      { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing" },
+      { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
+    ],
+  },
 ];
 
-// Secondary tools — collapsed under "More" in ManyChat-style nav
-const MORE = [
-  { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
-  { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
-  { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
-  { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
-  { to: "/dashboard/scheduled-posts", icon: CalendarClock, label: "Scheduled Posts" },
-  { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
-  { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
-];
-
-const INTEGRATIONS = [
-  { to: "/dashboard/apps", icon: Plug, label: "Integrations" },
-];
-
-const BOTTOM_NAV = [
-  { to: "/dashboard/team", icon: Users, label: "Team" },
-  { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing" },
-  { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
-];
-
-// ─── Per-channel theme ─────────────────────────────────────────────────────
-// Single neutral theme — channel-agnostic ManyChat-style sidebar. The dashboard
-// shows all connected channels in one unified view, so the sidebar no longer
-// re-paints per channel.
-const THEME = {
-  name: "Botlify",
-  accentText: "text-violet-200",
-  accentIcon: "text-violet-300",
-  activeBg: "bg-white/[0.06]",
-  activeRing: "shadow-[inset_2px_0_0_0_rgba(139,92,246,0.9)]",
-  sectionBar: "bg-violet-400/70",
-  sectionLabel: "text-white/40",
-  glow: "bg-gradient-to-b from-violet-400/8 via-violet-400/2 to-transparent",
-  logoGrad: "from-violet-500 via-fuchsia-500 to-rose-500",
-  progress: "from-violet-400 to-fuchsia-500",
-  badge: "bg-violet-400/10 text-violet-200 border-violet-400/25",
-  pillActive: "bg-violet-400/15 text-violet-100 border-violet-400/35",
-  pillDot: "bg-violet-400",
-};
+function planLabel(id) {
+  const map = {
+    free: "Free Plan",
+    ig_starter: "Basic Plan",
+    ig_pro: "Pro Plan",
+    starter: "Starter",
+    growth: "Basic Plan",
+    scale: "Pro Plan",
+  };
+  return map[id] || id;
+}
 
 export default function Sidebar({ onNavigate }) {
   const { logout, user } = useAuthStore();
@@ -138,10 +132,6 @@ export default function Sidebar({ onNavigate }) {
     navigate("/login");
   };
 
-  // Single neutral theme — channel-agnostic
-  const theme = THEME;
-
-  // Plan / usage
   const plan = workspace?.subscription?.plan || "free";
   const usage = useMemo(() => {
     const used = workspace?.usage?.messagesThisMonth || 0;
@@ -150,9 +140,9 @@ export default function Sidebar({ onNavigate }) {
     return { used, limit, pct };
   }, [workspace]);
 
-  const igConnected = workspace?.instagram?.status === "connected";
+  const isPremium = ["ig_pro", "scale"].includes(plan);
 
-  // Live "new orders" badge
+  // Live "new orders" badge — fetched once + bumped via socket
   const [newOrderCount, setNewOrderCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
@@ -166,10 +156,9 @@ export default function Sidebar({ onNavigate }) {
         /* ignore */
       }
     })();
-    let socket;
     (async () => {
       const { initSocket } = await import("@/services/socket");
-      socket = initSocket();
+      const socket = initSocket();
       if (!socket) return;
       const onNew = () => setNewOrderCount((c) => c + 1);
       const onUpdated = ({ order }) => {
@@ -185,12 +174,9 @@ export default function Sidebar({ onNavigate }) {
     };
   }, [workspace?._id, workspace?.smartOrders?.enabled]);
 
-  // Reset count when user visits orders page
   useEffect(() => {
     if (location.pathname === "/dashboard/orders") setNewOrderCount(0);
   }, [location.pathname]);
-
-  const isPremium = ["ig_pro", "scale"].includes(plan);
 
   const initial = (
     workspace?.name?.[0] ||
@@ -199,289 +185,192 @@ export default function Sidebar({ onNavigate }) {
     "B"
   ).toUpperCase();
 
+  const badges = { newOrders: newOrderCount };
+
   return (
     <aside
       className={clsx(
-        "relative flex-shrink-0 flex flex-col h-full transition-[width] duration-300 overflow-hidden",
-        "bg-[#0a0a14] border-r border-white/[0.06]",
-        collapsed ? "w-[72px]" : "w-[260px]",
+        "relative flex-shrink-0 flex flex-col h-full bg-[#111827] border-r border-white/[0.06]",
+        "transition-[width] duration-300 ease-out overflow-hidden",
+        collapsed ? "w-[76px]" : "w-[260px]",
       )}
     >
-      {/* Channel-tinted glow */}
+      {/* ── Logo ─────────────────────────────────────────────── */}
       <div
         className={clsx(
-          "pointer-events-none absolute inset-x-0 top-0 h-48 opacity-80",
-          theme.glow,
+          "flex items-center h-[68px] px-4 border-b border-white/[0.06] flex-shrink-0",
+          collapsed ? "justify-center" : "justify-between",
         )}
-      />
-
-      {/* ── Logo ──────────────────────────────────────────────── */}
-      <div className="relative flex items-center justify-between h-14 px-3.5 border-b border-white/[0.08] flex-shrink-0">
+      >
         <Link
           to="/dashboard"
           onClick={onNavigate}
           className="flex items-center gap-2.5 min-w-0"
         >
-          <span
-            className={clsx(
-              "w-8 h-8 flex-shrink-0 flex items-center justify-center shadow-lg bg-gradient-to-br",
-              theme.logoGrad,
-            )}
-          >
-            <Bot className="w-4 h-4 text-white" />
-          </span>
+          <img
+            src="/logo.png"
+            alt="Botlify"
+            className="w-9 h-9 flex-shrink-0 object-contain drop-shadow"
+          />
           {!collapsed && (
             <div className="flex flex-col leading-none min-w-0">
-              <span className="font-bold text-white text-sm tracking-tight">
+              <span className="font-bold text-white text-[17px] tracking-tight">
                 Botlify
               </span>
-              <span
-                className={clsx(
-                  "text-[10px] font-semibold mt-0.5 tracking-wider uppercase",
-                  theme.accentText,
-                )}
-              >
-                {theme.name}
+              <span className="text-[11px] font-medium text-gray-400 mt-1 truncate">
+                Instagram Automation
               </span>
             </div>
           )}
         </Link>
-        <button
-          type="button"
-          onClick={() => setCollapsed((v) => !v)}
-          className="hidden lg:flex w-7 h-7 items-center justify-center text-white/30 hover:text-white hover:bg-white/8 transition"
-          title={collapsed ? "Expand" : "Collapse"}
-        >
-          {collapsed ? (
-            <ChevronsRight className="w-3.5 h-3.5" />
-          ) : (
-            <ChevronsLeft className="w-3.5 h-3.5" />
-          )}
-        </button>
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            className="hidden lg:flex w-7 h-7 rounded-lg items-center justify-center text-gray-500 hover:text-white hover:bg-white/[0.06] transition"
+            title="Collapse"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {/* Channel pills removed — ManyChat-style sidebar is channel-agnostic.
-          Connected channels are surfaced on the dashboard home (OverviewPage). */}
+      {collapsed && (
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          className="hidden lg:flex mx-auto mt-2 w-7 h-7 rounded-lg items-center justify-center text-gray-500 hover:text-white hover:bg-white/[0.06] transition"
+          title="Expand"
+        >
+          <ChevronsRight className="w-4 h-4" />
+        </button>
+      )}
 
-      {/* ── Main nav (scrollable) ─────────────────────────────── */}
-      <nav className="relative flex-1 overflow-y-auto py-3 px-2 space-y-3 sidebar-scroll">
-        {/* Top */}
-        <div className="space-y-0.5">
-          {TOP.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              theme={theme}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-
-        {/* Automations — ManyChat-style single entry, not 11 sub-links */}
-        <NavSection label="Automations" collapsed={collapsed} theme={theme} />
-        <div className="space-y-0.5">
-          {AUTOMATION.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              theme={theme}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-
-        {/* Inbox & tools */}
-        <NavSection
-          label="Tools & Insights"
-          collapsed={collapsed}
-          theme={theme}
-        />
-        <div className="space-y-0.5">
-          {TOOLS.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              badge={
-                item.badgeKey === "newOrders" && newOrderCount > 0
-                  ? newOrderCount
-                  : null
-              }
-              theme={theme}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-
-        {/* Integrations + More */}
-        <NavSection label="Connect" collapsed={collapsed} theme={theme} />
-        <div className="space-y-0.5">
-          {INTEGRATIONS.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              theme={theme}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-
-        <NavSection label="More tools" collapsed={collapsed} theme={theme} />
-        <div className="space-y-0.5">
-          {MORE.map((item) => (
-            <SidebarLink
-              key={item.to}
-              {...item}
-              theme={theme}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-              dense
-            />
-          ))}
-        </div>
+      {/* ── Navigation ───────────────────────────────────────── */}
+      <nav className="flex-1 overflow-y-auto py-3 px-3 sidebar-scroll">
+        {NAV.map((group, gi) => (
+          <div key={gi} className="mb-1">
+            {group.section &&
+              (collapsed ? (
+                <div className="my-2 flex justify-center">
+                  <span className="w-5 h-px bg-white/[0.08]" />
+                </div>
+              ) : (
+                <p className="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+                  {group.section}
+                </p>
+              ))}
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                  badge={item.badgeKey ? badges[item.badgeKey] : 0}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* ── Bottom section ────────────────────────────────────── */}
-      <div className="relative px-3 pb-3 space-y-1 border-t border-white/[0.06] pt-3 flex-shrink-0">
-        {/* Usage bar */}
+      {/* ── Bottom: usage + profile ──────────────────────────── */}
+      <div className="flex-shrink-0 p-3 space-y-2.5 border-t border-white/[0.06]">
         {!collapsed && (
-          <div className="px-2 py-3 mb-2">
-            <div className="flex justify-between text-[10px] text-white/50 mb-2">
-              <span className="flex items-center gap-1.5">
-                {isPremium && <Crown className="w-3 h-3 text-amber-400" />}
-                <span className="font-semibold tracking-wide uppercase">
-                  {planLabel(plan)}
-                </span>
+          <div className="rounded-2xl bg-[#1F2937] border border-white/[0.06] p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-300">
+                {isPremium && <Crown className="w-3.5 h-3.5 text-amber-400" />}
+                {planLabel(plan)}
               </span>
-              <span className="font-mono text-white/60">{usage.pct}%</span>
+              <span className="text-[11px] font-mono text-gray-500">
+                {usage.pct}%
+              </span>
             </div>
-            <div className="h-1 bg-white/[0.08] overflow-hidden">
+            <div className="flex items-center justify-between text-[11px] mb-1.5">
+              <span className="text-gray-400">Messages Used</span>
+              <span className="text-white font-semibold">
+                {usage.used.toLocaleString()} / {usage.limit.toLocaleString()}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
               <div
-                className={clsx(
-                  "h-full transition-all bg-gradient-to-r",
-                  usage.pct > 90
-                    ? "from-red-500 to-rose-600"
-                    : usage.pct > 70
-                      ? "from-amber-400 to-orange-500"
-                      : theme.progress,
-                )}
-                style={{ width: `${usage.pct}%` }}
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${usage.pct}%`,
+                  background:
+                    usage.pct > 90
+                      ? "#ef4444"
+                      : `linear-gradient(90deg, ${ACCENT}, #ff9466)`,
+                }}
               />
             </div>
-            <p className="text-[10px] text-white/30 mt-2">
-              {usage.used.toLocaleString()} / {usage.limit.toLocaleString()}{" "}
-              messages
-            </p>
+            <Link
+              to="/dashboard/billing"
+              onClick={onNavigate}
+              className="mt-3.5 w-full inline-flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold text-white transition hover:opacity-90"
+              style={{ background: ACCENT }}
+            >
+              Upgrade Plan <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         )}
 
-        {BOTTOM_NAV.map((item) => (
-          <SidebarLink
-            key={item.to}
-            {...item}
-            theme={theme}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-        ))}
-
-        {/* User + logout */}
+        {/* Profile card */}
         <div
           className={clsx(
-            "mt-2 flex items-center gap-3 px-3 py-2.5",
-            "text-white/60 text-xs border border-white/[0.06] bg-white/[0.02]",
-            collapsed && "justify-center px-2",
+            "rounded-2xl bg-[#1F2937] border border-white/[0.06] flex items-center gap-3 transition hover:border-white/[0.12]",
+            collapsed ? "justify-center p-2" : "p-2.5",
           )}
         >
           <div
-            className={clsx(
-              "w-8 h-8 flex items-center justify-center text-[12px] text-white font-bold flex-shrink-0 bg-gradient-to-br",
-              theme.logoGrad,
-            )}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${ACCENT}, #ff9466)`,
+            }}
           >
             {initial}
           </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="truncate font-semibold text-white/85 text-[12px] leading-tight">
-                {user?.name?.split(" ")[0] ||
-                  user?.email?.split("@")[0] ||
-                  "You"}
-              </p>
-              <p className="truncate text-[10px] text-white/40 leading-tight mt-0.5">
-                {user?.email}
-              </p>
-            </div>
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="truncate font-semibold text-white text-[13px] leading-tight">
+                  {user?.name?.split(" ")[0] ||
+                    user?.email?.split("@")[0] ||
+                    "You"}
+                </p>
+                <p className="truncate text-[11px] text-gray-400 leading-tight mt-0.5">
+                  {user?.email}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/[0.06] transition"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
           )}
-          <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-white/40 hover:text-rose-400 hover:bg-white/[0.05] transition"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </aside>
   );
 }
 
-// ─── Sub-components ─────────────────────────────────────────────────────────
-
-function NavSection({ label, collapsed, theme, accent }) {
-  if (collapsed) {
-    return (
-      <div className="flex justify-center py-2">
-        <span
-          className={clsx(
-            "w-6 h-px",
-            accent ? theme.sectionBar : "bg-white/15",
-          )}
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-2.5 px-3 pt-1 pb-2">
-      <span
-        className={clsx("w-1 h-3.5", accent ? theme.sectionBar : "bg-white/25")}
-      />
-      <span
-        className={clsx(
-          "text-[10px] font-bold uppercase tracking-[0.16em]",
-          accent ? theme.sectionLabel : "text-white/45",
-        )}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function SidebarLink({
-  to,
-  icon: Icon,
-  label,
-  end,
-  collapsed,
-  onNavigate,
-  theme,
-  badge,
-}) {
+// ─── Nav item ────────────────────────────────────────────────────────────────
+function NavItem({ item, collapsed, onNavigate, badge }) {
+  const { to, icon: Icon, label, end } = item;
   const location = useLocation();
 
-  // NavLink doesn't match query strings out of the box. We need custom active
-  // detection so e.g. /dashboard/automation?tab=welcome highlights only that
-  // exact item, not every automation row.
+  // NavLink doesn't match query strings — custom active detection.
   const [pathname, search] = to.split("?");
   const matchesPath = location.pathname === pathname;
-  const matchesQuery = search ? location.search.includes(search) : true;
+  const matchesQuery = search ? location.search.includes(search) : !location.search || !to.includes("?");
   const isActive = end
     ? location.pathname === pathname && !location.search
-    : matchesPath && matchesQuery;
+    : matchesPath && (search ? location.search.includes(search) : true);
 
   return (
     <NavLink
@@ -490,43 +379,43 @@ function SidebarLink({
       title={collapsed ? label : undefined}
       end={end}
       className={clsx(
-        "group relative flex items-center gap-3 text-[13px] font-medium transition-all duration-150",
-        "px-3.5 py-2.5",
-        collapsed && "justify-center px-0 w-full",
+        "group relative flex items-center rounded-lg text-[14px] transition-all duration-200",
+        collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-3 py-2.5",
         isActive
-          ? clsx(theme.activeBg, theme.accentText, theme.activeRing)
-          : "text-white/60 hover:text-white hover:bg-white/[0.04]",
+          ? "text-white font-semibold"
+          : "text-gray-400 font-medium hover:text-white hover:bg-white/[0.04]",
       )}
+      style={isActive ? { background: "rgba(255,107,44,0.12)" } : undefined}
     >
+      {/* active left indicator (4px) */}
+      {isActive && (
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full"
+          style={{ background: ACCENT }}
+        />
+      )}
       <Icon
         className={clsx(
-          "w-[15px] h-[15px] flex-shrink-0",
-          isActive
-            ? theme.accentIcon
-            : "text-white/45 group-hover:text-white/85",
+          "w-[19px] h-[19px] flex-shrink-0 transition-colors duration-200",
+          isActive ? "" : "text-gray-500 group-hover:text-[#FF6B2C]",
         )}
+        style={isActive ? { color: ACCENT } : undefined}
       />
       {!collapsed && <span className="truncate">{label}</span>}
-      {!collapsed && badge ? (
-        <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
+      {!collapsed && badge > 0 && (
+        <span
+          className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold rounded-full text-white"
+          style={{ background: ACCENT }}
+        >
           {badge > 99 ? "99+" : badge}
         </span>
-      ) : null}
-      {collapsed && badge ? (
-        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500" />
-      ) : null}
+      )}
+      {collapsed && badge > 0 && (
+        <span
+          className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2 ring-[#111827]"
+          style={{ background: ACCENT }}
+        />
+      )}
     </NavLink>
   );
-}
-
-function planLabel(id) {
-  const map = {
-    free: "Free trial",
-    ig_starter: "Basic",
-    ig_pro: "Pro",
-    starter: "Starter",
-    growth: "Basic",
-    scale: "Pro",
-  };
-  return map[id] || id;
 }
