@@ -60,14 +60,23 @@ export default function PricingPage({ embedded = false }) {
     if (embedded) {
       setSelecting(plan.key);
       try {
-        await api.post("/billing/select-plan", {
+        // Start a card subscription — Xendit collects the card on its hosted
+        // page, then auto-charges every cycle. We redirect there.
+        const { data } = await api.post("/billing/initiate", {
           plan: plan.key,
           billingCycle: "monthly",
+          paymentMethod: "card",
         });
-        toast.success(`Switched to ${plan.name}`);
-        setTimeout(() => window.location.reload(), 800);
+        if (data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+          return;
+        }
+        toast.error("Could not start checkout. Please try again.");
       } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to switch plan");
+        toast.error(
+          err.response?.data?.message ||
+            "Card payments aren't available yet. Please try again later.",
+        );
       } finally {
         setSelecting(null);
       }
@@ -170,7 +179,7 @@ export default function PricingPage({ embedded = false }) {
 
             <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              Secure checkout · Easypaisa · JazzCash · Card · Manual transfer
+              Secure card checkout · auto-renews · cancel anytime
             </div>
           </>
         )}

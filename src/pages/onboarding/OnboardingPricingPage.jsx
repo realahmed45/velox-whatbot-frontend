@@ -1,18 +1,12 @@
 /**
- * OnboardingPricingPage — Step 2 of onboarding.
- *
- * Right after the user picks a channel (WhatsApp / Instagram / Both) we
- * show the matching plans. They can either:
- *   • Pick a paid plan → activate it (no checkout in MVP) → continue to connect
- *   • "Start with 7-day free trial" → continue straight to connect
- *
- * No sidebar, no dashboard chrome. ManyChat-style guided flow.
+ * Onboarding pricing — shown AFTER Instagram is connected (pay later).
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import {
   ArrowRight,
   ArrowLeft,
@@ -26,15 +20,27 @@ import { clsx } from "clsx";
 export default function OnboardingPricingPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const channel = params.get("channel") || "instagram";
-  const planHint = params.get("plan"); // optional pre-selection from /pricing
+  const planHint = params.get("plan");
   const { activeWorkspace } = useAuthStore();
+  const { workspace, fetchWorkspace } = useWorkspaceStore();
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
   const [picking, setPicking] = useState(null);
   const [autoApplied, setAutoApplied] = useState(false);
+
+  const igConnected = workspace?.instagram?.status === "connected";
+
+  useEffect(() => {
+    if (activeWorkspace) fetchWorkspace(activeWorkspace);
+  }, [activeWorkspace, fetchWorkspace]);
+
+  useEffect(() => {
+    if (!igConnected && workspace) {
+      navigate("/onboarding/instagram", { replace: true });
+    }
+  }, [igConnected, workspace, navigate]);
 
   useEffect(() => {
     let alive = true;
@@ -60,7 +66,6 @@ export default function OnboardingPricingPage() {
     };
   }, []);
 
-  // If user came from public /pricing with a chosen plan, auto-activate and skip ahead.
   useEffect(() => {
     if (autoApplied || !planHint || plans.length === 0) return;
     const plan = plans.find((p) => p.key === planHint);
@@ -72,17 +77,17 @@ export default function OnboardingPricingPage() {
           plan: plan.key,
           billingCycle: "monthly",
         });
-        toast.success(`${plan.name} activated — let's connect your channel`);
+        toast.success(`${plan.name} activated`);
       } catch {
-        /* non-fatal — let them continue */
+        /* non-fatal */
       }
-      navigate("/onboarding/instagram", { replace: true });
+      navigate("/dashboard", { replace: true });
     })();
-  }, [planHint, plans, autoApplied, channel, navigate]);
+  }, [planHint, plans, autoApplied, navigate]);
 
   const visiblePlans = useMemo(() => plans, [plans]);
 
-  const goConnect = () => navigate("/onboarding/instagram");
+  const goDashboard = () => navigate("/dashboard");
 
   const pickPlan = async (plan) => {
     setPicking(plan.key);
@@ -91,48 +96,43 @@ export default function OnboardingPricingPage() {
         plan: plan.key,
         billingCycle: "monthly",
       });
-      toast.success(`Selected ${plan.name} — let's connect your channel`);
-      goConnect();
+      toast.success(`${plan.name} selected`);
+      goDashboard();
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          "Couldn't activate plan — you can pay later from Billing.",
+          "Couldn't activate plan — you can choose one later in Billing.",
       );
-      goConnect();
+      goDashboard();
     } finally {
       setPicking(null);
     }
   };
 
-  const channelLabel = "Instagram";
-
   return (
     <div className="px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-5xl mx-auto">
-        {/* Back link */}
         <button
-          onClick={() => navigate("/onboarding/choose-channel")}
+          onClick={() => navigate("/onboarding/instagram")}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 hover:text-ink-800 mb-6 transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to channel selection
+          Back
         </button>
 
-        {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-brand-200 text-xs font-bold text-brand-700 shadow-sm">
-            <Sparkles className="w-3 h-3" /> Step 2 of 3 · Pick a plan
+            <Sparkles className="w-3 h-3" /> Final step · Choose a plan
           </span>
           <h1 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-ink-900">
-            Pick the plan that fits {channelLabel}
+            You're connected — pick a plan
           </h1>
           <p className="mt-3 text-ink-600 max-w-xl mx-auto text-sm">
-            Start with a 3-day free trial — cancel anytime. Every plan is paid
-            after the trial.
+            Start with a free trial. Upgrade anytime from Billing — your
+            automations are already ready to configure.
           </p>
         </div>
 
-        {/* Plans */}
         {loading && !errored && (
           <div className="text-center py-16 text-ink-400 inline-flex items-center justify-center gap-2 w-full">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -142,17 +142,16 @@ export default function OnboardingPricingPage() {
         {errored && (
           <div className="max-w-md mx-auto bg-amber-50 border border-amber-200 rounded-xl p-5 text-center">
             <p className="text-sm font-semibold text-amber-800">
-              Couldn't load live pricing
+              Couldn't load pricing
             </p>
             <p className="text-xs text-amber-700 mt-1">
-              We'll start you on the free trial — you can pick a plan later from
-              Billing.
+              Continue with your trial — pick a plan anytime from Billing.
             </p>
             <button
-              onClick={goConnect}
+              onClick={goDashboard}
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-lg transition"
             >
-              Continue to setup <ArrowRight className="w-4 h-4" />
+              Go to dashboard <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -170,9 +169,15 @@ export default function OnboardingPricingPage() {
           </div>
         )}
 
-        {/* Skip */}
         {!errored && (
-          <div className="mt-10 flex flex-col items-center gap-2">
+          <div className="mt-10 flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={goDashboard}
+              className="text-sm font-semibold text-ink-600 hover:text-ink-900 underline-offset-2 hover:underline"
+            >
+              Continue with free trial — choose a plan later
+            </button>
             <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-400">
               <ShieldCheck className="w-3 h-3" />
               3-day free trial · cancel anytime

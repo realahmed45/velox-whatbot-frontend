@@ -48,21 +48,21 @@ const STEPS = [
       "Story reply — respond automatically to story interactions.",
     ],
     cta: { label: "Create a trigger", to: "/dashboard/automation" },
-    helpLink: "/dashboard/flow-builder",
+    helpLink: "/dashboard/automation",
   },
   {
     id: 3,
     icon: Bot,
-    title: "Train the AI bot",
+    title: "Set up your business profile",
     eyebrow: "10 min",
     description:
-      "Train the AI on your FAQs, offers, refund policy, and brand tone. It answers Instagram DMs 24/7. Free Groq + Llama 3.1 70B included.",
+      "Add your business details, FAQs, and brand tone so automated replies stay accurate and on-brand — 24/7 on Instagram.",
     bullets: [
-      "Paste your business info, FAQs, and pricing.",
+      "Add your website and business details.",
       "Pick a tone (friendly, professional, witty).",
-      "Set handoff keywords — bot pauses when a human is needed.",
+      "Set handoff keywords when a team member should take over.",
     ],
-    cta: { label: "Open AI Bot setup", to: "/dashboard/ai-bot" },
+    cta: { label: "Open business profile", to: "/dashboard/ai-bot" },
     helpLink: "/dashboard/ai-bot",
   },
   {
@@ -75,7 +75,7 @@ const STEPS = [
     bullets: [
       "DM your brand account from a personal IG account.",
       "Check the Inbox to see how messages are handled.",
-      "Edit the bot's training if needed — changes apply instantly.",
+      "Adjust your profile if needed — changes apply instantly.",
     ],
     cta: { label: "Open Inbox", to: "/dashboard/inbox" },
     helpLink: "/dashboard/inbox",

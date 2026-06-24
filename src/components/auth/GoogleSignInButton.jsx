@@ -30,7 +30,7 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
         data.user?.activeWorkspace?.instagram?.status === "connected";
 
       if (data.isNew || !ws || !igConnected) {
-        navigate("/dashboard/onboarding/instagram");
+        navigate("/onboarding/instagram");
       } else {
         navigate("/dashboard");
       }

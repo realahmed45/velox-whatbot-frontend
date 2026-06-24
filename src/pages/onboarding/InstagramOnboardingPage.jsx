@@ -10,8 +10,13 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Sparkles,
+  Globe,
+  ShoppingBag,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "@/services/api";
+import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -23,6 +28,26 @@ export default function InstagramOnboardingPage() {
 
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const [siteUrl, setSiteUrl] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  const saveBusinessProfile = async () => {
+    const url = siteUrl.trim();
+    if (!url || savingProfile) return;
+    setSavingProfile(true);
+    try {
+      await api.post(`/workspaces/${activeWorkspace}/ai-knowledge/import-url`, {
+        url,
+      });
+      setProfileSaved(true);
+      toast.success("Business profile saved");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Could not save your profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   // Re-fetch workspace if we just came back from Meta OAuth
   useEffect(() => {
@@ -89,14 +114,81 @@ export default function InstagramOnboardingPage() {
                   {workspace?.instagram?.username || "Instagram"} connected!
                 </h2>
                 <p className="text-sm text-ink-500 mt-1">
-                  You can now automate DM replies, comments, and broadcasts.
+                  Set up your business profile so automated replies sound like
+                  you.
                 </p>
               </div>
+
+              <div className="text-left bg-gradient-to-br from-rose-50 to-fuchsia-50 border border-rose-100 p-4 rounded-xl">
+                <p className="font-bold text-sm text-ink-900 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-rose-500" /> Business profile
+                </p>
+                <p className="text-xs text-ink-500 mt-1 mb-3">
+                  Enter your website — we&apos;ll use it to personalize your
+                  automated replies.
+                </p>
+                {profileSaved ? (
+                  <div className="text-xs text-emerald-700 font-semibold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" /> Profile saved — you can
+                    update this anytime in settings.
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Globe className="w-4 h-4 text-ink-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        className="input w-full !pl-8 text-sm"
+                        value={siteUrl}
+                        onChange={(e) => setSiteUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && saveBusinessProfile()}
+                        placeholder="yourbrand.com"
+                        disabled={savingProfile}
+                      />
+                    </div>
+                    <button
+                      onClick={saveBusinessProfile}
+                      disabled={savingProfile || !siteUrl.trim()}
+                      className="!py-2 !px-3 rounded-xl bg-ink-900 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {savingProfile ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Continue"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-left border border-emerald-100 bg-emerald-50/50 p-4 rounded-xl">
+                <p className="font-bold text-sm text-ink-900 flex items-center gap-1.5">
+                  <ShoppingBag className="w-4 h-4 text-emerald-600" /> Shopify
+                </p>
+                <p className="text-xs text-ink-500 mt-1 mb-3">
+                  Optional — connect if you sell through Shopify.
+                </p>
+                <ShopifyConnect
+                  compact
+                  connected={!!workspace?.integrations?.shopify?.storeUrl}
+                  storeUrl={workspace?.integrations?.shopify?.storeUrl}
+                  orderTracking={!!workspace?.integrations?.shopify?.scopes?.orders}
+                  showManageLink={false}
+                  onConnected={() => fetchWorkspace(activeWorkspace)}
+                />
+              </div>
+
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/onboarding/pricing")}
                 className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition"
               >
-                Go to dashboard
+                Continue
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/onboarding/pricing")}
+                className="text-xs text-ink-400 hover:text-ink-600"
+              >
+                Skip for now
               </button>
             </div>
           ) : (

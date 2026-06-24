@@ -292,7 +292,7 @@ function FlowBuilderInner() {
             <div className="h-12 bg-white border-b border-ink-100 flex items-center justify-between px-4 gap-3">
               <div className="flex items-center gap-2 min-w-0">
                 <button
-                  onClick={() => navigate("/dashboard/flow-builder")}
+                  onClick={() => navigate("/dashboard/automation")}
                   className="btn-ghost p-1.5 flex-shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />

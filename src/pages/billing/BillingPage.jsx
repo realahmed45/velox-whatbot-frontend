@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "@/services/api";
 import {
   CheckCircle2,
@@ -14,6 +16,7 @@ import PageHeader from "@/components/ui/PageHeader";
 export default function BillingPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     api
@@ -22,6 +25,20 @@ export default function BillingPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Show a toast when returning from the Xendit hosted checkout.
+  useEffect(() => {
+    const billing = searchParams.get("billing");
+    if (billing === "success") {
+      toast.success("Payment received — your subscription is being activated.");
+    } else if (billing === "failed") {
+      toast.error("Checkout was cancelled or failed. No card was charged.");
+    }
+    if (billing) {
+      searchParams.delete("billing");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return <div className="p-8 text-ink-400 text-sm">Loading…</div>;
@@ -120,7 +137,7 @@ export default function BillingPage() {
       </div>
 
       <p className="text-xs text-ink-400 text-center mt-6">
-        Payments via Easypaisa · JazzCash · Card · Manual bank transfer.
+        Secure card payments · auto-renews each cycle · cancel anytime.
       </p>
     </div>
   );

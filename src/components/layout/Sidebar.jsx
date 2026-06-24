@@ -24,7 +24,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Crown,
-  Workflow,
   Sparkles,
   MessageCircle,
   Hash,
@@ -52,70 +51,15 @@ const COLLAPSE_KEY = "botlify-sidebar-collapsed";
 
 // ─── Static items ──────────────────────────────────────────────────────────
 const TOP = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Home", end: true },
 ];
 
-const BOT_AUTOMATION = [
+// ManyChat-style: Automations + Flows + AI in one section (no 11 sub-tabs in nav)
+const AUTOMATION = [
+  { to: "/dashboard/automation", icon: MessageSquare, label: "Automations" },
   { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
-  { to: "/dashboard/ai-bot?test=1", icon: Sparkles, label: "Test the bot" },
-  { to: "/dashboard/flow-builder", icon: Workflow, label: "Bot Flows" },
+  { to: "/dashboard/ai-bot?test=1", icon: Sparkles, label: "Preview" },
 ];
-
-// Custom-automation tabs — vary by channel
-const IG_AUTOMATIONS = [
-  {
-    to: "/dashboard/automation?tab=welcome",
-    icon: MessageCircle,
-    label: "Welcome DM",
-  },
-  {
-    to: "/dashboard/automation?tab=comment_kw",
-    icon: Hash,
-    label: "Comment → DM",
-  },
-  {
-    to: "/dashboard/automation?tab=dm_kw",
-    icon: MessageCircle,
-    label: "DM keywords",
-  },
-  {
-    to: "/dashboard/automation?tab=story_reply",
-    icon: Heart,
-    label: "Story replies",
-  },
-  {
-    to: "/dashboard/automation?tab=story_mention",
-    icon: Heart,
-    label: "Story mentions",
-  },
-  {
-    to: "/dashboard/automation?tab=share",
-    icon: Share2,
-    label: "Share to story",
-  },
-  {
-    to: "/dashboard/automation?tab=ref_url",
-    icon: LinkIcon,
-    label: "Tracked links",
-  },
-  { to: "/dashboard/automation?tab=live", icon: Radio, label: "Live comments" },
-  {
-    to: "/dashboard/automation?tab=starters",
-    icon: Target,
-    label: "Chat starters",
-  },
-  {
-    to: "/dashboard/automation?tab=fallback",
-    icon: CircleDot,
-    label: "Fallback reply",
-  },
-  {
-    to: "/dashboard/automation?tab=hours",
-    icon: Clock,
-    label: "Business hours",
-  },
-];
-
 
 const TOOLS = [
   { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
@@ -130,20 +74,19 @@ const TOOLS = [
   { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
 ];
 
-// Growth / marketing tools
-const GROW = [
-  {
-    to: "/dashboard/scheduled-posts",
-    icon: CalendarClock,
-    label: "Scheduled Posts",
-  },
+// Secondary tools — collapsed under "More" in ManyChat-style nav
+const MORE = [
+  { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
   { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
   { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
-  { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
-  { to: "/dashboard/hashtags", icon: Hash, label: "Hashtag Research" },
+  { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
+  { to: "/dashboard/scheduled-posts", icon: CalendarClock, label: "Scheduled Posts" },
   { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
   { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
-  { to: "/dashboard/integrations", icon: Plug, label: "Integrations" },
+];
+
+const INTEGRATIONS = [
+  { to: "/dashboard/apps", icon: Plug, label: "Integrations" },
 ];
 
 const BOTTOM_NAV = [
@@ -209,12 +152,7 @@ export default function Sidebar({ onNavigate }) {
 
   const igConnected = workspace?.instagram?.status === "connected";
 
-  const automations = useMemo(
-    () => (igConnected ? IG_AUTOMATIONS : []),
-    [igConnected],
-  );
-
-  // Live "new orders" badge — fetched once + bumped via socket
+  // Live "new orders" badge
   const [newOrderCount, setNewOrderCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
@@ -340,14 +278,10 @@ export default function Sidebar({ onNavigate }) {
           ))}
         </div>
 
-        {/* Bot Automation */}
-        <NavSection
-          label="Bot Automation"
-          collapsed={collapsed}
-          theme={theme}
-        />
+        {/* Automations — ManyChat-style single entry, not 11 sub-links */}
+        <NavSection label="Automations" collapsed={collapsed} theme={theme} />
         <div className="space-y-0.5">
-          {BOT_AUTOMATION.map((item) => (
+          {AUTOMATION.map((item) => (
             <SidebarLink
               key={item.to}
               {...item}
@@ -358,31 +292,7 @@ export default function Sidebar({ onNavigate }) {
           ))}
         </div>
 
-        {/* Custom Automations — union of connected channels' items */}
-        {automations.length > 0 && (
-          <>
-            <NavSection
-              label="Custom Automations"
-              collapsed={collapsed}
-              theme={theme}
-              accent
-            />
-            <div className="space-y-0.5">
-              {automations.map((item) => (
-                <SidebarLink
-                  key={item.to}
-                  {...item}
-                  theme={theme}
-                  collapsed={collapsed}
-                  onNavigate={onNavigate}
-                  dense
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Tools */}
+        {/* Inbox & tools */}
         <NavSection
           label="Tools & Insights"
           collapsed={collapsed}
@@ -405,16 +315,30 @@ export default function Sidebar({ onNavigate }) {
           ))}
         </div>
 
-        {/* Grow */}
-        <NavSection label="Grow" collapsed={collapsed} theme={theme} />
+        {/* Integrations + More */}
+        <NavSection label="Connect" collapsed={collapsed} theme={theme} />
         <div className="space-y-0.5">
-          {GROW.map((item) => (
+          {INTEGRATIONS.map((item) => (
             <SidebarLink
               key={item.to}
               {...item}
               theme={theme}
               collapsed={collapsed}
               onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+
+        <NavSection label="More tools" collapsed={collapsed} theme={theme} />
+        <div className="space-y-0.5">
+          {MORE.map((item) => (
+            <SidebarLink
+              key={item.to}
+              {...item}
+              theme={theme}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+              dense
             />
           ))}
         </div>

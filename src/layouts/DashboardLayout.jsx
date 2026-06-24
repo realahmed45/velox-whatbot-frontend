@@ -17,8 +17,8 @@ const ROUTE_TITLES = {
   "/dashboard": "Dashboard",
   "/dashboard/inbox": "Inbox",
   "/dashboard/contacts": "Contacts",
-  "/dashboard/automation": "Automation",
-  "/dashboard/flow-builder": "Flow Builder",
+  "/dashboard/automation": "Automations",
+  "/dashboard/flow-builder": "Flow editor",
   "/dashboard/broadcasts": "Broadcasts",
   "/dashboard/analytics": "Analytics",
   "/dashboard/ai-bot": "AI Bot",
@@ -60,7 +60,7 @@ export default function DashboardLayout() {
     const title =
       ROUTE_TITLES[location.pathname] ||
       (location.pathname.startsWith("/dashboard/flow-builder")
-        ? "Flow Builder"
+        ? "Flow editor"
         : "Dashboard");
     document.title = `${title} · Botlify`;
   }, [location.pathname]);
@@ -96,7 +96,7 @@ export default function DashboardLayout() {
           i: "/dashboard/inbox",
           d: "/dashboard",
           a: "/dashboard/analytics",
-          f: "/dashboard/flow-builder",
+          f: "/dashboard/automation",
           c: "/dashboard/contacts",
           s: "/dashboard/settings",
         };

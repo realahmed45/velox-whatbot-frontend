@@ -34,9 +34,9 @@ const ENTRIES = [
     group: "Go to",
   },
   {
-    label: "Flow Builder",
+    label: "Automations",
     icon: Workflow,
-    to: "/dashboard/flow-builder",
+    to: "/dashboard/automation",
     group: "Go to",
   },
   {
@@ -74,7 +74,7 @@ const ENTRIES = [
   {
     label: "Create flow",
     icon: Plus,
-    to: "/dashboard/flow-builder?new=1",
+    to: "/dashboard/automation",
     group: "Quick actions",
   },
   {

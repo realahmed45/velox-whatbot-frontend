@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import ActivationCard from "@/components/ActivationCard";
+import SetupHub from "@/components/SetupHub";
 
 // Custom automation tiles — link directly into AutomationSetupPage
 // with the ?tab= query so the tab opens immediately.
@@ -132,6 +133,13 @@ export default function OverviewPage() {
       toast.success("Instagram connected successfully!");
       fetchWorkspace(activeWorkspace);
       setSearchParams({});
+    } else if (searchParams.get("shopify") === "connected") {
+      toast.success("Shopify connected! Products and order tracking are ready.");
+      fetchWorkspace(activeWorkspace);
+      setSearchParams({});
+    } else if (searchParams.get("shopify") === "error") {
+      toast.error("Shopify connection failed. Please try again.");
+      setSearchParams({});
     } else if (error) {
       const msgs = {
         cancelled: "Instagram connection was cancelled.",
@@ -172,7 +180,10 @@ export default function OverviewPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
-      {/* Activation checklist (auto-hides when complete or dismissed) */}
+      {/* ManyChat-style setup hub — universal for every business */}
+      <SetupHub onConnectInstagram={startIgOAuth} />
+
+      {/* Quick wins checklist (legacy — hides when complete) */}
       <ActivationCard />
 
       {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
@@ -242,52 +253,39 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* ── Bot Automation ────────────────────────────────── */}
-      <Section
-        title="Bot Automation"
-        subtitle="Smart AI replies — train it once, let it handle conversations 24/7."
-        accent="ink"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <ActionTile
-            icon={Bot}
-            title="AI Bot"
-            desc="Configure your AI assistant — model, persona, tone, knowledge base."
-            to="/dashboard/ai-bot"
-            primary
-          />
-          <ActionTile
-            icon={Sparkles}
-            title="Test the bot"
-            desc="Send a message and see how the AI handles it before going live."
-            to="/dashboard/ai-bot?test=1"
-          />
-          <ActionTile
-            icon={Workflow}
-            title="Bot flows"
-            desc="Build branching conversation flows with the visual builder."
-            to="/dashboard/flow-builder"
-          />
-        </div>
-      </Section>
-
-      {/* ── Custom Automations (per connected channel) ─────── */}
+      {/* ── Automations (single entry — details live inside Automations page) ── */}
       {igConnected && (
         <Section
-          title="Instagram Automations"
-          subtitle="Comment-to-DM, story replies, keyword triggers, and more."
+          title="Automations"
+          subtitle="Welcome messages, comment-to-DM, keywords, and story replies."
           accent="pink"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {IG_AUTOMATIONS.map((a) => (
-              <ActionTile
-                key={`ig-${a.id}`}
-                icon={a.icon}
-                title={a.label}
-                desc={a.desc}
-                to={`/dashboard/automation?tab=${a.id}&channel=instagram`}
-              />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <ActionTile
+              icon={Zap}
+              title="All automations"
+              desc="Welcome DM, keywords, comments, stories, hours & more."
+              to="/dashboard/automation"
+              primary
+            />
+            <ActionTile
+              icon={Hash}
+              title="Comment → DM"
+              desc="Turn post comments into DMs automatically."
+              to="/dashboard/automation?tab=comment_kw"
+            />
+            <ActionTile
+              icon={MessageCircle}
+              title="DM keywords"
+              desc="Reply when someone sends a trigger word."
+              to="/dashboard/automation?tab=dm_kw"
+            />
+            <ActionTile
+              icon={Workflow}
+              title="Flows & templates"
+              desc="Custom flows and ready-made template packs."
+              to="/dashboard/automation"
+            />
           </div>
         </Section>
       )}
@@ -332,9 +330,9 @@ export default function OverviewPage() {
           />
           <ActionTile
             icon={Workflow}
-            title="Flow Builder"
-            desc="Visual flows"
-            to="/dashboard/flow-builder"
+            title="Automations"
+            desc="Gallery, flows & templates"
+            to="/dashboard/automation"
           />
           <ActionTile
             icon={SettingsIcon}

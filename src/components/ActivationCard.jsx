@@ -37,7 +37,7 @@ export default function ActivationCard() {
         key: "keywordsSet",
         label: "Add 3 keyword auto-replies",
         desc: "When a customer types a keyword, auto-reply.",
-        action: () => navigate("/dashboard/automation?tab=keywords"),
+        action: () => navigate("/dashboard/automation?tab=dm_kw"),
         done: !!a.keywordsSet,
       },
       {
@@ -49,9 +49,9 @@ export default function ActivationCard() {
       },
       {
         key: "testSent",
-        label: "Send a test message",
-        desc: "Make sure your bot is replying.",
-        action: () => navigate("/dashboard/automation?tab=test"),
+        label: "Preview a reply",
+        desc: "Confirm your automation is working as expected.",
+        action: () => navigate("/dashboard/ai-bot?test=1"),
         done: !!a.testSent,
       },
     ],
@@ -91,7 +91,7 @@ export default function ActivationCard() {
                 Get started — {pct}% complete
               </h2>
               <p className="text-xs text-ink-500">
-                Finish these 4 steps to make your bot live in 5 minutes.
+                Finish these steps to launch your Instagram automation.
               </p>
             </div>
           </div>

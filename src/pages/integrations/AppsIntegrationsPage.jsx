@@ -10,9 +10,12 @@ import {
   Link2,
   Unlink,
   ExternalLink,
+  Workflow,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
 import PageHeader from "@/components/ui/PageHeader";
+import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { AppWindow } from "lucide-react";
 
 export default function AppsIntegrationsPage() {
@@ -23,10 +26,11 @@ export default function AppsIntegrationsPage() {
         <PageHeader
           icon={AppWindow}
           title="Apps"
-          subtitle="Plug Botlify into your e-commerce stack and email marketing tools"
+          subtitle="Plug Botlify into Shopify, Make.com, and your marketing stack"
         />
 
         <ShopifyCard />
+        <MakeCard />
         <MailchimpCard />
       </div>
     </div>
@@ -38,10 +42,10 @@ function ShopifyCard() {
     connected: false,
     storeUrl: "",
     productCount: 0,
+    scopes: { products: false, orders: false },
+    orderTrackingEnabled: false,
   });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ storeUrl: "", accessToken: "" });
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -57,35 +61,6 @@ function ShopifyCard() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const connect = async () => {
-    if (!form.storeUrl || !form.accessToken) {
-      return toast.error("Store URL and access token required");
-    }
-    setSaving(true);
-    try {
-      const { data } = await api.post("/integrations/shopify", form);
-      toast.success(`Connected ${data.shop} (${data.products} products)`);
-      setForm({ storeUrl: "", accessToken: "" });
-      load();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const disconnect = async () => {
-    if (!window.confirm("Disconnect Shopify?")) return;
-    try {
-      await api.delete("/integrations/shopify");
-      toast.success("Disconnected");
-      setProducts([]);
-      load();
-    } catch {
-      toast.error("Failed");
     }
   };
 
@@ -119,32 +94,26 @@ function ShopifyCard() {
             )}
           </div>
           <p className="text-sm text-ink-500 mt-1">
-            Sync your product catalog so your Instagram bot can answer product
-            questions, share links, and trigger order flows.
+            One login — your bot gets live products, prices, and order tracking in
+            DMs. Works for any store, any industry.
           </p>
 
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin text-ink-400 mt-3" />
-          ) : state.connected ? (
+          ) : (
             <div className="mt-4 space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Link2 className="w-4 h-4 text-ink-400" />
-                <code className="font-mono text-ink-700">{state.storeUrl}</code>
-                <span className="chip bg-ink-100 text-ink-600 text-xs">
-                  {state.productCount} products cached
-                </span>
-              </div>
-              <div className="flex gap-2">
+              <ShopifyConnect
+                connected={state.connected}
+                storeUrl={state.storeUrl}
+                orderTracking={state.orderTrackingEnabled}
+                onConnected={load}
+                showManageLink={false}
+              />
+              {state.connected && (
                 <button onClick={loadProducts} className="btn btn-outline">
-                  Refresh Products
+                  Preview products
                 </button>
-                <button
-                  onClick={disconnect}
-                  className="btn btn-outline text-red-600"
-                >
-                  <Unlink className="w-4 h-4" /> Disconnect
-                </button>
-              </div>
+              )}
               {products.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
                   {products.slice(0, 12).map((p) => (
@@ -169,47 +138,29 @@ function ShopifyCard() {
                 </div>
               )}
             </div>
-          ) : (
-            <div className="mt-4 space-y-2">
-              <input
-                className="input text-sm"
-                placeholder="your-store.myshopify.com"
-                value={form.storeUrl}
-                onChange={(e) => setForm({ ...form, storeUrl: e.target.value })}
-              />
-              <input
-                className="input text-sm font-mono"
-                type="password"
-                placeholder="shpat_…  (Shopify Admin API access token)"
-                value={form.accessToken}
-                onChange={(e) =>
-                  setForm({ ...form, accessToken: e.target.value })
-                }
-              />
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={connect}
-                  disabled={saving}
-                  className="btn btn-primary"
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Link2 className="w-4 h-4" />
-                  )}
-                  Connect Shopify
-                </button>
-                <a
-                  href="https://help.shopify.com/en/manual/apps/app-types/custom-apps"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-brand-600 hover:underline flex items-center gap-1"
-                >
-                  How to get token <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MakeCard() {
+  return (
+    <div className="card">
+      <div className="flex items-start gap-4">
+        <div className="w-14 h-14 rounded-md bg-violet-600 flex items-center justify-center text-white">
+          <Workflow className="w-7 h-7" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-lg text-ink-900">Make.com</h3>
+          <p className="text-sm text-ink-500 mt-1">
+            Send Botlify events to Make (new DMs, leads, flow completions) and
+            trigger automations anywhere — no code.
+          </p>
+          <Link to="/dashboard/integrations" className="btn btn-outline mt-4 inline-flex items-center gap-2">
+            <Link2 className="w-4 h-4" /> Set up webhooks
+          </Link>
         </div>
       </div>
     </div>

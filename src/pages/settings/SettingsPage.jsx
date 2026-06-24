@@ -415,9 +415,9 @@ function AiKnowledgeSettings({ workspace, onSave }) {
               AI Smart Reply Knowledge
             </h3>
             <p className="text-xs text-ink-600 mt-0.5">
-              Paste your FAQs, pricing, return policy, store hours, anything
-              your bot should know. When a customer asks something not handled
-              by your flows or keywords, the AI replies based on this content.
+              Paste your FAQs, pricing, return policy, store hours, and anything
+              customers often ask about. When a message isn&apos;t handled by
+              your automations, replies are based on this content.
             </p>
           </div>
         </div>

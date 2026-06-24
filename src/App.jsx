@@ -179,7 +179,10 @@ export default function App() {
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="pricing" element={<PricingPage embedded />} />
                 <Route path="guide" element={<GuidePage />} />
-                <Route path="flow-builder" element={<FlowBuilderPage />} />
+                <Route
+                  path="flow-builder"
+                  element={<Navigate to="/dashboard/automation" replace />}
+                />
                 <Route
                   path="flow-builder/:flowId"
                   element={<FlowBuilderPage />}

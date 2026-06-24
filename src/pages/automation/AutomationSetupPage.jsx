@@ -28,7 +28,9 @@ import {
 import PlanGate from "@/components/PlanGate";
 import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
 import PageHeader from "@/components/ui/PageHeader";
+import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
+import { ArrowLeft } from "lucide-react";
 
 // Each tab declares which channel(s) it applies to.
 // Story replies, comments, share-to-story, live, tracked links, chat starters
@@ -37,14 +39,17 @@ const ALL_TABS = [
   {
     id: "welcome",
     label: "Welcome DM",
-
+    desc: "Send an instant reply when someone messages you for the first time.",
+    category: "popular",
     icon: MessageCircle,
     plan: "starter",
     channels: ["instagram"],
   },
   {
     id: "comment_kw",
-    label: "Comment keywords",
+    label: "Comment to DM",
+    desc: "When someone comments a keyword on your post, send them a DM automatically.",
+    category: "popular",
     icon: Hash,
     plan: "starter",
     channels: ["instagram"],
@@ -52,6 +57,8 @@ const ALL_TABS = [
   {
     id: "dm_kw",
     label: "DM keywords",
+    desc: "Reply automatically when a customer sends a specific word or phrase.",
+    category: "popular",
     icon: MessageCircle,
     plan: "starter",
     channels: ["instagram"],
@@ -59,6 +66,8 @@ const ALL_TABS = [
   {
     id: "story_reply",
     label: "Story replies",
+    desc: "Respond when someone replies to your Instagram story.",
+    category: "engagement",
     icon: Heart,
     plan: "growth",
     channels: ["instagram"],
@@ -66,6 +75,8 @@ const ALL_TABS = [
   {
     id: "story_mention",
     label: "Story mentions",
+    desc: "Reply when your brand is mentioned in a customer's story.",
+    category: "engagement",
     icon: Heart,
     plan: "growth",
     channels: ["instagram"],
@@ -73,6 +84,8 @@ const ALL_TABS = [
   {
     id: "share",
     label: "Share to story",
+    desc: "Trigger a DM when someone shares your post to their story.",
+    category: "engagement",
     icon: Share2,
     plan: "growth",
     channels: ["instagram"],
@@ -80,6 +93,8 @@ const ALL_TABS = [
   {
     id: "ref_url",
     label: "Tracked links",
+    desc: "Send a DM when someone opens a tracked link you shared.",
+    category: "settings",
     icon: LinkIcon,
     plan: "growth",
     channels: ["instagram"],
@@ -87,6 +102,8 @@ const ALL_TABS = [
   {
     id: "live",
     label: "Live comments",
+    desc: "Reply to comments during your Instagram Live broadcast.",
+    category: "engagement",
     icon: Radio,
     plan: "growth",
     channels: ["instagram"],
@@ -94,13 +111,17 @@ const ALL_TABS = [
   {
     id: "starters",
     label: "Chat starters",
+    desc: "Ice-breaker prompts shown in your DM thread.",
+    category: "settings",
     icon: Target,
     plan: "growth",
     channels: ["instagram"],
   },
   {
     id: "fallback",
-    label: "Fallback reply",
+    label: "Default reply",
+    desc: "A professional catch-all when no other automation matches.",
+    category: "settings",
     icon: CircleDot,
     plan: "starter",
     channels: ["instagram"],
@@ -108,6 +129,8 @@ const ALL_TABS = [
   {
     id: "hours",
     label: "Business hours",
+    desc: "Different replies during and outside your working hours.",
+    category: "settings",
     icon: Clock,
     plan: "growth",
     channels: ["instagram"],
@@ -124,10 +147,26 @@ export default function AutomationSetupPage() {
 
   const TABS = ALL_TABS.filter((t) => t.channels.includes("instagram"));
 
+  const tabParam = searchParams.get("tab");
+  const isGallery = !tabParam || !TABS.some((x) => x.id === tabParam);
+
   const [tab, setTab] = useState(() => {
     const t = searchParams.get("tab");
     return TABS.some((x) => x.id === t) ? t : TABS[0]?.id || "welcome";
   });
+
+  const openTab = (id) => {
+    setTab(id);
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", id);
+    setSearchParams(next, { replace: true });
+  };
+
+  const backToGallery = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("tab");
+    setSearchParams(next, { replace: true });
+  };
 
   // Ensure current tab is valid (fallback to first if not found)
   useEffect(() => {
@@ -135,8 +174,9 @@ export default function AutomationSetupPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Sync tab → URL so deep links and back/forward work
+  // Sync tab → URL when editing (gallery has no tab param)
   useEffect(() => {
+    if (isGallery) return;
     const current = searchParams.get("tab");
     if (current !== tab) {
       const next = new URLSearchParams(searchParams);
@@ -144,9 +184,9 @@ export default function AutomationSetupPage() {
       setSearchParams(next, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [tab, isGallery]);
 
-  // Sync URL → tab when user navigates externally (e.g. dashboard tile click)
+  // Sync URL → tab when user navigates externally
   useEffect(() => {
     const t = searchParams.get("tab");
     if (t && TABS.some((x) => x.id === t) && t !== tab) setTab(t);
@@ -195,75 +235,66 @@ export default function AutomationSetupPage() {
 
   const activeTab = TABS.find((t) => t.id === tab);
 
-  const headerSubtitle =
-    "Set up your Instagram automations — comment-to-DM, story replies, DM keywords, tracked links and more.";
+  const headerSubtitle = isGallery
+    ? "Automate Instagram conversations — quick replies, custom flows, and templates in one place."
+    : activeTab?.desc || "Configure this automation.";
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+      {!isGallery && (
+        <button
+          type="button"
+          onClick={backToGallery}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500 hover:text-ink-800 mb-4"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> All automations
+        </button>
+      )}
+
       <PageHeader
         icon={Zap}
-        title="Instagram Automations"
+        title={isGallery ? "Automations" : activeTab?.label || "Automation"}
         subtitle={headerSubtitle}
       />
 
-      {/* What you can automate — channel showcase */}
-      <div className="mb-6">
-        <AutomationTypeCard
-          tone="ig"
-          title="On Instagram"
-          items={[
-              "Comment → DM",
-              "DM keyword auto-reply",
-              "Story replies",
-              "Story mentions",
-              "Share-to-story trigger",
-              "AI chatbot",
-              "Live comment reply",
-              "Welcome DM",
-              "Tracked link DMs",
-            ]}
-          />
-      </div>
+      {isGallery ? (
+        <AutomationsHubGallery tabs={TABS} onOpenTab={openTab} plan={plan} />
+      ) : (
+        <>
+          <div className="mb-5">
+            <InstagramConstraintsInfo compact />
+          </div>
 
-      <div className="mb-5">
-        <InstagramConstraintsInfo compact />
-      </div>
+          <DiagnosticsPanel workspaceId={activeWorkspace} />
 
-      <DiagnosticsPanel workspaceId={activeWorkspace} />
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => openTab(t.id)}
+                  className={clsx(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border whitespace-nowrap transition",
+                    tab === t.id
+                      ? "bg-violet-600 text-white border-violet-600"
+                      : "bg-white text-ink-600 border-ink-200 hover:border-violet-300",
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
-        {/* Tabs */}
-        <nav className="card p-2 h-fit lg:sticky lg:top-4">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={clsx(
-                  "w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition mb-0.5",
-                  tab === t.id
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-ink-600 hover:bg-ink-50",
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="flex-1 text-left">{t.label}</span>
-                {t.plan !== "starter" && plan === "starter" && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent-500" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Panel */}
-        <div>
-          <PlanGate
-            currentPlan={plan}
-            requiredPlan={activeTab.plan}
-            feature={activeTab.label}
-          >
+          <div>
+            <PlanGate
+              currentPlan={plan}
+              requiredPlan={activeTab.plan}
+              feature={activeTab.label}
+            >
             {tab === "welcome" && (
               <WelcomeTab
                 cfg={cfg}
@@ -307,9 +338,10 @@ export default function AutomationSetupPage() {
             {tab === "hours" && (
               <HoursTab cfg={cfg} save={save} setCfg={setCfg} />
             )}
-          </PlanGate>
-        </div>
-      </div>
+            </PlanGate>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -40,7 +40,7 @@ export default function RequireOnboarding({ children }) {
   if (!hasChannel && !isExempt) {
     return (
       <Navigate
-        to="/onboarding/choose-channel"
+        to="/onboarding/instagram"
         replace
         state={{ from: location.pathname }}
       />
