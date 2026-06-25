@@ -27,17 +27,19 @@ import {
   Play,
   FileText,
   Globe,
-  ShoppingCart,
   Upload,
   Check,
   RefreshCw,
   Pencil,
   HelpCircle,
+  Image as ImageIcon,
+  ArrowRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { ShopifyIcon } from "@/components/icons/BrandIcons";
 
 const DEFAULTS = {
   enabled: true,
@@ -84,11 +86,31 @@ const TONE_PRESETS = [
 ];
 
 const SOURCE_META = {
-  website: { icon: Globe, tint: "text-blue-600 bg-blue-50 border-blue-200" },
-  text: { icon: FileText, tint: "text-violet-600 bg-violet-50 border-violet-200" },
-  shopify: { icon: ShoppingCart, tint: "text-green-600 bg-green-50 border-green-200" },
-  products: { icon: ShoppingCart, tint: "text-green-600 bg-green-50 border-green-200" },
+  website: {
+    Icon: Globe,
+    tint: "text-blue-600 bg-blue-50 border-blue-200",
+  },
+  text: {
+    Icon: FileText,
+    tint: "text-violet-600 bg-violet-50 border-violet-200",
+  },
+  image: {
+    Icon: ImageIcon,
+    tint: "text-amber-600 bg-amber-50 border-amber-200",
+  },
+  shopify: {
+    Icon: ShopifyIcon,
+    tint: "bg-green-50 border-green-200",
+    brand: true,
+  },
+  products: {
+    Icon: ShopifyIcon,
+    tint: "bg-green-50 border-green-200",
+    brand: true,
+  },
 };
+
+const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp|heic)$/i;
 
 export default function IgAiBotPage() {
   const { activeWorkspace } = useAuthStore();
@@ -151,6 +173,7 @@ export default function IgAiBotPage() {
         { headers: { "Content-Type": "multipart/form-data" } },
       );
       setSources((s) => [...s, data.source]);
+      set({ enabled: true });
       toast.success("Document added — your bot just learned it 🎓");
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't read that file");
@@ -172,6 +195,7 @@ export default function IgAiBotPage() {
       setSources((s) => [...s, data.source]);
       setUrlInput("");
       setShowUrl(false);
+      set({ enabled: true });
       toast.success("Website imported — bot updated 🌐");
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't import that website");
@@ -192,6 +216,7 @@ export default function IgAiBotPage() {
         `/workspaces/${activeWorkspace}/ai-knowledge/sync-shopify`,
       );
       setSources((s) => [...s.filter((x) => x.type !== "shopify"), data.source]);
+      set({ enabled: true });
       toast.success(`Imported ${data.productCount} products from Shopify 🛍️`);
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't sync Shopify");
@@ -322,56 +347,46 @@ export default function IgAiBotPage() {
 
         {/* ── Knowledge ──────────────────────────────────────────── */}
         <IgSection title="Teach your bot about your business" icon={Sparkles}>
-          <p className="text-sm text-ink-600 mb-3">
+          <p className="text-sm text-ink-600 mb-4">
             The more it knows, the better it replies. Add any of these — mix and
-            match.
+            match. We read everything and turn it into your bot's knowledge.
           </p>
 
-          {/* Write text */}
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-500 mb-1.5">
-            <Pencil className="w-3.5 h-3.5" /> Write it
-          </label>
-          <textarea
-            value={bizText}
-            onChange={(e) => setBizText(e.target.value)}
-            rows={5}
-            maxLength={12000}
-            placeholder={
-              "What does your page sell or talk about? Products, drops, shipping policy, opening hours, links — the more context, the better the bot replies.\n\nExample:\n• Streetwear drop every Friday 8pm PKT\n• Sizes XS–XXL, ships across PK in 3 days\n• Returns within 7 days, unworn only"
-            }
-            className="w-full rounded-xl border border-ink-200 bg-white/80 px-3.5 py-3 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none resize-y"
+          {/* Add knowledge — professional source cards */}
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.bmp,.heic,application/pdf,image/*,text/plain"
+            className="hidden"
+            onChange={(e) => uploadDoc(e.target.files?.[0])}
           />
-          <p className="text-[11px] text-ink-400 mt-1">
-            {bizText.length.toLocaleString()} characters
-          </p>
-
-          {/* Import buttons */}
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".pdf,.txt,.md,application/pdf,text/plain"
-              className="hidden"
-              onChange={(e) => uploadDoc(e.target.files?.[0])}
-            />
-            <ImportButton
-              icon={Upload}
-              label="Upload PDF / file"
-              hint="Menu, price list, brochure"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <SourceCard
+              title="Upload a file"
+              hint="PDF, Word, menu, price list or image"
+              tint="from-violet-500 to-indigo-500"
+              Icon={Upload}
               loading={busy === "doc"}
               onClick={() => fileRef.current?.click()}
             />
-            <ImportButton
-              icon={Globe}
-              label="Add website"
-              hint="We read it for you"
+            <SourceCard
+              title="Add your website"
+              hint="We read every page for you"
+              tint="from-sky-500 to-blue-600"
+              Icon={Globe}
               loading={busy === "url"}
+              active={showUrl}
               onClick={() => setShowUrl((v) => !v)}
             />
-            <ImportButton
-              icon={ShoppingCart}
-              label={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
-              hint={shopifyConnected ? "Import live catalog" : "For product stores"}
+            <SourceCard
+              title={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
+              hint={
+                shopifyConnected
+                  ? "Import your live catalog"
+                  : "For product stores"
+              }
+              tint="from-green-500 to-emerald-600"
+              brandIcon={<ShopifyIcon className="w-6 h-6" />}
               loading={busy === "shopify"}
               onClick={syncShopify}
             />
@@ -380,62 +395,102 @@ export default function IgAiBotPage() {
           {/* Website URL input */}
           {showUrl && (
             <div className="mt-3 flex items-center gap-2">
-              <input
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && importUrl()}
-                placeholder="yourbusiness.com"
-                className="flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
-                autoFocus
-              />
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+                <input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && importUrl()}
+                  placeholder="yourbusiness.com"
+                  className="w-full rounded-xl border border-ink-200 bg-white pl-9 pr-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
+                  autoFocus
+                />
+              </div>
               <button
                 onClick={importUrl}
                 disabled={busy === "url" || !urlInput.trim()}
-                className="rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-2 disabled:opacity-50 transition"
+                className="rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 disabled:opacity-50 transition flex items-center gap-1.5"
               >
                 {busy === "url" ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Reading…
+                  </>
                 ) : (
-                  "Import"
+                  <>
+                    Import <ArrowRight className="w-4 h-4" />
+                  </>
                 )}
               </button>
             </div>
           )}
 
+          {/* Write text */}
+          <div className="mt-5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-500 mb-1.5">
+              <Pencil className="w-3.5 h-3.5" /> Or write it yourself
+            </label>
+            <textarea
+              value={bizText}
+              onChange={(e) => setBizText(e.target.value)}
+              rows={5}
+              maxLength={12000}
+              placeholder={
+                "What does your page sell or talk about? Products, drops, shipping policy, opening hours, links — the more context, the better the bot replies.\n\nExample:\n• Streetwear drop every Friday 8pm PKT\n• Sizes XS–XXL, ships across PK in 3 days\n• Returns within 7 days, unworn only"
+              }
+              className="w-full rounded-xl border border-ink-200 bg-white/80 px-3.5 py-3 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none resize-y"
+            />
+            <p className="text-[11px] text-ink-400 mt-1">
+              {bizText.length.toLocaleString()} characters
+            </p>
+          </div>
+
           {/* Sources list */}
           {sources.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-semibold text-ink-500">
+            <div className="mt-5 space-y-2">
+              <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide">
                 Your bot knows ({sources.length})
               </p>
               {sources.map((s) => {
-                const meta = SOURCE_META[s.type] || SOURCE_META.text;
-                const Icon = meta.icon;
+                const isImg =
+                  s.type === "text" && IMAGE_RE.test(s.label || "");
+                const meta =
+                  (isImg ? SOURCE_META.image : SOURCE_META[s.type]) ||
+                  SOURCE_META.text;
+                const Icon = meta.Icon;
                 return (
                   <div
                     key={s._id}
-                    className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white/80 px-3 py-2.5"
+                    className="group flex items-center gap-3 rounded-xl border border-ink-100 bg-white/80 px-3 py-2.5 hover:border-ink-200 transition"
                   >
                     <span
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center border ${meta.tint}`}
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center border ${meta.tint}`}
                     >
-                      <Icon className="w-4 h-4" />
+                      {meta.brand ? (
+                        <Icon className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-[18px] h-[18px]" />
+                      )}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-ink-800 truncate">
                         {s.label || s.url || "Knowledge source"}
                       </p>
-                      <p className="text-[11px] text-ink-400">
+                      <p className="text-[11px] text-ink-400 flex items-center gap-1.5">
                         {s.status === "ready" ? (
-                          <span className="inline-flex items-center gap-1 text-green-600">
+                          <span className="inline-flex items-center gap-1 text-green-600 font-medium">
                             <Check className="w-3 h-3" /> Ready
                           </span>
                         ) : s.status === "processing" ? (
-                          "Processing…"
+                          <span className="inline-flex items-center gap-1 text-amber-600">
+                            <Loader2 className="w-3 h-3 animate-spin" />{" "}
+                            Processing…
+                          </span>
                         ) : (
-                          <span className="text-red-500">Error</span>
+                          <span className="text-red-500">Couldn't read</span>
                         )}
-                        {s.charCount ? ` · ${s.charCount.toLocaleString()} chars` : ""}
+                        {s.charCount
+                          ? ` · ${s.charCount.toLocaleString()} chars learned`
+                          : ""}
                       </p>
                     </div>
                     {(s.type === "website" || s.type === "shopify") && (
@@ -577,26 +632,37 @@ export default function IgAiBotPage() {
   );
 }
 
-function ImportButton({ icon: Icon, label, hint, loading, onClick }) {
+function SourceCard({ title, hint, Icon, brandIcon, tint, loading, active, onClick }) {
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className="group rounded-xl border border-ink-200 bg-white/70 hover:border-brand-300 hover:bg-brand-50/40 px-3 py-3 text-left transition disabled:opacity-60"
+      className={`group relative overflow-hidden rounded-2xl border bg-white/80 p-4 text-left transition disabled:opacity-70 ${
+        active
+          ? "border-brand-400 ring-2 ring-brand-100"
+          : "border-ink-200 hover:border-brand-300 hover:shadow-glass"
+      }`}
     >
-      <div className="flex items-center gap-2">
-        <span className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-600 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition">
-          {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Icon className="w-4 h-4" />
-          )}
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-ink-800 truncate">{label}</p>
-          <p className="text-[11px] text-ink-400 truncate">{hint}</p>
-        </div>
+      <div
+        className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 shadow-sm ${
+          brandIcon
+            ? "bg-white border border-ink-100"
+            : `bg-gradient-to-br ${tint} text-white`
+        }`}
+      >
+        {loading ? (
+          <Loader2
+            className={`w-5 h-5 animate-spin ${brandIcon ? "text-ink-500" : "text-white"}`}
+          />
+        ) : brandIcon ? (
+          brandIcon
+        ) : (
+          <Icon className="w-5 h-5" />
+        )}
       </div>
+      <p className="text-sm font-bold text-ink-900">{title}</p>
+      <p className="text-[12px] text-ink-500 mt-0.5 leading-snug">{hint}</p>
+      <ArrowRight className="absolute top-4 right-4 w-4 h-4 text-ink-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition" />
     </button>
   );
 }
