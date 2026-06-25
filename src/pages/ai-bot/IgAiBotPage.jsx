@@ -452,7 +452,8 @@ export default function IgAiBotPage() {
               </p>
               {sources.map((s) => {
                 const isImg =
-                  s.type === "text" && IMAGE_RE.test(s.label || "");
+                  s.type === "image" ||
+                  (s.type === "text" && IMAGE_RE.test(s.label || ""));
                 const meta =
                   (isImg ? SOURCE_META.image : SOURCE_META[s.type]) ||
                   SOURCE_META.text;
@@ -462,15 +463,23 @@ export default function IgAiBotPage() {
                     key={s._id}
                     className="group flex items-center gap-3 rounded-xl border border-ink-100 bg-white/80 px-3 py-2.5 hover:border-ink-200 transition"
                   >
-                    <span
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center border ${meta.tint}`}
-                    >
-                      {meta.brand ? (
-                        <Icon className="w-5 h-5" />
-                      ) : (
-                        <Icon className="w-[18px] h-[18px]" />
-                      )}
-                    </span>
+                    {s.imageUrl ? (
+                      <img
+                        src={s.imageUrl}
+                        alt={s.label || "image"}
+                        className="w-9 h-9 rounded-lg object-cover border border-ink-100 flex-shrink-0"
+                      />
+                    ) : (
+                      <span
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center border ${meta.tint}`}
+                      >
+                        {meta.brand ? (
+                          <Icon className="w-5 h-5" />
+                        ) : (
+                          <Icon className="w-[18px] h-[18px]" />
+                        )}
+                      </span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-ink-800 truncate">
                         {s.label || s.url || "Knowledge source"}
@@ -706,7 +715,12 @@ function BotTester({ open, onClose, igHandle }) {
       if (data.replies?.length) {
         setMsgs((m) => [
           ...m,
-          ...data.replies.map((r) => ({ from: "bot", text: r })),
+          ...data.replies.map((r) => {
+            const img = /^\[image\]\s+(\S+)/.exec(r);
+            return img
+              ? { from: "bot", image: img[1] }
+              : { from: "bot", text: r };
+          }),
         ]);
       } else {
         setMsgs((m) => [
@@ -739,13 +753,21 @@ function BotTester({ open, onClose, igHandle }) {
         onClick={onClose}
       />
       <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-right">
-        <div className="flex items-center justify-between px-4 h-14 border-b border-ink-100 bg-brand-500 text-white flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Botlify" className="w-8 h-8 object-contain" />
+        <div className="flex items-center justify-between px-4 h-16 border-b border-ink-100 bg-gradient-to-r from-brand-500 to-brand-600 text-white flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <img
+                src="/logo.png"
+                alt="Botlify"
+                className="w-9 h-9 rounded-full object-contain bg-white p-1 ring-2 ring-white/30"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-brand-500" />
+            </div>
             <div className="leading-tight">
-              <p className="font-bold text-sm">Bot Tester</p>
-              <p className="text-[10px] text-white/80">
-                Live preview · nothing sent to Instagram
+              <p className="font-bold text-sm">@{igHandle || "your.handle"}</p>
+              <p className="text-[10px] text-white/85 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-300" />
+                Bot preview · nothing sent to Instagram
               </p>
             </div>
           </div>
@@ -772,17 +794,39 @@ function BotTester({ open, onClose, igHandle }) {
             ) : (
               <div
                 key={i}
-                className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex items-end gap-2 ${m.from === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[80%] px-3.5 py-2 text-sm whitespace-pre-wrap rounded-2xl ${
-                    m.from === "user"
-                      ? "bg-brand-500 text-white rounded-br-md"
-                      : "bg-white border border-ink-100 text-ink-800 rounded-bl-md"
-                  }`}
-                >
-                  {m.text}
-                </div>
+                {m.from === "bot" && (
+                  <img
+                    src="/logo.png"
+                    alt=""
+                    className="w-6 h-6 rounded-full object-contain bg-white border border-ink-100 flex-shrink-0"
+                  />
+                )}
+                {m.image ? (
+                  <a
+                    href={m.image}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block max-w-[70%] overflow-hidden rounded-2xl rounded-bl-md border border-ink-100 bg-white"
+                  >
+                    <img
+                      src={m.image}
+                      alt="Bot sent"
+                      className="w-full h-auto object-cover"
+                    />
+                  </a>
+                ) : (
+                  <div
+                    className={`max-w-[78%] px-3.5 py-2 text-sm whitespace-pre-wrap leading-relaxed rounded-2xl ${
+                      m.from === "user"
+                        ? "bg-brand-500 text-white rounded-br-md"
+                        : "bg-white border border-ink-100 text-ink-800 rounded-bl-md"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                )}
               </div>
             ),
           )}
