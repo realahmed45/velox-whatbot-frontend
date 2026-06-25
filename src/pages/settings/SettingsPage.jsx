@@ -280,6 +280,9 @@ function GeneralSettings({ workspace, onSave }) {
 function InstagramSettings({ workspace, onSave }) {
   const ig = workspace?.instagram;
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diag, setDiag] = useState(null);
+  const [resubLoading, setResubLoading] = useState(false);
 
   const startOAuth = async () => {
     setOauthLoading(true);
@@ -302,6 +305,32 @@ function InstagramSettings({ workspace, onSave }) {
       onSave();
     } catch {
       toast.error("Failed to disconnect");
+    }
+  };
+
+  const runDiagnose = async () => {
+    setDiagLoading(true);
+    try {
+      const { data } = await api.get("/instagram/diagnose");
+      setDiag(data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Diagnose failed");
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
+  const resubscribe = async () => {
+    setResubLoading(true);
+    try {
+      const { data } = await api.post("/instagram/webhook/resubscribe");
+      toast.success(data.message || "Webhook re-subscribed!");
+      onSave();
+      runDiagnose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Resubscribe failed");
+    } finally {
+      setResubLoading(false);
     }
   };
 
@@ -364,10 +393,69 @@ function InstagramSettings({ workspace, onSave }) {
         </button>
       )}
 
-      {ig?.status === "connected" && ig?.connectedAt && (
-        <p className="text-xs text-ink-400">
-          Connected {new Date(ig.connectedAt).toLocaleDateString()}
-        </p>
+      {ig?.status === "connected" && (
+        <>
+          {ig?.connectedAt && (
+            <p className="text-xs text-ink-400">
+              Connected {new Date(ig.connectedAt).toLocaleDateString()}
+            </p>
+          )}
+
+          <div className="border border-ink-100 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-ink-800">Automation Health</p>
+                <p className="text-xs text-ink-500 mt-0.5">
+                  Check if Instagram is delivering DMs and events to Botlify
+                </p>
+              </div>
+              <button
+                onClick={runDiagnose}
+                disabled={diagLoading}
+                className="flex items-center gap-1.5 text-xs font-medium bg-ink-50 hover:bg-ink-100 border border-ink-200 px-3 py-1.5 rounded-lg transition disabled:opacity-60"
+              >
+                {diagLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                Run Diagnostics
+              </button>
+            </div>
+
+            {diag && (
+              <div className="space-y-2">
+                {diag.checks?.map((c, i) => (
+                  <div key={i} className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>
+                    <span className="mt-0.5 shrink-0">{c.ok ? "✅" : "⚠️"}</span>
+                    <div>
+                      <p className="font-medium">{c.label}</p>
+                      {!c.ok && c.hint && <p className="mt-0.5 text-amber-700">{c.hint}</p>}
+                    </div>
+                  </div>
+                ))}
+                {diag.checks?.some((c) => !c.ok) && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 space-y-1">
+                    <p className="font-semibold">📋 One-time Meta App setup required:</p>
+                    <ol className="list-decimal list-inside space-y-1 pl-1">
+                      <li>Go to <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" className="underline font-medium">developers.facebook.com</a> → your App</li>
+                      <li>Open <strong>Instagram → Webhooks</strong></li>
+                      <li>Set Callback URL: <code className="bg-blue-100 px-1 rounded">https://velox-whatbot-backend.onrender.com/api/instagram/webhook</code></li>
+                      <li>Set Verify Token: <code className="bg-blue-100 px-1 rounded">botlify_webhook_2026</code></li>
+                      <li>Enable fields: <strong>messages, messaging_postbacks, comments, story_mentions</strong></li>
+                      <li>Click <strong>Verify and Save</strong>, then click Re-subscribe below</li>
+                    </ol>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={resubscribe}
+              disabled={resubLoading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold py-2.5 rounded-lg hover:opacity-90 transition disabled:opacity-60"
+            >
+              {resubLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              Re-subscribe Webhook
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
