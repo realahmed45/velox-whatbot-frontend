@@ -42,7 +42,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { clsx } from "clsx";
-import ActivationCard from "@/components/ActivationCard";
 
 // Custom automation tiles — link directly into AutomationSetupPage
 // with the ?tab= query so the tab opens immediately.
@@ -180,9 +179,6 @@ export default function OverviewPage() {
       </div>
 
       <div className="relative p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
-        {/* Activation checklist (auto-hides when complete or dismissed) */}
-        <ActivationCard />
-
       {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

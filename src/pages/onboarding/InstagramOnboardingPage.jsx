@@ -103,7 +103,7 @@ export default function InstagramOnboardingPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-6">
+        <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 shadow-glass p-6">
           {igConnected ? (
             <div className="text-center space-y-5 py-2">
               <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto">

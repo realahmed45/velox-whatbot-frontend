@@ -1,26 +1,38 @@
 /**
- * Instagram AI Bot — Botlify orange/white theme with glass surfaces.
- * The mascot is the bot's avatar. Persists to workspace.aiSettings.
+ * Instagram AI Bot — ManyChat-style, simplified.
+ *
+ * The creator teaches the bot about their business by:
+ *   ✍️  writing a short description, and/or
+ *   📄  uploading a PDF/menu/price list, and/or
+ *   🔗  pasting their website link, and/or
+ *   🛒  connecting Shopify (auto-imports their live catalog).
+ *
+ * Plus a simple tone picker and an FAQ list. No keywords, no reply-behaviour,
+ * no temperature/token knobs — the bot "just works".
+ *
+ * Knowledge persists to workspace.aiKnowledge (content + sources[]).
+ * Personality + FAQs persist to workspace.aiSettings.
  */
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Sparkles,
   Save,
-  Bot,
   Plus,
   Trash2,
-  Heart,
-  MessageCircle,
   Instagram,
   Loader2,
-  Wand2,
-  Camera,
-  Hash,
-  AtSign,
   Send,
   X,
   Play,
+  FileText,
+  Globe,
+  ShoppingCart,
+  Upload,
+  Check,
+  RefreshCw,
+  Pencil,
+  HelpCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -40,50 +52,62 @@ const DEFAULTS = {
   handoffKeywords: ["human", "agent", "support", "complain"],
 };
 
-const IG_TONE_PRESETS = [
+const TONE_PRESETS = [
   {
     id: "creator",
-    label: "Creator vibe",
+    label: "Friendly",
     emoji: "✨",
     prompt:
       "You are an authentic creator replying to DMs. Be warm, casual, use 1 emoji per reply. Match the energy of the follower.",
   },
   {
-    id: "brand",
-    label: "Lifestyle brand",
-    emoji: "🌸",
+    id: "professional",
+    label: "Professional",
+    emoji: "💼",
     prompt:
-      "You are a lifestyle brand voice — aesthetic, friendly, on-trend. Keep replies short (1–2 lines) and inviting.",
+      "You are a professional brand assistant. Be clear, polite and helpful. Keep replies concise (1–2 lines), minimal emoji.",
   },
   {
     id: "playful",
-    label: "Playful & witty",
+    label: "Playful",
     emoji: "💫",
     prompt:
       "You are a witty Instagram brand voice. Use clever, fun replies. Drop emojis when it fits the mood.",
   },
   {
     id: "luxury",
-    label: "Premium / luxury",
+    label: "Luxury",
     emoji: "🖤",
     prompt:
       "You are a premium luxury brand. Refined, polished, no slang, minimal emoji use. Sound elevated.",
   },
 ];
 
+const SOURCE_META = {
+  website: { icon: Globe, tint: "text-blue-600 bg-blue-50 border-blue-200" },
+  text: { icon: FileText, tint: "text-violet-600 bg-violet-50 border-violet-200" },
+  shopify: { icon: ShoppingCart, tint: "text-green-600 bg-green-50 border-green-200" },
+  products: { icon: ShoppingCart, tint: "text-green-600 bg-green-50 border-green-200" },
+};
+
 export default function IgAiBotPage() {
   const { activeWorkspace } = useAuthStore();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
+  const navigate = useNavigate();
 
   const [cfg, setCfg] = useState(DEFAULTS);
+  const [bizText, setBizText] = useState("");
+  const [sources, setSources] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [kwInput, setKwInput] = useState("");
+  const [busy, setBusy] = useState(null); // 'doc' | 'url' | 'shopify'
+  const [urlInput, setUrlInput] = useState("");
+  const [showUrl, setShowUrl] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
+  const fileRef = useRef(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [testerOpen, setTesterOpen] = useState(false);
 
-  // Open the tester automatically when the sidebar "Test the bot" link is used.
   useEffect(() => {
     if (searchParams.get("test") === "1") setTesterOpen(true);
   }, [searchParams]);
@@ -98,36 +122,130 @@ export default function IgAiBotPage() {
 
   useEffect(() => {
     const stored = workspace?.aiSettings;
-    if (stored && Object.keys(stored).length)
-      setCfg({ ...DEFAULTS, ...stored });
-    else setCfg(DEFAULTS);
-  }, [workspace?._id]);
+    setCfg(stored && Object.keys(stored).length ? { ...DEFAULTS, ...stored } : DEFAULTS);
+    setBizText(workspace?.aiKnowledge?.content || "");
+    setSources(workspace?.aiKnowledge?.sources || []);
+  }, [workspace?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (patch) => setCfg((c) => ({ ...c, ...patch }));
 
-  const addKeyword = () => {
-    const k = kwInput.trim().toLowerCase();
-    if (!k || cfg.handoffKeywords.includes(k)) return setKwInput("");
-    set({ handoffKeywords: [...cfg.handoffKeywords, k] });
-    setKwInput("");
-  };
-  const removeKeyword = (k) =>
-    set({ handoffKeywords: cfg.handoffKeywords.filter((x) => x !== k) });
+  const igHandle = workspace?.instagram?.username;
+  const shopifyConnected = !!workspace?.integrations?.shopify?.storeUrl;
 
+  /* ── Knowledge: imports ─────────────────────────────────────────── */
+  const refreshSources = async () => {
+    await fetchWorkspace(activeWorkspace);
+    const ws = useWorkspaceStore.getState().workspace;
+    setSources(ws?.aiKnowledge?.sources || []);
+  };
+
+  const uploadDoc = async (file) => {
+    if (!file) return;
+    setBusy("doc");
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const { data } = await api.post(
+        `/workspaces/${activeWorkspace}/ai-knowledge/import-doc`,
+        fd,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      setSources((s) => [...s, data.source]);
+      toast.success("Document added — your bot just learned it 🎓");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Couldn't read that file");
+    } finally {
+      setBusy(null);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const importUrl = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    setBusy("url");
+    try {
+      const { data } = await api.post(
+        `/workspaces/${activeWorkspace}/ai-knowledge/import-url`,
+        { url },
+      );
+      setSources((s) => [...s, data.source]);
+      setUrlInput("");
+      setShowUrl(false);
+      toast.success("Website imported — bot updated 🌐");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Couldn't import that website");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const syncShopify = async () => {
+    if (!shopifyConnected) {
+      toast("Connect Shopify first — taking you there…", { icon: "🛒" });
+      navigate("/dashboard/apps");
+      return;
+    }
+    setBusy("shopify");
+    try {
+      const { data } = await api.post(
+        `/workspaces/${activeWorkspace}/ai-knowledge/sync-shopify`,
+      );
+      setSources((s) => [...s.filter((x) => x.type !== "shopify"), data.source]);
+      toast.success(`Imported ${data.productCount} products from Shopify 🛍️`);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Couldn't sync Shopify");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const resyncSource = async (id) => {
+    setBusy(id);
+    try {
+      await api.post(
+        `/workspaces/${activeWorkspace}/ai-knowledge/sources/${id}/resync`,
+      );
+      await refreshSources();
+      toast.success("Source refreshed");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Couldn't refresh");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const removeSource = async (id) => {
+    setSources((s) => s.filter((x) => x._id !== id));
+    try {
+      await api.delete(
+        `/workspaces/${activeWorkspace}/ai-knowledge/sources/${id}`,
+      );
+    } catch {
+      refreshSources();
+    }
+  };
+
+  /* ── FAQs ───────────────────────────────────────────────────────── */
   const addFaq = () => {
     if (!newFaq.question.trim() || !newFaq.answer.trim())
-      return toast.error("Both question and answer required");
+      return toast.error("Add both a question and an answer");
     set({ faqs: [...cfg.faqs, { ...newFaq }] });
     setNewFaq({ question: "", answer: "" });
   };
   const removeFaq = (i) => set({ faqs: cfg.faqs.filter((_, x) => x !== i) });
 
+  /* ── Save ───────────────────────────────────────────────────────── */
   const save = async () => {
     setSaving(true);
     try {
       await api.put(`/workspaces/${activeWorkspace}`, { aiSettings: cfg });
+      await api.put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
+        content: bizText,
+        enabled: cfg.enabled,
+      });
       await fetchWorkspace(activeWorkspace);
-      toast.success("Instagram AI bot updated");
+      toast.success("AI bot saved ✓");
     } catch (e) {
       toast.error(e?.response?.data?.message || "Failed to save");
     } finally {
@@ -135,24 +253,21 @@ export default function IgAiBotPage() {
     }
   };
 
-  const igHandle = workspace?.instagram?.username;
+  const activeTone =
+    TONE_PRESETS.find((t) => t.prompt === cfg.systemPrompt)?.id || null;
 
   return (
     <div className="relative min-h-full">
-      {/* Ambient glass backdrop */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/40 blur-[130px]" />
         <div className="absolute top-1/2 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/30 blur-[130px]" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto p-4 sm:p-6 space-y-5">
-        {/* ── Hero ─────────────────────────────────────────────────── */}
+      <div className="relative max-w-3xl mx-auto p-4 sm:p-6 space-y-5">
+        {/* ── Hero ───────────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass p-6">
           <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-brand-300/25 blur-3xl" />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-amber-300/20 blur-3xl" />
-
           <div className="relative flex items-start gap-4">
-            {/* Mascot avatar */}
             <div className="relative w-16 h-16 flex-shrink-0 rounded-2xl bg-white/70 border border-brand-100 ring-1 ring-brand-200/60 flex items-center justify-center shadow-glow">
               <img
                 src="/logo.png"
@@ -164,291 +279,280 @@ export default function IgAiBotPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-ink-900">
-                  Instagram AI Bot
+                  AI Bot
                 </h1>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-700 border border-brand-300">
                   <Instagram className="w-3 h-3" /> @{igHandle || "your.handle"}
                 </span>
               </div>
               <p className="text-sm text-ink-600 mt-1">
-                Auto-replies to <strong>DMs</strong>, <strong>comments</strong>,{" "}
-                <strong>story mentions</strong> and <strong>shared posts</strong>{" "}
-                in your brand voice.
+                Teach it about your business once. It replies to DMs, comments &
+                story mentions — 24/7, in your voice.
               </p>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={!!cfg.enabled}
-                  onChange={(e) => set({ enabled: e.target.checked })}
-                />
-                <span className="w-11 h-6 rounded-full bg-ink-200 peer-checked:bg-brand-500 transition relative">
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition ${cfg.enabled ? "translate-x-5" : ""}`}
-                  />
-                </span>
-                <span className="text-xs font-bold text-ink-700">
-                  {cfg.enabled ? "Live" : "Paused"}
-                </span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setTesterOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800 transition"
-              >
-                <Play className="w-3.5 h-3.5" /> Test the bot
-              </button>
-            </div>
-          </div>
-
-          {/* Stat row */}
-          <div className="relative grid grid-cols-3 gap-3 mt-5">
-            {[
-              { k: "Surfaces", v: "DM · Comment · Story" },
-              { k: "Tone", v: "Creator-friendly" },
-              { k: "Reply time", v: "< 2s" },
-            ].map((s) => (
-              <div
-                key={s.k}
-                className="rounded-lg bg-white/60 backdrop-blur border border-white/60 px-3 py-2"
-              >
-                <p className="text-[10px] uppercase tracking-wider text-brand-600 font-bold">
-                  {s.k}
-                </p>
-                <p className="text-xs font-bold text-ink-900 truncate">{s.v}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Tone presets ───────────────────────────────────────────── */}
-        <IgSection title="Brand voice" icon={Wand2}>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {IG_TONE_PRESETS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => set({ systemPrompt: p.prompt })}
-                className={`text-left p-3 rounded-xl border-2 transition text-xs ${
-                  cfg.systemPrompt === p.prompt
-                    ? "border-brand-500 bg-brand-50"
-                    : "border-ink-100 hover:border-brand-300 hover:bg-brand-50/40"
-                }`}
-              >
-                <p className="font-bold text-ink-900">
-                  <span className="mr-1">{p.emoji}</span>
-                  {p.label}
-                </p>
-                <p className="text-[11px] text-ink-500 mt-1 line-clamp-2">
-                  {p.prompt}
-                </p>
-              </button>
-            ))}
-          </div>
-          <div className="mt-4">
-            <label className="label">Custom system prompt</label>
-            <textarea
-              className="input min-h-[110px] font-mono text-xs"
-              value={cfg.systemPrompt}
-              onChange={(e) => set({ systemPrompt: e.target.value })}
-            />
-          </div>
-        </IgSection>
-
-        {/* ── Business context ───────────────────────────────────────── */}
-        <IgSection title="About your page" icon={Camera}>
-          <p className="text-xs text-ink-500 mb-2">
-            What does your page sell or talk about? Products, drops, collabs,
-            shipping policy, opening hours, links — the more context, the better
-            the bot replies.
-          </p>
-          <textarea
-            className="input min-h-[140px]"
-            value={cfg.businessContext}
-            onChange={(e) => set({ businessContext: e.target.value })}
-            placeholder={`Example:\n• Streetwear drop every Friday 8pm PKT\n• Sizes XS–XXL, ships across PK in 3 days\n• Collabs: DM with "collab" + media kit\n• Returns within 7 days, unworn only`}
-          />
-          <p className="text-[10px] text-ink-400 mt-1">
-            {cfg.businessContext.length} characters
-          </p>
-        </IgSection>
-
-        {/* ── FAQs ────────────────────────────────────────────────────── */}
-        <IgSection
-          title={`Saved replies (${cfg.faqs.length})`}
-          icon={MessageCircle}
-        >
-          <p className="text-xs text-ink-500 mb-3">
-            Pre-written answers for the most common DMs. The bot uses these first
-            before falling back to AI.
-          </p>
-
-          <div className="space-y-2 mb-4">
-            {cfg.faqs.map((f, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-brand-100 bg-brand-50/40 p-3 flex items-start gap-3"
-              >
-                <Hash className="w-3.5 h-3.5 text-brand-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-ink-900">{f.question}</p>
-                  <p className="text-xs text-ink-600 mt-1">↳ {f.answer}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeFaq(i)}
-                  className="text-ink-400 hover:text-brand-600 p-1"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-            {cfg.faqs.length === 0 && (
-              <p className="text-[11px] text-ink-400 italic">
-                No saved replies yet — start with "How much?", "Where do you
-                ship?", "Do you collab?".
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
-            <input
-              className="input"
-              placeholder="Question (e.g. How much?)"
-              value={newFaq.question}
-              onChange={(e) =>
-                setNewFaq({ ...newFaq, question: e.target.value })
-              }
-            />
-            <input
-              className="input"
-              placeholder="Reply"
-              value={newFaq.answer}
-              onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
-            />
+            {/* Enabled toggle */}
             <button
-              type="button"
-              onClick={addFaq}
-              className="!py-2.5 !px-4 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs flex items-center gap-2 transition"
+              onClick={() => set({ enabled: !cfg.enabled })}
+              className={`relative inline-flex h-7 w-12 flex-shrink-0 items-center rounded-full transition ${
+                cfg.enabled ? "bg-brand-500" : "bg-ink-200"
+              }`}
+              aria-label="Toggle AI bot"
             >
-              <Plus className="w-4 h-4" /> Add
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                  cfg.enabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
             </button>
           </div>
-        </IgSection>
 
-        {/* ── Handoff + tuning grid ──────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <IgSection title="Hand off to me" icon={AtSign}>
-            <p className="text-xs text-ink-500 mb-3">
-              When a follower says any of these, the bot pauses so you can step
-              in personally.
-            </p>
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {cfg.handoffKeywords.map((k) => (
-                <span
-                  key={k}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full bg-brand-100 text-brand-700 border border-brand-200 px-2 py-1"
-                >
-                  #{k}
-                  <button
-                    onClick={() => removeKeyword(k)}
-                    className="hover:text-brand-900"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                className="input flex-1"
-                value={kwInput}
-                onChange={(e) => setKwInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addKeyword()}
-                placeholder="Add trigger word"
-              />
-              <button
-                onClick={addKeyword}
-                className="!py-2 !px-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white transition"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-          </IgSection>
-
-          <IgSection title="Reply behaviour" icon={Sparkles}>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="label !mb-0">Personality strength</label>
-                  <span className="text-[11px] font-mono text-brand-700">
-                    {cfg.temperature.toFixed(2)}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={cfg.temperature}
-                  onChange={(e) =>
-                    set({ temperature: parseFloat(e.target.value) })
-                  }
-                  className="w-full accent-brand-500"
-                />
-                <p className="text-[10px] text-ink-400">
-                  Lower = consistent · Higher = expressive & on-brand
-                </p>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="label !mb-0">Max DM length</label>
-                  <span className="text-[11px] font-mono text-brand-700">
-                    {cfg.maxTokens} tokens
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="60"
-                  max="600"
-                  step="20"
-                  value={cfg.maxTokens}
-                  onChange={(e) =>
-                    set({ maxTokens: parseInt(e.target.value, 10) })
-                  }
-                  className="w-full accent-brand-500"
-                />
-              </div>
-              <div>
-                <label className="label">AI tier</label>
-                <select
-                  className="input"
-                  value={cfg.provider}
-                  onChange={(e) => set({ provider: e.target.value })}
-                >
-                  <option value="groq">
-                    Standard (free, fast — included)
-                  </option>
-                  <option value="openai">
-                    Premium (sharper replies — paid)
-                  </option>
-                </select>
-              </div>
-            </div>
-          </IgSection>
+          <div className="relative mt-4 flex items-center gap-2">
+            <button
+              onClick={() => setTesterOpen(true)}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-3 py-1.5 transition"
+            >
+              <Play className="w-4 h-4" /> Preview bot
+            </button>
+            <span className="text-xs text-ink-400">
+              {cfg.enabled ? "Bot is live" : "Bot is paused"}
+            </span>
+          </div>
         </div>
 
-        {/* ── Sticky save ────────────────────────────────────────────── */}
-        <div className="sticky bottom-3 z-10">
-          <div className="rounded-xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-glass p-3 flex items-center justify-between">
-            <div className="text-xs text-ink-500 flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-brand-500" />
-              Applies to all incoming{" "}
-              <strong className="text-ink-700">Instagram</strong> messages.
+        {/* ── Knowledge ──────────────────────────────────────────── */}
+        <IgSection title="Teach your bot about your business" icon={Sparkles}>
+          <p className="text-sm text-ink-600 mb-3">
+            The more it knows, the better it replies. Add any of these — mix and
+            match.
+          </p>
+
+          {/* Write text */}
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-500 mb-1.5">
+            <Pencil className="w-3.5 h-3.5" /> Write it
+          </label>
+          <textarea
+            value={bizText}
+            onChange={(e) => setBizText(e.target.value)}
+            rows={5}
+            maxLength={12000}
+            placeholder={
+              "What does your page sell or talk about? Products, drops, shipping policy, opening hours, links — the more context, the better the bot replies.\n\nExample:\n• Streetwear drop every Friday 8pm PKT\n• Sizes XS–XXL, ships across PK in 3 days\n• Returns within 7 days, unworn only"
+            }
+            className="w-full rounded-xl border border-ink-200 bg-white/80 px-3.5 py-3 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none resize-y"
+          />
+          <p className="text-[11px] text-ink-400 mt-1">
+            {bizText.length.toLocaleString()} characters
+          </p>
+
+          {/* Import buttons */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.txt,.md,application/pdf,text/plain"
+              className="hidden"
+              onChange={(e) => uploadDoc(e.target.files?.[0])}
+            />
+            <ImportButton
+              icon={Upload}
+              label="Upload PDF / file"
+              hint="Menu, price list, brochure"
+              loading={busy === "doc"}
+              onClick={() => fileRef.current?.click()}
+            />
+            <ImportButton
+              icon={Globe}
+              label="Add website"
+              hint="We read it for you"
+              loading={busy === "url"}
+              onClick={() => setShowUrl((v) => !v)}
+            />
+            <ImportButton
+              icon={ShoppingCart}
+              label={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
+              hint={shopifyConnected ? "Import live catalog" : "For product stores"}
+              loading={busy === "shopify"}
+              onClick={syncShopify}
+            />
+          </div>
+
+          {/* Website URL input */}
+          {showUrl && (
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && importUrl()}
+                placeholder="yourbusiness.com"
+                className="flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
+                autoFocus
+              />
+              <button
+                onClick={importUrl}
+                disabled={busy === "url" || !urlInput.trim()}
+                className="rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-2 disabled:opacity-50 transition"
+              >
+                {busy === "url" ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Import"
+                )}
+              </button>
             </div>
+          )}
+
+          {/* Sources list */}
+          {sources.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-semibold text-ink-500">
+                Your bot knows ({sources.length})
+              </p>
+              {sources.map((s) => {
+                const meta = SOURCE_META[s.type] || SOURCE_META.text;
+                const Icon = meta.icon;
+                return (
+                  <div
+                    key={s._id}
+                    className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white/80 px-3 py-2.5"
+                  >
+                    <span
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center border ${meta.tint}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-ink-800 truncate">
+                        {s.label || s.url || "Knowledge source"}
+                      </p>
+                      <p className="text-[11px] text-ink-400">
+                        {s.status === "ready" ? (
+                          <span className="inline-flex items-center gap-1 text-green-600">
+                            <Check className="w-3 h-3" /> Ready
+                          </span>
+                        ) : s.status === "processing" ? (
+                          "Processing…"
+                        ) : (
+                          <span className="text-red-500">Error</span>
+                        )}
+                        {s.charCount ? ` · ${s.charCount.toLocaleString()} chars` : ""}
+                      </p>
+                    </div>
+                    {(s.type === "website" || s.type === "shopify") && (
+                      <button
+                        onClick={() => resyncSource(s._id)}
+                        disabled={busy === s._id}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
+                        title="Refresh"
+                      >
+                        {busy === s._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removeSource(s._id)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
+                      title="Remove"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </IgSection>
+
+        {/* ── Tone ───────────────────────────────────────────────── */}
+        <IgSection title="Bot personality" icon={Instagram}>
+          <p className="text-sm text-ink-600 mb-3">
+            Pick how your bot should sound.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {TONE_PRESETS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => set({ systemPrompt: t.prompt })}
+                className={`rounded-xl border px-3 py-3 text-center transition ${
+                  activeTone === t.id
+                    ? "border-brand-400 bg-brand-50 ring-2 ring-brand-100"
+                    : "border-ink-200 bg-white/70 hover:border-brand-200"
+                }`}
+              >
+                <div className="text-xl mb-1">{t.emoji}</div>
+                <div className="text-xs font-semibold text-ink-800">
+                  {t.label}
+                </div>
+              </button>
+            ))}
+          </div>
+        </IgSection>
+
+        {/* ── FAQs ───────────────────────────────────────────────── */}
+        <IgSection title="Quick answers (FAQs)" icon={HelpCircle}>
+          <p className="text-sm text-ink-600 mb-3">
+            Add exact answers for common questions. The bot replies with these
+            instantly — word for word.
+          </p>
+
+          {cfg.faqs.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {cfg.faqs.map((f, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-ink-100 bg-white/80 px-3.5 py-2.5 flex items-start gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink-800">
+                      {f.question}
+                    </p>
+                    <p className="text-sm text-ink-600 mt-0.5">{f.answer}</p>
+                  </div>
+                  <button
+                    onClick={() => removeFaq(i)}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition flex-shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <input
+              value={newFaq.question}
+              onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
+              placeholder="Question — e.g. Do you ship nationwide?"
+              className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
+            />
+            <div className="flex items-center gap-2">
+              <input
+                value={newFaq.answer}
+                onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && addFaq()}
+                placeholder="Answer — e.g. Yes! 3–5 days across Pakistan."
+                className="flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
+              />
+              <button
+                onClick={addFaq}
+                className="rounded-lg bg-ink-900 hover:bg-ink-800 text-white text-sm font-semibold px-4 py-2 flex items-center gap-1.5 transition"
+              >
+                <Plus className="w-4 h-4" /> Add
+              </button>
+            </div>
+          </div>
+        </IgSection>
+
+        {/* ── Save bar ───────────────────────────────────────────── */}
+        <div className="sticky bottom-4 z-10">
+          <div className="rounded-2xl border border-white/60 bg-white/80 backdrop-blur-xl shadow-glass p-3 flex items-center justify-between gap-3">
+            <p className="text-xs text-ink-500 pl-2">
+              Changes apply to your live Instagram bot.
+            </p>
             <button
               onClick={save}
               disabled={saving}
@@ -460,7 +564,7 @@ export default function IgAiBotPage() {
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" /> Save Instagram bot
+                  <Save className="w-4 h-4" /> Save bot
                 </>
               )}
             </button>
@@ -470,6 +574,30 @@ export default function IgAiBotPage() {
         <BotTester open={testerOpen} onClose={closeTester} igHandle={igHandle} />
       </div>
     </div>
+  );
+}
+
+function ImportButton({ icon: Icon, label, hint, loading, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="group rounded-xl border border-ink-200 bg-white/70 hover:border-brand-300 hover:bg-brand-50/40 px-3 py-3 text-left transition disabled:opacity-60"
+    >
+      <div className="flex items-center gap-2">
+        <span className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-600 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition">
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Icon className="w-4 h-4" />
+          )}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-ink-800 truncate">{label}</p>
+          <p className="text-[11px] text-ink-400 truncate">{hint}</p>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -545,14 +673,9 @@ function BotTester({ open, onClose, igHandle }) {
         onClick={onClose}
       />
       <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-right">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-ink-100 bg-brand-500 text-white flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <img
-              src="/logo.png"
-              alt="Botlify"
-              className="w-8 h-8 object-contain"
-            />
+            <img src="/logo.png" alt="Botlify" className="w-8 h-8 object-contain" />
             <div className="leading-tight">
               <p className="font-bold text-sm">Bot Tester</p>
               <p className="text-[10px] text-white/80">
@@ -568,7 +691,6 @@ function BotTester({ open, onClose, igHandle }) {
           </button>
         </div>
 
-        {/* Messages */}
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-4 space-y-3 bg-ink-50"
@@ -607,7 +729,6 @@ function BotTester({ open, onClose, igHandle }) {
           )}
         </div>
 
-        {/* Composer */}
         <div className="p-3 border-t border-ink-100 flex-shrink-0">
           <p className="text-[10px] text-ink-400 mb-2">
             Tip: save your changes above before testing — the tester uses your

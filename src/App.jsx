@@ -75,6 +75,9 @@ const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const PublicBioPage = lazy(() => import("@/pages/link-in-bio/PublicBioPage"));
 const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const HelpPage = lazy(() => import("@/pages/HelpPage"));
+const FeaturesPage = lazy(() => import("@/pages/FeaturesPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 const ProtectedRoute = ({ children }) => {
@@ -118,6 +121,9 @@ export default function App() {
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
+                <Route path="/features" element={<FeaturesPage />} />
+                <Route path="/help" element={<HelpPage />} />
+                <Route path="/contact" element={<ContactPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
               </Route>

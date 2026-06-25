@@ -8,6 +8,7 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { LogOut } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function OnboardingLayout() {
   const { user, logout } = useAuthStore();
@@ -19,15 +20,18 @@ export default function OnboardingLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ink-50 via-white to-brand-50/30 flex flex-col">
+    <div className="relative min-h-screen bg-gradient-to-br from-ink-50 via-white to-brand-50/30 flex flex-col overflow-hidden">
+      {/* Ambient glass backdrop — matches the dashboard aesthetic */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/40 blur-[130px]" />
+        <div className="absolute top-1/2 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/30 blur-[130px]" />
+      </div>
+
       {/* Top bar */}
-      <header className="bg-white/80 backdrop-blur border-b border-ink-100 sticky top-0 z-40">
+      <header className="relative bg-white/70 backdrop-blur-xl border-b border-white/60 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center shadow">
-              <span className="text-white font-black text-sm">B</span>
-            </div>
-            <span className="font-bold text-ink-900">Botlify</span>
+          <Link to="/dashboard" className="flex items-center">
+            <Logo size="sm" />
           </Link>
 
           <div className="flex items-center gap-3">
@@ -49,7 +53,7 @@ export default function OnboardingLayout() {
       </header>
 
       {/* Page */}
-      <main className="flex-1 w-full">
+      <main className="relative flex-1 w-full">
         <Outlet />
       </main>
     </div>
