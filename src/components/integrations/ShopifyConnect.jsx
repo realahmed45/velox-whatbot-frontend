@@ -1,12 +1,12 @@
 ﻿/**
  * Shopify connect component.
  *
- * PRIMARY FLOW — Tokenless (Shopify Storefront API):
- *   Merchant enters store name only. No admin setup, no token, zero friction.
- *   Pulls full product catalog automatically using Shopify official tokenless API.
+ * PRIMARY FLOW — Shopify OAuth (one-click):
+ *   Merchant enters store name → we redirect to Shopify OAuth → merchant
+ *   clicks "Install" → Shopify redirects back with token automatically.
+ *   Works on password-protected stores. No manual token copying. Ever.
  *
- * OPTIONAL — Admin token:
- *   Needed only for order tracking in DMs. Shown as collapsible upgrade section.
+ * FALLBACK — if OAuth not configured on server, shows manual token form.
  */
 import { useState } from "react";
 import {
@@ -15,9 +15,9 @@ import {
   ShoppingBag,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   CheckCircle2,
   Package,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -39,62 +39,73 @@ export default function ShopifyConnect({
 
   const [shop, setShop] = useState("");
   const [connecting, setConnecting] = useState(false);
-  const [connectError, setConnectError] = useState(null);
 
-  // Admin token upgrade (order tracking)
-  const [showTokenForm, setShowTokenForm] = useState(false);
+  // Manual token fallback (only shown if server has no OAuth configured)
+  const [showManual, setShowManual] = useState(false);
   const [adminToken, setAdminToken] = useState("");
+  const [savingToken, setSavingToken] = useState(false);
+
+  // Order tracking upgrade (for already-connected storefront stores)
+  const [showTokenForm, setShowTokenForm] = useState(false);
+  const [upgradeToken, setUpgradeToken] = useState("");
   const [upgradingToken, setUpgradingToken] = useState(false);
 
-  /* ── primary connect (tokenless storefront) ── */
+  /* ── PRIMARY: OAuth one-click connect ── */
   const connect = async () => {
     const s = shop.trim();
     if (!s) return toast.error("Enter your store name");
     setConnecting(true);
-    setConnectError(null);
     try {
-      const { data } = await api.post("/integrations/shopify/storefront", {
-        storeUrl: s,
+      const { data } = await api.get("/integrations/shopify/oauth-url", {
+        params: { shop: s },
       });
-      toast.success(`Connected! ${data.products} products synced from ${data.shop}.`);
-      await fetchWorkspace(activeWorkspace);
-      onConnected?.(data);
+
+      if (data.fallbackManual) {
+        // OAuth not configured on server — show manual form
+        setShowManual(true);
+        setConnecting(false);
+        return;
+      }
+
+      if (data.url) {
+        // Redirect to Shopify — merchant clicks "Install", comes back automatically
+        window.location.href = data.url;
+        return;
+      }
+
+      throw new Error("Unexpected response from server");
     } catch (e) {
-      const msg = e.response?.data?.message || "Could not find that store. Check the name and try again.";
-      setConnectError(msg);
-      toast.error(msg);
-    } finally {
       setConnecting(false);
+      const msg = e.response?.data?.message || "Could not start Shopify connection. Try again.";
+      toast.error(msg);
     }
   };
 
-  /* ── connect with admin token (for password-protected stores) ── */
-  const connectWithToken = async () => {
+  /* ── FALLBACK: manual Admin API token ── */
+  const connectManual = async () => {
     const s = shop.trim();
     const t = adminToken.trim();
     if (!s) return toast.error("Enter your store name");
     if (!t) return toast.error("Paste your Admin API access token");
-    setUpgradingToken(true);
+    setSavingToken(true);
     try {
       const { data } = await api.post("/integrations/shopify", {
         storeUrl: s,
         accessToken: t,
       });
-      toast.success(`Connected with Admin API! ${data.productCount ?? 0} products synced.`);
+      toast.success(`Connected! ${data.productCount ?? 0} products synced.`);
       await fetchWorkspace(activeWorkspace);
       onConnected?.(data);
-      setConnectError(null);
-      setShowTokenForm(false);
     } catch (e) {
-      toast.error(e.response?.data?.message || "Token invalid. Try again.");
+      toast.error(e.response?.data?.message || "Token invalid. Check and try again.");
     } finally {
-      setUpgradingToken(false);
+      setSavingToken(false);
     }
   };
 
-  /* ── upgrade existing storefront connection to admin token (order tracking) ── */
-  const upgradeToken = async () => {
-    const t = adminToken.trim();
+  /* ── upgrade existing connection to admin token (adds order tracking) ── */
+  const doUpgradeToken = async () => {
+    const t = upgradeToken.trim();
     if (!t) return toast.error("Paste your Admin API access token");
     setUpgradingToken(true);
     try {
@@ -129,7 +140,7 @@ export default function ShopifyConnect({
   /* ── connected state ── */
   if (connected) {
     return (
-      <div className={`border border-emerald-200 bg-emerald-50/80 rounded-lg ${compact ? "p-3" : "p-4"} space-y-3`}>
+      <div className={`border border-emerald-200 bg-emerald-50/80 ${compact ? "p-3" : "p-4"} space-y-3`}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -141,48 +152,47 @@ export default function ShopifyConnect({
         </div>
 
         <div className="flex flex-wrap gap-1.5">
-          <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-200">
+          <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200">
             <Package className="w-2.5 h-2.5 inline mr-1" />
             Catalog synced
           </span>
           {orderTracking ? (
-            <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-200">
+            <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200">
               Order tracking ✓
             </span>
-          ) : (
+          ) : authMethod !== "oauth" ? (
             <button
               type="button"
               onClick={() => setShowTokenForm((v) => !v)}
-              className="text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200 hover:bg-amber-100 flex items-center gap-1"
+              className="text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 flex items-center gap-1"
             >
               Add order tracking
               {showTokenForm ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
             </button>
-          )}
+          ) : null}
         </div>
 
-        {/* Order tracking upgrade (admin token) */}
         {showTokenForm && !orderTracking && (
-          <div className="bg-white border border-amber-200 rounded-lg p-3 space-y-2 text-xs">
+          <div className="bg-white border border-amber-200 p-3 space-y-2 text-xs">
             <p className="font-semibold text-amber-800">Enable order tracking in DMs</p>
             <p className="text-ink-500">
               Create a custom app in{" "}
               <a href="https://admin.shopify.com" target="_blank" rel="noreferrer" className="underline text-brand-600">
                 Shopify admin
               </a>{" "}
-              → Settings → Apps → Develop apps → give it <code className="bg-ink-100 px-1">read_orders</code> scope → install → copy Admin API token.
+              → Settings → Apps → Develop apps → give it <code className="bg-ink-100 px-1">read_orders</code> scope → copy Admin API token.
             </p>
             <input
               type="password"
               className="input text-xs w-full"
               placeholder="shpat_..."
-              value={adminToken}
-              onChange={(e) => setAdminToken(e.target.value)}
+              value={upgradeToken}
+              onChange={(e) => setUpgradeToken(e.target.value)}
               disabled={upgradingToken}
             />
             <button
               type="button"
-              onClick={upgradeToken}
+              onClick={doUpgradeToken}
               disabled={upgradingToken}
               className="btn btn-primary text-xs py-1.5 flex items-center gap-1.5"
             >
@@ -204,16 +214,16 @@ export default function ShopifyConnect({
 
   /* ── connect state ── */
   return (
-    <div className={`space-y-4 ${compact ? "" : "border border-ink-200 bg-white rounded-lg p-5"}`}>
+    <div className={`space-y-4 ${compact ? "" : "border border-ink-200 bg-white p-5"}`}>
       {!compact && (
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center text-white shrink-0">
+          <div className="w-10 h-10 bg-emerald-500 flex items-center justify-center text-white shrink-0">
             <ShoppingBag className="w-5 h-5" />
           </div>
           <div>
             <p className="font-semibold text-sm text-ink-900">Connect your Shopify store</p>
             <p className="text-xs text-ink-500 mt-0.5">
-              Just enter your store name — no tokens, no admin setup needed.
+              Enter your store name and we'll handle the rest — no tokens, no setup.
             </p>
           </div>
         </div>
@@ -226,7 +236,7 @@ export default function ShopifyConnect({
             className="input text-sm w-full pr-32"
             placeholder="your-store-name"
             value={shop}
-            onChange={(e) => { setShop(e.target.value); setConnectError(null); }}
+            onChange={(e) => setShop(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && connect()}
             disabled={connecting}
             autoComplete="off"
@@ -247,64 +257,51 @@ export default function ShopifyConnect({
           {connecting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Link2 className="w-4 h-4" />
+            <>
+              <Link2 className="w-4 h-4" />
+              Connect
+            </>
           )}
-          Connect
         </button>
       </div>
 
-      {/* Password-protected store fallback */}
-      {connectError && connectError.includes("password") && (
-        <div className="border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2 text-xs">
-          <p className="font-semibold text-amber-800">⚠️ Store is password-protected</p>
-          <p className="text-ink-600">
-            Your store has a password enabled (Coming Soon mode). Either{" "}
-            <a
-              href="https://admin.shopify.com/settings/general"
-              target="_blank"
-              rel="noreferrer"
-              className="underline text-brand-600"
-            >
-              remove the password
+      <p className="text-[11px] text-ink-400 flex items-center gap-1">
+        <ArrowRight className="w-3 h-3 shrink-0" />
+        You'll be redirected to Shopify to approve the connection — then automatically brought back.
+      </p>
+
+      {/* Manual token fallback (only shown if server OAuth not configured) */}
+      {showManual && (
+        <div className="border border-ink-200 bg-ink-50 p-3 space-y-2 text-xs">
+          <p className="font-semibold text-ink-800">Admin API token</p>
+          <p className="text-ink-500">
+            Go to{" "}
+            <a href="https://admin.shopify.com" target="_blank" rel="noreferrer" className="underline text-brand-600">
+              Shopify Admin
             </a>{" "}
-            from your Shopify settings, or connect using your Admin API token below.
+            → Settings → Apps → Develop apps → create an app → give it{" "}
+            <code className="bg-ink-200 px-0.5">read_products, read_orders</code> scope → install → copy the Admin API access token.
           </p>
           <input
             type="password"
             className="input text-xs w-full"
-            placeholder="shpat_... (Admin API access token)"
+            placeholder="shpat_..."
             value={adminToken}
             onChange={(e) => setAdminToken(e.target.value)}
-            disabled={upgradingToken}
+            disabled={savingToken}
             autoComplete="new-password"
           />
           <button
             type="button"
-            onClick={connectWithToken}
-            disabled={upgradingToken || !shop.trim()}
+            onClick={connectManual}
+            disabled={savingToken}
             className="btn btn-primary text-xs py-1.5 flex items-center gap-1.5"
           >
-            {upgradingToken ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-            Connect with Admin Token
+            {savingToken ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+            Save token &amp; connect
           </button>
-          <p className="text-[10px] text-ink-400">
-            Get your token: Shopify Admin → Settings → Apps → Develop apps → create app → give{" "}
-            <code className="bg-ink-100 px-0.5">read_products, read_orders</code> scope → install → copy token.
-          </p>
         </div>
       )}
-
-      <p className="text-[11px] text-ink-400">
-        We use Shopify's public API — no setup needed for public stores.{" "}
-        <a
-          href="https://help.shopify.com/en/manual/products"
-          target="_blank"
-          rel="noreferrer"
-          className="underline inline-flex items-center gap-0.5"
-        >
-          Learn more <ExternalLink className="w-2.5 h-2.5" />
-        </a>
-      </p>
     </div>
   );
 }
