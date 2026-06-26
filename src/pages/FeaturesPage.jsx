@@ -2,7 +2,16 @@
  * Botlify Features Page
  * Showcase all platform features
  */
-import { Bot, Zap, Users, Send, BarChart2, ShoppingCart, Sparkles, Instagram } from "lucide-react";
+import {
+  Bot,
+  Zap,
+  Users,
+  Send,
+  BarChart2,
+  ShoppingCart,
+  Sparkles,
+  Instagram,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function FeaturesPage() {
@@ -11,60 +20,72 @@ export default function FeaturesPage() {
       icon: Bot,
       color: "violet",
       title: "AI-Powered Bot",
-      description: "Let AI handle customer conversations 24/7 with contextual, intelligent replies powered by Groq.",
+      description:
+        "Let AI handle customer conversations 24/7 with contextual, intelligent replies powered by Groq.",
     },
     {
       icon: Zap,
       color: "orange",
       title: "Flow Automation",
-      description: "Build sophisticated automation workflows with triggers, conditions, and actions - no code required.",
+      description:
+        "Build sophisticated automation workflows with triggers, conditions, and actions - no code required.",
     },
     {
       icon: Users,
       color: "blue",
       title: "CRM & Contacts",
-      description: "Manage contacts, tags, custom fields, and segments. Complete customer relationship management.",
+      description:
+        "Manage contacts, tags, custom fields, and segments. Complete customer relationship management.",
     },
     {
       icon: Send,
       color: "green",
       title: "Broadcasting",
-      description: "Send targeted messages to segments. Schedule campaigns and track engagement in real-time.",
+      description:
+        "Send targeted messages to segments. Schedule campaigns and track engagement in real-time.",
     },
     {
       icon: BarChart2,
       color: "purple",
       title: "Analytics",
-      description: "Track performance with detailed analytics. Monitor engagement, conversion rates, and ROI.",
+      description:
+        "Track performance with detailed analytics. Monitor engagement, conversion rates, and ROI.",
     },
     {
       icon: ShoppingCart,
       color: "pink",
       title: "Shopify Integration",
-      description: "Native Shopify integration. Sync products, automate order notifications, recover abandoned carts.",
+      description:
+        "Native Shopify integration. Sync products, automate order notifications, recover abandoned carts.",
     },
     {
       icon: Sparkles,
       color: "yellow",
       title: "AI Tools",
-      description: "Generate captions, research hashtags, analyze sentiment, and get reply suggestions with AI.",
+      description:
+        "Generate captions, research hashtags, analyze sentiment, and get reply suggestions with AI.",
     },
     {
       icon: Instagram,
       color: "red",
       title: "Instagram Native",
-      description: "Built specifically for Instagram. Send DMs, manage inbox, schedule posts, track competitors.",
+      description:
+        "Built specifically for Instagram. Send DMs, manage inbox, schedule posts, track competitors.",
     },
   ];
 
   const colorMap = {
-    violet: "from-violet-500/10 to-violet-500/5 text-violet-500 border-violet-500/20",
+    violet:
+      "from-violet-500/10 to-violet-500/5 text-violet-500 border-violet-500/20",
     orange: "from-accent/10 to-accent/5 text-accent border-accent/20",
     blue: "from-blue-500/10 to-blue-500/5 text-blue-500 border-blue-500/20",
-    green: "from-green-500/10 to-green-500/5 text-green-500 border-green-500/20",
-    purple: "from-purple-500/10 to-purple-500/5 text-purple-500 border-purple-500/20",
+    green:
+      "from-green-500/10 to-green-500/5 text-green-500 border-green-500/20",
+    purple:
+      "from-purple-500/10 to-purple-500/5 text-purple-500 border-purple-500/20",
     pink: "from-pink-500/10 to-pink-500/5 text-pink-500 border-pink-500/20",
-    yellow: "from-yellow-500/10 to-yellow-500/5 text-yellow-500 border-yellow-500/20",
+    yellow:
+      "from-yellow-500/10 to-yellow-500/5 text-yellow-500 border-yellow-500/20",
     red: "from-red-500/10 to-red-500/5 text-red-500 border-red-500/20",
   };
 
@@ -77,7 +98,8 @@ export default function FeaturesPage() {
             Everything You Need to Automate Instagram
           </h1>
           <p className="text-xl text-ink-600 max-w-3xl mx-auto">
-            From AI-powered conversations to advanced automation workflows, Botlify has all the tools you need to grow your Instagram business.
+            From AI-powered conversations to advanced automation workflows,
+            Botlify has all the tools you need to grow your Instagram business.
           </p>
         </div>
 
@@ -90,15 +112,15 @@ export default function FeaturesPage() {
                 key={feature.title}
                 className="p-8 bg-white rounded-2xl border border-ink-200 hover:shadow-lg transition-all"
               >
-                <div className={`p-4 bg-gradient-to-br ${colorMap[feature.color]} rounded-xl w-fit mb-4 border`}>
+                <div
+                  className={`p-4 bg-gradient-to-br ${colorMap[feature.color]} rounded-xl w-fit mb-4 border`}
+                >
                   <Icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-semibold text-ink-900 mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-ink-600">
-                  {feature.description}
-                </p>
+                <p className="text-ink-600">{feature.description}</p>
               </div>
             );
           })}
@@ -110,7 +132,8 @@ export default function FeaturesPage() {
             Ready to Get Started?
           </h2>
           <p className="text-ink-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of creators and brands using Botlify to automate their Instagram and grow their business.
+            Join thousands of creators and brands using Botlify to automate
+            their Instagram and grow their business.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

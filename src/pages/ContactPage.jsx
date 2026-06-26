@@ -15,7 +15,8 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <p className="text-xl text-ink-600 max-w-2xl mx-auto">
-            Have questions? Need help? We're here for you. Reach out and we'll get back to you as soon as possible.
+            Have questions? Need help? We're here for you. Reach out and we'll
+            get back to you as soon as possible.
           </p>
         </div>
 
@@ -73,14 +74,15 @@ export default function ContactPage() {
           <h2 className="text-2xl font-bold text-ink-900 mb-6">
             Frequently Asked Questions
           </h2>
-          
+
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold text-ink-900 mb-2">
                 How quickly will I get a response?
               </h3>
               <p className="text-ink-600">
-                We typically respond to all inquiries within 24 hours during business days (Monday-Friday).
+                We typically respond to all inquiries within 24 hours during
+                business days (Monday-Friday).
               </p>
             </div>
 
@@ -89,7 +91,9 @@ export default function ContactPage() {
                 What information should I include in my email?
               </h3>
               <p className="text-ink-600">
-                Please include your workspace email, a detailed description of your issue or question, and any relevant screenshots if applicable.
+                Please include your workspace email, a detailed description of
+                your issue or question, and any relevant screenshots if
+                applicable.
               </p>
             </div>
 
@@ -98,7 +102,8 @@ export default function ContactPage() {
                 Do you offer phone support?
               </h3>
               <p className="text-ink-600">
-                Currently, we provide support via email. This allows us to give you detailed, documented responses and serve you better.
+                Currently, we provide support via email. This allows us to give
+                you detailed, documented responses and serve you better.
               </p>
             </div>
 
@@ -107,7 +112,8 @@ export default function ContactPage() {
                 Can I request a new feature?
               </h3>
               <p className="text-ink-600">
-                Absolutely! We love hearing from our users. Email us your feature request and we'll review it for our product roadmap.
+                Absolutely! We love hearing from our users. Email us your
+                feature request and we'll review it for our product roadmap.
               </p>
             </div>
           </div>
@@ -115,9 +121,7 @@ export default function ContactPage() {
 
         {/* CTA */}
         <div className="text-center mt-12">
-          <p className="text-ink-600 mb-4">
-            Ready to automate your Instagram?
-          </p>
+          <p className="text-ink-600 mb-4">Ready to automate your Instagram?</p>
           <Link
             to="/signup"
             className="inline-flex items-center justify-center px-8 py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent/90 transition"

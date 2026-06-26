@@ -16,7 +16,8 @@ export default function Footer() {
           <div className="space-y-4">
             <Logo size="sm" dark />
             <p className="text-sm text-ink-500 leading-relaxed">
-              The Instagram automation platform for creators and brands. Set up once. Sells while you sleep.
+              The Instagram automation platform for creators and brands. Set up
+              once. Sells while you sleep.
             </p>
             <div className="flex items-center gap-3">
               <a

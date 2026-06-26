@@ -1,14 +1,5 @@
 /**
  * Botlify Dashboard — Channel-aware control center.
- *
- * Sections:
- *   1. Channel cards     — connect/manage WhatsApp + Instagram
- *   2. Stats row         — messages / contacts / reply rate / triggers
- *   3. Bot Automation    — AI bot
- *   4. Custom Automations — comment-to-DM, story replies, keywords, etc.
- *   5. Tools & Insights  — inbox, contacts, broadcasts, analytics, flow builder, settings, billing
- *
- * Design: rectangular only — no rounded corners. Enterprise-clean.
  */
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
@@ -28,20 +19,10 @@ import {
   Inbox,
   BarChart2,
   Workflow,
-  Hash,
-  MessageCircle,
-  Heart,
-  Share2,
-  Link as LinkIcon,
-  Radio,
-  Target,
-  Clock,
-  CircleDot,
   Settings as SettingsIcon,
   CreditCard,
   Sparkles,
   ShoppingBag,
-  Plug,
   Webhook,
   CalendarClock,
   Droplet,
@@ -52,78 +33,6 @@ import {
   Users2,
 } from "lucide-react";
 import { clsx } from "clsx";
-
-// Custom automation tiles — link directly into AutomationSetupPage
-// with the ?tab= query so the tab opens immediately.
-const IG_AUTOMATIONS = [
-  {
-    id: "welcome",
-    label: "Welcome DM",
-    desc: "First-time DM auto reply",
-    icon: MessageCircle,
-  },
-  {
-    id: "comment_kw",
-    label: "Comment → DM",
-    desc: "Reply to post comments by keyword",
-    icon: Hash,
-  },
-  {
-    id: "dm_kw",
-    label: "DM keywords",
-    desc: "Trigger replies on DM keywords",
-    icon: MessageCircle,
-  },
-  {
-    id: "story_reply",
-    label: "Story replies",
-    desc: "Auto-reply to story responses",
-    icon: Heart,
-  },
-  {
-    id: "story_mention",
-    label: "Story mentions",
-    desc: "Reply when tagged in stories",
-    icon: Heart,
-  },
-  {
-    id: "share",
-    label: "Share to story",
-    desc: "Trigger when post is shared to story",
-    icon: Share2,
-  },
-  {
-    id: "ref_url",
-    label: "Tracked links",
-    desc: "Send DM from referral URL",
-    icon: LinkIcon,
-  },
-  {
-    id: "live",
-    label: "Live comments",
-    desc: "Reply to live broadcast comments",
-    icon: Radio,
-  },
-  {
-    id: "starters",
-    label: "Chat starters",
-    desc: "Ice-breakers in your DM thread",
-    icon: Target,
-  },
-  {
-    id: "fallback",
-    label: "Fallback reply",
-    desc: "Catch-all when no rule matches",
-    icon: CircleDot,
-  },
-  {
-    id: "hours",
-    label: "Business hours",
-    desc: "Respond differently after hours",
-    icon: Clock,
-  },
-];
-
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
@@ -284,27 +193,6 @@ export default function OverviewPage() {
           />
         </div>
       </Section>
-
-      {/* ── Smart Automations quick-access (Instagram) ────── */}
-      {igConnected && (
-        <Section
-          title="Smart Automations"
-          subtitle="Instagram triggers — click any to set up or edit."
-          accent="brand"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {IG_AUTOMATIONS.map((a) => (
-              <ActionTile
-                key={`ig-${a.id}`}
-                icon={a.icon}
-                title={a.label}
-                desc={a.desc}
-                to={`/dashboard/automation?tab=${a.id}&channel=instagram`}
-              />
-            ))}
-          </div>
-        </Section>
-      )}
 
       {/* ── Management ────────────────────────────────────── */}
       <Section

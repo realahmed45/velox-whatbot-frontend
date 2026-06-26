@@ -204,6 +204,10 @@ export default function ShopifyConnect({
             onChange={(e) => setShop(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && connect()}
             disabled={connecting}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-400 pointer-events-none select-none">
             .myshopify.com

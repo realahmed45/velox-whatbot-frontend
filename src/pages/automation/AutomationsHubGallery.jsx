@@ -8,13 +8,11 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
   Workflow,
-  Plus,
   ArrowRight,
   Loader2,
   Sparkles,
   ChevronRight,
 } from "lucide-react";
-import { clsx } from "clsx";
 
 const CATEGORIES = [
   { id: "popular", label: "Popular", subtitle: "Start here — high impact, easy setup" },
@@ -63,23 +61,16 @@ function GalleryCard({ tab, plan, onOpen }) {
 
 export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
   const navigate = useNavigate();
-  const [flows, setFlows] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [installing, setInstalling] = useState(null);
-  const [creating, setCreating] = useState(false);
-  const [showAllFlows, setShowAllFlows] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    Promise.all([
-      api.get("/flows"),
-      api.get("/flows/templates"),
-    ])
-      .then(([flowsRes, tplRes]) => {
+    api.get("/flows/templates")
+      .then((res) => {
         if (!alive) return;
-        setFlows(flowsRes.data.flows || []);
-        setTemplates(tplRes.data.templates || []);
+        setTemplates(res.data.templates || []);
       })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
@@ -88,31 +79,6 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
     };
   }, []);
 
-  const createFlow = async () => {
-    setCreating(true);
-    try {
-      const triggerId = `node_${Date.now()}`;
-      const { data } = await api.post("/flows", {
-        name: "New automation",
-        nodes: [
-          {
-            id: triggerId,
-            type: "trigger",
-            nodeType: "keyword_trigger",
-            position: { x: 250, y: 80 },
-            data: { label: "Keyword Trigger", keywords: [], matchType: "contains" },
-          },
-        ],
-        edges: [],
-      });
-      navigate(`/dashboard/flow-builder/${data.flow._id}`);
-    } catch (e) {
-      toast.error(e.response?.data?.message || "Could not create automation");
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const useTemplate = async (templateKey, name) => {
     setInstalling(templateKey);
     try {
@@ -120,7 +86,6 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
       toast.success(`${name} added to your account`);
       const first = data.flows?.[0];
       if (first?._id) navigate(`/dashboard/flow-builder/${first._id}`);
-      else setFlows((f) => [...(data.flows || []), ...f]);
     } catch (e) {
       toast.error(e.response?.data?.message || "Could not add template");
     } finally {
@@ -153,94 +118,49 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
         );
       })}
 
-      {/* Custom flows */}
+      {/* ── Custom Flows link ── */}
       <section id="flows">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
             <h2 className="text-base font-black text-ink-900 flex items-center gap-2">
               <Workflow className="w-4 h-4 text-violet-600" />
-              Custom automations
+              Custom Flows
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
-              Visual flows with branches, delays, and conditions.
+              Build visual multi-step conversations with branches, delays, and conditions.
             </p>
           </div>
           <button
             type="button"
-            onClick={createFlow}
-            disabled={creating}
+            onClick={() => navigate("/dashboard/flows")}
             className="btn btn-primary text-xs inline-flex items-center gap-1.5"
           >
-            {creating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Plus className="w-3.5 h-3.5" />
-            )}
-            New flow
+            <ArrowRight className="w-3.5 h-3.5" />
+            Open Flow Builder
           </button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-sm text-ink-400 py-8">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+        <div
+          className="border border-dashed border-violet-200 bg-violet-50/40 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 cursor-pointer hover:bg-violet-50 transition"
+          onClick={() => navigate("/dashboard/flows")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/dashboard/flows")}
+        >
+          <div className="w-12 h-12 bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+            <Workflow className="w-6 h-6" />
           </div>
-        ) : flows.length === 0 ? (
-          <div className="border border-dashed border-ink-200 bg-ink-50/50 p-8 text-center">
-            <p className="text-sm font-semibold text-ink-700">No custom flows yet</p>
-            <p className="text-xs text-ink-500 mt-1 max-w-sm mx-auto">
-              Build multi-step conversations or start from a template below.
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm text-ink-900">Design powerful automations</p>
+            <p className="text-xs text-ink-500 mt-1 max-w-md">
+              Drag-and-drop builder for complex flows — welcome sequences, lead nurturing,
+              product recommendations, and more.
             </p>
-            <button
-              type="button"
-              onClick={createFlow}
-              className="mt-4 btn btn-outline text-xs"
-            >
-              Create your first flow
-            </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(showAllFlows ? flows : flows.slice(0, 6)).map((f) => (
-              <button
-                key={f._id}
-                type="button"
-                onClick={() => navigate(`/dashboard/flow-builder/${f._id}`)}
-                className="text-left border border-ink-100 bg-white p-4 hover:border-violet-300 transition"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold text-sm text-ink-900 truncate">
-                    {f.name}
-                  </p>
-                  <span
-                    className={clsx(
-                      "text-[10px] font-bold uppercase px-1.5 py-0.5 border",
-                      f.status === "active"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-ink-50 text-ink-500 border-ink-200",
-                    )}
-                  >
-                    {f.status === "active" ? "Live" : "Draft"}
-                  </span>
-                </div>
-                <p className="text-xs text-ink-500 mt-2 line-clamp-2">
-                  {f.description || "Open in the flow builder to edit."}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-violet-700">
-                  Open builder <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        {flows.length > 6 && !showAllFlows && (
-          <button
-            type="button"
-            onClick={() => setShowAllFlows(true)}
-            className="mt-3 text-xs font-bold text-violet-700 hover:underline"
-          >
-            View all {flows.length} flows
-          </button>
-        )}
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-violet-700 shrink-0">
+            Open builder <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
       </section>
 
       {/* Templates */}

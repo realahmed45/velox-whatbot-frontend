@@ -236,7 +236,7 @@ export default function AutomationSetupPage() {
   const activeTab = TABS.find((t) => t.id === tab);
 
   const headerSubtitle = isGallery
-    ? "Automate Instagram conversations — quick replies, custom flows, and templates in one place."
+    ? "Set up Instagram automations — quick replies, story triggers, keywords and more."
     : activeTab?.desc || "Configure this automation.";
 
   return (
@@ -253,7 +253,7 @@ export default function AutomationSetupPage() {
 
       <PageHeader
         icon={Zap}
-        title={isGallery ? "Automations" : activeTab?.label || "Automation"}
+        title={isGallery ? "Smart Automations" : activeTab?.label || "Automation"}
         subtitle={headerSubtitle}
       />
 

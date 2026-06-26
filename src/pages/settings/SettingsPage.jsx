@@ -404,7 +404,9 @@ function InstagramSettings({ workspace, onSave }) {
           <div className="border border-ink-100 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-ink-800">Automation Health</p>
+                <p className="text-sm font-semibold text-ink-800">
+                  Automation Health
+                </p>
                 <p className="text-xs text-ink-500 mt-0.5">
                   Check if Instagram is delivering DMs and events to Botlify
                 </p>
@@ -414,7 +416,11 @@ function InstagramSettings({ workspace, onSave }) {
                 disabled={diagLoading}
                 className="flex items-center gap-1.5 text-xs font-medium bg-ink-50 hover:bg-ink-100 border border-ink-200 px-3 py-1.5 rounded-lg transition disabled:opacity-60"
               >
-                {diagLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                {diagLoading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3 h-3" />
+                )}
                 Run Diagnostics
               </button>
             </div>
@@ -422,24 +428,65 @@ function InstagramSettings({ workspace, onSave }) {
             {diag && (
               <div className="space-y-2">
                 {diag.checks?.map((c, i) => (
-                  <div key={i} className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>
-                    <span className="mt-0.5 shrink-0">{c.ok ? "✅" : "⚠️"}</span>
+                  <div
+                    key={i}
+                    className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
+                  >
+                    <span className="mt-0.5 shrink-0">
+                      {c.ok ? "✅" : "⚠️"}
+                    </span>
                     <div>
                       <p className="font-medium">{c.label}</p>
-                      {!c.ok && c.hint && <p className="mt-0.5 text-amber-700">{c.hint}</p>}
+                      {!c.ok && c.hint && (
+                        <p className="mt-0.5 text-amber-700">{c.hint}</p>
+                      )}
                     </div>
                   </div>
                 ))}
                 {diag.checks?.some((c) => !c.ok) && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 space-y-1">
-                    <p className="font-semibold">📋 One-time Meta App setup required:</p>
+                    <p className="font-semibold">
+                      📋 One-time Meta App setup required:
+                    </p>
                     <ol className="list-decimal list-inside space-y-1 pl-1">
-                      <li>Go to <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" className="underline font-medium">developers.facebook.com</a> → your App</li>
-                      <li>Open <strong>Instagram → Webhooks</strong></li>
-                      <li>Set Callback URL: <code className="bg-blue-100 px-1 rounded">https://velox-whatbot-backend.onrender.com/api/instagram/webhook</code></li>
-                      <li>Set Verify Token: <code className="bg-blue-100 px-1 rounded">botlify_webhook_2026</code></li>
-                      <li>Enable fields: <strong>messages, messaging_postbacks, comments, story_mentions</strong></li>
-                      <li>Click <strong>Verify and Save</strong>, then click Re-subscribe below</li>
+                      <li>
+                        Go to{" "}
+                        <a
+                          href="https://developers.facebook.com"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline font-medium"
+                        >
+                          developers.facebook.com
+                        </a>{" "}
+                        → your App
+                      </li>
+                      <li>
+                        Open <strong>Instagram → Webhooks</strong>
+                      </li>
+                      <li>
+                        Set Callback URL:{" "}
+                        <code className="bg-blue-100 px-1 rounded">
+                          https://velox-whatbot-backend.onrender.com/api/instagram/webhook
+                        </code>
+                      </li>
+                      <li>
+                        Set Verify Token:{" "}
+                        <code className="bg-blue-100 px-1 rounded">
+                          botlify_webhook_2026
+                        </code>
+                      </li>
+                      <li>
+                        Enable fields:{" "}
+                        <strong>
+                          messages, messaging_postbacks, comments,
+                          story_mentions
+                        </strong>
+                      </li>
+                      <li>
+                        Click <strong>Verify and Save</strong>, then click
+                        Re-subscribe below
+                      </li>
                     </ol>
                   </div>
                 )}
@@ -451,7 +498,11 @@ function InstagramSettings({ workspace, onSave }) {
               disabled={resubLoading}
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold py-2.5 rounded-lg hover:opacity-90 transition disabled:opacity-60"
             >
-              {resubLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              {resubLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5" />
+              )}
               Re-subscribe Webhook
             </button>
           </div>
@@ -693,8 +744,7 @@ function SmartOrdersSettings({ workspace, onSave }) {
 
         <div>
           <label className="text-xs font-semibold text-ink-700 mb-1.5 block">
-            Notify phone number{" "}
-            <span className="text-ink-400">(optional)</span>
+            Notify phone number <span className="text-ink-400">(optional)</span>
           </label>
           <input
             type="tel"

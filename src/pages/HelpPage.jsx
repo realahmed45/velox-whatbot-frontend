@@ -15,13 +15,16 @@ export default function HelpPage() {
             Help & Resources
           </h1>
           <p className="text-xl text-ink-600 max-w-2xl mx-auto">
-            Everything you need to get started with Botlify and automate your Instagram like a pro.
+            Everything you need to get started with Botlify and automate your
+            Instagram like a pro.
           </p>
         </div>
 
         {/* Quick Start Guides */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-ink-900 mb-6">Quick Start Guides</h2>
+          <h2 className="text-2xl font-bold text-ink-900 mb-6">
+            Quick Start Guides
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <Link
               to="/guide"
@@ -34,7 +37,8 @@ export default function HelpPage() {
                 Connect Instagram
               </h3>
               <p className="text-ink-600 text-sm">
-                Step-by-step guide to connect your Instagram account and start automating.
+                Step-by-step guide to connect your Instagram account and start
+                automating.
               </p>
             </Link>
 
@@ -74,11 +78,17 @@ export default function HelpPage() {
                   <Book className="w-6 h-6 text-green-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-ink-900 mb-2">Documentation</h3>
+                  <h3 className="font-semibold text-ink-900 mb-2">
+                    Documentation
+                  </h3>
                   <p className="text-ink-600 text-sm mb-4">
-                    Detailed documentation covering every feature and API endpoint.
+                    Detailed documentation covering every feature and API
+                    endpoint.
                   </p>
-                  <a href="#" className="text-green-500 text-sm font-medium hover:underline">
+                  <a
+                    href="#"
+                    className="text-green-500 text-sm font-medium hover:underline"
+                  >
                     Read Docs →
                   </a>
                 </div>
@@ -91,11 +101,16 @@ export default function HelpPage() {
                   <Video className="w-6 h-6 text-red-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-ink-900 mb-2">Video Tutorials</h3>
+                  <h3 className="font-semibold text-ink-900 mb-2">
+                    Video Tutorials
+                  </h3>
                   <p className="text-ink-600 text-sm mb-4">
                     Watch step-by-step video guides to master Botlify features.
                   </p>
-                  <a href="#" className="text-red-500 text-sm font-medium hover:underline">
+                  <a
+                    href="#"
+                    className="text-red-500 text-sm font-medium hover:underline"
+                  >
                     Watch Videos →
                   </a>
                 </div>
@@ -106,46 +121,114 @@ export default function HelpPage() {
 
         {/* Common Topics */}
         <div className="bg-white rounded-xl border border-ink-200 p-8">
-          <h2 className="text-2xl font-bold text-ink-900 mb-6">Common Topics</h2>
-          
+          <h2 className="text-2xl font-bold text-ink-900 mb-6">
+            Common Topics
+          </h2>
+
           <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
             <div>
-              <h3 className="font-semibold text-ink-900 mb-3">Getting Started</h3>
+              <h3 className="font-semibold text-ink-900 mb-3">
+                Getting Started
+              </h3>
               <ul className="space-y-2 text-sm text-ink-600">
-                <li><a href="#" className="hover:text-accent">• How to sign up</a></li>
-                <li><a href="#" className="hover:text-accent">• Connecting Instagram</a></li>
-                <li><a href="#" className="hover:text-accent">• Understanding plans & pricing</a></li>
-                <li><a href="#" className="hover:text-accent">• First automation setup</a></li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • How to sign up
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Connecting Instagram
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Understanding plans & pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • First automation setup
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-ink-900 mb-3">AI Bot</h3>
               <ul className="space-y-2 text-sm text-ink-600">
-                <li><a href="#" className="hover:text-accent">• Configuring AI personality</a></li>
-                <li><a href="#" className="hover:text-accent">• Adding FAQs</a></li>
-                <li><a href="#" className="hover:text-accent">• Training with website content</a></li>
-                <li><a href="#" className="hover:text-accent">• When to hand off to human</a></li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Configuring AI personality
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Adding FAQs
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Training with website content
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • When to hand off to human
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-ink-900 mb-3">Automation</h3>
               <ul className="space-y-2 text-sm text-ink-600">
-                <li><a href="#" className="hover:text-accent">• Building flows</a></li>
-                <li><a href="#" className="hover:text-accent">• Keyword triggers</a></li>
-                <li><a href="#" className="hover:text-accent">• Broadcasting messages</a></li>
-                <li><a href="#" className="hover:text-accent">• Drip campaigns</a></li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Building flows
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Keyword triggers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Broadcasting messages
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Drip campaigns
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-ink-900 mb-3">Integrations</h3>
               <ul className="space-y-2 text-sm text-ink-600">
-                <li><a href="#" className="hover:text-accent">• Shopify integration</a></li>
-                <li><a href="#" className="hover:text-accent">• Make.com webhooks</a></li>
-                <li><a href="#" className="hover:text-accent">• Zapier integration</a></li>
-                <li><a href="#" className="hover:text-accent">• Custom webhooks</a></li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Shopify integration
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Make.com webhooks
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Zapier integration
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-accent">
+                    • Custom webhooks
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

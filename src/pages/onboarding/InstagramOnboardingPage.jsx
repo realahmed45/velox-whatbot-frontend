@@ -121,7 +121,8 @@ export default function InstagramOnboardingPage() {
 
               <div className="text-left bg-gradient-to-br from-rose-50 to-fuchsia-50 border border-rose-100 p-4 rounded-xl">
                 <p className="font-bold text-sm text-ink-900 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-rose-500" /> Business profile
+                  <Sparkles className="w-4 h-4 text-rose-500" /> Business
+                  profile
                 </p>
                 <p className="text-xs text-ink-500 mt-1 mb-3">
                   Enter your website — we&apos;ll use it to personalize your
@@ -140,7 +141,9 @@ export default function InstagramOnboardingPage() {
                         className="input w-full !pl-8 text-sm"
                         value={siteUrl}
                         onChange={(e) => setSiteUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && saveBusinessProfile()}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && saveBusinessProfile()
+                        }
                         placeholder="yourbrand.com"
                         disabled={savingProfile}
                       />
@@ -171,7 +174,9 @@ export default function InstagramOnboardingPage() {
                   compact
                   connected={!!workspace?.integrations?.shopify?.storeUrl}
                   storeUrl={workspace?.integrations?.shopify?.storeUrl}
-                  orderTracking={!!workspace?.integrations?.shopify?.scopes?.orders}
+                  orderTracking={
+                    !!workspace?.integrations?.shopify?.scopes?.orders
+                  }
                   showManageLink={false}
                   onConnected={() => fetchWorkspace(activeWorkspace)}
                 />
