@@ -5,18 +5,19 @@ import {
   ShoppingBag,
   Mail,
   Check,
-  X,
   Loader2,
   Link2,
   Unlink,
   ExternalLink,
   Workflow,
+  Package,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
 import PageHeader from "@/components/ui/PageHeader";
 import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { AppWindow } from "lucide-react";
+import { ShopifyIcon } from "@/components/icons/BrandIcons";
 
 export default function AppsIntegrationsPage() {
   return (
@@ -89,20 +90,20 @@ function ShopifyCard() {
   };
 
   return (
-    <div className="card overflow-hidden">
+    <div className="card !rounded-none overflow-hidden">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
-          <ShoppingBag className="w-7 h-7" />
+        <div className="w-14 h-14 bg-[#96BF48] flex items-center justify-center text-white shrink-0 border border-[#96BF48]">
+          <ShopifyIcon className="w-8 h-8" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-lg text-ink-900">Shopify</h3>
             {state.connected ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
                 <Check className="w-3 h-3" /> Connected
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-ink-100 text-ink-500 text-xs font-medium">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-ink-200 bg-ink-50 text-ink-500">
                 Not connected
               </span>
             )}
@@ -118,6 +119,40 @@ function ShopifyCard() {
             </div>
           ) : (
             <div className="mt-4 space-y-4">
+              {state.connected && (
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="border border-ink-100 bg-ink-50 px-4 py-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
+                      Catalog status
+                    </p>
+                    <div className="mt-2 flex items-end justify-between gap-3 flex-wrap">
+                      <div>
+                        <p className="text-2xl font-black text-ink-900">
+                          {state.productCount || 0}
+                        </p>
+                        <p className="text-xs text-ink-500">
+                          Products available to your bot
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
+                        <Package className="w-3 h-3" />
+                        Catalog synced
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border border-ink-100 bg-white px-4 py-3 min-w-[220px]">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
+                      Store
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-ink-900 break-all">
+                      {state.shopName || state.storeUrl}
+                    </p>
+                    <p className="mt-1 text-xs text-ink-500">
+                      Product sync is live and updates your bot knowledge.
+                    </p>
+                  </div>
+                </div>
+              )}
               <ShopifyConnect
                 connected={state.connected}
                 storeUrl={state.storeUrl}
@@ -140,11 +175,17 @@ function ShopifyCard() {
                 <ShoppingBag className="w-4 h-4 text-emerald-600" />
                 {state.shopName || state.storeUrl} — imported catalog
               </p>
-              <p className="text-xs text-ink-500 mt-0.5">
-                {state.productCount > 0
-                  ? `${state.productCount} products synced · your bot knows all of them`
-                  : "Your bot has access to all your live products"}
-              </p>
+              <div className="mt-1 flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
+                  <Check className="w-3 h-3" />
+                  Catalog synced
+                </span>
+                <p className="text-xs text-ink-500">
+                  {state.productCount > 0
+                    ? `${state.productCount} products synced · your bot knows all of them`
+                    : "Your bot has access to all your live products"}
+                </p>
+              </div>
             </div>
             <button
               onClick={fetchProducts}
@@ -165,7 +206,7 @@ function ShopifyCard() {
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border border-ink-100 bg-ink-50 aspect-square animate-pulse"
+                  className="border border-ink-100 bg-ink-50 aspect-square animate-pulse"
                 />
               ))}
             </div>
@@ -179,7 +220,7 @@ function ShopifyCard() {
                   href={p.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="group border border-ink-100 rounded-xl overflow-hidden hover:border-emerald-300 hover:shadow-md transition-all duration-200 bg-white"
+                  className="group border border-ink-100 bg-white p-0 overflow-hidden hover:border-emerald-300 transition"
                 >
                   {p.image ? (
                     <img
@@ -188,31 +229,31 @@ function ShopifyCard() {
                       className="w-full aspect-square object-cover"
                     />
                   ) : (
-                    <div className="w-full aspect-square bg-ink-50 flex items-center justify-center">
+                    <div className="w-full aspect-square border-b border-ink-100 bg-ink-50 flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6 text-ink-300" />
                     </div>
                   )}
-                  <div className="p-2">
-                    <p className="text-[11px] font-semibold text-ink-800 truncate leading-tight">
+                  <div className="border-t border-ink-100 p-2">
+                    <p className="text-xs font-bold text-ink-800 truncate leading-tight">
                       {p.title}
                     </p>
                     {p.price && (
-                      <p className="text-[11px] font-bold text-emerald-700 mt-0.5">
+                      <p className="text-xs font-bold text-emerald-700 mt-0.5">
                         {p.currency} {p.price}
                       </p>
                     )}
                     <p className="text-[10px] mt-0.5">
                       {p.inStock ? (
-                        <span className="text-emerald-600">In stock</span>
+                        <span className="font-semibold text-emerald-600">In stock</span>
                       ) : (
-                        <span className="text-red-400">Out of stock</span>
+                        <span className="font-semibold text-red-400">Out of stock</span>
                       )}
                     </p>
                   </div>
                 </a>
               ))}
               {products.length > 12 && (
-                <div className="border border-dashed border-ink-200 rounded-xl flex items-center justify-center aspect-square bg-ink-50">
+                <div className="border border-dashed border-ink-200 flex items-center justify-center aspect-square bg-ink-50">
                   <p className="text-xs text-ink-400 text-center px-2">
                     +{products.length - 12} more products
                   </p>
@@ -222,7 +263,7 @@ function ShopifyCard() {
           )}
 
           {productsFetched && products.length === 0 && (
-            <div className="border border-dashed border-ink-200 rounded-xl p-6 text-center bg-ink-50/50">
+            <div className="border border-dashed border-ink-200 p-6 text-center bg-ink-50/50">
               <p className="text-sm text-ink-500">
                 No published products found in this store yet.
               </p>
@@ -236,9 +277,9 @@ function ShopifyCard() {
 
 function MakeCard() {
   return (
-    <div className="card">
+    <div className="card !rounded-none">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-md bg-violet-600 flex items-center justify-center text-white">
+        <div className="w-14 h-14 bg-[#6D00CC] flex items-center justify-center text-white">
           <Workflow className="w-7 h-7" />
         </div>
         <div className="flex-1">
@@ -328,21 +369,21 @@ function MailchimpCard() {
   };
 
   return (
-    <div className="card">
+    <div className="card !rounded-none">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-md bg-yellow-400 flex items-center justify-center text-black">
+        <div className="w-14 h-14 bg-[#FFE01B] flex items-center justify-center text-black">
           <Mail className="w-7 h-7" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-lg text-ink-900">Mailchimp</h3>
             {state.connected ? (
-              <span className="chip bg-emerald-100 text-emerald-700 text-xs">
-                <Check className="w-3 h-3 inline mr-1" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
+                <Check className="w-3 h-3" />
                 Connected
               </span>
             ) : (
-              <span className="chip bg-ink-100 text-ink-500 text-xs">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-ink-200 bg-ink-50 text-ink-500">
                 Not connected
               </span>
             )}

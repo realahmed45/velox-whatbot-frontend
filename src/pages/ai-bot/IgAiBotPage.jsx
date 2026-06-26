@@ -126,6 +126,7 @@ export default function IgAiBotPage() {
   const [showUrl, setShowUrl] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const fileRef = useRef(null);
+  const shopifyAutoSyncRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [testerOpen, setTesterOpen] = useState(false);
@@ -147,12 +148,24 @@ export default function IgAiBotPage() {
     setCfg(stored && Object.keys(stored).length ? { ...DEFAULTS, ...stored } : DEFAULTS);
     setBizText(workspace?.aiKnowledge?.content || "");
     setSources(workspace?.aiKnowledge?.sources || []);
+    shopifyAutoSyncRef.current = false;
   }, [workspace?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (patch) => setCfg((c) => ({ ...c, ...patch }));
 
   const igHandle = workspace?.instagram?.username;
   const shopifyConnected = !!workspace?.integrations?.shopify?.storeUrl;
+  const shopifyProductCount = workspace?.integrations?.shopify?.productCount || 0;
+  const hasShopifySource = sources.some((s) => s.type === "shopify");
+  const hasReadyShopifySource = sources.some(
+    (s) => s.type === "shopify" && s.status === "ready",
+  );
+
+  useEffect(() => {
+    if (!shopifyConnected || hasShopifySource || shopifyAutoSyncRef.current) return;
+    shopifyAutoSyncRef.current = true;
+    syncShopify();
+  }, [hasShopifySource, shopifyConnected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Knowledge: imports ─────────────────────────────────────────── */
   const refreshSources = async () => {
@@ -210,6 +223,9 @@ export default function IgAiBotPage() {
       navigate("/dashboard/apps");
       return;
     }
+    const alreadySynced = sources.some(
+      (source) => source.type === "shopify" && source.status === "ready",
+    );
     setBusy("shopify");
     try {
       const { data } = await api.post(
@@ -217,7 +233,11 @@ export default function IgAiBotPage() {
       );
       setSources((s) => [...s.filter((x) => x.type !== "shopify"), data.source]);
       set({ enabled: true });
-      toast.success(`Imported ${data.productCount} products from Shopify 🛍️`);
+      toast.success(
+        alreadySynced
+          ? "Bot updated ✓"
+          : `Imported ${data.productCount} products from Shopify 🛍️`,
+      );
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't sync Shopify");
     } finally {
@@ -382,10 +402,14 @@ export default function IgAiBotPage() {
               title={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
               hint={
                 shopifyConnected
-                  ? "Import your live catalog"
+                 ? `✓ ${shopifyProductCount} products ready`
                   : "For product stores"
               }
-              tint="from-green-500 to-emerald-600"
+              tint={
+                shopifyConnected
+                  ? "from-emerald-500 to-green-600"
+                  : "from-green-500 to-emerald-600"
+              }
               brandIcon={<ShopifyIcon className="w-6 h-6" />}
               loading={busy === "shopify"}
               onClick={syncShopify}
@@ -529,9 +553,12 @@ export default function IgAiBotPage() {
             </div>
           )}
 
-          {/* Shopify product mini-preview — shown once Shopify source is synced */}
-          {shopifyConnected && sources.some((s) => s.type === "shopify" && s.status === "ready") && (
-            <ShopifyProductsPreview />
+          {/* Shopify product mini-preview */}
+          {shopifyConnected && (
+            <ShopifyProductsPreview
+              shopifyConnected={shopifyConnected}
+              sourceReady={hasReadyShopifySource}
+            />
           )}
         </IgSection>
 
@@ -647,16 +674,39 @@ export default function IgAiBotPage() {
 }
 
 // ─── Shopify product mini-preview for AI bot page ───────────────────────────
-function ShopifyProductsPreview() {
+function ShopifyProductsPreview({ shopifyConnected, sourceReady }) {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!shopifyConnected || !sourceReady) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     api.get("/integrations/shopify/products")
       .then(({ data }) => setProducts(data.products || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [shopifyConnected, sourceReady]);
+
+  if (shopifyConnected && !sourceReady) {
+    return (
+      <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="w-5 h-5 rounded-md bg-emerald-500 flex items-center justify-center">
+            <Loader2 className="w-3 h-3 animate-spin text-white" />
+          </span>
+          <p className="text-xs font-bold text-emerald-900">Syncing catalog...</p>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="rounded-xl border border-ink-100 bg-ink-50 aspect-square animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-2">
