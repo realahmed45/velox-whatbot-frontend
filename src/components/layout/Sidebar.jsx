@@ -34,6 +34,8 @@ import {
   Plug,
   ShoppingCart,
   ArrowUpRight,
+  Zap,
+  Webhook,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -55,8 +57,8 @@ const NAV = [
     section: "Automation",
     items: [
       { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
-      { to: "/dashboard/ai-bot?test=1", icon: Sparkles, label: "Test Bot" },
-      { to: "/dashboard/flow-builder", icon: Workflow, label: "Bot Flows" },
+      { to: "/dashboard/automation", icon: Zap, label: "Smart Automations" },
+      { to: "/dashboard/automation#flows", icon: Workflow, label: "Custom Flows" },
     ],
   },
   {
@@ -84,7 +86,13 @@ const NAV = [
       { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
       { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
       { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
-      { to: "/dashboard/integrations", icon: Plug, label: "Integrations" },
+    ],
+  },
+  {
+    section: "Integrations",
+    items: [
+      { to: "/dashboard/apps", icon: Plug, label: "Apps" },
+      { to: "/dashboard/integrations", icon: Webhook, label: "Webhooks" },
     ],
   },
   {
@@ -363,19 +371,36 @@ export default function Sidebar({ onNavigate }) {
 function NavItem({ item, collapsed, onNavigate, badge }) {
   const { to, icon: Icon, label, end } = item;
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // NavLink doesn't match query strings — custom active detection.
-  const [pathname, search] = to.split("?");
-  const matchesPath = location.pathname === pathname;
-  const matchesQuery = search ? location.search.includes(search) : !location.search || !to.includes("?");
+  // Parse path / search / hash from the `to` string
+  const [pathAndSearch, hash] = to.split("#");
+  const [pathname] = pathAndSearch.split("?");
+  const search = pathAndSearch.includes("?") ? pathAndSearch.split("?")[1] : null;
+
   const isActive = end
-    ? location.pathname === pathname && !location.search
-    : matchesPath && (search ? location.search.includes(search) : true);
+    ? location.pathname === pathname && !location.search && !location.hash
+    : hash
+    ? location.pathname === pathname && location.hash === `#${hash}`
+    : location.pathname === pathname && (search ? location.search.includes(search) : true);
+
+  const handleClick = (e) => {
+    if (hash) {
+      e.preventDefault();
+      // Navigate to the path first, then scroll to the section
+      navigate(pathname);
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+    onNavigate?.();
+  };
 
   return (
     <NavLink
       to={to}
-      onClick={onNavigate}
+      onClick={handleClick}
       title={collapsed ? label : undefined}
       end={end}
       className={clsx(

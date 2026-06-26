@@ -154,7 +154,7 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
       })}
 
       {/* Custom flows */}
-      <section>
+      <section id="flows">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
             <h2 className="text-base font-black text-ink-900 flex items-center gap-2">

@@ -528,6 +528,11 @@ export default function IgAiBotPage() {
               })}
             </div>
           )}
+
+          {/* Shopify product mini-preview — shown once Shopify source is synced */}
+          {shopifyConnected && sources.some((s) => s.type === "shopify" && s.status === "ready") && (
+            <ShopifyProductsPreview />
+          )}
         </IgSection>
 
         {/* ── Tone ───────────────────────────────────────────────── */}
@@ -636,6 +641,70 @@ export default function IgAiBotPage() {
         </div>
 
         <BotTester open={testerOpen} onClose={closeTester} igHandle={igHandle} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Shopify product mini-preview for AI bot page ───────────────────────────
+function ShopifyProductsPreview() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/integrations/shopify/products")
+      .then(({ data }) => setProducts(data.products || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-2">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-xl border border-ink-100 bg-ink-50 aspect-square animate-pulse" />
+      ))}
+    </div>
+  );
+
+  if (!products.length) return null;
+
+  return (
+    <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-5 h-5 rounded-md bg-emerald-500 flex items-center justify-center">
+          <Check className="w-3 h-3 text-white" />
+        </span>
+        <p className="text-xs font-bold text-emerald-900">
+          {products.length} products imported — bot knows your full catalog
+        </p>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        {products.slice(0, 6).map((p) => (
+          <a
+            key={p.id}
+            href={p.url}
+            target="_blank"
+            rel="noreferrer"
+            className="group rounded-lg overflow-hidden border border-emerald-200/60 bg-white hover:border-emerald-400 hover:shadow transition"
+          >
+            {p.image ? (
+              <img src={p.image} alt={p.title} className="w-full aspect-square object-cover" />
+            ) : (
+              <div className="w-full aspect-square bg-ink-50 flex items-center justify-center text-ink-300">
+                <ShopifyIcon className="w-5 h-5" />
+              </div>
+            )}
+            <div className="p-1.5">
+              <p className="text-[10px] font-semibold text-ink-800 truncate leading-tight">{p.title}</p>
+              {p.price && <p className="text-[10px] text-emerald-700 font-bold">{p.price}</p>}
+            </div>
+          </a>
+        ))}
+        {products.length > 6 && (
+          <div className="rounded-lg border border-dashed border-emerald-200 bg-white flex items-center justify-center aspect-square">
+            <p className="text-[10px] text-emerald-600 font-semibold text-center">+{products.length - 6} more</p>
+          </div>
+        )}
       </div>
     </div>
   );
