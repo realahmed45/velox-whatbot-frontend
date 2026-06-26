@@ -39,6 +39,7 @@ export default function ShopifyConnect({
 
   const [shop, setShop] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState(null);
 
   // Admin token upgrade (order tracking)
   const [showTokenForm, setShowTokenForm] = useState(false);
@@ -50,6 +51,7 @@ export default function ShopifyConnect({
     const s = shop.trim();
     if (!s) return toast.error("Enter your store name");
     setConnecting(true);
+    setConnectError(null);
     try {
       const { data } = await api.post("/integrations/shopify/storefront", {
         storeUrl: s,
@@ -58,16 +60,39 @@ export default function ShopifyConnect({
       await fetchWorkspace(activeWorkspace);
       onConnected?.(data);
     } catch (e) {
-      toast.error(
-        e.response?.data?.message ||
-          "Could not find that store. Check the name and try again.",
-      );
+      const msg = e.response?.data?.message || "Could not find that store. Check the name and try again.";
+      setConnectError(msg);
+      toast.error(msg);
     } finally {
       setConnecting(false);
     }
   };
 
-  /* ── upgrade to admin token (adds order tracking) ── */
+  /* ── connect with admin token (for password-protected stores) ── */
+  const connectWithToken = async () => {
+    const s = shop.trim();
+    const t = adminToken.trim();
+    if (!s) return toast.error("Enter your store name");
+    if (!t) return toast.error("Paste your Admin API access token");
+    setUpgradingToken(true);
+    try {
+      const { data } = await api.post("/integrations/shopify", {
+        storeUrl: s,
+        accessToken: t,
+      });
+      toast.success(`Connected with Admin API! ${data.productCount ?? 0} products synced.`);
+      await fetchWorkspace(activeWorkspace);
+      onConnected?.(data);
+      setConnectError(null);
+      setShowTokenForm(false);
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Token invalid. Try again.");
+    } finally {
+      setUpgradingToken(false);
+    }
+  };
+
+  /* ── upgrade existing storefront connection to admin token (order tracking) ── */
   const upgradeToken = async () => {
     const t = adminToken.trim();
     if (!t) return toast.error("Paste your Admin API access token");
@@ -201,7 +226,7 @@ export default function ShopifyConnect({
             className="input text-sm w-full pr-32"
             placeholder="your-store-name"
             value={shop}
-            onChange={(e) => setShop(e.target.value)}
+            onChange={(e) => { setShop(e.target.value); setConnectError(null); }}
             onKeyDown={(e) => e.key === "Enter" && connect()}
             disabled={connecting}
             autoComplete="off"
@@ -228,8 +253,49 @@ export default function ShopifyConnect({
         </button>
       </div>
 
+      {/* Password-protected store fallback */}
+      {connectError && connectError.includes("password") && (
+        <div className="border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2 text-xs">
+          <p className="font-semibold text-amber-800">⚠️ Store is password-protected</p>
+          <p className="text-ink-600">
+            Your store has a password enabled (Coming Soon mode). Either{" "}
+            <a
+              href="https://admin.shopify.com/settings/general"
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-brand-600"
+            >
+              remove the password
+            </a>{" "}
+            from your Shopify settings, or connect using your Admin API token below.
+          </p>
+          <input
+            type="password"
+            className="input text-xs w-full"
+            placeholder="shpat_... (Admin API access token)"
+            value={adminToken}
+            onChange={(e) => setAdminToken(e.target.value)}
+            disabled={upgradingToken}
+            autoComplete="new-password"
+          />
+          <button
+            type="button"
+            onClick={connectWithToken}
+            disabled={upgradingToken || !shop.trim()}
+            className="btn btn-primary text-xs py-1.5 flex items-center gap-1.5"
+          >
+            {upgradingToken ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+            Connect with Admin Token
+          </button>
+          <p className="text-[10px] text-ink-400">
+            Get your token: Shopify Admin → Settings → Apps → Develop apps → create app → give{" "}
+            <code className="bg-ink-100 px-0.5">read_products, read_orders</code> scope → install → copy token.
+          </p>
+        </div>
+      )}
+
       <p className="text-[11px] text-ink-400">
-        We use Shopify's official public API — no permissions required from you.{" "}
+        We use Shopify's public API — no setup needed for public stores.{" "}
         <a
           href="https://help.shopify.com/en/manual/products"
           target="_blank"
