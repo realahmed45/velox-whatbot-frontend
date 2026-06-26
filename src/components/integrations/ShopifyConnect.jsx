@@ -1,12 +1,8 @@
 ﻿/**
  * Shopify connect component.
  *
- * PRIMARY FLOW — Shopify OAuth (one-click):
- *   Merchant enters store name → we redirect to Shopify OAuth → merchant
- *   clicks "Install" → Shopify redirects back with token automatically.
- *   Works on password-protected stores. No manual token copying. Ever.
- *
- * FALLBACK — if OAuth not configured on server, shows manual token form.
+ * For live/public stores: tokenless products.json (zero setup, instant).
+ * For password-protected/dev stores: shows clear guidance.
  */
 import { useState } from "react";
 import {
@@ -17,7 +13,7 @@ import {
   ChevronUp,
   CheckCircle2,
   Package,
-  ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -39,71 +35,35 @@ export default function ShopifyConnect({
 
   const [shop, setShop] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Manual token fallback (only shown if server has no OAuth configured)
-  const [showManual, setShowManual] = useState(false);
-  const [adminToken, setAdminToken] = useState("");
-  const [savingToken, setSavingToken] = useState(false);
-
-  // Order tracking upgrade (for already-connected storefront stores)
+  // Order tracking upgrade
   const [showTokenForm, setShowTokenForm] = useState(false);
   const [upgradeToken, setUpgradeToken] = useState("");
   const [upgradingToken, setUpgradingToken] = useState(false);
 
-  /* ── PRIMARY: OAuth one-click connect ── */
+  /* ── connect (tokenless — works on all live/public stores) ── */
   const connect = async () => {
     const s = shop.trim();
     if (!s) return toast.error("Enter your store name");
     setConnecting(true);
+    setError(null);
     try {
-      const { data } = await api.get("/integrations/shopify/oauth-url", {
-        params: { shop: s },
-      });
-
-      if (data.fallbackManual) {
-        // OAuth not configured on server — show manual form
-        setShowManual(true);
-        setConnecting(false);
-        return;
-      }
-
-      if (data.url) {
-        // Redirect to Shopify — merchant clicks "Install", comes back automatically
-        window.location.href = data.url;
-        return;
-      }
-
-      throw new Error("Unexpected response from server");
-    } catch (e) {
-      setConnecting(false);
-      const msg = e.response?.data?.message || "Could not start Shopify connection. Try again.";
-      toast.error(msg);
-    }
-  };
-
-  /* ── FALLBACK: manual Admin API token ── */
-  const connectManual = async () => {
-    const s = shop.trim();
-    const t = adminToken.trim();
-    if (!s) return toast.error("Enter your store name");
-    if (!t) return toast.error("Paste your Admin API access token");
-    setSavingToken(true);
-    try {
-      const { data } = await api.post("/integrations/shopify", {
+      const { data } = await api.post("/integrations/shopify/storefront", {
         storeUrl: s,
-        accessToken: t,
       });
-      toast.success(`Connected! ${data.productCount ?? 0} products synced.`);
+      toast.success(`Connected! ${data.products} products synced.`);
       await fetchWorkspace(activeWorkspace);
       onConnected?.(data);
     } catch (e) {
-      toast.error(e.response?.data?.message || "Token invalid. Check and try again.");
+      const msg = e.response?.data?.message || "Could not connect to that store.";
+      setError(msg);
     } finally {
-      setSavingToken(false);
+      setConnecting(false);
     }
   };
 
-  /* ── upgrade existing connection to admin token (adds order tracking) ── */
+  /* ── upgrade to admin token for order tracking ── */
   const doUpgradeToken = async () => {
     const t = upgradeToken.trim();
     if (!t) return toast.error("Paste your Admin API access token");
@@ -160,7 +120,7 @@ export default function ShopifyConnect({
             <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200">
               Order tracking ✓
             </span>
-          ) : authMethod !== "oauth" ? (
+          ) : (
             <button
               type="button"
               onClick={() => setShowTokenForm((v) => !v)}
@@ -169,18 +129,18 @@ export default function ShopifyConnect({
               Add order tracking
               {showTokenForm ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
             </button>
-          ) : null}
+          )}
         </div>
 
         {showTokenForm && !orderTracking && (
           <div className="bg-white border border-amber-200 p-3 space-y-2 text-xs">
             <p className="font-semibold text-amber-800">Enable order tracking in DMs</p>
             <p className="text-ink-500">
-              Create a custom app in{" "}
+              Go to{" "}
               <a href="https://admin.shopify.com" target="_blank" rel="noreferrer" className="underline text-brand-600">
-                Shopify admin
+                Shopify Admin
               </a>{" "}
-              → Settings → Apps → Develop apps → give it <code className="bg-ink-100 px-1">read_orders</code> scope → copy Admin API token.
+              → Settings → Apps → Develop apps → create app → add <code className="bg-ink-100 px-1">read_orders</code> scope → install → copy Admin API token.
             </p>
             <input
               type="password"
@@ -204,7 +164,7 @@ export default function ShopifyConnect({
 
         {showManageLink && (
           <p className="text-[11px] text-emerald-700">
-            Your bot answers product and order questions automatically.{" "}
+            Your bot answers product questions automatically.{" "}
             <Link to="/dashboard/apps" className="underline font-semibold">Manage</Link>
           </p>
         )}
@@ -214,16 +174,16 @@ export default function ShopifyConnect({
 
   /* ── connect state ── */
   return (
-    <div className={`space-y-4 ${compact ? "" : "border border-ink-200 bg-white p-5"}`}>
+    <div className={`space-y-3 ${compact ? "" : "border border-ink-200 bg-white p-5"}`}>
       {!compact && (
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 mb-4">
           <div className="w-10 h-10 bg-emerald-500 flex items-center justify-center text-white shrink-0">
             <ShoppingBag className="w-5 h-5" />
           </div>
           <div>
             <p className="font-semibold text-sm text-ink-900">Connect your Shopify store</p>
             <p className="text-xs text-ink-500 mt-0.5">
-              Enter your store name and we'll handle the rest — no tokens, no setup.
+              Enter your store name — product catalog syncs automatically, no tokens needed.
             </p>
           </div>
         </div>
@@ -236,7 +196,7 @@ export default function ShopifyConnect({
             className="input text-sm w-full pr-32"
             placeholder="your-store-name"
             value={shop}
-            onChange={(e) => setShop(e.target.value)}
+            onChange={(e) => { setShop(e.target.value); setError(null); }}
             onKeyDown={(e) => e.key === "Enter" && connect()}
             disabled={connecting}
             autoComplete="off"
@@ -254,54 +214,37 @@ export default function ShopifyConnect({
           disabled={connecting}
           className="btn btn-primary flex items-center gap-2 shrink-0"
         >
-          {connecting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              <Link2 className="w-4 h-4" />
-              Connect
-            </>
-          )}
+          {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+          Connect
         </button>
       </div>
 
-      <p className="text-[11px] text-ink-400 flex items-center gap-1">
-        <ArrowRight className="w-3 h-3 shrink-0" />
-        You'll be redirected to Shopify to approve the connection — then automatically brought back.
-      </p>
-
-      {/* Manual token fallback (only shown if server OAuth not configured) */}
-      {showManual && (
-        <div className="border border-ink-200 bg-ink-50 p-3 space-y-2 text-xs">
-          <p className="font-semibold text-ink-800">Admin API token</p>
-          <p className="text-ink-500">
-            Go to{" "}
-            <a href="https://admin.shopify.com" target="_blank" rel="noreferrer" className="underline text-brand-600">
-              Shopify Admin
-            </a>{" "}
-            → Settings → Apps → Develop apps → create an app → give it{" "}
-            <code className="bg-ink-200 px-0.5">read_products, read_orders</code> scope → install → copy the Admin API access token.
+      {/* Error with context-aware guidance */}
+      {error && (
+        <div className="border border-red-200 bg-red-50 p-3 text-xs space-y-1">
+          <p className="font-semibold text-red-800 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            {error.includes("password") ? "Store is password-protected" : "Connection failed"}
           </p>
-          <input
-            type="password"
-            className="input text-xs w-full"
-            placeholder="shpat_..."
-            value={adminToken}
-            onChange={(e) => setAdminToken(e.target.value)}
-            disabled={savingToken}
-            autoComplete="new-password"
-          />
-          <button
-            type="button"
-            onClick={connectManual}
-            disabled={savingToken}
-            className="btn btn-primary text-xs py-1.5 flex items-center gap-1.5"
-          >
-            {savingToken ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-            Save token &amp; connect
-          </button>
+          {error.includes("password") ? (
+            <p className="text-ink-600">
+              Your store is in Coming Soon or development mode. Make your store live at{" "}
+              <a href="https://admin.shopify.com/settings/general" target="_blank" rel="noreferrer" className="underline text-brand-600">
+                Shopify Admin → Online Store → Preferences
+              </a>{" "}
+              by removing the password, then try again.
+            </p>
+          ) : error.includes("not found") || error.includes("404") ? (
+            <p className="text-ink-600">Store not found. Double-check the name — it should be the part before <code>.myshopify.com</code>.</p>
+          ) : (
+            <p className="text-ink-600">{error}</p>
+          )}
         </div>
       )}
+
+      <p className="text-[11px] text-ink-400">
+        Works with any live Shopify store. No tokens, no admin setup — just enter your store name.
+      </p>
     </div>
   );
 }
