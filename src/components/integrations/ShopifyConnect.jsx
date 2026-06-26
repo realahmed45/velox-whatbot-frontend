@@ -15,7 +15,7 @@ import {
   Package,
   AlertTriangle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
@@ -29,9 +29,11 @@ export default function ShopifyConnect({
   onConnected,
   compact = false,
   showManageLink = true,
+  redirectToAiBot = false,
 }) {
   const { activeWorkspace } = useAuthStore();
   const { fetchWorkspace } = useWorkspaceStore();
+  const navigate = useNavigate();
 
   const [shop, setShop] = useState("");
   const [connecting, setConnecting] = useState(false);
@@ -52,9 +54,12 @@ export default function ShopifyConnect({
       const { data } = await api.post("/integrations/shopify/storefront", {
         storeUrl: s,
       });
-      toast.success(`Connected! ${data.products} products synced.`);
+      toast.success(`✅ Connected! ${data.products} products imported — your bot knows your catalog.`);
       await fetchWorkspace(activeWorkspace);
       onConnected?.(data);
+      if (redirectToAiBot) {
+        navigate("/dashboard/ai-bot");
+      }
     } catch (e) {
       const msg = e.response?.data?.message || "Could not connect to that store.";
       setError(msg);

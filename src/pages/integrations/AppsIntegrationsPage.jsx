@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
@@ -19,7 +19,25 @@ import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { AppWindow } from "lucide-react";
 import { ShopifyIcon } from "@/components/icons/BrandIcons";
 
+const APP_TABS = [
+  { id: "shopify", label: "Shopify" },
+  { id: "make", label: "Make.com" },
+  { id: "mailchimp", label: "Mailchimp" },
+];
+
 export default function AppsIntegrationsPage() {
+  const shopifyRef = useRef(null);
+  const makeRef = useRef(null);
+  const mailchimpRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("shopify");
+
+  const refs = { shopify: shopifyRef, make: makeRef, mailchimp: mailchimpRef };
+
+  const scrollTo = (id) => {
+    setActiveTab(id);
+    refs[id]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div>
       <IntegrationsTabs />
@@ -30,9 +48,35 @@ export default function AppsIntegrationsPage() {
           subtitle="Plug Botlify into Shopify, Make.com, and your marketing stack"
         />
 
-        <ShopifyCard />
-        <MakeCard />
-        <MailchimpCard />
+        {/* ── App navigation tabs ── */}
+        <div className="flex items-center gap-0 border-b border-ink-200">
+          {APP_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => scrollTo(tab.id)}
+              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition ${
+                activeTab === tab.id
+                  ? "border-ink-900 text-ink-900"
+                  : "border-transparent text-ink-500 hover:text-ink-800 hover:border-ink-300"
+              }`}
+            >
+              {tab.id === "shopify" && <ShopifyIcon className="w-4 h-4 text-[#96BF48]" />}
+              {tab.id === "make" && <Workflow className="w-4 h-4 text-[#6D00CC]" />}
+              {tab.id === "mailchimp" && <Mail className="w-4 h-4 text-[#C21325]" />}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div ref={shopifyRef} className="scroll-mt-4">
+          <ShopifyCard />
+        </div>
+        <div ref={makeRef} className="scroll-mt-4">
+          <MakeCard />
+        </div>
+        <div ref={mailchimpRef} className="scroll-mt-4">
+          <MailchimpCard />
+        </div>
       </div>
     </div>
   );
@@ -160,6 +204,7 @@ function ShopifyCard() {
                 authMethod={state.authMethod}
                 onConnected={handleConnected}
                 showManageLink={false}
+                redirectToAiBot={true}
               />
             </div>
           )}
