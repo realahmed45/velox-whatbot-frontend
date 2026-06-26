@@ -24,7 +24,7 @@ export default function ShopifyConnect({
 
   const startOAuth = async () => {
     const s = shop.trim();
-    if (!s) return toast.error("Enter your store name to continue");
+    if (!s) return toast.error("Enter your Shopify email or store name");
     setConnecting(true);
     try {
       const { data } = await api.get("/integrations/shopify/oauth-url", {
@@ -36,10 +36,13 @@ export default function ShopifyConnect({
       }
       toast.error("Unable to connect right now. Please try again shortly.");
     } catch (e) {
-      toast.error(
-        e.response?.data?.message ||
-          "Unable to connect to Shopify. Please try again shortly.",
-      );
+      const msg = e.response?.data?.message || "";
+      // Give a helpful hint if we couldn't resolve the store from their email
+      if (msg.toLowerCase().includes("enter your shopify")) {
+        toast.error("Couldn't find your store from that email. Try entering just your store name (e.g. mystore).");
+      } else {
+        toast.error(msg || "Unable to connect to Shopify. Please try again shortly.");
+      }
     } finally {
       setConnecting(false);
     }
@@ -112,35 +115,37 @@ export default function ShopifyConnect({
         </div>
       )}
 
-      <div className="flex gap-2">
-        <input
-          className="input text-sm flex-1"
-          placeholder="your-store"
-          value={shop}
-          onChange={(e) => setShop(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && startOAuth()}
-          disabled={connecting}
-        />
-        <button
-          type="button"
-          onClick={startOAuth}
-          disabled={connecting}
-          className="btn btn-primary whitespace-nowrap flex items-center gap-1.5"
-        >
-          {connecting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Link2 className="w-4 h-4" />
-          )}
-          Connect with Shopify
-        </button>
-      </div>
-
-      {!compact && (
+      <div className="space-y-1.5">
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              className="input text-sm w-full"
+              placeholder="you@yourstore.com or your-store"
+              value={shop}
+              onChange={(e) => setShop(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && startOAuth()}
+              disabled={connecting}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={startOAuth}
+            disabled={connecting}
+            className="btn btn-primary whitespace-nowrap flex items-center gap-1.5"
+          >
+            {connecting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Link2 className="w-4 h-4" />
+            )}
+            Connect
+          </button>
+        </div>
         <p className="text-[10px] text-ink-400">
-          Optional — only needed if you sell through Shopify.
+          Enter your Shopify account email — or just your store name (e.g. <span className="font-mono">mystore</span>)
         </p>
-      )}
+      </div>
     </div>
   );
 }
