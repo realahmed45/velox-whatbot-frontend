@@ -40,6 +40,16 @@ import {
   Settings as SettingsIcon,
   CreditCard,
   Sparkles,
+  ShoppingBag,
+  Plug,
+  Webhook,
+  CalendarClock,
+  Droplet,
+  Gift,
+  Eye,
+  UserPlus,
+  ShoppingCart,
+  Users2,
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -246,40 +256,40 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* ── Bot Automation ────────────────────────────────── */}
+      {/* ── Automation ────────────────────────────────────── */}
       <Section
-        title="Bot Automation"
-        subtitle="Smart AI replies — train it once, let it handle conversations 24/7."
+        title="Automation"
+        subtitle="AI replies, smart triggers, and visual conversation flows."
         accent="ink"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <ActionTile
             icon={Bot}
             title="AI Bot"
-            desc="Configure your AI assistant — model, persona, tone, knowledge base."
+            desc="Configure your AI — persona, tone, knowledge base."
             to="/dashboard/ai-bot"
             primary
           />
           <ActionTile
-            icon={Sparkles}
-            title="Test the bot"
-            desc="Send a message and see how the AI handles it before going live."
-            to="/dashboard/ai-bot?test=1"
+            icon={Zap}
+            title="Smart Automations"
+            desc="Comment-to-DM, story replies, keywords, welcome messages."
+            to="/dashboard/automation"
           />
           <ActionTile
             icon={Workflow}
-            title="Bot flows"
-            desc="Build branching conversation flows with the visual builder."
-            to="/dashboard/flow-builder"
+            title="Custom Flows"
+            desc="Visual drag-and-drop multi-step conversation builder."
+            to="/dashboard/flows"
           />
         </div>
       </Section>
 
-      {/* ── Custom Automations (per connected channel) ─────── */}
+      {/* ── Smart Automations quick-access (Instagram) ────── */}
       {igConnected && (
         <Section
-          title="Instagram Automations"
-          subtitle="Comment-to-DM, story replies, keyword triggers, and more."
+          title="Smart Automations"
+          subtitle="Instagram triggers — click any to set up or edit."
           accent="brand"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -296,68 +306,74 @@ export default function OverviewPage() {
         </Section>
       )}
 
-
-      {/* ── Tools & Insights ──────────────────────────────── */}
+      {/* ── Management ────────────────────────────────────── */}
       <Section
-        title="Tools & Insights"
-        subtitle="Inbox, contacts, broadcasts, orders, analytics — everything else you need."
+        title="Management"
+        subtitle="Everything you need to manage conversations and your audience."
         accent="ink"
       >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <ActionTile icon={Inbox} title="Inbox" desc="Live conversations" to="/dashboard/inbox" />
+          <ActionTile icon={Users} title="Contacts" desc="Your audience" to="/dashboard/contacts" />
+          <ActionTile icon={ShoppingCart} title="Orders" desc="AI order capture" to="/dashboard/orders" />
+          <ActionTile icon={Send} title="Broadcasts" desc="Bulk messages" to="/dashboard/broadcasts" />
+          <ActionTile icon={BarChart2} title="Analytics" desc="Performance" to="/dashboard/analytics" />
+        </div>
+      </Section>
+
+      {/* ── Grow ──────────────────────────────────────────── */}
+      <Section
+        title="Grow"
+        subtitle="Tools to grow your audience, nurture leads, and boost engagement."
+        accent="emerald"
+      >
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <ActionTile icon={CalendarClock} title="Scheduled Posts" desc="Plan your content" to="/dashboard/scheduled-posts" />
+          <ActionTile icon={Droplet} title="Drip Campaigns" desc="Automated sequences" to="/dashboard/drip" />
+          <ActionTile icon={Gift} title="Giveaways" desc="Run contests" to="/dashboard/giveaways" />
+          <ActionTile icon={LinkIcon} title="Link in Bio" desc="Smart bio page" to="/dashboard/link-in-bio" />
+          <ActionTile icon={Hash} title="Hashtags" desc="Track hashtags" to="/dashboard/hashtags" />
+          <ActionTile icon={Eye} title="Competitors" desc="Monitor rivals" to="/dashboard/competitors" />
+          <ActionTile icon={UserPlus} title="Referrals" desc="Referral program" to="/dashboard/referral" />
+        </div>
+      </Section>
+
+      {/* ── Integrations ─────────────────────────────────── */}
+      <Section
+        title="Integrations"
+        subtitle="Connect Shopify, Make.com, Mailchimp, and more."
+        accent="ink"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <ActionTile
-            icon={Inbox}
-            title="Inbox"
-            desc="Live conversations"
-            to="/dashboard/inbox"
+            icon={ShoppingBag}
+            title="Apps"
+            desc="Connect Shopify, Mailchimp, Make.com and other tools."
+            to="/dashboard/apps"
           />
           <ActionTile
-            icon={Users}
-            title="Contacts"
-            desc="Your audience"
-            to="/dashboard/contacts"
-          />
-          <ActionTile
-            icon={Send}
-            title="Broadcasts"
-            desc="Bulk send"
-            to="/dashboard/broadcasts"
-          />
-          <ActionTile
-            icon={Sparkles}
-            title="Smart Orders"
-            desc="AI order capture"
-            to="/dashboard/orders"
-          />
-          <ActionTile
-            icon={BarChart2}
-            title="Analytics"
-            desc="Performance"
-            to="/dashboard/analytics"
-          />
-          <ActionTile
-            icon={Workflow}
-            title="Flow Builder"
-            desc="Visual flows"
-            to="/dashboard/flow-builder"
-          />
-          <ActionTile
-            icon={SettingsIcon}
-            title="Settings"
-            desc="Workspace"
-            to="/dashboard/settings"
-          />
-          <ActionTile
-            icon={CreditCard}
-            title="Plan & Billing"
-            desc="Subscription"
-            to="/dashboard/billing"
+            icon={Webhook}
+            title="Webhooks"
+            desc="Send Botlify events to Zapier, Make, or any custom endpoint."
+            to="/dashboard/integrations"
           />
         </div>
       </Section>
 
-        {/* No "Add another channel" CTA needed — the unified ChannelCards above
-            already render a Connect CTA for any disconnected channel. */}
-      </div>
+      {/* ── Settings ─────────────────────────────────────── */}
+      <Section
+        title="Settings"
+        subtitle="Manage your team, workspace, and subscription."
+        accent="ink"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <ActionTile icon={Users2} title="Team" desc="Invite & manage members" to="/dashboard/team" />
+          <ActionTile icon={CreditCard} title="Plan & Billing" desc="Subscription" to="/dashboard/billing" />
+          <ActionTile icon={SettingsIcon} title="Settings" desc="Workspace config" to="/dashboard/settings" />
+        </div>
+      </Section>
+
+    </div>
     </div>
   );
 }

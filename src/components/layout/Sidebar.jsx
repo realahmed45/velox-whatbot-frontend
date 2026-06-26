@@ -58,7 +58,7 @@ const NAV = [
     items: [
       { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
       { to: "/dashboard/automation", icon: Zap, label: "Smart Automations" },
-      { to: "/dashboard/automation#flows", icon: Workflow, label: "Custom Flows" },
+      { to: "/dashboard/flows", icon: Workflow, label: "Custom Flows" },
     ],
   },
   {

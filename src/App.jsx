@@ -37,6 +37,9 @@ const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const FlowBuilderPage = lazy(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
 );
+const CustomFlowsPage = lazy(
+  () => import("@/pages/flow-builder/CustomFlowsPage"),
+);
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 
 // Growth tools (lazy-loaded)
@@ -178,6 +181,7 @@ export default function App() {
               >
                 <Route index element={<OverviewPage />} />
                 <Route path="automation" element={<AutomationSetupPage />} />
+                <Route path="flows" element={<CustomFlowsPage />} />
                 <Route path="contacts" element={<ContactsPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="ai-bot" element={<AiBotPage />} />
