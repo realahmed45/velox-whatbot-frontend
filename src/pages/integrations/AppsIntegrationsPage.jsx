@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
-  ShoppingBag,
   Mail,
   Check,
   Loader2,
@@ -92,23 +91,14 @@ function ShopifyCard() {
     shopName: null,
   });
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
-  const [productsFetched, setProductsFetched] = useState(false);
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const load = async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/integrations/shopify");
       setState(data.shopify || { connected: false });
-      // Auto-load products when already connected
-      if (data.shopify?.connected) {
-        fetchProducts();
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -116,27 +106,12 @@ function ShopifyCard() {
     }
   };
 
-  const fetchProducts = async () => {
-    setLoadingProducts(true);
-    try {
-      const { data } = await api.get("/integrations/shopify/products");
-      setProducts(data.products || []);
-      setProductsFetched(true);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
-
-  const handleConnected = (data) => {
-    load();
-  };
+  const handleConnected = () => load();
 
   return (
     <div className="card !rounded-none overflow-hidden">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 bg-[#96BF48] flex items-center justify-center text-white shrink-0 border border-[#96BF48]">
+        <div className="w-14 h-14 bg-[#96BF48] flex items-center justify-center text-white shrink-0">
           <ShopifyIcon className="w-8 h-8" />
         </div>
         <div className="flex-1 min-w-0">
@@ -153,8 +128,7 @@ function ShopifyCard() {
             )}
           </div>
           <p className="text-sm text-ink-500 mt-1">
-            Connect your store — your bot instantly knows your products, prices,
-            and inventory. Works for any Shopify store, no admin setup required.
+            Connect your Shopify store — your bot instantly knows your products, prices, and inventory.
           </p>
 
           {loading ? (
@@ -162,39 +136,25 @@ function ShopifyCard() {
               <Loader2 className="w-4 h-4 animate-spin" /> Loading…
             </div>
           ) : (
-            <div className="mt-4 space-y-4">
+            <div className="mt-4">
               {state.connected && (
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <div className="border border-ink-100 bg-ink-50 px-4 py-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
-                      Catalog status
-                    </p>
-                    <div className="mt-2 flex items-end justify-between gap-3 flex-wrap">
-                      <div>
-                        <p className="text-2xl font-black text-ink-900">
-                          {state.productCount || 0}
-                        </p>
-                        <p className="text-xs text-ink-500">
-                          Products available to your bot
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
-                        <Package className="w-3 h-3" />
-                        Catalog synced
-                      </span>
-                    </div>
+                <div className="flex items-center gap-3 mb-4 p-3 border border-emerald-100 bg-emerald-50/40">
+                  <div className="w-8 h-8 bg-emerald-500 flex items-center justify-center shrink-0">
+                    <Check className="w-4 h-4 text-white" />
                   </div>
-                  <div className="border border-ink-100 bg-white px-4 py-3 min-w-[220px]">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
-                      Store
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-ink-900 break-all">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink-900">
                       {state.shopName || state.storeUrl}
                     </p>
-                    <p className="mt-1 text-xs text-ink-500">
-                      Product sync is live and updates your bot knowledge.
+                    <p className="text-xs text-ink-500">
+                      {state.productCount > 0 ? `${state.productCount} products synced to your bot` : "Store connected · bot knows your catalog"}
                     </p>
                   </div>
+                  {state.orderTrackingEnabled && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-blue-200 bg-blue-50 text-blue-700 shrink-0">
+                      <Package className="w-3 h-3" /> Orders
+                    </span>
+                  )}
                 </div>
               )}
               <ShopifyConnect
@@ -210,112 +170,6 @@ function ShopifyCard() {
           )}
         </div>
       </div>
-
-      {/* ── Product showcase ── */}
-      {state.connected && !loading && (
-        <div className="mt-6 pt-5 border-t border-ink-100">
-          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-            <div>
-              <p className="text-sm font-bold text-ink-900 flex items-center gap-1.5">
-                <ShoppingBag className="w-4 h-4 text-emerald-600" />
-                {state.shopName || state.storeUrl} — imported catalog
-              </p>
-              <div className="mt-1 flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
-                  <Check className="w-3 h-3" />
-                  Catalog synced
-                </span>
-                <p className="text-xs text-ink-500">
-                  {state.productCount > 0
-                    ? `${state.productCount} products synced · your bot knows all of them`
-                    : "Your bot has access to all your live products"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={fetchProducts}
-              disabled={loadingProducts}
-              className="btn btn-outline text-xs flex items-center gap-1.5"
-            >
-              {loadingProducts ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <ExternalLink className="w-3 h-3" />
-              )}
-              {productsFetched ? "Refresh" : "Preview catalog"}
-            </button>
-          </div>
-
-          {loadingProducts && !productsFetched && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="border border-ink-100 bg-ink-50 aspect-square animate-pulse"
-                />
-              ))}
-            </div>
-          )}
-
-          {productsFetched && products.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-              {products.slice(0, 12).map((p) => (
-                <a
-                  key={p.id}
-                  href={p.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group border border-ink-100 bg-white p-0 overflow-hidden hover:border-emerald-300 transition"
-                >
-                  {p.image ? (
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="w-full aspect-square object-cover"
-                    />
-                  ) : (
-                    <div className="w-full aspect-square border-b border-ink-100 bg-ink-50 flex items-center justify-center">
-                      <ShoppingBag className="w-6 h-6 text-ink-300" />
-                    </div>
-                  )}
-                  <div className="border-t border-ink-100 p-2">
-                    <p className="text-xs font-bold text-ink-800 truncate leading-tight">
-                      {p.title}
-                    </p>
-                    {p.price && (
-                      <p className="text-xs font-bold text-emerald-700 mt-0.5">
-                        {p.currency} {p.price}
-                      </p>
-                    )}
-                    <p className="text-[10px] mt-0.5">
-                      {p.inStock ? (
-                        <span className="font-semibold text-emerald-600">In stock</span>
-                      ) : (
-                        <span className="font-semibold text-red-400">Out of stock</span>
-                      )}
-                    </p>
-                  </div>
-                </a>
-              ))}
-              {products.length > 12 && (
-                <div className="border border-dashed border-ink-200 flex items-center justify-center aspect-square bg-ink-50">
-                  <p className="text-xs text-ink-400 text-center px-2">
-                    +{products.length - 12} more products
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {productsFetched && products.length === 0 && (
-            <div className="border border-dashed border-ink-200 p-6 text-center bg-ink-50/50">
-              <p className="text-sm text-ink-500">
-                No published products found in this store yet.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

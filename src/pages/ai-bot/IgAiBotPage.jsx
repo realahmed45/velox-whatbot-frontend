@@ -43,14 +43,14 @@ import { ShopifyIcon } from "@/components/icons/BrandIcons";
 
 const DEFAULTS = {
   enabled: true,
-  provider: "groq",
-  model: "llama-3.3-70b-versatile",
+  provider: "openai",
+  model: "gpt-4o-mini",
   systemPrompt:
     "You are a warm, on-brand Instagram support voice. Reply like a real creator — short, friendly, 1 emoji max. Stay on-brand and never sound robotic.",
   businessContext: "",
   faqs: [],
-  temperature: 0.55,
-  maxTokens: 220,
+  temperature: 0.45,
+  maxTokens: 600,
   handoffKeywords: ["human", "agent", "support", "complain"],
 };
 
@@ -553,12 +553,24 @@ export default function IgAiBotPage() {
             </div>
           )}
 
-          {/* Shopify product mini-preview */}
+          {/* Shopify connected status — clean ManyChat-style banner */}
           {shopifyConnected && (
-            <ShopifyProductsPreview
-              shopifyConnected={shopifyConnected}
-              sourceReady={hasReadyShopifySource}
-            />
+            <div className="mt-4 flex items-center gap-3 p-3 border border-emerald-200 bg-emerald-50/50">
+              <ShopifyIcon className="w-5 h-5 text-[#96BF48] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-emerald-900">
+                  Shopify connected
+                </p>
+                <p className="text-xs text-emerald-700">
+                  {shopifyProductCount > 0
+                    ? `${shopifyProductCount} products synced — bot knows your full catalog`
+                    : "Your bot knows your full product catalog"}
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-emerald-200 bg-white text-emerald-700 shrink-0">
+                <Check className="w-3 h-3" /> Live
+              </span>
+            </div>
           )}
         </IgSection>
 
