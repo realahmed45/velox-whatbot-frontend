@@ -23,6 +23,7 @@ import {
   CreditCard,
   Sparkles,
   ShoppingBag,
+  Link as LinkIcon,
   Webhook,
   CalendarClock,
   Droplet,

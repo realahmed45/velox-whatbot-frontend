@@ -108,7 +108,8 @@ function ShopifyCard() {
             )}
           </div>
           <p className="text-sm text-ink-500 mt-1">
-            Connect your store — your bot instantly knows your products, prices, and inventory. Works for any Shopify store, no admin setup required.
+            Connect your store — your bot instantly knows your products, prices,
+            and inventory. Works for any Shopify store, no admin setup required.
           </p>
 
           {loading ? (
@@ -162,7 +163,10 @@ function ShopifyCard() {
           {loadingProducts && !productsFetched && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-lg border border-ink-100 bg-ink-50 aspect-square animate-pulse" />
+                <div
+                  key={i}
+                  className="rounded-lg border border-ink-100 bg-ink-50 aspect-square animate-pulse"
+                />
               ))}
             </div>
           )}
@@ -219,7 +223,9 @@ function ShopifyCard() {
 
           {productsFetched && products.length === 0 && (
             <div className="border border-dashed border-ink-200 rounded-xl p-6 text-center bg-ink-50/50">
-              <p className="text-sm text-ink-500">No published products found in this store yet.</p>
+              <p className="text-sm text-ink-500">
+                No published products found in this store yet.
+              </p>
             </div>
           )}
         </div>
@@ -241,7 +247,10 @@ function MakeCard() {
             Send Botlify events to Make (new DMs, leads, flow completions) and
             trigger automations anywhere — no code.
           </p>
-          <Link to="/dashboard/integrations" className="btn btn-outline mt-4 inline-flex items-center gap-2">
+          <Link
+            to="/dashboard/integrations"
+            className="btn btn-outline mt-4 inline-flex items-center gap-2"
+          >
             <Link2 className="w-4 h-4" /> Set up webhooks
           </Link>
         </div>
