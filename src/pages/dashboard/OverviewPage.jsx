@@ -19,6 +19,7 @@ import {
   Inbox,
   BarChart2,
   Workflow,
+  Hash,
   Settings as SettingsIcon,
   CreditCard,
   Sparkles,
