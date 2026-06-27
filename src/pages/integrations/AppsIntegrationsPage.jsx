@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
@@ -17,6 +18,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { AppWindow } from "lucide-react";
 import { ShopifyIcon } from "@/components/icons/BrandIcons";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useAuthStore } from "@/store/authStore";
 
 const APP_TABS = [
   { id: "shopify", label: "Shopify" },
@@ -29,8 +32,35 @@ export default function AppsIntegrationsPage() {
   const makeRef = useRef(null);
   const mailchimpRef = useRef(null);
   const [activeTab, setActiveTab] = useState("shopify");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { fetchWorkspace } = useWorkspaceStore();
+  const { activeWorkspace } = useAuthStore();
 
   const refs = { shopify: shopifyRef, make: makeRef, mailchimp: mailchimpRef };
+
+  // Handle OAuth callback — ?shopify=connected or ?shopify=error
+  useEffect(() => {
+    const status = searchParams.get("shopify");
+    const shop = searchParams.get("shop");
+    if (status === "connected") {
+      toast.success(`✅ Shopify connected${shop ? ` — ${shop}` : ""}! Your bot now knows your full catalog.`);
+      fetchWorkspace(activeWorkspace);
+      // Clean URL then redirect to AI Bot
+      setSearchParams({}, { replace: true });
+      setTimeout(() => navigate("/dashboard/ai-bot"), 1200);
+    } else if (status === "error") {
+      const reason = searchParams.get("reason");
+      const msgs = {
+        hmac: "Security check failed. Please try again.",
+        missing: "Connection was cancelled.",
+        state: "Session expired. Please try again.",
+        exchange: "Couldn't exchange tokens with Shopify. Try again.",
+      };
+      toast.error(`Shopify connection failed: ${msgs[reason] || "Unknown error"}`);
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scrollTo = (id) => {
     setActiveTab(id);
