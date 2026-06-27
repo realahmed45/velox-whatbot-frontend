@@ -205,29 +205,158 @@ function ShopifyCard() {
 }
 
 function MakeCard() {
+  const [open, setOpen] = useState(false);
+
+  const steps = [
+    {
+      n: "1",
+      title: "Create a scenario in Make.com",
+      desc: (
+        <>
+          Go to{" "}
+          <a href="https://make.com" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline inline-flex items-center gap-0.5">
+            make.com <ExternalLink className="w-3 h-3" />
+          </a>{" "}
+          → <strong>Create a new scenario</strong> → click the <strong>+</strong> circle → search <strong>Webhooks</strong> → pick <strong>Custom webhook</strong>.
+        </>
+      ),
+    },
+    {
+      n: "2",
+      title: "Copy your webhook URL from Make",
+      desc: <>Make will show you a URL like <code className="text-xs bg-ink-100 px-1.5 py-0.5 rounded font-mono">https://hook.us2.make.com/abc123…</code> — copy it.</>,
+    },
+    {
+      n: "3",
+      title: "Paste it into Botlify Webhooks",
+      desc: (
+        <>
+          Go to the{" "}
+          <Link to="/dashboard/integrations" className="text-brand-600 hover:underline font-medium">
+            Webhooks tab →
+          </Link>{" "}
+          click <strong>New Webhook</strong> → paste the URL → select the events you want → click <strong>Create</strong>.
+        </>
+      ),
+    },
+    {
+      n: "4",
+      title: "Click 'Run once' in Make, then test in Botlify",
+      desc: <>In Make click <strong>Run once</strong> (bottom left) so it listens — then click the <strong>send icon</strong> on your webhook in Botlify. Make will capture the data structure and you're live.</>,
+    },
+    {
+      n: "5",
+      title: "Add your action in Make",
+      desc: <>Click the <strong>+</strong> in Make after the webhook trigger — connect Google Sheets, Gmail, Slack, HubSpot, or any of 1,000+ apps to do something with every DM, lead, or event.</>,
+    },
+  ];
+
+  const events = [
+    { key: "dm.received", label: "New DM", desc: "Someone messages your Instagram" },
+    { key: "dm.sent", label: "Bot replied", desc: "Your bot sent a response" },
+    { key: "comment.received", label: "New comment", desc: "Someone commented on your post" },
+    { key: "lead.created", label: "Lead captured", desc: "Email or phone detected in a DM" },
+    { key: "flow.completed", label: "Flow finished", desc: "A conversation flow completed" },
+    { key: "contact.tagged", label: "Contact tagged", desc: "A tag was added to a contact" },
+  ];
+
   return (
     <div className="card !rounded-none">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 bg-[#6D00CC] flex items-center justify-center text-white">
+        <div className="w-14 h-14 bg-[#6D00CC] flex items-center justify-center text-white shrink-0">
           <Workflow className="w-7 h-7" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-lg text-ink-900">Make.com</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-bold text-lg text-ink-900">Make.com</h3>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-violet-200 bg-violet-50 text-violet-700">
+              Webhook-based
+            </span>
+          </div>
           <p className="text-sm text-ink-500 mt-1">
-            Send Botlify events to Make (new DMs, leads, flow completions) and
-            trigger automations anywhere — no code.
+            Connect Botlify to <strong>1,000+ apps</strong> — automatically push every DM, lead, and flow completion into Google Sheets, Gmail, HubSpot, Slack, Notion, and more. No code, no developer needed.
           </p>
-          <Link
-            to="/dashboard/integrations"
-            className="btn btn-outline mt-4 inline-flex items-center gap-2"
-          >
-            <Link2 className="w-4 h-4" /> Set up webhooks
-          </Link>
+
+          {/* ── What you can do ── */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {[
+              { icon: "📊", title: "Log to Google Sheets", desc: "Every DM & lead auto-logged" },
+              { icon: "📧", title: "Email your team", desc: "Instant alerts for new leads" },
+              { icon: "🔗", title: "Push to your CRM", desc: "HubSpot, Notion, Airtable…" },
+            ].map((b) => (
+              <div key={b.title} className="p-3 border border-ink-100 bg-ink-50/50 rounded-sm">
+                <div className="text-lg mb-0.5">{b.icon}</div>
+                <p className="text-xs font-semibold text-ink-900">{b.title}</p>
+                <p className="text-xs text-ink-500">{b.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Events ── */}
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide mb-2">Events Botlify sends to Make</p>
+            <div className="flex flex-wrap gap-1.5">
+              {events.map((e) => (
+                <span key={e.key} title={e.desc} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono border border-violet-200 bg-violet-50 text-violet-700 cursor-default">
+                  {e.key}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Setup steps ── */}
+          <div className="mt-4">
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              <Workflow className="w-4 h-4" />
+              {open ? "Hide setup guide" : "How to set up Make.com →"}
+            </button>
+
+            {open && (
+              <div className="mt-3 space-y-3">
+                {steps.map((s) => (
+                  <div key={s.n} className="flex gap-3">
+                    <div className="w-6 h-6 bg-[#6D00CC] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      {s.n}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-ink-900">{s.title}</p>
+                      <p className="text-sm text-ink-500 mt-0.5">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+                <div className="p-3 border border-amber-200 bg-amber-50 text-xs text-amber-800 mt-2">
+                  💡 <strong>Pro tip:</strong> In Make, click <strong>"Immediately as data arrives"</strong> toggle so your scenario runs in real-time — not on a schedule.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── CTAs ── */}
+          <div className="flex items-center gap-3 mt-4 flex-wrap">
+            <Link
+              to="/dashboard/integrations"
+              className="btn btn-primary inline-flex items-center gap-2"
+            >
+              <Link2 className="w-4 h-4" /> Set up webhooks
+            </Link>
+            <a
+              href="https://make.com"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-outline inline-flex items-center gap-2 text-sm"
+            >
+              Open Make.com <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function MailchimpCard() {
   const [state, setState] = useState({ connected: false });
