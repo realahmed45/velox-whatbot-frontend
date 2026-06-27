@@ -145,7 +145,11 @@ export default function IgAiBotPage() {
 
   useEffect(() => {
     const stored = workspace?.aiSettings;
-    setCfg(stored && Object.keys(stored).length ? { ...DEFAULTS, ...stored } : DEFAULTS);
+    setCfg(
+      stored && Object.keys(stored).length
+        ? { ...DEFAULTS, ...stored }
+        : DEFAULTS,
+    );
     setBizText(workspace?.aiKnowledge?.content || "");
     setSources(workspace?.aiKnowledge?.sources || []);
     shopifyAutoSyncRef.current = false;
@@ -155,14 +159,16 @@ export default function IgAiBotPage() {
 
   const igHandle = workspace?.instagram?.username;
   const shopifyConnected = !!workspace?.integrations?.shopify?.storeUrl;
-  const shopifyProductCount = workspace?.integrations?.shopify?.productCount || 0;
+  const shopifyProductCount =
+    workspace?.integrations?.shopify?.productCount || 0;
   const hasShopifySource = sources.some((s) => s.type === "shopify");
   const hasReadyShopifySource = sources.some(
     (s) => s.type === "shopify" && s.status === "ready",
   );
 
   useEffect(() => {
-    if (!shopifyConnected || hasShopifySource || shopifyAutoSyncRef.current) return;
+    if (!shopifyConnected || hasShopifySource || shopifyAutoSyncRef.current)
+      return;
     shopifyAutoSyncRef.current = true;
     syncShopify();
   }, [hasShopifySource, shopifyConnected]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -231,7 +237,10 @@ export default function IgAiBotPage() {
       const { data } = await api.post(
         `/workspaces/${activeWorkspace}/ai-knowledge/sync-shopify`,
       );
-      setSources((s) => [...s.filter((x) => x.type !== "shopify"), data.source]);
+      setSources((s) => [
+        ...s.filter((x) => x.type !== "shopify"),
+        data.source,
+      ]);
       set({ enabled: true });
       toast.success(
         alreadySynced
@@ -402,7 +411,7 @@ export default function IgAiBotPage() {
               title={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
               hint={
                 shopifyConnected
-                 ? `✓ ${shopifyProductCount} products ready`
+                  ? `✓ ${shopifyProductCount} products ready`
                   : "For product stores"
               }
               tint={
@@ -633,14 +642,18 @@ export default function IgAiBotPage() {
           <div className="space-y-2">
             <input
               value={newFaq.question}
-              onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
+              onChange={(e) =>
+                setNewFaq({ ...newFaq, question: e.target.value })
+              }
               placeholder="Question — e.g. Do you ship nationwide?"
               className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
             />
             <div className="flex items-center gap-2">
               <input
                 value={newFaq.answer}
-                onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
+                onChange={(e) =>
+                  setNewFaq({ ...newFaq, answer: e.target.value })
+                }
                 onKeyDown={(e) => e.key === "Enter" && addFaq()}
                 placeholder="Answer — e.g. Yes! 3–5 days across Pakistan."
                 className="flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
@@ -679,7 +692,11 @@ export default function IgAiBotPage() {
           </div>
         </div>
 
-        <BotTester open={testerOpen} onClose={closeTester} igHandle={igHandle} />
+        <BotTester
+          open={testerOpen}
+          onClose={closeTester}
+          igHandle={igHandle}
+        />
       </div>
     </div>
   );
@@ -691,9 +708,13 @@ function ShopifyProductsPreview({ shopifyConnected, sourceReady }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!shopifyConnected) { setLoading(false); return; }
+    if (!shopifyConnected) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    api.get("/integrations/shopify/products")
+    api
+      .get("/integrations/shopify/products")
       .then(({ data }) => setProducts(data.products || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -722,7 +743,10 @@ function ShopifyProductsPreview({ shopifyConnected, sourceReady }) {
       {loading ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="rounded border border-ink-100 bg-white aspect-square animate-pulse" />
+            <div
+              key={i}
+              className="rounded border border-ink-100 bg-white aspect-square animate-pulse"
+            />
           ))}
         </div>
       ) : products.length > 0 ? (
@@ -736,32 +760,57 @@ function ShopifyProductsPreview({ shopifyConnected, sourceReady }) {
               className="group rounded-lg overflow-hidden border border-emerald-100 bg-white hover:border-emerald-400 hover:shadow-sm transition"
             >
               {p.image ? (
-                <img src={p.image} alt={p.title} className="w-full aspect-square object-cover" />
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="w-full aspect-square object-cover"
+                />
               ) : (
                 <div className="w-full aspect-square bg-ink-50 flex items-center justify-center text-ink-300">
                   <ShopifyIcon className="w-5 h-5" />
                 </div>
               )}
               <div className="p-1.5">
-                <p className="text-[10px] font-semibold text-ink-800 truncate leading-tight">{p.title}</p>
-                {p.price && <p className="text-[10px] text-emerald-700 font-bold">{p.price}</p>}
+                <p className="text-[10px] font-semibold text-ink-800 truncate leading-tight">
+                  {p.title}
+                </p>
+                {p.price && (
+                  <p className="text-[10px] text-emerald-700 font-bold">
+                    {p.price}
+                  </p>
+                )}
               </div>
             </a>
           ))}
           {products.length > 12 && (
             <div className="rounded-lg border border-dashed border-emerald-200 bg-white flex items-center justify-center aspect-square">
-              <p className="text-[10px] text-emerald-600 font-semibold text-center px-1">+{products.length - 12}<br />more</p>
+              <p className="text-[10px] text-emerald-600 font-semibold text-center px-1">
+                +{products.length - 12}
+                <br />
+                more
+              </p>
             </div>
           )}
         </div>
       ) : (
-        <p className="text-sm text-ink-500 p-4 text-center">No products found in this store.</p>
+        <p className="text-sm text-ink-500 p-4 text-center">
+          No products found in this store.
+        </p>
       )}
     </div>
   );
 }
 
-function SourceCard({ title, hint, Icon, brandIcon, tint, loading, active, onClick }) {
+function SourceCard({
+  title,
+  hint,
+  Icon,
+  brandIcon,
+  tint,
+  loading,
+  active,
+  onClick,
+}) {
   return (
     <button
       onClick={onClick}

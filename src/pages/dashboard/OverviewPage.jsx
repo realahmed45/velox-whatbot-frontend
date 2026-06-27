@@ -100,181 +100,256 @@ export default function OverviewPage() {
       </div>
 
       <div className="relative p-4 sm:p-8 max-w-6xl mx-auto space-y-7">
-      {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-ink-950">
-            Hey, {firstName}
-          </h1>
-          <p className="text-sm text-ink-500 mt-1">
-            {igConnected
-              ? "Manage your Instagram account and automations from one place."
-              : "Connect Instagram below to start automating."}
-          </p>
+        {/* ── Greeting (no channel toggle — ManyChat-style unified) ── */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-ink-950">
+              Hey, {firstName}
+            </h1>
+            <p className="text-sm text-ink-500 mt-1">
+              {igConnected
+                ? "Manage your Instagram account and automations from one place."
+                : "Connect Instagram below to start automating."}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* ── Instagram channel card ─── */}
-      <ChannelCard
-        name="Instagram"
-        icon={Instagram}
-        color="brand"
-        connected={igConnected}
-        connectedLabel={ig?.username ? `@${ig.username}` : "Connected"}
-        avatar={ig?.profilePicture}
-        stats={
-          igConnected
-            ? {
-                messages: stats?.igMessages ?? stats?.totalMessages ?? "—",
-                followers: ig?.followersCount ?? "—",
-              }
-            : null
-        }
-        connectLabel="Connect Instagram"
-        connectDesc="Link your Instagram Business or Creator account."
-        onConnect={startIgOAuth}
-        onManage={() => navigate("/dashboard/settings")}
-      />
-
-      {/* ── Stats row ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          icon={MessageSquare}
-          label="Messages"
-          value={stats?.totalMessages ?? 0}
+        {/* ── Instagram channel card ─── */}
+        <ChannelCard
+          name="Instagram"
+          icon={Instagram}
           color="brand"
-        />
-        <StatCard
-          icon={Users}
-          label="Contacts"
-          value={stats?.totalContacts ?? 0}
-          color="brand"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Reply rate"
-          value={stats?.replyRate ? `${stats.replyRate}%` : "—"}
-          color="emerald"
-        />
-        <StatCard
-          icon={Zap}
-          label="Active triggers"
-          value={
-            (workspace?.keywordTriggers?.length || 0) +
-            (workspace?.postCommentTriggers?.length || 0)
+          connected={igConnected}
+          connectedLabel={ig?.username ? `@${ig.username}` : "Connected"}
+          avatar={ig?.profilePicture}
+          stats={
+            igConnected
+              ? {
+                  messages: stats?.igMessages ?? stats?.totalMessages ?? "—",
+                  followers: ig?.followersCount ?? "—",
+                }
+              : null
           }
-          color="amber"
+          connectLabel="Connect Instagram"
+          connectDesc="Link your Instagram Business or Creator account."
+          onConnect={startIgOAuth}
+          onManage={() => navigate("/dashboard/settings")}
         />
-      </div>
 
-      {/* ── Automation ────────────────────────────────────── */}
-      <Section
-        title="Automation"
-        subtitle="AI replies, smart triggers, and visual conversation flows."
-        accent="ink"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <ActionTile
-            icon={Bot}
-            title="AI Bot"
-            desc="Configure your AI — persona, tone, knowledge base."
-            to="/dashboard/ai-bot"
-            primary
+        {/* ── Stats row ─────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard
+            icon={MessageSquare}
+            label="Messages"
+            value={stats?.totalMessages ?? 0}
+            color="brand"
           />
-          <ActionTile
+          <StatCard
+            icon={Users}
+            label="Contacts"
+            value={stats?.totalContacts ?? 0}
+            color="brand"
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Reply rate"
+            value={stats?.replyRate ? `${stats.replyRate}%` : "—"}
+            color="emerald"
+          />
+          <StatCard
             icon={Zap}
-            title="Smart Automations"
-            desc="Comment-to-DM, story replies, keywords, welcome messages."
-            to="/dashboard/automation"
-          />
-          <ActionTile
-            icon={Workflow}
-            title="Custom Flows"
-            desc="Visual drag-and-drop multi-step conversation builder."
-            to="/dashboard/flows"
+            label="Active triggers"
+            value={
+              (workspace?.keywordTriggers?.length || 0) +
+              (workspace?.postCommentTriggers?.length || 0)
+            }
+            color="amber"
           />
         </div>
-      </Section>
 
-      {/* ── Management ────────────────────────────────────── */}
-      <Section
-        title="Management"
-        subtitle="Everything you need to manage conversations and your audience."
-        accent="ink"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <ActionTile icon={Inbox} title="Inbox" desc="Live conversations" to="/dashboard/inbox" />
-          <ActionTile icon={Users} title="Contacts" desc="Your audience" to="/dashboard/contacts" />
-          <ActionTile icon={ShoppingCart} title="Orders" desc="AI order capture" to="/dashboard/orders" />
-          <ActionTile icon={Send} title="Broadcasts" desc="Bulk messages" to="/dashboard/broadcasts" />
-          <ActionTile icon={BarChart2} title="Analytics" desc="Performance" to="/dashboard/analytics" />
-        </div>
-      </Section>
+        {/* ── Automation ────────────────────────────────────── */}
+        <Section
+          title="Automation"
+          subtitle="AI replies, smart triggers, and visual conversation flows."
+          accent="ink"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <ActionTile
+              icon={Bot}
+              title="AI Bot"
+              desc="Configure your AI — persona, tone, knowledge base."
+              to="/dashboard/ai-bot"
+              primary
+            />
+            <ActionTile
+              icon={Zap}
+              title="Smart Automations"
+              desc="Comment-to-DM, story replies, keywords, welcome messages."
+              to="/dashboard/automation"
+            />
+            <ActionTile
+              icon={Workflow}
+              title="Custom Flows"
+              desc="Visual drag-and-drop multi-step conversation builder."
+              to="/dashboard/flows"
+            />
+          </div>
+        </Section>
 
-      {/* ── Grow ──────────────────────────────────────────── */}
-      <Section
-        title="Grow"
-        subtitle="Tools to grow your audience, nurture leads, and boost engagement."
-        accent="emerald"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <ActionTile icon={CalendarClock} title="Scheduled Posts" desc="Plan your content" to="/dashboard/scheduled-posts" />
-          <ActionTile icon={Droplet} title="Drip Campaigns" desc="Automated sequences" to="/dashboard/drip" />
-          <ActionTile icon={Gift} title="Giveaways" desc="Run contests" to="/dashboard/giveaways" />
-          <ActionTile icon={LinkIcon} title="Link in Bio" desc="Smart bio page" to="/dashboard/link-in-bio" />
-          <ActionTile icon={Hash} title="Hashtags" desc="Track hashtags" to="/dashboard/hashtags" />
-          <ActionTile icon={Eye} title="Competitors" desc="Monitor rivals" to="/dashboard/competitors" />
-          <ActionTile icon={UserPlus} title="Referrals" desc="Referral program" to="/dashboard/referral" />
-        </div>
-      </Section>
+        {/* ── Management ────────────────────────────────────── */}
+        <Section
+          title="Management"
+          subtitle="Everything you need to manage conversations and your audience."
+          accent="ink"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <ActionTile
+              icon={Inbox}
+              title="Inbox"
+              desc="Live conversations"
+              to="/dashboard/inbox"
+            />
+            <ActionTile
+              icon={Users}
+              title="Contacts"
+              desc="Your audience"
+              to="/dashboard/contacts"
+            />
+            <ActionTile
+              icon={ShoppingCart}
+              title="Orders"
+              desc="AI order capture"
+              to="/dashboard/orders"
+            />
+            <ActionTile
+              icon={Send}
+              title="Broadcasts"
+              desc="Bulk messages"
+              to="/dashboard/broadcasts"
+            />
+            <ActionTile
+              icon={BarChart2}
+              title="Analytics"
+              desc="Performance"
+              to="/dashboard/analytics"
+            />
+          </div>
+        </Section>
 
-      {/* ── Integrations ─────────────────────────────────── */}
-      <Section
-        title="Integrations"
-        subtitle="Connect Shopify, Make.com, Mailchimp, and more."
-        accent="ink"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <ActionTile
-            icon={ShoppingBag}
-            title="Apps"
-            desc="Connect Shopify, Mailchimp, Make.com and other tools."
-            to="/dashboard/apps"
-          />
-          <ActionTile
-            icon={Webhook}
-            title="Webhooks"
-            desc="Send Botlify events to Zapier, Make, or any custom endpoint."
-            to="/dashboard/integrations"
-          />
-        </div>
-      </Section>
+        {/* ── Grow ──────────────────────────────────────────── */}
+        <Section
+          title="Grow"
+          subtitle="Tools to grow your audience, nurture leads, and boost engagement."
+          accent="emerald"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <ActionTile
+              icon={CalendarClock}
+              title="Scheduled Posts"
+              desc="Plan your content"
+              to="/dashboard/scheduled-posts"
+            />
+            <ActionTile
+              icon={Droplet}
+              title="Drip Campaigns"
+              desc="Automated sequences"
+              to="/dashboard/drip"
+            />
+            <ActionTile
+              icon={Gift}
+              title="Giveaways"
+              desc="Run contests"
+              to="/dashboard/giveaways"
+            />
+            <ActionTile
+              icon={LinkIcon}
+              title="Link in Bio"
+              desc="Smart bio page"
+              to="/dashboard/link-in-bio"
+            />
+            <ActionTile
+              icon={Hash}
+              title="Hashtags"
+              desc="Track hashtags"
+              to="/dashboard/hashtags"
+            />
+            <ActionTile
+              icon={Eye}
+              title="Competitors"
+              desc="Monitor rivals"
+              to="/dashboard/competitors"
+            />
+            <ActionTile
+              icon={UserPlus}
+              title="Referrals"
+              desc="Referral program"
+              to="/dashboard/referral"
+            />
+          </div>
+        </Section>
 
-      {/* ── Settings ─────────────────────────────────────── */}
-      <Section
-        title="Settings"
-        subtitle="Manage your team, workspace, and subscription."
-        accent="ink"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <ActionTile icon={Users2} title="Team" desc="Invite & manage members" to="/dashboard/team" />
-          <ActionTile icon={CreditCard} title="Plan & Billing" desc="Subscription" to="/dashboard/billing" />
-          <ActionTile icon={SettingsIcon} title="Settings" desc="Workspace config" to="/dashboard/settings" />
-        </div>
-      </Section>
+        {/* ── Integrations ─────────────────────────────────── */}
+        <Section
+          title="Integrations"
+          subtitle="Connect Shopify, Make.com, Mailchimp, and more."
+          accent="ink"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ActionTile
+              icon={ShoppingBag}
+              title="Apps"
+              desc="Connect Shopify, Mailchimp, Make.com and other tools."
+              to="/dashboard/apps"
+            />
+            <ActionTile
+              icon={Webhook}
+              title="Webhooks"
+              desc="Send Botlify events to Zapier, Make, or any custom endpoint."
+              to="/dashboard/integrations"
+            />
+          </div>
+        </Section>
 
-    </div>
+        {/* ── Settings ─────────────────────────────────────── */}
+        <Section
+          title="Settings"
+          subtitle="Manage your team, workspace, and subscription."
+          accent="ink"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <ActionTile
+              icon={Users2}
+              title="Team"
+              desc="Invite & manage members"
+              to="/dashboard/team"
+            />
+            <ActionTile
+              icon={CreditCard}
+              title="Plan & Billing"
+              desc="Subscription"
+              to="/dashboard/billing"
+            />
+            <ActionTile
+              icon={SettingsIcon}
+              title="Settings"
+              desc="Workspace config"
+              to="/dashboard/settings"
+            />
+          </div>
+        </Section>
+      </div>
     </div>
   );
 }
 
 // ─── Section ─────────────────────────────────────────────────────────────────
 function Section({ title, subtitle, accent = "ink", children }) {
-  const bar = {
-    brand: "bg-brand-500",
-    emerald: "bg-emerald-600",
-    ink: "bg-ink-900",
-  }[accent] || "bg-ink-900";
+  const bar =
+    {
+      brand: "bg-brand-500",
+      emerald: "bg-emerald-600",
+      ink: "bg-ink-900",
+    }[accent] || "bg-ink-900";
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-3">
@@ -353,7 +428,12 @@ function ChannelCard({
           <h3 className="font-bold text-ink-900 text-sm">{name}</h3>
           {connected ? (
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", c.dot)} />
+              <span
+                className={clsx(
+                  "w-1.5 h-1.5 rounded-full animate-pulse",
+                  c.dot,
+                )}
+              />
               <span className="text-xs text-ink-500 truncate">
                 {connectedLabel}
               </span>

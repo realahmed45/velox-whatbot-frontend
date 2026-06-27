@@ -8,10 +8,11 @@ import EmptyState from "@/components/ui/EmptyState";
 
 const EVENTS = [
   { key: "dm.received", label: "DM received" },
-  { key: "dm.sent", label: "DM sent" },
-  { key: "comment.received", label: "Comment received" },
-  { key: "lead.created", label: "New lead / contact" },
+  { key: "dm.sent", label: "DM sent (bot reply)" },
+  { key: "comment.received", label: "Comment / story reply received" },
+  { key: "lead.created", label: "New lead (email/phone captured)" },
   { key: "flow.completed", label: "Flow completed" },
+  { key: "contact.tagged", label: "Contact tagged" },
 ];
 
 const EMPTY = { name: "", url: "", events: EVENTS.map((e) => e.key) };
