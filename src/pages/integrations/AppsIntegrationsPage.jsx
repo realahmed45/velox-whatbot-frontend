@@ -770,7 +770,7 @@ function MailchimpCard() {
                 >
                   <option value="">— Select audience —</option>
                   {lists.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name} ({l.stats?.member_count || 0} members)</option>
+                    <option key={l.id} value={l.id}>{l.name} ({l.members || 0} members)</option>
                   ))}
                 </select>
               </div>
