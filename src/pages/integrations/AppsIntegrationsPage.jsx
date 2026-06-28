@@ -367,7 +367,7 @@ function MakeCard() {
                           onKeyDown={(e) => e.key === "Enter" && handleConnect()}
                           placeholder="Paste token here — we connect instantly…"
                           className="w-full border-2 border-violet-300 focus:border-violet-500 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-violet-200 bg-white font-mono transition"
-                          autoComplete="off"
+                          autoComplete="new-password"
                         />
                         <button
                           type="button"
@@ -457,6 +457,7 @@ function MakeCard() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search your scenarios…"
                 className="w-full border border-ink-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                autoComplete="off"
               />
             </div>
 
