@@ -152,6 +152,14 @@ function MakeCard() {
   const [popupOpened, setPopupOpened] = useState(false);
   const tokenInputRef = useRef(null);
 
+  // Safety net: Chrome sometimes autofills the search box with saved email addresses.
+  // If search ever ends up with an @ sign it's definitely autofill — clear it immediately.
+  useEffect(() => {
+    if (search.includes("@")) {
+      setSearch("");
+    }
+  }, [search]);
+
   const load = useCallback(async () => {
     try {
       const { data } = await api.get("/integrations/make");
@@ -455,10 +463,21 @@ function MakeCard() {
                 type="search"
                 name="scenarioSearch"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  // Block browser autofill: real keystrokes always have nativeEvent.inputType set.
+                  // Autofill events have no inputType (empty string or undefined).
+                  if (e.nativeEvent?.inputType) {
+                    setSearch(e.target.value);
+                  } else {
+                    // Autofill detected — reset the DOM value back to empty
+                    e.target.value = "";
+                  }
+                }}
                 placeholder="Search your scenarios…"
                 className="w-full border border-ink-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 autoComplete="off"
+                data-form-type="other"
+                data-lpignore="true"
               />
             </div>
 
