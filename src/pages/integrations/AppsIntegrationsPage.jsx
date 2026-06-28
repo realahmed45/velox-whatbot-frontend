@@ -452,7 +452,8 @@ function MakeCard() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
               <input
-                type="text"
+                type="search"
+                name="scenarioSearch"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search your scenarios…"
