@@ -152,6 +152,8 @@ function MakeCard() {
   const [popupOpened, setPopupOpened] = useState(false);
   const tokenInputRef = useRef(null);
 
+  const [searchReadOnly, setSearchReadOnly] = useState(true);
+
   // Safety net: Chrome sometimes autofills the search box with saved email addresses.
   // If search ever ends up with an @ sign it's definitely autofill — clear it immediately.
   useEffect(() => {
@@ -245,9 +247,11 @@ function MakeCard() {
     }
   };
 
-  const filtered = scenarios.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = scenarios.filter((s) => {
+    // If the search string looks like an email (autofilled), do not filter by it (treat it as empty search)
+    const cleanSearch = search.includes("@") ? "" : search;
+    return s.name.toLowerCase().includes(cleanSearch.toLowerCase());
+  });
 
   if (state.loading) {
     return (
@@ -460,8 +464,10 @@ function MakeCard() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
               <input
-                type="search"
-                name="scenarioSearch"
+                type="text"
+                readOnly={searchReadOnly}
+                onFocus={() => setSearchReadOnly(false)}
+                onBlur={() => setSearchReadOnly(true)}
                 value={search}
                 onChange={(e) => {
                   // Block browser autofill: real keystrokes always have nativeEvent.inputType set.
@@ -471,6 +477,7 @@ function MakeCard() {
                   } else {
                     // Autofill detected — reset the DOM value back to empty
                     e.target.value = "";
+                    setSearch("");
                   }
                 }}
                 placeholder="Search your scenarios…"
