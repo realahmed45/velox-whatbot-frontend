@@ -26,7 +26,6 @@ import {
   Stethoscope,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
-import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
 import PageHeader from "@/components/ui/PageHeader";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
@@ -252,9 +251,7 @@ export default function AutomationSetupPage() {
         <AutomationsHubGallery tabs={TABS} onOpenTab={openTab} plan={plan} />
       ) : (
         <>
-          <div className="mb-5">
-            <InstagramConstraintsInfo compact />
-          </div>
+
 
           <DiagnosticsPanel workspaceId={activeWorkspace} />
 
