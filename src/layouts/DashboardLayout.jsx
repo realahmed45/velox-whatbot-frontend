@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -28,11 +28,8 @@ const ROUTE_TITLES = {
   "/dashboard/guide": "Guide",
   "/dashboard/scheduled-posts": "Scheduled Posts",
   "/dashboard/drip": "Drip Campaigns",
-  "/dashboard/giveaways": "Giveaways",
   "/dashboard/link-in-bio": "Link in Bio",
   "/dashboard/hashtags": "Hashtag Research",
-  "/dashboard/competitors": "Competitors",
-  "/dashboard/referral": "Referrals",
   "/dashboard/integrations": "Integrations",
   "/dashboard/apps": "Apps",
   "/dashboard/team": "Team",

@@ -215,12 +215,7 @@ export default function OverviewPage() {
               desc="Your audience"
               to="/dashboard/contacts"
             />
-            <ActionTile
-              icon={ShoppingCart}
-              title="Orders"
-              desc="AI order capture"
-              to="/dashboard/orders"
-            />
+
             <ActionTile
               icon={Send}
               title="Broadcasts"
@@ -255,12 +250,7 @@ export default function OverviewPage() {
               desc="Automated sequences"
               to="/dashboard/drip"
             />
-            <ActionTile
-              icon={Gift}
-              title="Giveaways"
-              desc="Run contests"
-              to="/dashboard/giveaways"
-            />
+
             <ActionTile
               icon={LinkIcon}
               title="Link in Bio"
@@ -273,18 +263,7 @@ export default function OverviewPage() {
               desc="Track hashtags"
               to="/dashboard/hashtags"
             />
-            <ActionTile
-              icon={Eye}
-              title="Competitors"
-              desc="Monitor rivals"
-              to="/dashboard/competitors"
-            />
-            <ActionTile
-              icon={UserPlus}
-              title="Referrals"
-              desc="Referral program"
-              to="/dashboard/referral"
-            />
+
           </div>
         </Section>
 

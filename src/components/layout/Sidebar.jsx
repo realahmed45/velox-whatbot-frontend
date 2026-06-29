@@ -66,12 +66,6 @@ const NAV = [
     items: [
       { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
       { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
-      {
-        to: "/dashboard/orders",
-        icon: ShoppingCart,
-        label: "Orders",
-        badgeKey: "newOrders",
-      },
       { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
       { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
     ],
@@ -81,11 +75,8 @@ const NAV = [
     items: [
       { to: "/dashboard/scheduled-posts", icon: CalendarClock, label: "Scheduled Posts" },
       { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
-      { to: "/dashboard/giveaways", icon: Gift, label: "Giveaways" },
       { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
       { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
-      { to: "/dashboard/competitors", icon: Eye, label: "Competitors" },
-      { to: "/dashboard/referral", icon: UserPlus, label: "Referrals" },
     ],
   },
   {
@@ -150,42 +141,6 @@ export default function Sidebar({ onNavigate }) {
 
   const isPremium = ["ig_pro", "scale"].includes(plan);
 
-  // Live "new orders" badge — fetched once + bumped via socket
-  const [newOrderCount, setNewOrderCount] = useState(0);
-  useEffect(() => {
-    let cancelled = false;
-    if (!workspace?._id || !workspace?.smartOrders?.enabled) return;
-    (async () => {
-      try {
-        const api = (await import("@/services/api")).default;
-        const { data } = await api.get("/orders?status=new&limit=1");
-        if (!cancelled) setNewOrderCount(data.statusCounts?.new || 0);
-      } catch (_) {
-        /* ignore */
-      }
-    })();
-    (async () => {
-      const { initSocket } = await import("@/services/socket");
-      const socket = initSocket();
-      if (!socket) return;
-      const onNew = () => setNewOrderCount((c) => c + 1);
-      const onUpdated = ({ order }) => {
-        if (order?.status && order.status !== "new") {
-          setNewOrderCount((c) => Math.max(0, c - 1));
-        }
-      };
-      socket.on("order:new", onNew);
-      socket.on("order:updated", onUpdated);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [workspace?._id, workspace?.smartOrders?.enabled]);
-
-  useEffect(() => {
-    if (location.pathname === "/dashboard/orders") setNewOrderCount(0);
-  }, [location.pathname]);
-
   const initial = (
     workspace?.name?.[0] ||
     user?.name?.[0] ||
@@ -193,7 +148,7 @@ export default function Sidebar({ onNavigate }) {
     "B"
   ).toUpperCase();
 
-  const badges = { newOrders: newOrderCount };
+  const badges = {};
 
   return (
     <aside

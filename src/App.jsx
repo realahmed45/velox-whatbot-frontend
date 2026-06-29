@@ -28,7 +28,6 @@ const AutomationSetupPage = lazy(
 const AnalyticsPage = lazy(() => import("@/pages/analytics/AnalyticsPage"));
 const InboxPage = lazy(() => import("@/pages/inbox/InboxPage"));
 const ContactsPage = lazy(() => import("@/pages/contacts/ContactsPage"));
-const OrdersPage = lazy(() => import("@/pages/orders/OrdersPage"));
 const BroadcastsPage = lazy(() => import("@/pages/broadcasts/BroadcastsPage"));
 const AiBotPage = lazy(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazy(() => import("@/pages/PricingPage"));
@@ -47,13 +46,8 @@ const ScheduledPostsPage = lazy(
   () => import("@/pages/content/ScheduledPostsPage"),
 );
 const DripCampaignsPage = lazy(() => import("@/pages/drip/DripCampaignsPage"));
-const GiveawaysPage = lazy(() => import("@/pages/giveaways/GiveawaysPage"));
 const LinkInBioPage = lazy(() => import("@/pages/link-in-bio/LinkInBioPage"));
 const HashtagsPage = lazy(() => import("@/pages/hashtags/HashtagsPage"));
-const CompetitorsPage = lazy(
-  () => import("@/pages/competitors/CompetitorsPage"),
-);
-const ReferralPage = lazy(() => import("@/pages/referral/ReferralPage"));
 const IntegrationsPage = lazy(
   () => import("@/pages/integrations/IntegrationsPage"),
 );
@@ -183,7 +177,7 @@ export default function App() {
                 <Route path="automation" element={<AutomationSetupPage />} />
                 <Route path="flows" element={<CustomFlowsPage />} />
                 <Route path="contacts" element={<ContactsPage />} />
-                <Route path="orders" element={<OrdersPage />} />
+
                 <Route path="ai-bot" element={<AiBotPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="billing" element={<BillingPage />} />
@@ -204,11 +198,8 @@ export default function App() {
                   element={<ScheduledPostsPage />}
                 />
                 <Route path="drip" element={<DripCampaignsPage />} />
-                <Route path="giveaways" element={<GiveawaysPage />} />
                 <Route path="link-in-bio" element={<LinkInBioPage />} />
                 <Route path="hashtags" element={<HashtagsPage />} />
-                <Route path="competitors" element={<CompetitorsPage />} />
-                <Route path="referral" element={<ReferralPage />} />
                 <Route path="integrations" element={<IntegrationsPage />} />
                 <Route path="apps" element={<AppsIntegrationsPage />} />
                 <Route path="team" element={<TeamPage />} />
