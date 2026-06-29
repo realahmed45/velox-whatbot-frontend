@@ -54,37 +54,7 @@ const DEFAULTS = {
   handoffKeywords: ["human", "agent", "support", "complain"],
 };
 
-const TONE_PRESETS = [
-  {
-    id: "creator",
-    label: "Friendly",
-    emoji: "✨",
-    prompt:
-      "You are an authentic creator replying to DMs. Be warm, casual, use 1 emoji per reply. Match the energy of the follower.",
-  },
-  {
-    id: "professional",
-    label: "Professional",
-    emoji: "💼",
-    prompt:
-      "You are a professional brand assistant. Be clear, polite and helpful. Keep replies concise (1–2 lines), minimal emoji.",
-  },
-  {
-    id: "playful",
-    label: "Playful",
-    emoji: "💫",
-    prompt:
-      "You are a witty Instagram brand voice. Use clever, fun replies. Drop emojis when it fits the mood.",
-  },
-  {
-    id: "luxury",
-    label: "Luxury",
-    emoji: "🖤",
-    prompt:
-      "You are a premium luxury brand. Refined, polished, no slang, minimal emoji use. Sound elevated.",
-  },
-];
-
+// Meta-data for imported sources
 const SOURCE_META = {
   website: {
     Icon: Globe,
@@ -307,9 +277,6 @@ export default function IgAiBotPage() {
     }
   };
 
-  const activeTone =
-    TONE_PRESETS.find((t) => t.prompt === cfg.systemPrompt)?.id || null;
-
   return (
     <div className="relative min-h-full">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -377,8 +344,7 @@ export default function IgAiBotPage() {
         {/* ── Knowledge ──────────────────────────────────────────── */}
         <IgSection title="Teach your bot about your business" icon={Sparkles}>
           <p className="text-sm text-ink-600 mb-4">
-            The more it knows, the better it replies. Add any of these — mix and
-            match. We read everything and turn it into your bot's knowledge.
+            Upload business files, link your website, or sync products from Shopify to build your bot's knowledge base.
           </p>
 
           {/* Add knowledge — professional source cards */}
@@ -460,7 +426,7 @@ export default function IgAiBotPage() {
           {/* Write text */}
           <div className="mt-5">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-500 mb-1.5">
-              <Pencil className="w-3.5 h-3.5" /> Or write it yourself
+              <Pencil className="w-3.5 h-3.5" /> Business Context & Guidelines
             </label>
             <textarea
               value={bizText}
@@ -468,7 +434,7 @@ export default function IgAiBotPage() {
               rows={5}
               maxLength={12000}
               placeholder={
-                "What does your page sell or talk about? Products, drops, shipping policy, opening hours, links — the more context, the better the bot replies.\n\nExample:\n• Streetwear drop every Friday 8pm PKT\n• Sizes XS–XXL, ships across PK in 3 days\n• Returns within 7 days, unworn only"
+                "What does your brand sell or talk about? Add details about your products, drops, shipping policies, opening hours, or external links — the more context, the more accurate the bot."
               }
               className="w-full rounded-xl border border-ink-200 bg-white/80 px-3.5 py-3 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none resize-y"
             />
@@ -583,36 +549,10 @@ export default function IgAiBotPage() {
           )}
         </IgSection>
 
-        {/* ── Tone ───────────────────────────────────────────────── */}
-        <IgSection title="Bot personality" icon={Instagram}>
-          <p className="text-sm text-ink-600 mb-3">
-            Pick how your bot should sound.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {TONE_PRESETS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => set({ systemPrompt: t.prompt })}
-                className={`rounded-xl border px-3 py-3 text-center transition ${
-                  activeTone === t.id
-                    ? "border-brand-400 bg-brand-50 ring-2 ring-brand-100"
-                    : "border-ink-200 bg-white/70 hover:border-brand-200"
-                }`}
-              >
-                <div className="text-xl mb-1">{t.emoji}</div>
-                <div className="text-xs font-semibold text-ink-800">
-                  {t.label}
-                </div>
-              </button>
-            ))}
-          </div>
-        </IgSection>
-
         {/* ── FAQs ───────────────────────────────────────────────── */}
-        <IgSection title="Quick answers (FAQs)" icon={HelpCircle}>
+        <IgSection title="Frequently Asked Questions (FAQs)" icon={HelpCircle}>
           <p className="text-sm text-ink-600 mb-3">
-            Add exact answers for common questions. The bot replies with these
-            instantly — word for word.
+            Define direct answers for frequently asked questions. The bot will deliver these word-for-word when queried.
           </p>
 
           {cfg.faqs.length > 0 && (
