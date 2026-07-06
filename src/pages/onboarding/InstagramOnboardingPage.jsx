@@ -13,6 +13,7 @@ import {
   Sparkles,
   Globe,
   ShoppingBag,
+  ShieldCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -103,7 +104,7 @@ export default function InstagramOnboardingPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 shadow-glass p-6">
+        <div className="bg-white rounded-2xl border border-ink-100 shadow-lg p-6 sm:p-7">
           {igConnected ? (
             <div className="text-center space-y-5 py-2">
               <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto">
@@ -119,9 +120,9 @@ export default function InstagramOnboardingPage() {
                 </p>
               </div>
 
-              <div className="text-left bg-gradient-to-br from-rose-50 to-fuchsia-50 border border-rose-100 p-4 rounded-xl">
+              <div className="text-left bg-brand-50/50 border border-brand-100 p-4 rounded-xl">
                 <p className="font-bold text-sm text-ink-900 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-rose-500" /> Business
+                  <Sparkles className="w-4 h-4 text-brand-500" /> Business
                   profile
                 </p>
                 <p className="text-xs text-ink-500 mt-1 mb-3">
@@ -184,7 +185,7 @@ export default function InstagramOnboardingPage() {
 
               <button
                 onClick={() => navigate("/onboarding/pricing")}
-                className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition"
+                className="btn-primary w-full rounded-xl"
               >
                 Continue
               </button>
@@ -198,18 +199,37 @@ export default function InstagramOnboardingPage() {
             </div>
           ) : (
             <div className="space-y-5">
-              <div className="rounded-xl bg-pink-50 border border-pink-100 p-4 text-sm text-pink-800">
-                <p className="font-semibold mb-1">Before you start:</p>
-                <ol className="list-decimal list-inside space-y-1 text-xs text-pink-700">
-                  <li>
-                    Make sure your Instagram is a <strong>Business</strong> or{" "}
-                    <strong>Creator</strong> account
+              <div className="rounded-xl border border-ink-100 bg-ink-50/60 p-5">
+                <p className="text-sm font-semibold text-ink-900 mb-3">
+                  Before you start
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-0.5 w-6 h-6 rounded-full bg-white border border-ink-200 flex items-center justify-center text-xs font-bold text-ink-500 flex-shrink-0">
+                      1
+                    </span>
+                    <p className="text-sm text-ink-600 leading-relaxed">
+                      Make sure your Instagram is a{" "}
+                      <span className="font-semibold text-ink-900">
+                        Business
+                      </span>{" "}
+                      or{" "}
+                      <span className="font-semibold text-ink-900">
+                        Creator
+                      </span>{" "}
+                      account.
+                    </p>
                   </li>
-                  <li>
-                    Click below — you'll log in to Instagram and grant Botlify
-                    permission to manage messages and comments
+                  <li className="flex items-start gap-3">
+                    <span className="mt-0.5 w-6 h-6 rounded-full bg-white border border-ink-200 flex items-center justify-center text-xs font-bold text-ink-500 flex-shrink-0">
+                      2
+                    </span>
+                    <p className="text-sm text-ink-600 leading-relaxed">
+                      Click below to log in to Instagram and grant Botlify
+                      permission to manage your messages and comments.
+                    </p>
                   </li>
-                </ol>
+                </ul>
               </div>
 
               {error && (
@@ -232,7 +252,7 @@ export default function InstagramOnboardingPage() {
               <button
                 onClick={startOAuth}
                 disabled={connecting}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-semibold transition flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 text-white text-sm font-semibold shadow-sm transition hover:brightness-105 hover:shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {connecting ? (
                   <>
@@ -247,7 +267,8 @@ export default function InstagramOnboardingPage() {
                 )}
               </button>
 
-              <p className="text-[11px] text-center text-ink-400">
+              <p className="text-[11px] text-center text-ink-400 flex items-center justify-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
                 We only request the permissions needed to read messages and post
                 replies on your behalf.
               </p>

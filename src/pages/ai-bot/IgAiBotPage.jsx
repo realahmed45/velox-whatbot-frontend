@@ -34,6 +34,7 @@ import {
   HelpCircle,
   Image as ImageIcon,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -374,20 +375,11 @@ export default function IgAiBotPage() {
               onClick={() => setShowUrl((v) => !v)}
             />
             <SourceCard
-              title={shopifyConnected ? "Sync Shopify" : "Connect Shopify"}
-              hint={
-                shopifyConnected
-                  ? `✓ ${shopifyProductCount} products ready`
-                  : "For product stores"
-              }
-              tint={
-                shopifyConnected
-                  ? "from-emerald-500 to-green-600"
-                  : "from-green-500 to-emerald-600"
-              }
+              title="Sync Shopify"
+              hint="Auto-import your product catalog"
+              tint="from-green-500 to-emerald-600"
               brandIcon={<ShopifyIcon className="w-6 h-6" />}
-              loading={busy === "shopify"}
-              onClick={syncShopify}
+              comingSoon
             />
           </div>
 
@@ -749,16 +741,19 @@ function SourceCard({
   tint,
   loading,
   active,
+  comingSoon,
   onClick,
 }) {
   return (
     <button
-      onClick={onClick}
-      disabled={loading}
+      onClick={comingSoon ? undefined : onClick}
+      disabled={loading || comingSoon}
       className={`group relative overflow-hidden rounded-2xl border bg-white/80 p-4 text-left transition disabled:opacity-70 ${
-        active
-          ? "border-brand-400 ring-2 ring-brand-100"
-          : "border-ink-200 hover:border-brand-300 hover:shadow-glass"
+        comingSoon
+          ? "border-ink-200 cursor-not-allowed opacity-70"
+          : active
+            ? "border-brand-400 ring-2 ring-brand-100"
+            : "border-ink-200 hover:border-brand-300 hover:shadow-glass"
       }`}
     >
       <div
@@ -780,7 +775,13 @@ function SourceCard({
       </div>
       <p className="text-sm font-bold text-ink-900">{title}</p>
       <p className="text-[12px] text-ink-500 mt-0.5 leading-snug">{hint}</p>
-      <ArrowRight className="absolute top-4 right-4 w-4 h-4 text-ink-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition" />
+      {comingSoon ? (
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 rounded-full text-[10px] font-semibold text-amber-700">
+          <Clock className="w-3 h-3" /> Coming soon
+        </span>
+      ) : (
+        <ArrowRight className="absolute top-4 right-4 w-4 h-4 text-ink-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition" />
+      )}
     </button>
   );
 }
