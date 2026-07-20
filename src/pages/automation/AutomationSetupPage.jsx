@@ -20,13 +20,8 @@ import {
   Target,
   Clock,
   CircleDot,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  Stethoscope,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
-import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
 import PageHeader from "@/components/ui/PageHeader";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
@@ -263,25 +258,20 @@ export default function AutomationSetupPage() {
         <AutomationsHubGallery tabs={TABS} onOpenTab={openTab} plan={plan} />
       ) : (
         <>
-          <div className="mb-5">
-            <InstagramConstraintsInfo compact />
-          </div>
-
-          <DiagnosticsPanel workspaceId={activeWorkspace} />
-
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+          <div className="mb-5 flex flex-wrap gap-2">
             {TABS.map((t) => {
               const Icon = t.icon;
+              const active = tab === t.id;
               return (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => openTab(t.id)}
                   className={clsx(
-                    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border whitespace-nowrap transition",
-                    tab === t.id
-                      ? "bg-violet-600 text-white border-violet-600"
-                      : "bg-white text-ink-600 border-ink-200 hover:border-violet-300",
+                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold border transition",
+                    active
+                      ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/30"
+                      : "bg-white text-ink-600 border-ink-200 hover:border-brand-300 hover:text-brand-700",
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -349,190 +339,6 @@ export default function AutomationSetupPage() {
 }
 
 /* ---------- Tab panels ---------- */
-
-function DiagnosticsPanel({ workspaceId }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [resubbing, setResubbing] = useState(false);
-  const [simulating, setSimulating] = useState(false);
-
-  const run = async () => {
-    if (!workspaceId) return;
-    setLoading(true);
-    try {
-      const { data } = await api.get("/instagram/diagnose");
-      setData(data);
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Diagnose failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId]);
-
-  const resubscribe = async () => {
-    setResubbing(true);
-    try {
-      const { data } = await api.post("/instagram/webhook/resubscribe");
-      toast.success(data.message || "Webhook re-subscribed");
-      await run();
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Re-subscribe failed");
-    } finally {
-      setResubbing(false);
-    }
-  };
-
-  const simulate = async () => {
-    setSimulating(true);
-    try {
-      await api.post("/instagram/test/trigger", {
-        triggerType: "direct_message",
-        text: "hi",
-        username: "demo_user",
-      });
-      toast.success("Simulated DM sent. Check the Inbox tab.");
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Simulate failed");
-    } finally {
-      setSimulating(false);
-    }
-  };
-
-  if (!data) {
-    return (
-      <div className="card p-4 mb-5 flex items-center gap-2 text-sm text-ink-500">
-        <Stethoscope className="w-4 h-4" />
-        {loading ? "Running automation health check..." : "Loading health..."}
-      </div>
-    );
-  }
-
-  const failed = data.checks?.filter((c) => !c.ok) || [];
-
-  return (
-    <div
-      className={clsx(
-        "card p-4 mb-5 border",
-        data.ok
-          ? "border-emerald-200 bg-emerald-50/40"
-          : "border-amber-200 bg-amber-50/40",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2">
-          {data.ok ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          )}
-          <div>
-            <p className="text-sm font-semibold text-ink-900">
-              {data.ok
-                ? "Automation is healthy"
-                : `${failed.length} issue${failed.length === 1 ? "" : "s"} blocking your automations`}
-            </p>
-            <p className="text-xs text-ink-500 mt-0.5">
-              {data.ok
-                ? "Triggers will fire as soon as events arrive from Instagram."
-                : "Fix the items below so Instagram events reach Botlify."}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2 flex-shrink-0">
-          <button
-            onClick={run}
-            disabled={loading}
-            className="btn-secondary text-xs"
-          >
-            <RefreshCw
-              className={clsx("w-3.5 h-3.5", loading && "animate-spin")}
-            />
-            Recheck
-          </button>
-          <button
-            onClick={simulate}
-            disabled={simulating}
-            className="btn-secondary text-xs"
-            title="Simulate an inbound DM to test your automation end-to-end without needing Instagram"
-          >
-            <Stethoscope
-              className={clsx("w-3.5 h-3.5", simulating && "animate-pulse")}
-            />
-            Simulate DM
-          </button>
-          <button
-            onClick={resubscribe}
-            disabled={resubbing}
-            className="btn-primary text-xs"
-          >
-            <RefreshCw
-              className={clsx("w-3.5 h-3.5", resubbing && "animate-spin")}
-            />
-            Re-subscribe webhook
-          </button>
-        </div>
-      </div>
-
-      {!data.ok && (
-        <ul className="mt-3 space-y-1.5 pl-7">
-          {data.checks.map((c, i) => (
-            <li key={i} className="text-xs flex items-start gap-2">
-              {c.ok ? (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-              )}
-              <span className={c.ok ? "text-ink-600" : "text-ink-900"}>
-                <span className="font-medium">{c.label}</span>
-                {!c.ok && c.hint && (
-                  <span className="text-ink-500"> — {c.hint}</span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Meta-verified subscription details */}
-      {data.instagram && (
-        <div className="mt-3 pl-7 text-xs text-ink-500 space-y-0.5">
-          <div>
-            <span className="font-medium text-ink-700">
-              Meta-verified fields:
-            </span>{" "}
-            {data.instagram.subscribedFields?.length ? (
-              <span className="font-mono text-ink-800">
-                {data.instagram.subscribedFields.join(", ")}
-              </span>
-            ) : (
-              <span className="text-amber-700">
-                none — Meta is NOT sending events to this server
-              </span>
-            )}
-          </div>
-          <div>
-            <span className="font-medium text-ink-700">
-              Last webhook received:
-            </span>{" "}
-            {data.instagram.lastWebhookAt ? (
-              <span>
-                {new Date(data.instagram.lastWebhookAt).toLocaleString()} (
-                {data.instagram.lastWebhookType || "event"})
-              </span>
-            ) : (
-              <span className="text-amber-700">never</span>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function Card({ title, desc, children }) {
   return (

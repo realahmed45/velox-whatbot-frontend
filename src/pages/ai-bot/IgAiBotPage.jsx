@@ -369,9 +369,53 @@ export default function IgAiBotPage() {
             >
               <Play className="w-4 h-4" /> Preview bot
             </button>
-            <span className="text-xs text-ink-400">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                cfg.enabled
+                  ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                  : "text-ink-500 bg-ink-50 border-ink-200"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  cfg.enabled ? "bg-emerald-500 animate-pulse" : "bg-ink-400"
+                }`}
+              />
               {cfg.enabled ? "Bot is live" : "Bot is paused"}
             </span>
+          </div>
+
+          {/* Stat strip */}
+          <div className="relative mt-5 grid grid-cols-3 gap-3">
+            {[
+              { label: "Knowledge sources", value: sources.length },
+              { label: "FAQs", value: cfg.faqs?.length || 0 },
+              {
+                label: "Status",
+                value: cfg.enabled ? "Active" : "Paused",
+                accent: cfg.enabled,
+              },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="rounded-xl border border-white/60 bg-white/60 backdrop-blur px-3 py-2.5"
+              >
+                <p
+                  className={`text-lg font-black ${
+                    s.accent === false
+                      ? "text-ink-500"
+                      : s.accent
+                        ? "text-emerald-600"
+                        : "text-ink-900"
+                  }`}
+                >
+                  {s.value}
+                </p>
+                <p className="text-[11px] font-medium text-ink-500 mt-0.5">
+                  {s.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -556,7 +600,7 @@ export default function IgAiBotPage() {
 
           {/* Shopify connected status — clean ManyChat-style banner */}
           {shopifyConnected && (
-            <div className="mt-4 flex items-center gap-3 p-3 border border-emerald-200 bg-emerald-50/50">
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
               <ShopifyIcon className="w-5 h-5 text-[#96BF48] shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-emerald-900">
@@ -568,7 +612,7 @@ export default function IgAiBotPage() {
                     : "Your bot knows your full product catalog"}
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-emerald-200 bg-white text-emerald-700 shrink-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border border-emerald-200 bg-white text-emerald-700 shrink-0">
                 <Check className="w-3 h-3" /> Live
               </span>
             </div>
@@ -694,105 +738,7 @@ export default function IgAiBotPage() {
   );
 }
 
-// ─── Shopify product mini-preview for AI bot page ───────────────────────────
-function ShopifyProductsPreview({ shopifyConnected, sourceReady }) {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!shopifyConnected) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    api
-      .get("/integrations/shopify/products")
-      .then(({ data }) => setProducts(data.products || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [shopifyConnected]);
-
-  if (!shopifyConnected) return null;
-
-  return (
-    <div className="mt-4 border border-emerald-200 bg-emerald-50/40 overflow-hidden rounded-xl">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-emerald-100 bg-white/50">
-        <div className="flex items-center gap-2">
-          <ShopifyIcon className="w-5 h-5 text-[#96BF48]" />
-          <p className="text-sm font-bold text-emerald-900">
-            {loading
-              ? "Loading catalog…"
-              : `${products.length} products — bot knows your full catalog`}
-          </p>
-        </div>
-        {sourceReady && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-emerald-200 bg-white text-emerald-700 rounded">
-            <Check className="w-3 h-3" /> Synced
-          </span>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-3">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="rounded border border-ink-100 bg-white aspect-square animate-pulse"
-            />
-          ))}
-        </div>
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-3">
-          {products.slice(0, 12).map((p) => (
-            <a
-              key={p.id}
-              href={p.url}
-              target="_blank"
-              rel="noreferrer"
-              className="group rounded-lg overflow-hidden border border-emerald-100 bg-white hover:border-emerald-400 hover:shadow-sm transition"
-            >
-              {p.image ? (
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  className="w-full aspect-square object-cover"
-                />
-              ) : (
-                <div className="w-full aspect-square bg-ink-50 flex items-center justify-center text-ink-300">
-                  <ShopifyIcon className="w-5 h-5" />
-                </div>
-              )}
-              <div className="p-1.5">
-                <p className="text-[10px] font-semibold text-ink-800 truncate leading-tight">
-                  {p.title}
-                </p>
-                {p.price && (
-                  <p className="text-[10px] text-emerald-700 font-bold">
-                    {p.price}
-                  </p>
-                )}
-              </div>
-            </a>
-          ))}
-          {products.length > 12 && (
-            <div className="rounded-lg border border-dashed border-emerald-200 bg-white flex items-center justify-center aspect-square">
-              <p className="text-[10px] text-emerald-600 font-semibold text-center px-1">
-                +{products.length - 12}
-                <br />
-                more
-              </p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-ink-500 p-4 text-center">
-          No products found in this store.
-        </p>
-      )}
-    </div>
-  );
-}
-
+// ─── Knowledge source card ──────────────────────────────────────────────────
 function SourceCard({
   title,
   hint,

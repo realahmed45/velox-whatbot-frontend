@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Zap,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 
@@ -89,13 +90,18 @@ export default function CustomFlowsPage() {
   };
 
   const toggleFlow = async (flow) => {
+    const isActive = flow.status === "active";
+    const nextStatus = isActive ? "draft" : "active";
     try {
-      await api.patch(`/flows/${flow._id}`, { active: !flow.active });
+      await api.put(`/flows/${flow._id}`, { status: nextStatus });
       setFlows((prev) =>
-        prev.map((f) => (f._id === flow._id ? { ...f, active: !f.active } : f)),
+        prev.map((f) =>
+          f._id === flow._id ? { ...f, status: nextStatus } : f,
+        ),
       );
-    } catch {
-      toast.error("Could not update flow");
+      toast.success(isActive ? "Flow paused" : "Flow activated");
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Could not update flow");
     }
   };
 
@@ -204,7 +210,7 @@ export default function CustomFlowsPage() {
                 className="border border-ink-100 bg-white rounded-xl px-4 py-3 flex items-center gap-3 hover:border-violet-200 hover:shadow-sm transition"
               >
                 <div
-                  className={`w-2 h-2 rounded-full flex-shrink-0 ${flow.active ? "bg-emerald-500" : "bg-ink-300"}`}
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${flow.status === "active" ? "bg-emerald-500" : "bg-ink-300"}`}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink-900 truncate">
@@ -212,7 +218,7 @@ export default function CustomFlowsPage() {
                   </p>
                   <p className="text-xs text-ink-400">
                     {flow.nodes?.length || 0} nodes ·{" "}
-                    {flow.active ? "Active" : "Inactive"}
+                    {flow.status === "active" ? "Active" : "Inactive"}
                     {flow.updatedAt
                       ? ` · Updated ${new Date(flow.updatedAt).toLocaleDateString()}`
                       : ""}
@@ -222,9 +228,9 @@ export default function CustomFlowsPage() {
                   <button
                     onClick={() => toggleFlow(flow)}
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-emerald-600 hover:bg-emerald-50 transition"
-                    title={flow.active ? "Pause" : "Activate"}
+                    title={flow.status === "active" ? "Pause" : "Activate"}
                   >
-                    {flow.active ? (
+                    {flow.status === "active" ? (
                       <Pause className="w-4 h-4" />
                     ) : (
                       <Play className="w-4 h-4" />
@@ -264,34 +270,50 @@ export default function CustomFlowsPage() {
       {/* ── Templates ── */}
       {templates.length > 0 && (
         <section>
-          <h2 className="text-base font-black text-ink-900 mb-3">
-            Start from a template
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <h2 className="text-base font-black text-ink-900">
+              Start from a template
+            </h2>
+          </div>
+          <p className="text-xs text-ink-500 -mt-2 mb-4">
+            Ready-made flows for common business types — add one, then customize
+            it in the builder.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((t) => (
-              <button
+              <div
                 key={t.key}
-                type="button"
-                onClick={() => useTemplate(t.key, t.name)}
-                disabled={installing === t.key}
-                className="group text-left border border-ink-100 bg-white rounded-xl p-4 hover:border-violet-300 hover:shadow-md transition"
+                className="group flex flex-col rounded-2xl border border-ink-100 bg-white p-5 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 hover:-translate-y-0.5 transition-all duration-200"
               >
-                <p className="text-sm font-bold text-ink-900 mb-1">{t.name}</p>
-                <p className="text-xs text-ink-500 leading-relaxed flex-1">
+                {t.icon && <p className="text-2xl mb-2">{t.icon}</p>}
+                <p className="text-sm font-bold text-ink-900">{t.name}</p>
+                <p className="text-xs text-ink-500 leading-relaxed flex-1 mt-1">
                   {t.description}
                 </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-violet-700 group-hover:text-violet-900">
+                {t.keyFlows?.length > 0 && (
+                  <p className="text-[10px] text-ink-400 mt-2">
+                    Includes: {t.keyFlows.slice(0, 2).join(", ")}
+                    {t.keyFlows.length > 2 ? "…" : ""}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => useTemplate(t.key, t.name)}
+                  disabled={installing === t.key}
+                  className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 text-violet-700 text-xs font-bold py-2 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-colors"
+                >
                   {installing === t.key ? (
                     <>
-                      <Loader2 className="w-3 h-3 animate-spin" /> Adding…
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Adding…
                     </>
                   ) : (
                     <>
                       Use template <ChevronRight className="w-3.5 h-3.5" />
                     </>
                   )}
-                </span>
-              </button>
+                </button>
+              </div>
             ))}
           </div>
         </section>
