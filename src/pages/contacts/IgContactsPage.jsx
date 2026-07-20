@@ -533,7 +533,9 @@ function DetailPanel({ contact, onClose, onUpdate, onDelete }) {
                       {n.content}
                     </p>
                     <p className="text-[10px] text-ink-400 mt-1">
-                      {n.addedAt ? dayjs(n.addedAt).format("D MMM, h:mm A") : ""}
+                      {n.createdAt || n.addedAt
+                        ? dayjs(n.createdAt || n.addedAt).format("D MMM, h:mm A")
+                        : ""}
                     </p>
                   </div>
                 ))}
