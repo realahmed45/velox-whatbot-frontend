@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import BrandSpinner from "@/components/ui/BrandSpinner";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 import ConnectChannelGate from "@/components/ConnectChannelGate";
 import RequireOnboarding from "@/components/RequireOnboarding";
@@ -104,13 +105,7 @@ export default function App() {
               },
             }}
           />
-          <Suspense
-            fallback={
-              <div className="min-h-screen flex items-center justify-center text-sm text-ink-400">
-                Loading…
-              </div>
-            }
-          >
+          <Suspense fallback={<BrandSpinner />}>
             <Routes>
               {/* Public marketing */}
               <Route path="/" element={<LandingPage />} />

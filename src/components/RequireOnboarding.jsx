@@ -22,7 +22,7 @@ const EXEMPT_PATHS = [
 
 export default function RequireOnboarding({ children }) {
   const { workspace, fetchWorkspace, loading } = useWorkspaceStore();
-  const { activeWorkspace } = useAuthStore();
+  const { activeWorkspace, user } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
@@ -30,6 +30,12 @@ export default function RequireOnboarding({ children }) {
       fetchWorkspace(activeWorkspace);
     }
   }, [workspace, activeWorkspace, loading, fetchWorkspace]);
+
+  // Email/password signups must confirm their 4-digit code first. Google
+  // signups arrive with isEmailVerified: true, so they pass straight through.
+  if (user && user.isEmailVerified === false) {
+    return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
+  }
 
   if (loading || !workspace) return children;
 
