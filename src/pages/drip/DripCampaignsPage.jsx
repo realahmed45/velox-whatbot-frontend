@@ -6,13 +6,24 @@ import dayjs from "dayjs";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 
-const EMPTY_STEP = { delayMinutes: 60, messageText: "" };
+const EMPTY_STEP = { delayMinutes: 60, message: "" };
 const EMPTY_CAMPAIGN = {
   name: "",
   triggerType: "keyword",
   triggerValue: "",
   steps: [{ ...EMPTY_STEP }],
 };
+
+// Map the form shape -> the API/model shape (trigger object + message + enabled).
+const toApiPayload = (form) => ({
+  name: form.name,
+  trigger: { type: form.triggerType, keyword: form.triggerValue },
+  steps: form.steps.map((s) => ({
+    delayMinutes: Number(s.delayMinutes) || 0,
+    message: s.message,
+  })),
+  enabled: true,
+});
 
 export default function DripCampaignsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -40,11 +51,11 @@ export default function DripCampaignsPage() {
   const save = async () => {
     if (!form.name.trim()) return toast.error("Name required");
     if (!form.triggerValue.trim()) return toast.error("Trigger value required");
-    if (!form.steps.length || form.steps.some((s) => !s.messageText.trim()))
+    if (!form.steps.length || form.steps.some((s) => !s.message.trim()))
       return toast.error("All steps need message text");
     setSaving(true);
     try {
-      await api.post("/drip-campaigns", form);
+      await api.post("/drip-campaigns", toApiPayload(form));
       toast.success("Drip campaign created");
       setShowModal(false);
       setForm(EMPTY_CAMPAIGN);
@@ -56,9 +67,9 @@ export default function DripCampaignsPage() {
     }
   };
 
-  const toggleActive = async (id, isActive) => {
+  const toggleActive = async (id, enabled) => {
     try {
-      await api.put(`/drip-campaigns/${id}`, { isActive: !isActive });
+      await api.put(`/drip-campaigns/${id}`, { enabled: !enabled });
       load();
     } catch {
       toast.error("Failed to update");
@@ -130,24 +141,27 @@ export default function DripCampaignsPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-ink-900">{c.name}</h3>
                   <span
-                    className={`chip ${c.isActive ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-500"}`}
+                    className={`chip ${c.enabled ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-500"}`}
                   >
-                    {c.isActive ? "Active" : "Paused"}
+                    {c.enabled ? "Active" : "Paused"}
                   </span>
                 </div>
                 <p className="text-xs text-ink-500 mt-1">
-                  Trigger: <span className="font-medium">{c.triggerType}</span>{" "}
-                  — {c.triggerValue} · {c.steps?.length || 0} steps ·{" "}
+                  Trigger:{" "}
+                  <span className="font-medium">
+                    {c.trigger?.type || "keyword"}
+                  </span>{" "}
+                  — {c.trigger?.keyword || "—"} · {c.steps?.length || 0} steps ·{" "}
                   {c.stats?.enrolled || 0} enrolled · {c.stats?.completed || 0}{" "}
                   completed
                 </p>
               </div>
               <button
-                onClick={() => toggleActive(c._id, c.isActive)}
+                onClick={() => toggleActive(c._id, c.enabled)}
                 className="btn btn-outline"
-                title={c.isActive ? "Pause" : "Activate"}
+                title={c.enabled ? "Pause" : "Activate"}
               >
-                {c.isActive ? (
+                {c.enabled ? (
                   <Pause className="w-4 h-4" />
                 ) : (
                   <Play className="w-4 h-4" />
@@ -269,9 +283,9 @@ export default function DripCampaignsPage() {
                         <textarea
                           className="input"
                           rows="3"
-                          value={step.messageText}
+                          value={step.message}
                           onChange={(e) =>
-                            updateStep(idx, { messageText: e.target.value })
+                            updateStep(idx, { message: e.target.value })
                           }
                           placeholder="Hi {{name}}, thanks for subscribing…"
                         />
