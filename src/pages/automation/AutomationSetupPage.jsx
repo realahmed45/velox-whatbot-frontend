@@ -20,6 +20,7 @@ import {
   Target,
   Clock,
   CircleDot,
+  AlertTriangle,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
 import PageHeader from "@/components/ui/PageHeader";
@@ -131,6 +132,66 @@ const ALL_TABS = [
     channels: ["instagram"],
   },
 ];
+
+// Strong, ready-to-use example copy for each automation. Users can one-click
+// insert these instead of staring at a blank box. {name}/{first_name} are
+// personalized at send time; the backend also falls back to sensible defaults
+// if a field is left blank, so an enabled automation never sends nothing.
+const EXAMPLES = {
+  welcome:
+    "Hey {first_name}! 👋 Thanks so much for reaching out. How can we help you today?",
+  commentReply:
+    "Thanks for commenting, {first_name}! 🙌 Here's the info you asked for 👇",
+  dmReply:
+    "Great question, {first_name}! Here's everything you need to know 👇",
+  storyReply:
+    "Thanks for replying to our story, {first_name}! 🙌 Want to know more? Just ask!",
+  storyMention:
+    "Thank you so much for the mention, {first_name}! 💛 It means a lot. Anything we can help with?",
+  share:
+    "Thanks for sharing, {first_name}! 🙏 Really appreciate the love — let us know if you have any questions!",
+  live:
+    "Thanks for joining our live, {first_name}! 🎉 Here's the info you asked about 👇",
+  refUrl:
+    "Welcome, {first_name}! 🎯 Thanks for clicking through — here's your exclusive offer 👇",
+  starterGreeting:
+    "Hi {first_name}! 👋 What can we help you with today? Pick an option below:",
+  fallback:
+    "Thanks for your message, {first_name}! 🙏 A team member will get back to you shortly. Meanwhile, is there something specific we can help with?",
+  away:
+    "Thanks for reaching out! We're away right now but we've got your message and will reply as soon as we're back. 🙌",
+};
+
+// Small helper: shows an example line with a one-click "Use this" button.
+function ExampleRow({ text, onUse }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg bg-brand-50/60 border border-brand-100 px-3 py-2 mt-1.5">
+      <p className="text-xs text-ink-600 leading-relaxed flex-1">
+        <span className="font-semibold text-brand-700">Example: </span>
+        {text}
+      </p>
+      <button
+        type="button"
+        onClick={() => onUse(text)}
+        className="shrink-0 text-[11px] font-bold text-brand-700 hover:text-brand-900 underline underline-offset-2"
+      >
+        Use this
+      </button>
+    </div>
+  );
+}
+
+// Warns when an automation is enabled but its message is blank.
+function EmptyWarn({ show }) {
+  if (!show) return null;
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-1.5">
+      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+      This is on but the message is empty — we'll send a friendly default until
+      you add your own.
+    </p>
+  );
+}
 
 export default function AutomationSetupPage() {
   const { activeWorkspace } = useAuthStore();
@@ -383,9 +444,16 @@ function WelcomeTab({ cfg, save, saving, setCfg }) {
         onChange={(e) =>
           setCfg({ ...cfg, dmMessages: { ...m, greeting: e.target.value } })
         }
-        placeholder="Hi {name}! Thanks for reaching out 👋"
+        placeholder="Hey {first_name}! 👋 Thanks so much for reaching out. How can we help you today?"
       />
-      <p className="text-xs text-ink-400">
+      <EmptyWarn show={enabled && !m.greeting?.trim()} />
+      <ExampleRow
+        text={EXAMPLES.welcome}
+        onUse={(t) =>
+          setCfg({ ...cfg, dmMessages: { ...m, greeting: t } })
+        }
+      />
+      <p className="text-xs text-ink-400 mt-1.5">
         Use {"{name}"} or {"{first_name}"} to personalize.
       </p>
       <button
@@ -567,7 +635,7 @@ function DmKwTab({ cfg, save, setCfg }) {
           </div>
           <textarea
             className="textarea"
-            placeholder="Reply..."
+            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
             value={k.replyMessage}
             onChange={(e) => update(i, { replyMessage: e.target.value })}
           />
@@ -594,7 +662,15 @@ function DmKwTab({ cfg, save, setCfg }) {
   );
 }
 
-function EnableReplyCard({ title, desc, trig, setTrig, onSave, path }) {
+function EnableReplyCard({
+  title,
+  desc,
+  trig,
+  setTrig,
+  onSave,
+  example,
+  placeholder,
+}) {
   return (
     <Card title={title} desc={desc}>
       <label className="flex items-center gap-3">
@@ -606,15 +682,25 @@ function EnableReplyCard({ title, desc, trig, setTrig, onSave, path }) {
           />
           <span className="slider" />
         </label>
-        <span className="text-sm text-ink-700">Enable</span>
+        <span className="text-sm text-ink-700">
+          {trig.enabled ? "On — auto-reply will be sent" : "Off"}
+        </span>
       </label>
+      <label className="label">Reply message</label>
       <textarea
         className="textarea min-h-[100px]"
-        placeholder="Reply message..."
+        placeholder={placeholder || "Write your reply…"}
         value={trig.replyMessage || ""}
         onChange={(e) => setTrig({ ...trig, replyMessage: e.target.value })}
       />
-      <button className="btn-primary" onClick={onSave}>
+      <EmptyWarn show={!!trig.enabled && !trig.replyMessage?.trim()} />
+      {example && (
+        <ExampleRow
+          text={example}
+          onUse={(t) => setTrig({ ...trig, replyMessage: t })}
+        />
+      )}
+      <button className="btn-primary mt-2" onClick={onSave}>
         <Save className="w-4 h-4" /> Save
       </button>
     </Card>
@@ -630,9 +716,10 @@ function StoryReplyTab({ cfg, save, setCfg }) {
       trig={t}
       setTrig={(v) => setCfg({ ...cfg, storyReplyTrigger: v })}
       onSave={() =>
-        save("/story-reply-trigger", cfg.storyReplyTrigger, "Saved")
+        save("/story-reply-trigger", cfg.storyReplyTrigger, "Story reply saved")
       }
-      path="/story-reply-trigger"
+      example={EXAMPLES.storyReply}
+      placeholder="Thanks for replying to our story, {first_name}! 🙌"
     />
   );
 }
@@ -645,8 +732,14 @@ function StoryMentionTab({ cfg, save, setCfg }) {
       trig={t}
       setTrig={(v) => setCfg({ ...cfg, storyMentionTrigger: v })}
       onSave={() =>
-        save("/story-mention-trigger", cfg.storyMentionTrigger, "Saved")
+        save(
+          "/story-mention-trigger",
+          cfg.storyMentionTrigger,
+          "Story mention reply saved",
+        )
       }
+      example={EXAMPLES.storyMention}
+      placeholder="Thank you for the mention, {first_name}! 💛"
     />
   );
 }
@@ -659,8 +752,14 @@ function ShareTab({ cfg, save, setCfg }) {
       trig={t}
       setTrig={(v) => setCfg({ ...cfg, shareToStoryTrigger: v })}
       onSave={() =>
-        save("/share-to-story-trigger", cfg.shareToStoryTrigger, "Saved")
+        save(
+          "/share-to-story-trigger",
+          cfg.shareToStoryTrigger,
+          "Share reply saved",
+        )
       }
+      example={EXAMPLES.share}
+      placeholder="Thanks for sharing, {first_name}! 🙏"
     />
   );
 }
@@ -730,7 +829,7 @@ function RefUrlTab({ cfg, save, setCfg }) {
           </div>
           <textarea
             className="textarea"
-            placeholder="Reply..."
+            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
             value={r.replyMessage}
             onChange={(e) => update(i, { replyMessage: e.target.value })}
           />
@@ -816,7 +915,7 @@ function LiveTab({ cfg, save, setCfg }) {
           />
           <textarea
             className="textarea"
-            placeholder="Reply..."
+            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
             value={k.replyMessage}
             onChange={(e) => update(i, { replyMessage: e.target.value })}
           />
@@ -896,7 +995,7 @@ function StartersTab({ cfg, save, setCfg }) {
           />
           <textarea
             className="textarea"
-            placeholder="Reply..."
+            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
             value={o.replyMessage}
             onChange={(e) =>
               update({
@@ -957,13 +1056,18 @@ function FallbackTab({ cfg, save, setCfg }) {
         </label>
         <span className="text-sm text-ink-700">Enable fallback</span>
       </label>
+      <label className="label">Fallback message</label>
       <textarea
         className="textarea min-h-[100px]"
-        placeholder="Fallback message..."
+        placeholder="Thanks for your message, {first_name}! 🙏 A team member will get back to you shortly."
         value={f.message || ""}
         onChange={(e) => update({ message: e.target.value })}
       />
-      <label className="label">Cooldown (hours): {f.cooldownHours || 24}</label>
+      <EmptyWarn show={!!f.enabled && !f.message?.trim()} />
+      <ExampleRow text={EXAMPLES.fallback} onUse={(t) => update({ message: t })} />
+      <label className="label mt-3">
+        Cooldown (hours): {f.cooldownHours || 24}
+      </label>
       <input
         type="range"
         min="1"
@@ -1110,17 +1214,23 @@ function HoursTab({ cfg, save, setCfg }) {
           </label>
           <span className="text-sm text-ink-700">Enable away reply</span>
         </label>
+        <label className="label">Away message</label>
         <textarea
           className="textarea min-h-[100px]"
-          placeholder="We're away. We'll get back to you soon!"
+          placeholder="Thanks for reaching out! We're away right now but we'll reply as soon as we're back. 🙌"
           value={aw.message || ""}
           onChange={(e) =>
             setCfg({ ...cfg, awayReply: { ...aw, message: e.target.value } })
           }
         />
+        <EmptyWarn show={!!aw.enabled && !aw.message?.trim()} />
+        <ExampleRow
+          text={EXAMPLES.away}
+          onUse={(t) => setCfg({ ...cfg, awayReply: { ...aw, message: t } })}
+        />
         <button
           onClick={() => save("/away-reply", cfg.awayReply, "Away reply saved")}
-          className="btn-primary"
+          className="btn-primary mt-2"
         >
           <Save className="w-4 h-4" /> Save away
         </button>
