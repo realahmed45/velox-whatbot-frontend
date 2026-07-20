@@ -84,8 +84,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const GuestRoute = ({ children }) => {
-  const { token } = useAuthStore();
-  return !token ? children : <Navigate to="/dashboard" replace />;
+  const { token, user } = useAuthStore();
+  if (!token) return children;
+  // A logged-in but unverified email/password user must finish the 4-digit
+  // code step before entering the app — never bounce them to the dashboard.
+  if (user && user.isEmailVerified === false) {
+    return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
+  }
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default function App() {

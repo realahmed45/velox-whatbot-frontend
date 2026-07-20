@@ -15,7 +15,7 @@ export default function RegisterPage() {
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuthStore();
+  const { login, logout } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
@@ -30,6 +30,9 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
+      // Clear any stale session so a leftover token can't hijack the redirect
+      // (GuestRoute would otherwise bounce a logged-in user into the dashboard).
+      logout();
       const { data } = await api.post("/auth/register", {
         name: form.name,
         businessName: form.businessName,
