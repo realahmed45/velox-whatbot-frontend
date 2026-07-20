@@ -15,9 +15,6 @@ import {
   MessageCircle,
   Heart,
   Share2,
-  Link as LinkIcon,
-  Radio,
-  Target,
   Clock,
   CircleDot,
   AlertTriangle,
@@ -28,9 +25,9 @@ import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
 import { ArrowLeft } from "lucide-react";
 
-// Each tab declares which channel(s) it applies to.
-// Story replies, comments, share-to-story, live, tracked links, chat starters
-// only exist on Instagram. Welcome / keyword / fallback / hours work on both.
+// Each tab declares which channel(s) it applies to. Only automations backed by
+// a real Zernio webhook event are listed (welcome/DM/comment/story/share/
+// fallback/hours) — provider-unsupported triggers have been removed.
 const ALL_TABS = [
   {
     id: "welcome",
@@ -87,33 +84,6 @@ const ALL_TABS = [
     channels: ["instagram"],
   },
   {
-    id: "ref_url",
-    label: "Tracked links",
-    desc: "Send a DM when someone opens a tracked link you shared.",
-    category: "settings",
-    icon: LinkIcon,
-    plan: "growth",
-    channels: ["instagram"],
-  },
-  {
-    id: "live",
-    label: "Live comments",
-    desc: "Reply to comments during your Instagram Live broadcast.",
-    category: "engagement",
-    icon: Radio,
-    plan: "growth",
-    channels: ["instagram"],
-  },
-  {
-    id: "starters",
-    label: "Chat starters",
-    desc: "Ice-breaker prompts shown in your DM thread.",
-    category: "settings",
-    icon: Target,
-    plan: "growth",
-    channels: ["instagram"],
-  },
-  {
     id: "fallback",
     label: "Default reply",
     desc: "A professional catch-all when no other automation matches.",
@@ -150,12 +120,6 @@ const EXAMPLES = {
     "Thank you so much for the mention, {first_name}! 💛 It means a lot. Anything we can help with?",
   share:
     "Thanks for sharing, {first_name}! 🙏 Really appreciate the love — let us know if you have any questions!",
-  live:
-    "Thanks for joining our live, {first_name}! 🎉 Here's the info you asked about 👇",
-  refUrl:
-    "Welcome, {first_name}! 🎯 Thanks for clicking through — here's your exclusive offer 👇",
-  starterGreeting:
-    "Hi {first_name}! 👋 What can we help you with today? Pick an option below:",
   fallback:
     "Thanks for your message, {first_name}! 🙏 A team member will get back to you shortly. Meanwhile, is there something specific we can help with?",
   away:
@@ -376,15 +340,6 @@ export default function AutomationSetupPage() {
               {tab === "share" && (
                 <ShareTab cfg={cfg} save={save} setCfg={setCfg} />
               )}
-              {tab === "ref_url" && (
-                <RefUrlTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
-              {tab === "live" && (
-                <LiveTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
-              {tab === "starters" && (
-                <StartersTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
               {tab === "fallback" && (
                 <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
               )}
@@ -403,9 +358,11 @@ export default function AutomationSetupPage() {
 
 function Card({ title, desc, children }) {
   return (
-    <div className="card p-5">
-      <h2 className="font-semibold text-ink-900">{title}</h2>
-      {desc && <p className="text-sm text-ink-500 mt-1">{desc}</p>}
+    <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-sm">
+      <h2 className="text-base font-black text-ink-900">{title}</h2>
+      {desc && (
+        <p className="text-sm text-ink-500 mt-1 leading-relaxed">{desc}</p>
+      )}
       <div className="mt-4 space-y-3">{children}</div>
     </div>
   );
@@ -761,274 +718,6 @@ function ShareTab({ cfg, save, setCfg }) {
       example={EXAMPLES.share}
       placeholder="Thanks for sharing, {first_name}! 🙏"
     />
-  );
-}
-
-function RefUrlTab({ cfg, save, setCfg }) {
-  const list = cfg.refUrlTriggers || [];
-  const add = () =>
-    setCfg({
-      ...cfg,
-      refUrlTriggers: [
-        ...list,
-        { code: "", label: "", replyMessage: "", enabled: true },
-      ],
-    });
-  const update = (i, patch) =>
-    setCfg({
-      ...cfg,
-      refUrlTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
-    });
-  const remove = (i) =>
-    setCfg({ ...cfg, refUrlTriggers: list.filter((_, j) => j !== i) });
-  return (
-    <Card
-      title="Tracked links (Ref URLs)"
-      desc="Give each ad or campaign its own link. When someone clicks and messages you, they get a reply tailored to that campaign."
-    >
-      {list.map((r, i) => (
-        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
-          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
-            <label className="flex items-center gap-2 text-xs font-medium">
-              <label className="toggle">
-                <input
-                  type="checkbox"
-                  checked={r.enabled !== false}
-                  onChange={(e) => update(i, { enabled: e.target.checked })}
-                />
-                <span className="slider" />
-              </label>
-              <span
-                className={
-                  r.enabled !== false ? "text-emerald-600" : "text-ink-400"
-                }
-              >
-                {r.enabled !== false ? "Active" : "Paused"}
-              </span>
-            </label>
-            <button
-              onClick={() => remove(i)}
-              className="btn-ghost text-red-500 text-xs"
-            >
-              <Trash2 className="w-3 h-3" /> Remove
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              className="input"
-              placeholder="code (e.g. FBAD1)"
-              value={r.code}
-              onChange={(e) => update(i, { code: e.target.value })}
-            />
-            <input
-              className="input"
-              placeholder="label (internal)"
-              value={r.label}
-              onChange={(e) => update(i, { label: e.target.value })}
-            />
-          </div>
-          <textarea
-            className="textarea"
-            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
-            value={r.replyMessage}
-            onChange={(e) => update(i, { replyMessage: e.target.value })}
-          />
-        </div>
-      ))}
-      <div className="flex justify-between">
-        <button onClick={add} className="btn-secondary">
-          <Plus className="w-4 h-4" /> Add
-        </button>
-        <button
-          onClick={() =>
-            save(
-              "/ref-url-triggers",
-              { refUrlTriggers: list },
-              "Ref URLs saved",
-            )
-          }
-          className="btn-primary"
-        >
-          <Save className="w-4 h-4" /> Save
-        </button>
-      </div>
-    </Card>
-  );
-}
-
-function LiveTab({ cfg, save, setCfg }) {
-  const list = cfg.liveCommentTriggers || [];
-  const add = () =>
-    setCfg({
-      ...cfg,
-      liveCommentTriggers: [
-        ...list,
-        { keyword: "", replyMessage: "", enabled: true },
-      ],
-    });
-  const update = (i, patch) =>
-    setCfg({
-      ...cfg,
-      liveCommentTriggers: list.map((x, j) =>
-        i === j ? { ...x, ...patch } : x,
-      ),
-    });
-  const remove = (i) =>
-    setCfg({ ...cfg, liveCommentTriggers: list.filter((_, j) => j !== i) });
-  return (
-    <Card
-      title="Live stream comments"
-      desc="During an Instagram Live, if a viewer types a keyword in the comments, they instantly get a DM from you."
-    >
-      {list.map((k, i) => (
-        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
-          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
-            <label className="flex items-center gap-2 text-xs font-medium">
-              <label className="toggle">
-                <input
-                  type="checkbox"
-                  checked={k.enabled !== false}
-                  onChange={(e) => update(i, { enabled: e.target.checked })}
-                />
-                <span className="slider" />
-              </label>
-              <span
-                className={
-                  k.enabled !== false ? "text-emerald-600" : "text-ink-400"
-                }
-              >
-                {k.enabled !== false ? "Active" : "Paused"}
-              </span>
-            </label>
-            <button
-              onClick={() => remove(i)}
-              className="btn-ghost text-red-500 text-xs"
-            >
-              <Trash2 className="w-3 h-3" /> Remove
-            </button>
-          </div>
-          <input
-            className="input"
-            placeholder="keyword"
-            value={k.keyword}
-            onChange={(e) => update(i, { keyword: e.target.value })}
-          />
-          <textarea
-            className="textarea"
-            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
-            value={k.replyMessage}
-            onChange={(e) => update(i, { replyMessage: e.target.value })}
-          />
-        </div>
-      ))}
-      <div className="flex justify-between">
-        <button onClick={add} className="btn-secondary">
-          <Plus className="w-4 h-4" /> Add
-        </button>
-        <button
-          onClick={() =>
-            save(
-              "/live-comment-triggers",
-              { liveCommentTriggers: list },
-              "Saved",
-            )
-          }
-          className="btn-primary"
-        >
-          <Save className="w-4 h-4" /> Save
-        </button>
-      </div>
-    </Card>
-  );
-}
-
-function StartersTab({ cfg, save, setCfg }) {
-  const s = cfg.conversationStarters || {
-    enabled: false,
-    greeting: "",
-    options: [],
-  };
-  const update = (patch) =>
-    setCfg({ ...cfg, conversationStarters: { ...s, ...patch } });
-  const addOption = () =>
-    update({
-      options: [
-        ...(s.options || []),
-        { label: "", payload: "", replyMessage: "" },
-      ],
-    });
-  return (
-    <Card
-      title="Conversation starters"
-      desc="Show clickable buttons (like ‘See pricing’, ‘Book a call’) at the top of every new chat so people know exactly what to ask."
-    >
-      <label className="flex items-center gap-3">
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={!!s.enabled}
-            onChange={(e) => update({ enabled: e.target.checked })}
-          />
-          <span className="slider" />
-        </label>
-        <span className="text-sm text-ink-700">Enable starters</span>
-      </label>
-      <label className="label">Greeting</label>
-      <input
-        className="input"
-        value={s.greeting || ""}
-        onChange={(e) => update({ greeting: e.target.value })}
-      />
-      {(s.options || []).map((o, i) => (
-        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
-          <input
-            className="input"
-            placeholder="Button label"
-            value={o.label}
-            onChange={(e) =>
-              update({
-                options: s.options.map((x, j) =>
-                  i === j ? { ...x, label: e.target.value } : x,
-                ),
-              })
-            }
-          />
-          <textarea
-            className="textarea"
-            placeholder="e.g. Thanks {first_name}! Here's the info you asked for 👇"
-            value={o.replyMessage}
-            onChange={(e) =>
-              update({
-                options: s.options.map((x, j) =>
-                  i === j ? { ...x, replyMessage: e.target.value } : x,
-                ),
-              })
-            }
-          />
-          <button
-            className="btn-ghost text-red-500 text-xs"
-            onClick={() =>
-              update({ options: s.options.filter((_, j) => j !== i) })
-            }
-          >
-            <Trash2 className="w-3 h-3" /> Remove
-          </button>
-        </div>
-      ))}
-      <div className="flex justify-between">
-        <button onClick={addOption} className="btn-secondary">
-          <Plus className="w-4 h-4" /> Add option
-        </button>
-        <button
-          onClick={() =>
-            save("/conversation-starters", cfg.conversationStarters, "Saved")
-          }
-          className="btn-primary"
-        >
-          <Save className="w-4 h-4" /> Save
-        </button>
-      </div>
-    </Card>
   );
 }
 

@@ -8,17 +8,17 @@ const CATEGORIES = [
   {
     id: "popular",
     label: "Popular",
-    subtitle: "Start here — high impact, easy setup",
+    subtitle: "Start here — high impact, easy to set up",
   },
   {
     id: "engagement",
     label: "Engagement",
-    subtitle: "Stories, live, and social triggers",
+    subtitle: "Stories, mentions, and social triggers",
   },
   {
     id: "settings",
     label: "Routing & hours",
-    subtitle: "Fallbacks, links, and availability",
+    subtitle: "Fallback replies and availability",
   },
 ];
 
@@ -62,9 +62,14 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
         if (!items.length) return null;
         return (
           <section key={cat.id}>
-            <div className="mb-4">
-              <h2 className="text-base font-black text-ink-900">{cat.label}</h2>
-              <p className="text-xs text-ink-500 mt-0.5">{cat.subtitle}</p>
+            <div className="mb-4 flex items-center gap-2.5">
+              <span className="w-1 h-5 rounded-full bg-brand-500" />
+              <div>
+                <h2 className="text-base font-black text-ink-900 leading-none">
+                  {cat.label}
+                </h2>
+                <p className="text-xs text-ink-500 mt-1">{cat.subtitle}</p>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((t) => (

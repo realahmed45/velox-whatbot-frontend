@@ -158,10 +158,10 @@ export default function CustomFlowsPage() {
         ].map(({ icon: Icon, title, desc }) => (
           <div
             key={title}
-            className="border border-ink-100 bg-white rounded-xl p-4 flex gap-3"
+            className="rounded-2xl border border-ink-100 bg-white p-5 flex gap-3.5 hover:border-violet-200 hover:shadow-sm transition"
           >
-            <div className="w-9 h-9 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center flex-shrink-0">
+              <Icon className="w-5 h-5" />
             </div>
             <div>
               <p className="text-sm font-bold text-ink-900">{title}</p>

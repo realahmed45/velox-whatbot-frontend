@@ -983,14 +983,21 @@ function BotTester({ open, onClose, igHandle }) {
   );
 }
 
-function IgSection({ title, icon: Icon, children }) {
+function IgSection({ title, subtitle, icon: Icon, children }) {
   return (
     <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass p-5 sm:p-6">
-      <div className="flex items-center gap-2.5 mb-4">
-        <span className="w-9 h-9 rounded-lg bg-brand-500 text-white flex items-center justify-center shadow-glow">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center shadow-glow">
           <Icon className="w-[18px] h-[18px]" />
         </span>
-        <h2 className="font-bold text-ink-900 text-[15px]">{title}</h2>
+        <div>
+          <h2 className="font-black text-ink-900 text-[15px] leading-tight">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-xs text-ink-500 mt-0.5">{subtitle}</p>
+          )}
+        </div>
       </div>
       {children}
     </div>
