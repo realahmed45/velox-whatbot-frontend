@@ -15,7 +15,11 @@ import {
 } from "lucide-react";
 
 const CATEGORIES = [
-  { id: "popular", label: "Popular", subtitle: "Start here — high impact, easy setup" },
+  {
+    id: "popular",
+    label: "Popular",
+    subtitle: "Start here — high impact, easy setup",
+  },
   {
     id: "engagement",
     label: "Engagement",
@@ -67,7 +71,8 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
 
   useEffect(() => {
     let alive = true;
-    api.get("/flows/templates")
+    api
+      .get("/flows/templates")
       .then((res) => {
         if (!alive) return;
         setTemplates(res.data.templates || []);
@@ -127,7 +132,8 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
               Custom Flows
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
-              Build visual multi-step conversations with branches, delays, and conditions.
+              Build visual multi-step conversations with branches, delays, and
+              conditions.
             </p>
           </div>
           <button
@@ -151,10 +157,12 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
             <Workflow className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-ink-900">Design powerful automations</p>
+            <p className="font-bold text-sm text-ink-900">
+              Design powerful automations
+            </p>
             <p className="text-xs text-ink-500 mt-1 max-w-md">
-              Drag-and-drop builder for complex flows — welcome sequences, lead nurturing,
-              product recommendations, and more.
+              Drag-and-drop builder for complex flows — welcome sequences, lead
+              nurturing, product recommendations, and more.
             </p>
           </div>
           <span className="inline-flex items-center gap-1 text-xs font-bold text-violet-700 shrink-0">
@@ -182,7 +190,9 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
             >
               <p className="text-2xl mb-2">{t.icon}</p>
               <p className="font-bold text-sm text-ink-900">{t.name}</p>
-              <p className="text-xs text-ink-500 mt-1 flex-1">{t.description}</p>
+              <p className="text-xs text-ink-500 mt-1 flex-1">
+                {t.description}
+              </p>
               {t.keyFlows?.length > 0 && (
                 <p className="text-[10px] text-ink-400 mt-2">
                   Includes: {t.keyFlows.slice(0, 2).join(", ")}

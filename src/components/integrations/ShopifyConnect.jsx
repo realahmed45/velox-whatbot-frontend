@@ -46,7 +46,8 @@ export default function ShopifyConnect({
 
   /* ── OAuth connect — ManyChat-style ── */
   const connectOAuth = async () => {
-    const s = shop.trim()
+    const s = shop
+      .trim()
       .toLowerCase()
       .replace(/^https?:\/\//, "")
       .replace(/\.myshopify\.com.*$/, "")
@@ -70,7 +71,8 @@ export default function ShopifyConnect({
       // Redirect to Shopify — merchant logs in and approves
       window.location.href = data.url;
     } catch (e) {
-      const msg = e.response?.data?.message || "Couldn't start Shopify login. Try again.";
+      const msg =
+        e.response?.data?.message || "Couldn't start Shopify login. Try again.";
       setError(msg);
       setLoading(false);
     }
@@ -86,7 +88,8 @@ export default function ShopifyConnect({
       await fetchWorkspace(activeWorkspace);
       onConnected?.(data);
     } catch (e) {
-      const msg = e.response?.data?.message || "Could not connect to that store.";
+      const msg =
+        e.response?.data?.message || "Could not connect to that store.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -127,7 +130,9 @@ export default function ShopifyConnect({
   /* ── Connected state ── */
   if (connected) {
     return (
-      <div className={`border border-emerald-200 bg-emerald-50/60 ${compact ? "p-3" : "p-4"} space-y-3`}>
+      <div
+        className={`border border-emerald-200 bg-emerald-50/60 ${compact ? "p-3" : "p-4"} space-y-3`}
+      >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -165,7 +170,11 @@ export default function ShopifyConnect({
                 className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition"
               >
                 + Order tracking
-                {showTokenForm ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
+                {showTokenForm ? (
+                  <ChevronUp className="w-2.5 h-2.5" />
+                ) : (
+                  <ChevronDown className="w-2.5 h-2.5" />
+                )}
               </button>
             )
           )}
@@ -173,13 +182,22 @@ export default function ShopifyConnect({
 
         {showTokenForm && !orderTracking && (
           <div className="bg-white border border-amber-200 p-3 space-y-2 text-xs">
-            <p className="font-semibold text-amber-800">Enable order tracking in DMs</p>
+            <p className="font-semibold text-amber-800">
+              Enable order tracking in DMs
+            </p>
             <p className="text-ink-500">
               Go to{" "}
-              <a href="https://admin.shopify.com" target="_blank" rel="noreferrer" className="underline text-brand-600">
+              <a
+                href="https://admin.shopify.com"
+                target="_blank"
+                rel="noreferrer"
+                className="underline text-brand-600"
+              >
                 Shopify Admin
               </a>{" "}
-              → Apps → Develop apps → create app → add <code className="bg-ink-100 px-0.5">read_orders</code> scope → install → copy Admin API token.
+              → Apps → Develop apps → create app → add{" "}
+              <code className="bg-ink-100 px-0.5">read_orders</code> scope →
+              install → copy Admin API token.
             </p>
             <input
               type="password"
@@ -204,7 +222,9 @@ export default function ShopifyConnect({
         {showManageLink && (
           <p className="text-[11px] text-emerald-700">
             Your bot answers product questions automatically.{" "}
-            <Link to="/dashboard/apps" className="underline font-semibold">Manage</Link>
+            <Link to="/dashboard/apps" className="underline font-semibold">
+              Manage
+            </Link>
           </p>
         )}
       </div>
@@ -213,12 +233,17 @@ export default function ShopifyConnect({
 
   /* ── Connect state — ManyChat-style OAuth ── */
   return (
-    <div className={`space-y-3 ${compact ? "" : "border border-ink-200 bg-white p-5"}`}>
+    <div
+      className={`space-y-3 ${compact ? "" : "border border-ink-200 bg-white p-5"}`}
+    >
       {!compact && (
         <div className="space-y-1 mb-3">
-          <p className="text-sm font-semibold text-ink-900">Connect your Shopify store</p>
+          <p className="text-sm font-semibold text-ink-900">
+            Connect your Shopify store
+          </p>
           <p className="text-xs text-ink-500">
-            Enter your store name and click Connect — you'll be taken to Shopify to log in and approve. One click, done.
+            Enter your store name and click Connect — you'll be taken to Shopify
+            to log in and approve. One click, done.
           </p>
         </div>
       )}
@@ -230,7 +255,10 @@ export default function ShopifyConnect({
             className="input text-sm w-full pr-32"
             placeholder="your-store-name"
             value={shop}
-            onChange={(e) => { setShop(e.target.value); setError(null); }}
+            onChange={(e) => {
+              setShop(e.target.value);
+              setError(null);
+            }}
             onKeyDown={(e) => e.key === "Enter" && connectOAuth()}
             disabled={loading}
             autoComplete="off"
@@ -248,10 +276,11 @@ export default function ShopifyConnect({
           disabled={loading}
           className="btn btn-primary flex items-center gap-2 shrink-0"
         >
-          {loading
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <ShopifyIcon className="w-4 h-4" />
-          }
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ShopifyIcon className="w-4 h-4" />
+          )}
           {loading ? "Connecting…" : "Connect with Shopify"}
         </button>
       </div>
@@ -260,12 +289,19 @@ export default function ShopifyConnect({
         <div className="border border-red-200 bg-red-50 p-3 text-xs space-y-1">
           <p className="font-semibold text-red-800 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
-            {error.includes("password") ? "Store is password-protected" : "Connection failed"}
+            {error.includes("password")
+              ? "Store is password-protected"
+              : "Connection failed"}
           </p>
           {error.includes("password") ? (
             <p className="text-ink-600">
               Your store is in Coming Soon mode. Remove the password at{" "}
-              <a href="https://admin.shopify.com/settings/general" target="_blank" rel="noreferrer" className="underline text-brand-600">
+              <a
+                href="https://admin.shopify.com/settings/general"
+                target="_blank"
+                rel="noreferrer"
+                className="underline text-brand-600"
+              >
                 Shopify Admin → Online Store → Preferences
               </a>{" "}
               then try again.
@@ -278,9 +314,11 @@ export default function ShopifyConnect({
 
       <div className="flex items-center gap-2 text-[11px] text-ink-400">
         <ExternalLink className="w-3 h-3 shrink-0" />
-        <span>You'll be redirected to Shopify to log in — we never see your password.</span>
+        <span>
+          You'll be redirected to Shopify to log in — we never see your
+          password.
+        </span>
       </div>
     </div>
   );
 }
-

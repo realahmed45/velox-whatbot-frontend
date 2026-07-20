@@ -177,7 +177,6 @@ export default function App() {
                 <Route path="automation" element={<AutomationSetupPage />} />
                 <Route path="flows" element={<CustomFlowsPage />} />
                 <Route path="contacts" element={<ContactsPage />} />
-
                 <Route path="ai-bot" element={<AiBotPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="billing" element={<BillingPage />} />

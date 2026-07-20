@@ -28,10 +28,6 @@ import {
   Webhook,
   CalendarClock,
   Droplet,
-  Gift,
-  Eye,
-  UserPlus,
-  ShoppingCart,
   Users2,
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -215,7 +211,6 @@ export default function OverviewPage() {
               desc="Your audience"
               to="/dashboard/contacts"
             />
-
             <ActionTile
               icon={Send}
               title="Broadcasts"
@@ -250,7 +245,6 @@ export default function OverviewPage() {
               desc="Automated sequences"
               to="/dashboard/drip"
             />
-
             <ActionTile
               icon={LinkIcon}
               title="Link in Bio"
@@ -263,7 +257,6 @@ export default function OverviewPage() {
               desc="Track hashtags"
               to="/dashboard/hashtags"
             />
-
           </div>
         </Section>
 

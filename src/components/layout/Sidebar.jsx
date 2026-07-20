@@ -28,11 +28,7 @@ import {
   Link as LinkIcon,
   CalendarClock,
   Droplet,
-  Gift,
-  Eye,
-  UserPlus,
   Plug,
-  ShoppingCart,
   ArrowUpRight,
   Zap,
   Webhook,
@@ -50,7 +46,12 @@ const NAV = [
   {
     section: null,
     items: [
-      { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
+      {
+        to: "/dashboard",
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        end: true,
+      },
     ],
   },
   {
@@ -73,7 +74,11 @@ const NAV = [
   {
     section: "Grow",
     items: [
-      { to: "/dashboard/scheduled-posts", icon: CalendarClock, label: "Scheduled Posts" },
+      {
+        to: "/dashboard/scheduled-posts",
+        icon: CalendarClock,
+        label: "Scheduled Posts",
+      },
       { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
       { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
       { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
@@ -112,7 +117,6 @@ export default function Sidebar({ onNavigate }) {
   const { logout, user } = useAuthStore();
   const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -147,8 +151,6 @@ export default function Sidebar({ onNavigate }) {
     user?.email?.[0] ||
     "B"
   ).toUpperCase();
-
-  const badges = {};
 
   return (
     <aside
@@ -230,7 +232,7 @@ export default function Sidebar({ onNavigate }) {
                   item={item}
                   collapsed={collapsed}
                   onNavigate={onNavigate}
-                  badge={item.badgeKey ? badges[item.badgeKey] : 0}
+                  badge={0}
                 />
               ))}
             </div>
@@ -331,13 +333,16 @@ function NavItem({ item, collapsed, onNavigate, badge }) {
   // Parse path / search / hash from the `to` string
   const [pathAndSearch, hash] = to.split("#");
   const [pathname] = pathAndSearch.split("?");
-  const search = pathAndSearch.includes("?") ? pathAndSearch.split("?")[1] : null;
+  const search = pathAndSearch.includes("?")
+    ? pathAndSearch.split("?")[1]
+    : null;
 
   const isActive = end
     ? location.pathname === pathname && !location.search && !location.hash
     : hash
-    ? location.pathname === pathname && location.hash === `#${hash}`
-    : location.pathname === pathname && (search ? location.search.includes(search) : true);
+      ? location.pathname === pathname && location.hash === `#${hash}`
+      : location.pathname === pathname &&
+        (search ? location.search.includes(search) : true);
 
   const handleClick = (e) => {
     if (hash) {

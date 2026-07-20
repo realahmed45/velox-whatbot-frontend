@@ -26,6 +26,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
+import InstagramConstraintsInfo from "@/components/InstagramConstraintsInfo";
 import PageHeader from "@/components/ui/PageHeader";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
@@ -86,6 +87,15 @@ const ALL_TABS = [
     desc: "Trigger a DM when someone shares your post to their story.",
     category: "engagement",
     icon: Share2,
+    plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "ref_url",
+    label: "Tracked links",
+    desc: "Send a DM when someone opens a tracked link you shared.",
+    category: "settings",
+    icon: LinkIcon,
     plan: "growth",
     channels: ["instagram"],
   },
@@ -243,7 +253,9 @@ export default function AutomationSetupPage() {
 
       <PageHeader
         icon={Zap}
-        title={isGallery ? "Smart Automations" : activeTab?.label || "Automation"}
+        title={
+          isGallery ? "Smart Automations" : activeTab?.label || "Automation"
+        }
         subtitle={headerSubtitle}
       />
 
@@ -251,7 +263,9 @@ export default function AutomationSetupPage() {
         <AutomationsHubGallery tabs={TABS} onOpenTab={openTab} plan={plan} />
       ) : (
         <>
-
+          <div className="mb-5">
+            <InstagramConstraintsInfo compact />
+          </div>
 
           <DiagnosticsPanel workspaceId={activeWorkspace} />
 
@@ -283,46 +297,49 @@ export default function AutomationSetupPage() {
               requiredPlan={activeTab.plan}
               feature={activeTab.label}
             >
-            {tab === "welcome" && (
-              <WelcomeTab
-                cfg={cfg}
-                save={save}
-                saving={saving}
-                setCfg={setCfg}
-              />
-            )}
-            {tab === "comment_kw" && (
-              <CommentKwTab
-                cfg={cfg}
-                setCfg={setCfg}
-                workspace={activeWorkspace}
-                reload={reload}
-              />
-            )}
-            {tab === "dm_kw" && (
-              <DmKwTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "story_reply" && (
-              <StoryReplyTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "story_mention" && (
-              <StoryMentionTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "share" && (
-              <ShareTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "live" && (
-              <LiveTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "starters" && (
-              <StartersTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "fallback" && (
-              <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
-            {tab === "hours" && (
-              <HoursTab cfg={cfg} save={save} setCfg={setCfg} />
-            )}
+              {tab === "welcome" && (
+                <WelcomeTab
+                  cfg={cfg}
+                  save={save}
+                  saving={saving}
+                  setCfg={setCfg}
+                />
+              )}
+              {tab === "comment_kw" && (
+                <CommentKwTab
+                  cfg={cfg}
+                  setCfg={setCfg}
+                  workspace={activeWorkspace}
+                  reload={reload}
+                />
+              )}
+              {tab === "dm_kw" && (
+                <DmKwTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "story_reply" && (
+                <StoryReplyTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "story_mention" && (
+                <StoryMentionTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "share" && (
+                <ShareTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "ref_url" && (
+                <RefUrlTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "live" && (
+                <LiveTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "starters" && (
+                <StartersTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "fallback" && (
+                <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "hours" && (
+                <HoursTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
             </PlanGate>
           </div>
         </>
@@ -607,7 +624,7 @@ function CommentKwTab({ cfg, setCfg, workspace, reload }) {
   return (
     <Card
       title="Comment keywords"
-      desc="Someone comments a word like 'info' on your post — you auto-DM them the details automatically."
+      desc="Someone comments a word like ‘info’ on your post → you auto-DM them the details. Classic ManyChat-style magic."
     >
       {list.length === 0 && (
         <p className="text-sm text-ink-400">No triggers yet. Click Add.</p>
@@ -839,6 +856,98 @@ function ShareTab({ cfg, save, setCfg }) {
         save("/share-to-story-trigger", cfg.shareToStoryTrigger, "Saved")
       }
     />
+  );
+}
+
+function RefUrlTab({ cfg, save, setCfg }) {
+  const list = cfg.refUrlTriggers || [];
+  const add = () =>
+    setCfg({
+      ...cfg,
+      refUrlTriggers: [
+        ...list,
+        { code: "", label: "", replyMessage: "", enabled: true },
+      ],
+    });
+  const update = (i, patch) =>
+    setCfg({
+      ...cfg,
+      refUrlTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
+    });
+  const remove = (i) =>
+    setCfg({ ...cfg, refUrlTriggers: list.filter((_, j) => j !== i) });
+  return (
+    <Card
+      title="Tracked links (Ref URLs)"
+      desc="Give each ad or campaign its own link. When someone clicks and messages you, they get a reply tailored to that campaign."
+    >
+      {list.map((r, i) => (
+        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={r.enabled !== false}
+                  onChange={(e) => update(i, { enabled: e.target.checked })}
+                />
+                <span className="slider" />
+              </label>
+              <span
+                className={
+                  r.enabled !== false ? "text-emerald-600" : "text-ink-400"
+                }
+              >
+                {r.enabled !== false ? "Active" : "Paused"}
+              </span>
+            </label>
+            <button
+              onClick={() => remove(i)}
+              className="btn-ghost text-red-500 text-xs"
+            >
+              <Trash2 className="w-3 h-3" /> Remove
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              className="input"
+              placeholder="code (e.g. FBAD1)"
+              value={r.code}
+              onChange={(e) => update(i, { code: e.target.value })}
+            />
+            <input
+              className="input"
+              placeholder="label (internal)"
+              value={r.label}
+              onChange={(e) => update(i, { label: e.target.value })}
+            />
+          </div>
+          <textarea
+            className="textarea"
+            placeholder="Reply..."
+            value={r.replyMessage}
+            onChange={(e) => update(i, { replyMessage: e.target.value })}
+          />
+        </div>
+      ))}
+      <div className="flex justify-between">
+        <button onClick={add} className="btn-secondary">
+          <Plus className="w-4 h-4" /> Add
+        </button>
+        <button
+          onClick={() =>
+            save(
+              "/ref-url-triggers",
+              { refUrlTriggers: list },
+              "Ref URLs saved",
+            )
+          }
+          className="btn-primary"
+        >
+          <Save className="w-4 h-4" /> Save
+        </button>
+      </div>
+    </Card>
   );
 }
 

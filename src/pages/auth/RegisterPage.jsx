@@ -38,7 +38,7 @@ export default function RegisterPage() {
         ref: refCode || undefined,
       });
       login(data.user, data.token, data.refreshToken);
-      toast.success("Welcome to Botlify!");
+      toast.success("Account created — check your email for a code.");
 
       // If they picked a plan on /pricing before signup, activate it now
       if (planHint) {
@@ -52,8 +52,8 @@ export default function RegisterPage() {
         }
       }
 
-      // Route them straight to the right onboarding step based on plan/channel.
-      navigate("/onboarding/instagram");
+      // Email/password signups verify a 4-digit code before onboarding.
+      navigate("/verify-email", { state: { email: form.email } });
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
