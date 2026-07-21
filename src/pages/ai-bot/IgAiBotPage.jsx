@@ -204,17 +204,17 @@ export default function IgAiBotPage() {
 
       <div className="relative max-w-4xl mx-auto p-4 sm:p-6 pb-28 space-y-6">
         {/* ── Hero ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 via-ink-900 to-brand-900 text-white p-6 sm:p-8 shadow-xl">
-          <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-brand-500/30 blur-3xl" />
-          <div className="absolute -bottom-20 left-10 w-56 h-56 rounded-full bg-brand-600/15 blur-3xl" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 text-white px-5 py-5 sm:px-6 shadow-lg shadow-ink-900/10">
+          <div className="pointer-events-none absolute -top-16 right-8 w-56 h-56 rounded-full bg-brand-500/20 blur-3xl" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-900/40 to-transparent" />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">
-              <Bot className="w-8 h-8 text-brand-300" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+              <Bot className="w-6 h-6 text-brand-300" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-black tracking-tight">AI Bot</h1>
+                <h1 className="text-xl font-bold tracking-tight">AI Bot</h1>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-200">
                   <Sparkles className="w-3 h-3" /> GPT-4o
                 </span>

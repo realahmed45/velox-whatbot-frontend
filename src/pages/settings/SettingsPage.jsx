@@ -13,7 +13,7 @@ import {
   Settings as SettingsIcon,
   ShoppingCart,
 } from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 import { useNavigate } from "react-router-dom";
 
 export default function SettingsPage() {
@@ -32,10 +32,10 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <PageHeader
+      <StatHero
         icon={SettingsIcon}
         title="Settings"
-        subtitle="Configure your workspace, Instagram account, and automation defaults"
+        subtitle="Workspace, Instagram, and automation defaults"
       />
       <div className="flex gap-1 bg-ink-100 rounded-lg p-1 mb-5 sm:mb-6 overflow-x-auto">
         {TABS.map((t) => (

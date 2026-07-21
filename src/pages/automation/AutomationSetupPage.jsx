@@ -20,7 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
 import { ArrowLeft } from "lucide-react";
@@ -271,7 +271,7 @@ export default function AutomationSetupPage() {
         </button>
       )}
 
-      <PageHeader
+      <StatHero
         icon={Zap}
         title={
           isGallery ? "Smart Automations" : activeTab?.label || "Automation"

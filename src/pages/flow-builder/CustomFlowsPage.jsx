@@ -20,7 +20,7 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 
 export default function CustomFlowsPage() {
   const navigate = useNavigate();
@@ -118,15 +118,15 @@ export default function CustomFlowsPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8">
-      <PageHeader
+      <StatHero
         icon={Workflow}
         title="Custom Flows"
-        subtitle="Build multi-step, branching conversations with a visual drag-and-drop editor"
+        subtitle="Visual, multi-step branching conversations"
       >
         <button
           onClick={createFlow}
           disabled={creating}
-          className="btn btn-primary inline-flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition disabled:opacity-60"
         >
           {creating ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -135,7 +135,7 @@ export default function CustomFlowsPage() {
           )}
           New flow
         </button>
-      </PageHeader>
+      </StatHero>
 
       {/* ── What are flows ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

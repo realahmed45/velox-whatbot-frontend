@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 import { AppWindow } from "lucide-react";
 import { ShopifyIcon } from "@/components/icons/BrandIcons";
@@ -75,10 +75,10 @@ export default function AppsIntegrationsPage() {
     <div>
       <IntegrationsTabs />
       <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-6">
-        <PageHeader
+        <StatHero
           icon={AppWindow}
           title="Apps"
-          subtitle="Plug Botlify into Shopify, Make.com, and your marketing stack"
+          subtitle="Connect Shopify, Make.com, and your marketing stack"
         />
 
         {/* ── App navigation tabs ── */}

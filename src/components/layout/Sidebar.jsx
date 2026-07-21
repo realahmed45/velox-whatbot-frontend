@@ -39,7 +39,7 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { clsx } from "clsx";
 
 const COLLAPSE_KEY = "botlify-sidebar-collapsed";
-const ACCENT = "#FF6B2C";
+const ACCENT = "#ff5722";
 
 // ─── Navigation model ────────────────────────────────────────────────────────
 const NAV = [
@@ -221,7 +221,7 @@ export default function Sidebar({ onNavigate }) {
                   <span className="w-5 h-px bg-white/[0.08]" />
                 </div>
               ) : (
-                <p className="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+                <p className="px-3 pt-5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-500/80">
                   {group.section}
                 </p>
               ))}
@@ -364,25 +364,32 @@ function NavItem({ item, collapsed, onNavigate, badge }) {
       title={collapsed ? label : undefined}
       end={end}
       className={clsx(
-        "group relative flex items-center rounded-lg text-[14px] transition-all duration-200",
+        "group relative flex items-center rounded-xl text-[13.5px] transition-all duration-200",
         collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-3 py-2.5",
         isActive
           ? "text-white font-semibold"
           : "text-gray-400 font-medium hover:text-white hover:bg-white/[0.04]",
       )}
-      style={isActive ? { background: "rgba(255,107,44,0.12)" } : undefined}
+      style={
+        isActive
+          ? {
+              background:
+                "linear-gradient(90deg, rgba(255,87,34,0.18), rgba(255,87,34,0.06))",
+            }
+          : undefined
+      }
     >
-      {/* active left indicator (4px) */}
+      {/* active left indicator */}
       {isActive && (
         <span
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full shadow-[0_0_8px_rgba(255,87,34,0.6)]"
           style={{ background: ACCENT }}
         />
       )}
       <Icon
         className={clsx(
           "w-[19px] h-[19px] flex-shrink-0 transition-colors duration-200",
-          isActive ? "" : "text-gray-500 group-hover:text-[#FF6B2C]",
+          isActive ? "" : "text-gray-500 group-hover:text-[#ff5722]",
         )}
         style={isActive ? { color: ACCENT } : undefined}
       />

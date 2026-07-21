@@ -3,7 +3,7 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import { Plug, Plus, Trash2, Power, Send, X, Copy, Check } from "lucide-react";
 import IntegrationsTabs from "./IntegrationsTabs";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
 
 const EVENTS = [
@@ -107,15 +107,18 @@ export default function IntegrationsPage() {
     <div>
       <IntegrationsTabs />
       <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-        <PageHeader
+        <StatHero
           icon={Plug}
           title="Webhooks"
-          subtitle="Send every DM, comment, and lead to Zapier, Make, CRMs, or any webhook URL"
+          subtitle="Send DMs, comments & leads to Zapier, Make, or any URL"
         >
-          <button onClick={() => setShowModal(true)} className="btn-primary gap-2">
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition"
+          >
             <Plus className="w-4 h-4" /> New webhook
           </button>
-        </PageHeader>
+        </StatHero>
 
         {loading ? (
           <div className="text-center py-12 text-ink-400">Loading…</div>
