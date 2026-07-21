@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import dayjs from "dayjs";
 import EmptyState from "@/components/ui/EmptyState";
+import StatHero from "@/components/ui/StatHero";
 
 const STATUS_BADGE = {
   draft: "bg-ink-100 text-ink-600",
@@ -80,57 +81,51 @@ export default function IgBroadcastsPage() {
     }
   };
 
+  const sentCount = campaigns.filter((c) => c.status === "sent").length;
+  const scheduledCount = campaigns.filter(
+    (c) => c.status === "scheduled",
+  ).length;
+  const draftCount = campaigns.filter((c) => c.status === "draft").length;
+
   return (
-    <div className="relative min-h-full">
-      {/* Ambient glass backdrop */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/35 blur-[130px]" />
-        <div className="absolute bottom-0 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/25 blur-[130px]" />
-      </div>
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
+      {/* Hero */}
+      <StatHero
+        icon={Send}
+        title="Instagram DM Blasts"
+        subtitle="Send a one-off DM to followers who interacted with you recently. Perfect for drops, restocks, story teasers and exclusive offers."
+        stats={[
+          { label: "Campaigns", value: campaigns.length },
+          { label: "Sent", value: sentCount },
+          { label: "Scheduled", value: scheduledCount, accent: true },
+          { label: "Drafts", value: draftCount },
+        ]}
+      >
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-white text-ink-900 hover:bg-brand-50 font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition"
+        >
+          <Plus className="w-4 h-4" />
+          New blast
+        </button>
+      </StatHero>
 
-      <div className="relative p-4 sm:p-8 max-w-7xl mx-auto space-y-5">
-        {/* Hero */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass p-6">
-          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-300/25 blur-3xl" />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center shadow-glow">
-                <Send className="w-6 h-6 text-white" />
-              </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-ink-900">
-                Instagram DM Blasts
-              </h1>
-              <p className="text-sm text-ink-600 mt-1 max-w-xl">
-                Send a one-off DM to followers who interacted with you recently.
-                Perfect for drops, restocks, story teasers and exclusive offers.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-5 py-2.5 rounded-lg shadow-glow flex items-center gap-2 transition"
-          >
-            <Plus className="w-4 h-4" />
-            New blast
-          </button>
+      {/* 24h window warning */}
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <AlertTriangle className="w-4 h-4 text-amber-600" />
         </div>
-
-        {/* 24h window warning */}
-        <div className="relative mt-4 bg-amber-50/80 rounded-xl border border-amber-200 px-3 py-2.5 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div className="text-xs text-ink-700">
-            <strong className="text-amber-700">24-hour window:</strong>{" "}
-            Instagram only allows you to message users who DM'd you in the last
-            24 hours. Followers outside this window won't receive your blast —
-            that's a Meta policy, not a bug.
-          </div>
+        <div className="text-xs text-ink-700 leading-relaxed pt-0.5">
+          <strong className="text-amber-700">24-hour window:</strong>{" "}
+          Instagram only allows you to message users who DM'd you in the last 24
+          hours. Followers outside this window won't receive your blast — that's
+          a Meta policy, not a bug.
         </div>
       </div>
 
       {/* Campaigns */}
       {loading ? (
-        <div className="text-center py-12 text-ink-400">Loading…</div>
+        <div className="text-center py-16 text-ink-400 text-sm">Loading…</div>
       ) : campaigns.length === 0 ? (
         <EmptyState
           icon={Instagram}
@@ -139,7 +134,7 @@ export default function IgBroadcastsPage() {
           action={
             <button
               onClick={() => setShowModal(true)}
-              className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg shadow-glow font-bold text-sm flex items-center gap-2 mx-auto transition"
+              className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-xl shadow-sm font-bold text-sm flex items-center gap-2 mx-auto transition"
             >
               <Plus className="w-4 h-4" />
               Create blast
@@ -147,26 +142,28 @@ export default function IgBroadcastsPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {campaigns.map((c) => (
             <div
               key={c._id}
-              className="rounded-xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass p-4 hover:border-brand-300 hover:bg-white/90 transition"
+              className="group rounded-2xl border border-ink-100 bg-white shadow-sm p-5 hover:border-brand-300 hover:shadow-md transition"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Camera className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+                      <Camera className="w-4 h-4 text-brand-500" />
+                    </div>
                     <h3 className="font-bold text-sm text-ink-900 truncate">
                       {c.name}
                     </h3>
                     <span
-                      className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-full ${STATUS_BADGE[c.status] || ""}`}
+                      className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded-full ${STATUS_BADGE[c.status] || ""}`}
                     >
                       {c.status}
                     </span>
                   </div>
-                  <p className="text-xs text-ink-500 line-clamp-2 mb-2">
+                  <p className="text-xs text-ink-500 line-clamp-2 mb-3 leading-relaxed">
                     {c.message}
                   </p>
                   <div className="flex items-center gap-3 text-[11px] text-ink-400">
@@ -186,7 +183,7 @@ export default function IgBroadcastsPage() {
                   {c.status === "draft" && (
                     <button
                       onClick={() => sendCampaign(c._id)}
-                      className="bg-brand-500 hover:bg-brand-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition"
+                      className="bg-brand-500 hover:bg-brand-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 transition"
                     >
                       <Send className="w-3 h-3" />
                       Blast
@@ -195,7 +192,7 @@ export default function IgBroadcastsPage() {
                   {["draft", "scheduled"].includes(c.status) && (
                     <button
                       onClick={() => del(c._id)}
-                      className="text-ink-300 hover:text-red-500 p-1 rounded-lg"
+                      className="text-ink-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -207,16 +204,15 @@ export default function IgBroadcastsPage() {
         </div>
       )}
 
-        {showModal && (
-          <CreateModal
-            onClose={() => setShowModal(false)}
-            onCreated={(c) => {
-              setCampaigns((cs) => [c, ...cs]);
-              setShowModal(false);
-            }}
-          />
-        )}
-      </div>
+      {showModal && (
+        <CreateModal
+          onClose={() => setShowModal(false)}
+          onCreated={(c) => {
+            setCampaigns((cs) => [c, ...cs]);
+            setShowModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -258,15 +254,17 @@ function CreateModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 bg-ink-950/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-hero border-t-4 border-brand-500">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand-500" />
+      <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-hero border border-ink-100">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-brand-500" />
+            </div>
             <h2 className="font-bold text-ink-900">New IG DM Blast</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100"
+            className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -327,21 +325,21 @@ function CreateModal({ onClose, onCreated }) {
               }
             />
           </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-800">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 text-[11px] text-amber-800 leading-relaxed">
             Reminder: only followers who DM'd you within 24h will receive this.
           </div>
           <div className="flex gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-ink-200 text-ink-700 font-bold text-sm py-2.5 hover:bg-ink-50 transition"
+              className="flex-1 rounded-xl border border-ink-200 text-ink-700 font-bold text-sm py-2.5 hover:border-brand-300 hover:bg-ink-50 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm py-2.5 shadow-glow disabled:opacity-60 transition"
+              className="flex-1 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm py-2.5 shadow-sm disabled:opacity-60 transition"
             >
               {loading ? "Creating…" : "Create blast"}
             </button>

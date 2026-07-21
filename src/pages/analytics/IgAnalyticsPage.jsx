@@ -1,5 +1,5 @@
 /**
- * Instagram Analytics — Botlify orange/white theme, glass cards.
+ * Instagram Analytics — Botlify orange/white/black theme.
  * Surfaces DM reach, story replies, comment volume, follower-to-DM conversion.
  */
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ import {
   Pie,
   Cell,
   Legend,
+  CartesianGrid,
 } from "recharts";
 import dayjs from "dayjs";
 import {
@@ -24,15 +25,25 @@ import {
   MessageCircle,
   Send,
   Bot,
-  Instagram,
+  BarChart2,
   TrendingUp,
   Sparkles,
   Users,
+  Clock,
 } from "lucide-react";
+import StatHero from "@/components/ui/StatHero";
 
 const BRAND = "#ff5722";
 const BRAND_LIGHT = "#ff7d3e";
+const BRAND_SOFT = "#ffe6d5";
+const AMBER = "#f59e0b";
 const DONUT = ["#ff5722", "#f59e0b", "#ff7d3e", "#ffb38a"];
+
+const PERIODS = [
+  { key: "week", label: "7 days" },
+  { key: "month", label: "30 days" },
+  { key: "3months", label: "3 months" },
+];
 
 export default function IgAnalyticsPage() {
   const [overview, setOverview] = useState(null);
@@ -70,58 +81,48 @@ export default function IgAnalyticsPage() {
       ]
     : [];
 
+  const heroStats = overview
+    ? [
+        { label: "Total DMs", value: overview.totalMessages ?? "—" },
+        { label: "Replies received", value: overview.inboundMessages ?? "—" },
+        { label: "DMs sent", value: overview.outboundMessages ?? "—" },
+        {
+          label: "AI handled",
+          value: overview.botHandledPct ? `${overview.botHandledPct}%` : "—",
+          accent: true,
+        },
+      ]
+    : [];
+
   return (
-    <div className="relative min-h-full">
-      {/* Ambient glass backdrop */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 right-0 w-[36rem] h-[36rem] rounded-full bg-brand-200/35 blur-[130px]" />
-        <div className="absolute bottom-0 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber-200/25 blur-[130px]" />
-      </div>
-
-      <div className="relative p-4 sm:p-8 max-w-7xl mx-auto space-y-5">
+    <div className="min-h-full bg-ink-50/40">
+      <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass p-6">
-          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-300/25 blur-3xl" />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center shadow-glow">
-                <Instagram className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-ink-900">
-                  Instagram Insights
-                </h1>
-                <p className="text-sm text-ink-600 mt-1">
-                  DM volume, story replies, automation reach — see what's
-                  resonating with your audience.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-1 bg-white border border-ink-200 rounded-lg p-0.5">
-              {["week", "month", "3months"].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition ${
-                    period === p
-                      ? "bg-brand-500 text-white shadow-glow"
-                      : "text-ink-500 hover:text-brand-600"
-                  }`}
-                >
-                  {p === "week"
-                    ? "7 days"
-                    : p === "month"
-                      ? "30 days"
-                      : "3 months"}
-                </button>
-              ))}
-            </div>
+        <StatHero
+          icon={BarChart2}
+          title="Analytics"
+          subtitle="DM volume, story replies, automation reach — see what's resonating with your audience."
+          stats={heroStats}
+        >
+          <div className="flex gap-1.5 flex-wrap">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={`px-4 py-1.5 text-xs font-bold rounded-full transition ${
+                  period === p.key
+                    ? "bg-brand-500 text-white shadow-sm"
+                    : "bg-white/10 border border-white/15 text-white/70 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
-        </div>
+        </StatHero>
 
         {/* KPI cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <IgStat
             icon={MessageCircle}
             label="Total DMs"
@@ -146,27 +147,56 @@ export default function IgAnalyticsPage() {
         </div>
 
         {/* DM activity chart */}
-        <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-brand-500" />
-            <h2 className="font-bold text-ink-900">DM activity</h2>
+        <div className="rounded-2xl border border-ink-100 bg-white shadow-sm p-5 sm:p-6">
+          <div className="flex items-center gap-2.5 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-brand-500" />
+            </div>
+            <div>
+              <h2 className="font-bold text-ink-900 leading-tight">
+                DM activity
+              </h2>
+              <p className="text-xs text-ink-500">Messages over time</p>
+            </div>
           </div>
           {msgData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={msgData}>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart
+                data={msgData}
+                margin={{ top: 6, right: 8, left: -12, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="igGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={BRAND} stopOpacity={0.35} />
+                    <stop offset="5%" stopColor={BRAND} stopOpacity={0.32} />
                     <stop offset="95%" stopColor={BRAND} stopOpacity={0} />
                   </linearGradient>
                 </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#f1f0ee"
+                />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 11, fill: "#8a857e" }}
+                  axisLine={false}
+                  tickLine={false}
                   tickFormatter={(d) => dayjs(d).format("D MMM")}
                 />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#8a857e" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={36}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #f1f0ee",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                    fontSize: 12,
+                  }}
+                />
                 <Area
                   type="monotone"
                   dataKey="count"
@@ -174,6 +204,7 @@ export default function IgAnalyticsPage() {
                   fill="url(#igGrad)"
                   strokeWidth={2.5}
                   dot={false}
+                  activeDot={{ r: 4, fill: BRAND }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -184,22 +215,57 @@ export default function IgAnalyticsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Peak DM hours */}
-          <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Heart className="w-4 h-4 text-brand-500" />
-              <h2 className="font-bold text-ink-900">When followers DM you</h2>
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-sm p-5 sm:p-6">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-brand-500" />
+              </div>
+              <div>
+                <h2 className="font-bold text-ink-900 leading-tight">
+                  When followers DM you
+                </h2>
+                <p className="text-xs text-ink-500">Activity by hour</p>
+              </div>
             </div>
             {peakData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={peakData}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={peakData}
+                  margin={{ top: 6, right: 8, left: -12, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#f1f0ee"
+                  />
                   <XAxis
                     dataKey="hour"
-                    tick={{ fontSize: 10 }}
+                    tick={{ fontSize: 10, fill: "#8a857e" }}
+                    axisLine={false}
+                    tickLine={false}
                     tickFormatter={(h) => `${h}h`}
                   />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill={BRAND_LIGHT} radius={[4, 4, 0, 0]} />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "#8a857e" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={36}
+                  />
+                  <Tooltip
+                    cursor={{ fill: BRAND_SOFT, opacity: 0.4 }}
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid #f1f0ee",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar
+                    dataKey="count"
+                    fill={BRAND_LIGHT}
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={28}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -208,13 +274,20 @@ export default function IgAnalyticsPage() {
           </div>
 
           {/* AI vs you donut */}
-          <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Bot className="w-4 h-4 text-brand-500" />
-              <h2 className="font-bold text-ink-900">Who's replying?</h2>
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-sm p-5 sm:p-6">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-brand-500" />
+              </div>
+              <div>
+                <h2 className="font-bold text-ink-900 leading-tight">
+                  Who's replying?
+                </h2>
+                <p className="text-xs text-ink-500">AI vs manual</p>
+              </div>
             </div>
             {pie.some((d) => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
                     data={pie}
@@ -222,16 +295,32 @@ export default function IgAnalyticsPage() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={70}
-                    innerRadius={40}
+                    outerRadius={78}
+                    innerRadius={48}
+                    paddingAngle={2}
                     label
                   >
                     {pie.map((_, i) => (
-                      <Cell key={i} fill={DONUT[i % DONUT.length]} />
+                      <Cell
+                        key={i}
+                        fill={DONUT[i % DONUT.length]}
+                        stroke="#fff"
+                        strokeWidth={2}
+                      />
                     ))}
                   </Pie>
-                  <Legend />
-                  <Tooltip />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid #f1f0ee",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      fontSize: 12,
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -241,25 +330,32 @@ export default function IgAnalyticsPage() {
         </div>
 
         {/* Flow performance */}
-        <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass overflow-hidden">
-          <div className="p-5 border-b border-ink-100 flex items-center gap-2">
-            <Users className="w-4 h-4 text-brand-500" />
-            <h2 className="font-bold text-ink-900">Automation flows</h2>
+        <div className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
+          <div className="p-5 sm:p-6 border-b border-ink-100 flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+              <Users className="w-4 h-4 text-brand-500" />
+            </div>
+            <div>
+              <h2 className="font-bold text-ink-900 leading-tight">
+                Automation flows
+              </h2>
+              <p className="text-xs text-ink-500">Trigger-to-completion rate</p>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-brand-50/60 border-b border-ink-100 text-left">
-                  <th className="px-4 py-2.5 text-[11px] uppercase font-bold text-brand-700">
+                <tr className="bg-ink-50/60 border-b border-ink-100 text-left">
+                  <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-bold text-ink-500">
                     Flow
                   </th>
-                  <th className="px-4 py-2.5 text-[11px] uppercase font-bold text-brand-700">
+                  <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-bold text-ink-500">
                     Triggered
                   </th>
-                  <th className="px-4 py-2.5 text-[11px] uppercase font-bold text-brand-700">
+                  <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-bold text-ink-500">
                     Completed
                   </th>
-                  <th className="px-4 py-2.5 text-[11px] uppercase font-bold text-brand-700">
+                  <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-bold text-ink-500">
                     Conversion
                   </th>
                 </tr>
@@ -267,11 +363,13 @@ export default function IgAnalyticsPage() {
               <tbody className="divide-y divide-ink-50">
                 {flowData.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="text-center py-6 text-ink-400 text-sm"
-                    >
-                      No flow runs yet.
+                    <td colSpan={4} className="text-center py-10">
+                      <div className="flex flex-col items-center gap-2 text-ink-400">
+                        <div className="w-11 h-11 rounded-2xl bg-ink-50 flex items-center justify-center">
+                          <Users className="w-5 h-5 text-ink-300" />
+                        </div>
+                        <p className="text-sm">No flow runs yet.</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -282,25 +380,28 @@ export default function IgAnalyticsPage() {
                         )
                       : 0;
                     return (
-                      <tr key={f._id} className="hover:bg-brand-50/40">
-                        <td className="px-4 py-3 font-bold text-ink-900">
+                      <tr
+                        key={f._id}
+                        className="hover:bg-brand-50/40 transition"
+                      >
+                        <td className="px-5 py-3.5 font-bold text-ink-900">
                           {f.name}
                         </td>
-                        <td className="px-4 py-3 text-ink-600">
+                        <td className="px-5 py-3.5 text-ink-600">
                           {f.stats?.triggered ?? 0}
                         </td>
-                        <td className="px-4 py-3 text-ink-600">
+                        <td className="px-5 py-3.5 text-ink-600">
                           {f.stats?.completed ?? 0}
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 max-w-[80px] h-1.5 bg-brand-100 rounded-full overflow-hidden">
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex-1 max-w-[96px] h-2 bg-ink-100 rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-xs text-brand-700 font-bold">
+                            <span className="text-xs text-brand-700 font-bold tabular-nums">
                               {pct}%
                             </span>
                           </div>
@@ -321,24 +422,34 @@ export default function IgAnalyticsPage() {
 function IgStat({ icon: Icon, label, value, highlight }) {
   return (
     <div
-      className={`p-4 rounded-xl border shadow-glass ${
+      className={`rounded-2xl p-5 shadow-sm transition ${
         highlight
-          ? "bg-brand-500 border-transparent text-white"
-          : "bg-white/70 backdrop-blur-xl border-white/60"
+          ? "bg-gradient-to-br from-brand-500 to-brand-600 border border-transparent text-white"
+          : "bg-white border border-ink-100 hover:border-brand-200"
       }`}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <Icon
-          className={`w-4 h-4 ${highlight ? "text-white" : "text-brand-500"}`}
-        />
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            highlight ? "bg-white/20" : "bg-brand-50"
+          }`}
+        >
+          <Icon
+            className={`w-4 h-4 ${highlight ? "text-white" : "text-brand-500"}`}
+          />
+        </div>
         <span
-          className={`text-[10px] uppercase tracking-wider font-bold ${highlight ? "text-white/80" : "text-brand-600"}`}
+          className={`text-[10px] uppercase tracking-wider font-bold ${
+            highlight ? "text-white/80" : "text-ink-500"
+          }`}
         >
           {label}
         </span>
       </div>
       <p
-        className={`text-2xl font-black ${highlight ? "text-white" : "text-ink-900"}`}
+        className={`text-2xl font-black tabular-nums ${
+          highlight ? "text-white" : "text-ink-900"
+        }`}
       >
         {value}
       </p>
@@ -347,7 +458,10 @@ function IgStat({ icon: Icon, label, value, highlight }) {
 }
 
 const Empty = () => (
-  <div className="h-[200px] flex items-center justify-center text-ink-400 text-sm">
-    Not enough data yet — keep engaging!
+  <div className="h-[220px] flex flex-col items-center justify-center gap-2 text-ink-400">
+    <div className="w-11 h-11 rounded-2xl bg-ink-50 flex items-center justify-center">
+      <TrendingUp className="w-5 h-5 text-ink-300" />
+    </div>
+    <p className="text-sm">Not enough data yet — keep engaging!</p>
   </div>
 );

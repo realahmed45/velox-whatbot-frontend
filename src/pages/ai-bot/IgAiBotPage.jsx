@@ -199,14 +199,14 @@ export default function IgAiBotPage() {
     <div className="relative min-h-full bg-ink-50/40">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 right-0 w-[40rem] h-[40rem] rounded-full bg-brand-500/10 blur-[140px]" />
-        <div className="absolute top-1/3 -left-32 w-[32rem] h-[32rem] rounded-full bg-indigo-400/10 blur-[140px]" />
+        <div className="absolute top-1/3 -left-32 w-[32rem] h-[32rem] rounded-full bg-brand-400/10 blur-[140px]" />
       </div>
 
       <div className="relative max-w-4xl mx-auto p-4 sm:p-6 pb-28 space-y-6">
         {/* ── Hero ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 text-white p-6 sm:p-8 shadow-xl">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 via-ink-900 to-brand-900 text-white p-6 sm:p-8 shadow-xl">
           <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-brand-500/30 blur-3xl" />
-          <div className="absolute -bottom-20 left-10 w-56 h-56 rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="absolute -bottom-20 left-10 w-56 h-56 rounded-full bg-brand-600/15 blur-3xl" />
 
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">

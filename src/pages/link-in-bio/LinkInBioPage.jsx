@@ -10,8 +10,12 @@ import {
   Copy,
   Check,
   Save,
+  User,
+  Palette,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
+import StatHero from "@/components/ui/StatHero";
 
 const THEMES = [
   { key: "brand", label: "Brand (Orange)" },
@@ -103,57 +107,90 @@ export default function LinkInBioPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) return <div className="p-6 text-ink-400">Loading…</div>;
+  if (loading)
+    return (
+      <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+        <div className="h-40 rounded-3xl bg-ink-100 animate-pulse" />
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          <div className="h-80 rounded-2xl bg-ink-100 animate-pulse" />
+          <div className="h-80 rounded-2xl bg-ink-100 animate-pulse" />
+        </div>
+      </div>
+    );
+
+  const activeLinks = page.links.filter((l) => l.enabled).length;
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
-      <PageHeader
-        icon={Link2}
-        title="Link in bio"
-        subtitle="Create a mini landing page for your Instagram bio link"
-      >
-        {publicUrl && (
-          <>
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-secondary gap-2"
-            >
-              <Eye className="w-4 h-4" /> Preview
-            </a>
-            <button onClick={copyUrl} className="btn-secondary gap-2">
-              {copied ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-              Copy link
-            </button>
-          </>
-        )}
-        <button
-          onClick={save}
-          disabled={saving}
-          className="btn-primary gap-2"
+      <div className="mb-6">
+        <StatHero
+          icon={Link2}
+          eyebrow="Growth"
+          title="Link in bio"
+          subtitle="Create a mini landing page for your Instagram bio link."
+          stats={[
+            { label: "Total links", value: page.links.length, accent: true },
+            { label: "Active links", value: activeLinks },
+            {
+              label: "Status",
+              value: page.enabled ? "Live" : "Off",
+            },
+          ]}
         >
-          <Save className="w-4 h-4" /> {saving ? "Saving…" : "Save"}
-        </button>
-      </PageHeader>
+          {publicUrl && (
+            <>
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-bold px-3.5 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 flex items-center gap-1.5 transition backdrop-blur"
+              >
+                <Eye className="w-3.5 h-3.5" /> Preview
+              </a>
+              <button
+                onClick={copyUrl}
+                className="text-xs font-bold px-3.5 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 flex items-center gap-1.5 transition backdrop-blur"
+              >
+                {copied ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                Copy link
+              </button>
+            </>
+          )}
+          <button
+            onClick={save}
+            disabled={saving}
+            className="text-xs font-bold px-3.5 py-2.5 rounded-xl bg-white text-brand-700 hover:bg-brand-50 flex items-center gap-1.5 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Save className="w-3.5 h-3.5" /> {saving ? "Saving…" : "Save"}
+          </button>
+        </StatHero>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Editor */}
-        <div className="space-y-4">
-          <div className="card space-y-3">
-            <h3 className="font-semibold text-ink-900">Page Details</h3>
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-sm hover:border-brand-300 hover:shadow-md transition p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <User className="w-4 h-4" />
+              </div>
+              <h3 className="font-bold text-ink-900">Page details</h3>
+            </div>
+
             <div>
-              <label className="label">Username / Slug</label>
+              <label className="block text-xs font-semibold text-ink-600 mb-1.5">
+                Username / Slug
+              </label>
               <div className="flex items-center">
-                <span className="px-3 py-2 bg-ink-100 rounded-l text-sm text-ink-600 border border-r-0 border-ink-200">
+                <span className="px-3 py-2.5 bg-ink-50 rounded-l-xl text-sm text-ink-500 border border-r-0 border-ink-200 whitespace-nowrap">
                   botlify.site/@
                 </span>
                 <input
-                  className="input rounded-l-none"
+                  className="flex-1 min-w-0 text-sm rounded-r-xl border border-ink-200 bg-white px-3 py-2.5 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                   value={page.slug || ""}
                   onChange={(e) =>
                     setPage({ ...page, slug: e.target.value.toLowerCase() })
@@ -162,30 +199,42 @@ export default function LinkInBioPage() {
                 />
               </div>
             </div>
+
             <div>
-              <label className="label">Display Name</label>
+              <label className="block text-xs font-semibold text-ink-600 mb-1.5">
+                Display name
+              </label>
               <input
-                className="input"
+                className="w-full text-sm rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                 value={page.displayName || ""}
                 onChange={(e) =>
                   setPage({ ...page, displayName: e.target.value })
                 }
               />
             </div>
+
             <div>
-              <label className="label">Bio (max 200)</label>
+              <label className="flex items-center justify-between text-xs font-semibold text-ink-600 mb-1.5">
+                <span>Bio</span>
+                <span className="text-ink-400 font-normal">
+                  {(page.bio || "").length}/200
+                </span>
+              </label>
               <textarea
-                className="input"
+                className="w-full text-sm rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition resize-none"
                 rows="3"
                 maxLength={200}
                 value={page.bio || ""}
                 onChange={(e) => setPage({ ...page, bio: e.target.value })}
               />
             </div>
+
             <div>
-              <label className="label">Avatar URL</label>
+              <label className="block text-xs font-semibold text-ink-600 mb-1.5">
+                Avatar URL
+              </label>
               <input
-                className="input"
+                className="w-full text-sm rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                 value={page.avatarUrl || ""}
                 onChange={(e) =>
                   setPage({ ...page, avatarUrl: e.target.value })
@@ -193,11 +242,14 @@ export default function LinkInBioPage() {
                 placeholder="https://…"
               />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">Theme</label>
+                <label className="block text-xs font-semibold text-ink-600 mb-1.5">
+                  Theme
+                </label>
                 <select
-                  className="input"
+                  className="w-full text-sm rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-ink-900 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                   value={page.theme}
                   onChange={(e) => setPage({ ...page, theme: e.target.value })}
                 >
@@ -209,53 +261,81 @@ export default function LinkInBioPage() {
                 </select>
               </div>
               <div>
-                <label className="label">Accent Color</label>
-                <input
-                  type="color"
-                  className="input h-10 p-1"
-                  value={page.accentColor || "#ff5722"}
-                  onChange={(e) =>
-                    setPage({ ...page, accentColor: e.target.value })
-                  }
-                />
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600 mb-1.5">
+                  <Palette className="w-3.5 h-3.5 text-ink-400" /> Accent color
+                </label>
+                <div className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-2 py-1.5 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition">
+                  <input
+                    type="color"
+                    className="h-8 w-9 rounded-lg border-0 bg-transparent p-0 cursor-pointer"
+                    value={page.accentColor || "#ff5722"}
+                    onChange={(e) =>
+                      setPage({ ...page, accentColor: e.target.value })
+                    }
+                  />
+                  <span className="text-xs font-mono text-ink-500 uppercase">
+                    {page.accentColor || "#ff5722"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="card">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-ink-900">Links</h3>
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-sm hover:border-brand-300 hover:shadow-md transition p-5 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                  <Link2 className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold text-ink-900">Links</h3>
+                <span className="chip bg-ink-100 text-ink-600 text-xs">
+                  {page.links.length}
+                </span>
+              </div>
               <button
                 onClick={addLink}
-                className="text-sm text-brand-600 font-medium hover:underline flex items-center gap-1"
+                className="text-xs font-bold px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1.5 transition shadow-sm"
               >
-                <Plus className="w-4 h-4" /> Add link
+                <Plus className="w-3.5 h-3.5" /> Add link
               </button>
             </div>
-            <div className="space-y-2">
+
+            <div className="space-y-3">
               {page.links.map((link, i) => (
                 <div
                   key={i}
-                  className="border border-ink-200 rounded-lg p-3 space-y-2"
+                  className="rounded-xl border border-ink-100 bg-ink-50/40 p-3 space-y-2.5 hover:border-brand-200 transition"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col text-ink-300">
                       <button
                         onClick={() => moveLink(i, -1)}
-                        className="text-ink-400 hover:text-ink-700"
+                        disabled={i === 0}
+                        className="hover:text-brand-500 disabled:opacity-30 disabled:hover:text-ink-300 transition"
+                        title="Move up"
                       >
-                        <GripVertical className="w-4 h-4" />
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => moveLink(i, 1)}
+                        disabled={i === page.links.length - 1}
+                        className="hover:text-brand-500 disabled:opacity-30 disabled:hover:text-ink-300 transition"
+                        title="Move down"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
                       </button>
                     </div>
+                    <GripVertical className="w-4 h-4 text-ink-300 flex-shrink-0" />
                     <input
-                      className="input text-sm flex-1"
+                      className="flex-1 min-w-0 text-sm rounded-lg border border-ink-200 bg-white px-3 py-2 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                       placeholder="Title"
                       value={link.title}
                       onChange={(e) => updateLink(i, { title: e.target.value })}
                     />
-                    <label className="flex items-center gap-1 text-xs">
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-ink-600 cursor-pointer select-none">
                       <input
                         type="checkbox"
+                        className="accent-brand-500 w-3.5 h-3.5"
                         checked={link.enabled}
                         onChange={(e) =>
                           updateLink(i, { enabled: e.target.checked })
@@ -265,26 +345,43 @@ export default function LinkInBioPage() {
                     </label>
                     <button
                       onClick={() => removeLink(i)}
-                      className="p-1 rounded hover:bg-red-50 text-red-500"
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-ink-400 hover:text-red-500 transition"
+                      title="Remove"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <input
-                    className="input text-sm"
+                    className="w-full text-sm rounded-lg border border-ink-200 bg-white px-3 py-2 text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none transition"
                     placeholder="https://…"
                     value={link.url}
                     onChange={(e) => updateLink(i, { url: e.target.value })}
                   />
                   {link.clicks > 0 && (
-                    <p className="text-xs text-ink-500">{link.clicks} clicks</p>
+                    <p className="text-xs text-ink-500 font-medium">
+                      {link.clicks} clicks
+                    </p>
                   )}
                 </div>
               ))}
               {page.links.length === 0 && (
-                <p className="text-sm text-ink-400 text-center py-4">
-                  No links yet. Add your first.
-                </p>
+                <div className="text-center py-10 rounded-xl border border-dashed border-ink-200 bg-ink-50/40">
+                  <div className="w-11 h-11 rounded-2xl bg-brand-50 text-brand-500 flex items-center justify-center mx-auto mb-3">
+                    <Link2 className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm font-semibold text-ink-700">
+                    No links yet
+                  </p>
+                  <p className="text-xs text-ink-400 mt-1">
+                    Add your first link to get started.
+                  </p>
+                  <button
+                    onClick={addLink}
+                    className="mt-4 text-xs font-bold px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white inline-flex items-center gap-1.5 transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add link
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -292,18 +389,18 @@ export default function LinkInBioPage() {
 
         {/* Preview */}
         <div className="md:sticky md:top-6 h-fit">
-          <p className="text-xs text-ink-500 mb-2 font-semibold uppercase tracking-wider">
-            Live Preview
+          <p className="flex items-center gap-1.5 text-xs text-ink-500 mb-3 font-bold uppercase tracking-wider">
+            <Eye className="w-3.5 h-3.5" /> Live preview
           </p>
           <div
-            className={`rounded-lg p-6 shadow-lg border ${
+            className={`rounded-2xl p-6 shadow-xl border ${
               page.theme === "dark"
-                ? "bg-ink-900 text-white"
+                ? "bg-ink-900 text-white border-ink-800"
                 : page.theme === "gradient"
-                  ? "bg-gradient-to-br from-brand-400 via-brand-500 to-amber-500 text-white"
+                  ? "bg-gradient-to-br from-brand-400 via-brand-500 to-amber-500 text-white border-transparent"
                   : page.theme === "light"
                     ? "bg-white text-ink-900 border-ink-200"
-                    : "bg-brand-gradient text-white"
+                    : "bg-brand-gradient text-white border-transparent"
             }`}
           >
             <div className="flex flex-col items-center text-center">
@@ -330,7 +427,7 @@ export default function LinkInBioPage() {
                   .map((link, i) => (
                     <div
                       key={i}
-                      className="w-full py-3 px-4 rounded-md bg-white/10 backdrop-blur hover:bg-white/20 text-center font-medium transition cursor-pointer"
+                      className="w-full py-3 px-4 rounded-xl bg-white/10 backdrop-blur hover:bg-white/20 text-center font-medium transition cursor-pointer"
                       style={
                         page.theme === "light"
                           ? {

@@ -30,12 +30,27 @@ import { clsx } from "clsx";
 dayjs.extend(relativeTime);
 
 const STATUS = {
-  bot_active: { label: "Auto-DM", cls: "bg-brand-100 text-brand-700" },
-  open: { label: "Open", cls: "bg-ink-100 text-ink-600" },
-  awaiting_human: { label: "Needs you", cls: "bg-amber-100 text-amber-700" },
-  human_active: { label: "You", cls: "bg-emerald-100 text-emerald-700" },
-  resolved: { label: "Done", cls: "bg-ink-100 text-ink-500" },
-  closed: { label: "Closed", cls: "bg-ink-100 text-ink-500" },
+  bot_active: {
+    label: "Auto-DM",
+    cls: "bg-brand-100 text-brand-700 ring-1 ring-brand-200/60",
+  },
+  open: { label: "Open", cls: "bg-ink-100 text-ink-600 ring-1 ring-ink-200/60" },
+  awaiting_human: {
+    label: "Needs you",
+    cls: "bg-amber-100 text-amber-700 ring-1 ring-amber-200/60",
+  },
+  human_active: {
+    label: "You",
+    cls: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200/60",
+  },
+  resolved: {
+    label: "Done",
+    cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
+  },
+  closed: {
+    label: "Closed",
+    cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
+  },
 };
 
 function Avatar({ initial, size = "w-9 h-9", text = "text-[11px]" }) {
@@ -44,7 +59,7 @@ function Avatar({ initial, size = "w-9 h-9", text = "text-[11px]" }) {
       className={clsx(
         size,
         text,
-        "rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0",
+        "rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-md shadow-brand-500/20 ring-1 ring-white/30 flex-shrink-0",
       )}
     >
       {initial}
@@ -202,7 +217,7 @@ export default function IgInboxPage() {
   });
 
   return (
-    <div className="flex h-full bg-ink-50">
+    <div className="flex h-full bg-gradient-to-b from-ink-50 to-ink-100/40">
       {/* List pane */}
       <div
         className={clsx(
@@ -212,11 +227,15 @@ export default function IgInboxPage() {
         )}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-ink-100 bg-white/80 backdrop-blur-xl">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Instagram className="w-4 h-4 text-brand-500" />
-            <h2 className="font-black text-ink-900 text-base">DMs</h2>
-            <span className="ml-auto text-[10px] uppercase tracking-wider font-bold text-brand-600">
+        <div className="px-4 py-3.5 border-b border-ink-100 bg-white/90 backdrop-blur-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm shadow-brand-500/25">
+              <Instagram className="w-4 h-4 text-white" />
+            </span>
+            <h2 className="font-black text-ink-900 text-base tracking-tight">
+              DMs
+            </h2>
+            <span className="ml-auto text-[10px] uppercase tracking-wider font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full ring-1 ring-brand-100">
               {conversations.length} active
             </span>
           </div>
@@ -241,10 +260,10 @@ export default function IgInboxPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={clsx(
-                  "flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold transition border",
+                  "flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-bold transition-all border",
                   filter === f
-                    ? "bg-brand-500 text-white border-brand-500 shadow-glow"
-                    : "border-ink-200 text-ink-600 hover:border-brand-300 hover:text-brand-600",
+                    ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/30"
+                    : "border-ink-200 text-ink-600 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/50",
                 )}
               >
                 {f === "all" ? "All" : STATUS[f]?.label || f}
@@ -256,10 +275,10 @@ export default function IgInboxPage() {
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 && (
             <div className="text-center py-12 px-4">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
-                <InboxIcon className="w-6 h-6 text-brand-400" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-100 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <InboxIcon className="w-6 h-6 text-brand-500" />
               </div>
-              <p className="text-xs text-ink-600 font-bold">No DMs yet</p>
+              <p className="text-xs text-ink-700 font-bold">No DMs yet</p>
               <p className="text-[11px] text-ink-400 mt-1">
                 When followers slide in, they'll appear here.
               </p>
@@ -275,9 +294,9 @@ export default function IgInboxPage() {
                 key={conv._id}
                 onClick={() => setActiveConversation(conv._id)}
                 className={clsx(
-                  "w-full text-left p-3 border-b border-ink-50 hover:bg-ink-50/70 transition",
+                  "w-full text-left p-3 border-b border-ink-50 border-l-2 border-l-transparent hover:bg-ink-50/70 transition-colors",
                   activeConversationId === conv._id &&
-                    "bg-brand-50/70 border-l-2 border-l-brand-500",
+                    "bg-brand-50/80 border-l-brand-500 hover:bg-brand-50",
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -303,12 +322,12 @@ export default function IgInboxPage() {
                     </p>
                     <div className="flex items-center gap-1 mt-1.5">
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${meta.cls}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.cls}`}
                       >
                         {meta.label}
                       </span>
                       {conv.botEnabled === false && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 inline-flex items-center gap-0.5">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/60 inline-flex items-center gap-0.5">
                           <Pause className="w-2.5 h-2.5" /> off
                         </span>
                       )}
@@ -325,7 +344,7 @@ export default function IgInboxPage() {
       {active ? (
         <div className="flex-1 flex flex-col min-w-0">
           {/* Chat header */}
-          <div className="bg-white/80 backdrop-blur-xl border-b border-ink-100 px-3 sm:px-4 py-3">
+          <div className="bg-white/90 backdrop-blur-xl border-b border-ink-100 px-3 sm:px-4 py-3 shadow-sm shadow-ink-100/40">
             <button
               onClick={() => setActiveConversation(null)}
               className="md:hidden mb-2 text-xs text-brand-600 font-bold inline-flex items-center gap-1"
@@ -370,7 +389,7 @@ export default function IgInboxPage() {
                 <button
                   onClick={toggleBot}
                   className={clsx(
-                    "text-[11px] font-bold px-2.5 py-1.5 rounded-lg border flex items-center gap-1 transition",
+                    "text-[11px] font-bold px-2.5 py-1.5 rounded-xl border flex items-center gap-1 transition-all",
                     active.botEnabled === false
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                       : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
@@ -389,7 +408,7 @@ export default function IgInboxPage() {
                 {active.status !== "human_active" && (
                   <button
                     onClick={takeover}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition-all shadow-sm shadow-brand-500/30"
                   >
                     <UserCheck className="w-3 h-3" /> Take over
                   </button>
@@ -397,7 +416,7 @@ export default function IgInboxPage() {
                 {active.status !== "resolved" && active.status !== "closed" && (
                   <button
                     onClick={resolve}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-ink-100 text-ink-700 hover:bg-ink-200 flex items-center gap-1 transition"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-ink-100 text-ink-700 hover:bg-ink-200 flex items-center gap-1 transition-all"
                   >
                     <CheckCheck className="w-3 h-3" /> Done
                   </button>
@@ -411,7 +430,7 @@ export default function IgInboxPage() {
               {(active.tags || []).map((t) => (
                 <span
                   key={t}
-                  className="text-[10px] font-bold rounded-full bg-brand-100 text-brand-700 px-2 py-0.5 inline-flex items-center gap-0.5"
+                  className="text-[10px] font-bold rounded-full bg-brand-100 text-brand-700 ring-1 ring-brand-200/60 px-2 py-0.5 inline-flex items-center gap-0.5"
                 >
                   #{t}
                   <button
@@ -438,7 +457,7 @@ export default function IgInboxPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-ink-50/60">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-gradient-to-b from-ink-50/60 to-ink-100/30">
             {activeMsgs.map((m) => (
               <Bubble key={m._id} msg={m} />
             ))}
@@ -446,15 +465,16 @@ export default function IgInboxPage() {
           </div>
 
           {/* Reply box */}
-          <div className="bg-white/80 backdrop-blur-xl border-t border-ink-100 p-3">
+          <div className="bg-white/90 backdrop-blur-xl border-t border-ink-100 p-3">
             {active.botEnabled === false && (
-              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mb-2">
+              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5 mb-2 flex items-center gap-1.5">
+                <Pause className="w-3 h-3 flex-shrink-0" />
                 Auto-DM is paused — only your manual replies go out.
               </div>
             )}
             <div className="flex items-end gap-2">
               <textarea
-                className="input resize-none flex-1 text-sm"
+                className="input resize-none flex-1 text-sm !rounded-2xl focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                 rows={2}
                 placeholder="Send a DM…"
                 value={replyText}
@@ -469,7 +489,7 @@ export default function IgInboxPage() {
               <button
                 onClick={sendReply}
                 disabled={sending || !replyText.trim()}
-                className="bg-brand-500 hover:bg-brand-600 text-white p-3 rounded-lg shadow-glow disabled:opacity-50 transition flex-shrink-0"
+                className="bg-brand-500 hover:bg-brand-600 text-white p-3 rounded-2xl shadow-md shadow-brand-500/30 disabled:opacity-50 disabled:shadow-none transition-all flex-shrink-0 active:scale-95"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -477,16 +497,21 @@ export default function IgInboxPage() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-center bg-ink-50">
-          <div>
-            <img
-              src="/logo.png"
-              alt=""
-              className="w-20 mx-auto mb-4 object-contain animate-float drop-shadow"
-            />
-            <p className="text-ink-800 font-bold">Select a DM</p>
-            <p className="text-ink-400 text-sm mt-1">
-              Or wait for a new message to slide in.
+        <div className="hidden md:flex flex-1 items-center justify-center text-center bg-gradient-to-b from-ink-50 to-ink-100/40">
+          <div className="max-w-xs px-6">
+            <div className="w-20 h-20 rounded-3xl bg-white ring-1 ring-ink-100 shadow-md flex items-center justify-center mx-auto mb-5 animate-float">
+              <img
+                src="/logo.png"
+                alt=""
+                className="w-12 object-contain drop-shadow"
+              />
+            </div>
+            <p className="text-ink-900 font-black text-lg tracking-tight">
+              Select a DM
+            </p>
+            <p className="text-ink-400 text-sm mt-1.5 leading-relaxed">
+              Choose a conversation from the list, or wait for a new message to
+              slide in.
             </p>
           </div>
         </div>
@@ -501,7 +526,7 @@ function Bubble({ msg }) {
   if (msg.isInternalNote) {
     return (
       <div className="flex justify-center">
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-1.5 rounded-xl max-w-[80%] text-center">
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-1.5 rounded-2xl max-w-[80%] text-center shadow-sm">
           📝 {msg.text}
         </div>
       </div>
@@ -511,10 +536,10 @@ function Bubble({ msg }) {
     <div className={`flex ${out ? "justify-end" : "justify-start"}`}>
       <div
         className={clsx(
-          "max-w-[80%] sm:max-w-[70%] px-3.5 py-2.5 text-sm shadow-sm",
+          "max-w-[80%] sm:max-w-[70%] px-3.5 py-2.5 text-sm",
           out
-            ? "bg-brand-500 text-white rounded-[18px] rounded-br-md"
-            : "bg-white text-ink-800 border border-ink-100 rounded-[18px] rounded-bl-md",
+            ? "bg-brand-500 text-white rounded-2xl rounded-br-md shadow-md shadow-brand-500/20"
+            : "bg-white text-ink-800 border border-ink-100 rounded-2xl rounded-bl-md shadow-sm",
         )}
       >
         {msg.type === "image" && msg.mediaUrl && (
