@@ -28,7 +28,6 @@ const ROUTE_TITLES = {
   "/dashboard/guide": "Guide",
   "/dashboard/scheduled-posts": "Scheduled Posts",
   "/dashboard/drip": "Drip Campaigns",
-  "/dashboard/link-in-bio": "Link in Bio",
   "/dashboard/hashtags": "Hashtag Research",
   "/dashboard/integrations": "Integrations",
   "/dashboard/apps": "Apps",

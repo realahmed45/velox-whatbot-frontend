@@ -202,7 +202,7 @@ export default function IgAiBotPage() {
         <div className="absolute top-1/3 -left-32 w-[32rem] h-[32rem] rounded-full bg-brand-400/10 blur-[140px]" />
       </div>
 
-      <div className="relative max-w-4xl mx-auto p-4 sm:p-6 pb-28 space-y-6">
+      <div className="relative max-w-4xl mx-auto p-4 sm:p-6 pb-6 space-y-6">
         {/* ── Hero ───────────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 text-white px-5 py-5 sm:px-6 shadow-lg shadow-ink-900/10">
           <div className="pointer-events-none absolute -top-16 right-8 w-56 h-56 rounded-full bg-brand-500/20 blur-3xl" />
@@ -495,8 +495,8 @@ export default function IgAiBotPage() {
         </div>
       </div>
 
-      {/* ── Sticky save bar ────────────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 sm:left-[var(--sidebar-w,0)] z-20 border-t border-ink-100 bg-white/90 backdrop-blur-xl">
+      {/* ── Sticky save bar (stays inside the content column) ──── */}
+      <div className="sticky bottom-0 z-20 border-t border-ink-100 bg-white/90 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <p className="text-xs text-ink-500 hidden sm:block">
             {cfg.enabled

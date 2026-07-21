@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
@@ -10,61 +9,23 @@ import {
   Unlink,
   ExternalLink,
   Workflow,
-  Package,
+  AppWindow,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
 import StatHero from "@/components/ui/StatHero";
-import ShopifyConnect from "@/components/integrations/ShopifyConnect";
-import { AppWindow } from "lucide-react";
-import { ShopifyIcon } from "@/components/icons/BrandIcons";
-import { useWorkspaceStore } from "@/store/workspaceStore";
-import { useAuthStore } from "@/store/authStore";
 
 const APP_TABS = [
-  { id: "shopify", label: "Shopify" },
   { id: "make", label: "Make.com" },
   { id: "mailchimp", label: "Mailchimp" },
 ];
 
 export default function AppsIntegrationsPage() {
-  const shopifyRef = useRef(null);
   const makeRef = useRef(null);
   const mailchimpRef = useRef(null);
-  const [activeTab, setActiveTab] = useState("shopify");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { fetchWorkspace } = useWorkspaceStore();
-  const { activeWorkspace } = useAuthStore();
+  const [activeTab, setActiveTab] = useState("make");
 
-  const refs = { shopify: shopifyRef, make: makeRef, mailchimp: mailchimpRef };
-
-  // Handle OAuth callback — ?shopify=connected or ?shopify=error
-  useEffect(() => {
-    const status = searchParams.get("shopify");
-    const shop = searchParams.get("shop");
-    if (status === "connected") {
-      toast.success(
-        `✅ Shopify connected${shop ? ` — ${shop}` : ""}! Your bot now knows your full catalog.`,
-      );
-      fetchWorkspace(activeWorkspace);
-      // Clean URL then redirect to AI Bot
-      setSearchParams({}, { replace: true });
-      setTimeout(() => navigate("/dashboard/ai-bot"), 1200);
-    } else if (status === "error") {
-      const reason = searchParams.get("reason");
-      const msgs = {
-        hmac: "Security check failed. Please try again.",
-        missing: "Connection was cancelled.",
-        state: "Session expired. Please try again.",
-        exchange: "Couldn't exchange tokens with Shopify. Try again.",
-      };
-      toast.error(
-        `Shopify connection failed: ${msgs[reason] || "Unknown error"}`,
-      );
-      setSearchParams({}, { replace: true });
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const refs = { make: makeRef, mailchimp: mailchimpRef };
 
   const scrollTo = (id) => {
     setActiveTab(id);
@@ -78,7 +39,7 @@ export default function AppsIntegrationsPage() {
         <StatHero
           icon={AppWindow}
           title="Apps"
-          subtitle="Connect Shopify, Make.com, and your marketing stack"
+          subtitle="Connect Make.com, Mailchimp, and your marketing stack"
         />
 
         {/* ── App navigation tabs ── */}
@@ -89,13 +50,10 @@ export default function AppsIntegrationsPage() {
               onClick={() => scrollTo(tab.id)}
               className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition ${
                 activeTab === tab.id
-                  ? "border-ink-900 text-ink-900"
+                  ? "border-brand-500 text-brand-600"
                   : "border-transparent text-ink-500 hover:text-ink-800 hover:border-ink-300"
               }`}
             >
-              {tab.id === "shopify" && (
-                <ShopifyIcon className="w-4 h-4 text-[#96BF48]" />
-              )}
               {tab.id === "make" && (
                 <Workflow className="w-4 h-4 text-[#6D00CC]" />
               )}
@@ -107,112 +65,11 @@ export default function AppsIntegrationsPage() {
           ))}
         </div>
 
-        <div ref={shopifyRef} className="scroll-mt-4">
-          <ShopifyCard />
-        </div>
         <div ref={makeRef} className="scroll-mt-4">
           <MakeCard />
         </div>
         <div ref={mailchimpRef} className="scroll-mt-4">
           <MailchimpCard />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ShopifyCard() {
-  const [state, setState] = useState({
-    connected: false,
-    storeUrl: "",
-    productCount: 0,
-    orderTrackingEnabled: false,
-    authMethod: null,
-    shopName: null,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get("/integrations/shopify");
-      setState(data.shopify || { connected: false });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConnected = () => load();
-
-  return (
-    <div className="card !rounded-none overflow-hidden">
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 bg-[#96BF48] flex items-center justify-center text-white shrink-0">
-          <ShopifyIcon className="w-8 h-8" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-lg text-ink-900">Shopify</h3>
-            {state.connected ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
-                <Check className="w-3 h-3" /> Connected
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-ink-200 bg-ink-50 text-ink-500">
-                Not connected
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-ink-500 mt-1">
-            Connect your Shopify store — your bot instantly knows your products,
-            prices, and inventory.
-          </p>
-
-          {loading ? (
-            <div className="flex items-center gap-2 mt-4 text-sm text-ink-400">
-              <Loader2 className="w-4 h-4 animate-spin" /> Loading…
-            </div>
-          ) : (
-            <div className="mt-4">
-              {state.connected && (
-                <div className="flex items-center gap-3 mb-4 p-3 border border-emerald-100 bg-emerald-50/40">
-                  <div className="w-8 h-8 bg-emerald-500 flex items-center justify-center shrink-0">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-ink-900">
-                      {state.shopName || state.storeUrl}
-                    </p>
-                    <p className="text-xs text-ink-500">
-                      {state.productCount > 0
-                        ? `${state.productCount} products synced to your bot`
-                        : "Store connected · bot knows your catalog"}
-                    </p>
-                  </div>
-                  {state.orderTrackingEnabled && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border border-blue-200 bg-blue-50 text-blue-700 shrink-0">
-                      <Package className="w-3 h-3" /> Orders
-                    </span>
-                  )}
-                </div>
-              )}
-              <ShopifyConnect
-                connected={state.connected}
-                storeUrl={state.storeUrl}
-                orderTracking={state.orderTrackingEnabled}
-                authMethod={state.authMethod}
-                onConnected={handleConnected}
-                showManageLink={false}
-                redirectToAiBot={true}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

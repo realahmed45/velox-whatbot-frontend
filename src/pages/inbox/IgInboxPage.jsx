@@ -497,22 +497,40 @@ export default function IgInboxPage() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-center bg-gradient-to-b from-ink-50 to-ink-100/40">
-          <div className="max-w-xs px-6">
-            <div className="w-20 h-20 rounded-3xl bg-white ring-1 ring-ink-100 shadow-md flex items-center justify-center mx-auto mb-5 animate-float">
-              <img
-                src="/logo.png"
-                alt=""
-                className="w-12 object-contain drop-shadow"
-              />
+        <div className="hidden md:flex flex-1 items-center justify-center text-center relative overflow-hidden bg-gradient-to-br from-ink-50 via-white to-brand-50/40">
+          {/* soft brand glow */}
+          <div className="pointer-events-none absolute -top-20 -right-10 w-80 h-80 rounded-full bg-brand-200/30 blur-[120px]" />
+          <div className="pointer-events-none absolute bottom-0 -left-16 w-72 h-72 rounded-full bg-amber-100/40 blur-[120px]" />
+          <div className="relative max-w-sm px-6">
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-3xl bg-brand-500/20 blur-xl" />
+              <div className="relative w-24 h-24 rounded-3xl bg-white ring-1 ring-brand-100 shadow-xl shadow-brand-500/10 flex items-center justify-center animate-float">
+                <img
+                  src="/logo.png"
+                  alt=""
+                  className="w-14 object-contain drop-shadow"
+                />
+              </div>
             </div>
-            <p className="text-ink-900 font-black text-lg tracking-tight">
-              Select a DM
+            <p className="text-ink-900 font-black text-xl tracking-tight">
+              Your conversations, one place
             </p>
-            <p className="text-ink-400 text-sm mt-1.5 leading-relaxed">
-              Choose a conversation from the list, or wait for a new message to
-              slide in.
+            <p className="text-ink-500 text-sm mt-2 leading-relaxed">
+              Pick a DM on the left to reply, take over from the bot, tag, and
+              resolve — new messages slide in live.
             </p>
+            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+              {["Auto-DM replies", "Live takeover", "Tags & resolve"].map(
+                (f) => (
+                  <span
+                    key={f}
+                    className="text-[11px] font-semibold text-ink-600 bg-white border border-ink-100 rounded-full px-3 py-1 shadow-sm"
+                  >
+                    {f}
+                  </span>
+                ),
+              )}
+            </div>
           </div>
         </div>
       )}

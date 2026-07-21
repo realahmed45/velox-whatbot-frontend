@@ -25,7 +25,6 @@ import {
   Workflow,
   Sparkles,
   Hash,
-  Link as LinkIcon,
   CalendarClock,
   Droplet,
   Plug,
@@ -80,7 +79,6 @@ const NAV = [
         label: "Scheduled Posts",
       },
       { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
-      { to: "/dashboard/link-in-bio", icon: LinkIcon, label: "Link in Bio" },
       { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
     ],
   },
@@ -155,11 +153,13 @@ export default function Sidebar({ onNavigate }) {
   return (
     <aside
       className={clsx(
-        "relative flex-shrink-0 flex flex-col h-full bg-[#111827] border-r border-white/[0.06]",
+        "relative flex-shrink-0 flex flex-col h-full bg-gradient-to-b from-[#141b2b] to-[#0f1524] border-r border-white/[0.06]",
         "transition-[width] duration-300 ease-out overflow-hidden",
         collapsed ? "w-[76px]" : "w-[260px]",
       )}
     >
+      {/* subtle brand glow at the top */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-40 bg-brand-500/10 blur-[60px]" />
       {/* ── Logo ─────────────────────────────────────────────── */}
       <div
         className={clsx(
@@ -179,10 +179,10 @@ export default function Sidebar({ onNavigate }) {
           />
           {!collapsed && (
             <div className="flex flex-col leading-none min-w-0">
-              <span className="font-bold text-white text-[17px] tracking-tight">
+              <span className="font-black text-white text-[17px] tracking-tight">
                 Botlify
               </span>
-              <span className="text-[11px] font-medium text-gray-400 mt-1 truncate">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-400/80 mt-1 truncate">
                 Instagram Automation
               </span>
             </div>

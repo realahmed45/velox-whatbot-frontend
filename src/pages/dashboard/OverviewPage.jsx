@@ -24,7 +24,6 @@ import {
   CreditCard,
   Sparkles,
   ShoppingBag,
-  Link as LinkIcon,
   Webhook,
   CalendarClock,
   Droplet,
@@ -246,12 +245,6 @@ export default function OverviewPage() {
               to="/dashboard/drip"
             />
             <ActionTile
-              icon={LinkIcon}
-              title="Link in Bio"
-              desc="Smart bio page"
-              to="/dashboard/link-in-bio"
-            />
-            <ActionTile
               icon={Hash}
               title="Hashtags"
               desc="Track hashtags"
@@ -263,14 +256,14 @@ export default function OverviewPage() {
         {/* ── Integrations ─────────────────────────────────── */}
         <Section
           title="Integrations"
-          subtitle="Connect Shopify, Make.com, Mailchimp, and more."
+          subtitle="Connect Make.com, Mailchimp, and your webhooks."
           accent="ink"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <ActionTile
               icon={ShoppingBag}
               title="Apps"
-              desc="Connect Shopify, Mailchimp, Make.com and other tools."
+              desc="Connect Make.com, Mailchimp, and other tools."
               to="/dashboard/apps"
             />
             <ActionTile

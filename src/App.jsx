@@ -47,7 +47,6 @@ const ScheduledPostsPage = lazy(
   () => import("@/pages/content/ScheduledPostsPage"),
 );
 const DripCampaignsPage = lazy(() => import("@/pages/drip/DripCampaignsPage"));
-const LinkInBioPage = lazy(() => import("@/pages/link-in-bio/LinkInBioPage"));
 const HashtagsPage = lazy(() => import("@/pages/hashtags/HashtagsPage"));
 const IntegrationsPage = lazy(
   () => import("@/pages/integrations/IntegrationsPage"),
@@ -198,7 +197,6 @@ export default function App() {
                   element={<ScheduledPostsPage />}
                 />
                 <Route path="drip" element={<DripCampaignsPage />} />
-                <Route path="link-in-bio" element={<LinkInBioPage />} />
                 <Route path="hashtags" element={<HashtagsPage />} />
                 <Route path="integrations" element={<IntegrationsPage />} />
                 <Route path="apps" element={<AppsIntegrationsPage />} />
