@@ -14,7 +14,6 @@ import {
   Hash,
   MessageCircle,
   Heart,
-  Share2,
   Clock,
   CircleDot,
   AlertTriangle,
@@ -75,15 +74,6 @@ const ALL_TABS = [
     channels: ["instagram"],
   },
   {
-    id: "share",
-    label: "Share to story",
-    desc: "Trigger a DM when someone shares your post to their story.",
-    category: "engagement",
-    icon: Share2,
-    plan: "growth",
-    channels: ["instagram"],
-  },
-  {
     id: "fallback",
     label: "Default reply",
     desc: "A professional catch-all when no other automation matches.",
@@ -118,8 +108,6 @@ const EXAMPLES = {
     "Thanks for replying to our story, {first_name}! 🙌 Want to know more? Just ask!",
   storyMention:
     "Thank you so much for the mention, {first_name}! 💛 It means a lot. Anything we can help with?",
-  share:
-    "Thanks for sharing, {first_name}! 🙏 Really appreciate the love — let us know if you have any questions!",
   fallback:
     "Thanks for your message, {first_name}! 🙏 A team member will get back to you shortly. Meanwhile, is there something specific we can help with?",
   away:
@@ -336,9 +324,6 @@ export default function AutomationSetupPage() {
               )}
               {tab === "story_mention" && (
                 <StoryMentionTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
-              {tab === "share" && (
-                <ShareTab cfg={cfg} save={save} setCfg={setCfg} />
               )}
               {tab === "fallback" && (
                 <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
@@ -700,27 +685,6 @@ function StoryMentionTab({ cfg, save, setCfg }) {
     />
   );
 }
-function ShareTab({ cfg, save, setCfg }) {
-  const t = cfg.shareToStoryTrigger || {};
-  return (
-    <EnableReplyCard
-      title="Share to story"
-      desc="When someone shares your post or story to their own story, Botlify sends them a friendly DM."
-      trig={t}
-      setTrig={(v) => setCfg({ ...cfg, shareToStoryTrigger: v })}
-      onSave={() =>
-        save(
-          "/share-to-story-trigger",
-          cfg.shareToStoryTrigger,
-          "Share reply saved",
-        )
-      }
-      example={EXAMPLES.share}
-      placeholder="Thanks for sharing, {first_name}! 🙏"
-    />
-  );
-}
-
 function FallbackTab({ cfg, save, setCfg }) {
   const f = cfg.fallbackReply || {
     enabled: false,
