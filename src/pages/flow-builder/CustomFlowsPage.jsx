@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
+import StarterGallery from "./components/StarterGallery";
 
 export default function CustomFlowsPage() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function CustomFlowsPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [installing, setInstalling] = useState(null);
+  const [showStarters, setShowStarters] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -123,6 +125,13 @@ export default function CustomFlowsPage() {
         title="Custom Flows"
         subtitle="Visual, multi-step branching conversations"
       >
+        <button
+          onClick={() => setShowStarters(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-white/15 border border-white/25 text-white font-bold text-sm px-4 py-2 hover:bg-white/25 transition"
+        >
+          <Sparkles className="w-4 h-4" />
+          Templates
+        </button>
         <button
           onClick={createFlow}
           disabled={creating}
@@ -318,6 +327,12 @@ export default function CustomFlowsPage() {
           </div>
         </section>
       )}
+
+      <StarterGallery
+        open={showStarters}
+        onClose={() => setShowStarters(false)}
+        onInstalled={(flow) => navigate(`/dashboard/flow-builder/${flow._id}`)}
+      />
     </div>
   );
 }

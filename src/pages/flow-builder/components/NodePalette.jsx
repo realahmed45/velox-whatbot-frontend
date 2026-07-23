@@ -53,23 +53,24 @@ export default function NodePalette({ onClose, onAdd }) {
   };
 
   return (
-    <div className="bg-white/85 backdrop-blur-xl rounded-xl border border-white/60 shadow-glass p-3 w-52 max-h-[70vh] overflow-y-auto">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
+    <div className="w-56 flex-shrink-0 bg-white border-r border-ink-100 flex flex-col overflow-y-auto">
+      <div className="flex items-center justify-between px-3 pt-3 pb-1">
+        <span className="text-xs font-bold text-ink-800 uppercase tracking-wider">
           Add a node
         </span>
         <button
           onClick={onClose}
-          className="p-0.5 rounded-lg hover:bg-ink-100 text-ink-400"
+          className="p-1 rounded-lg hover:bg-ink-100 text-ink-400"
+          title="Hide panel"
         >
-          <X className="w-3 h-3" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
-      <p className="text-[11px] text-ink-400 mb-2 leading-snug">
-        Drag onto the canvas, or click to add.
+      <p className="text-[11px] text-ink-400 px-3 pb-2 leading-snug">
+        Drag onto the canvas — or click to drop it in.
       </p>
       {GROUPS.map((group) => (
-        <div key={group.title} className="mb-3">
+        <div key={group.title} className="mb-3 px-3">
           <div className="flex items-center gap-1.5 mb-1">
             <span className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">
               {group.title}

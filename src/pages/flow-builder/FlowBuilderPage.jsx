@@ -10,7 +10,6 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import api from "@/services/api";
@@ -23,10 +22,14 @@ import {
   Play,
   Pause,
   Workflow,
+  HelpCircle,
+  Sparkles,
 } from "lucide-react";
 import NodePalette from "./components/NodePalette";
 import NodeConfigPanel from "./components/NodeConfigPanel";
 import FlowListSidebar from "./components/FlowListSidebar";
+import FlowHelpPanel from "./components/FlowHelpPanel";
+import StarterGallery from "./components/StarterGallery";
 import { NODE_TYPES_MAP, NODE_LABELS, nodeCategory } from "./nodeTypes";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -63,7 +66,11 @@ function FlowBuilderInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [showPalette, setShowPalette] = useState(false);
+  // Palette lives in a real sidebar (not a ReactFlow Panel) so drag-and-drop
+  // reaches the canvas. Open by default — it's the main way to build.
+  const [showPalette, setShowPalette] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showStarters, setShowStarters] = useState(false);
   const reactFlowWrapper = useRef(null);
 
   useEffect(() => {
@@ -323,11 +330,30 @@ function FlowBuilderInner() {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
+                  onClick={() => setShowStarters(true)}
+                  className="btn-secondary text-xs gap-1"
+                  title="Start from a ready-made template"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Templates
+                </button>
+                <button
+                  onClick={() => {
+                    setShowHelp((v) => !v);
+                    setSelectedNode(null);
+                  }}
+                  className="btn-secondary text-xs gap-1"
+                  title="How to build a flow"
+                >
+                  <HelpCircle className="w-3 h-3" />
+                  Help
+                </button>
+                <button
                   onClick={() => setShowPalette(!showPalette)}
                   className="btn-secondary text-xs gap-1"
                 >
                   <Plus className="w-3 h-3" />
-                  Add Node
+                  {showPalette ? "Hide nodes" : "Add Node"}
                 </button>
                 <button
                   onClick={toggleActive}
@@ -368,33 +394,61 @@ function FlowBuilderInner() {
               </div>
             )}
 
-            <div className="flex-1 min-h-0">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                onPaneClick={onPaneClick}
+            {/* Palette is a real sidebar (NOT a ReactFlow Panel) — a Panel sits
+                on top of the canvas and swallows the drop, which is why
+                drag-and-drop used to do nothing. */}
+            <div className="flex-1 min-h-0 flex">
+              {showPalette && (
+                <NodePalette
+                  onClose={() => setShowPalette(false)}
+                  onAdd={addNodeCentered}
+                />
+              )}
+
+              <div
+                className="flex-1 min-w-0 relative"
                 onDrop={onDrop}
                 onDragOver={onDragOver}
-                nodeTypes={NODE_TYPES_MAP}
-                fitView
-                className="bg-ink-50"
               >
-                <Background color="#e5e7eb" gap={20} />
-                <Controls />
-                <MiniMap pannable zoomable />
-                {showPalette && (
-                  <Panel position="top-left">
-                    <NodePalette
-                      onClose={() => setShowPalette(false)}
-                      onAdd={addNodeCentered}
-                    />
-                  </Panel>
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onNodeClick={onNodeClick}
+                  onPaneClick={onPaneClick}
+                  nodeTypes={NODE_TYPES_MAP}
+                  fitView
+                  className="bg-ink-50"
+                >
+                  <Background color="#e5e7eb" gap={20} />
+                  <Controls />
+                  <MiniMap pannable zoomable />
+                </ReactFlow>
+
+                {/* First-run hint when the canvas has only the trigger */}
+                {nodes.length <= 1 && (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="pointer-events-auto text-center max-w-xs rounded-2xl bg-white/95 backdrop-blur border border-ink-100 shadow-lg p-5">
+                      <Workflow className="w-8 h-8 text-brand-500 mx-auto mb-2" />
+                      <p className="font-bold text-ink-900 text-sm">
+                        Add your first step
+                      </p>
+                      <p className="text-xs text-ink-500 mt-1 leading-relaxed">
+                        Drag a node from the left (or click it), then connect it
+                        to your trigger.
+                      </p>
+                      <button
+                        onClick={() => setShowStarters(true)}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 transition"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" /> Or use a template
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </ReactFlow>
+              </div>
             </div>
           </>
         ) : (
@@ -403,26 +457,51 @@ function FlowBuilderInner() {
               className="max-w-lg w-full"
               icon={Workflow}
               title="Select or create a flow"
-              description="Build automated Instagram DM conversations with a visual drag-and-drop editor. Pick a flow from the left or start from scratch."
+              description="Build automated Instagram DM conversations with a visual drag-and-drop editor. Start from a ready-made template, or build from scratch."
               action={
-                <button onClick={createNewFlow} className="btn-primary gap-2">
-                  <Plus className="w-4 h-4" />
-                  Create new flow
-                </button>
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  <button
+                    onClick={() => setShowStarters(true)}
+                    className="btn-primary gap-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Browse templates
+                  </button>
+                  <button onClick={createNewFlow} className="btn-secondary gap-2">
+                    <Plus className="w-4 h-4" />
+                    Blank flow
+                  </button>
+                </div>
               }
             />
           </div>
         )}
       </div>
 
-      {selectedNode && (
+      {/* Right rail: node config takes precedence over help */}
+      {selectedNode ? (
         <NodeConfigPanel
           node={selectedNode}
           onChange={(updates) => updateNodeData(selectedNode.id, updates)}
           onDelete={() => deleteNode(selectedNode.id)}
           onClose={() => setSelectedNode(null)}
         />
+      ) : (
+        <FlowHelpPanel
+          open={showHelp}
+          onClose={() => setShowHelp(false)}
+          onOpenTemplates={() => setShowStarters(true)}
+        />
       )}
+
+      <StarterGallery
+        open={showStarters}
+        onClose={() => setShowStarters(false)}
+        onInstalled={(flow) => {
+          setFlows((fs) => [flow, ...fs]);
+          navigate(`/dashboard/flow-builder/${flow._id}`);
+        }}
+      />
     </div>
   );
 }
