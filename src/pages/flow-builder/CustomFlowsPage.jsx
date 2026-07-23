@@ -3,7 +3,7 @@
  * Accessible via /dashboard/flows (sidebar "Custom Flows" item).
  * Prominently introduces what flows are and lists existing ones.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -31,14 +31,27 @@ export default function CustomFlowsPage() {
   const [creating, setCreating] = useState(false);
   const [installing, setInstalling] = useState(null);
   const [showStarters, setShowStarters] = useState(false);
+  const [tplCat, setTplCat] = useState("All");
+
+  const tplCategories = useMemo(
+    () => ["All", ...new Set(templates.map((t) => t.category).filter(Boolean))],
+    [templates],
+  );
+  const shownTemplates = useMemo(
+    () =>
+      tplCat === "All"
+        ? templates
+        : templates.filter((t) => t.category === tplCat),
+    [templates, tplCat],
+  );
 
   useEffect(() => {
     let alive = true;
-    Promise.all([api.get("/flows"), api.get("/flows/templates")])
+    Promise.all([api.get("/flows"), api.get("/flows/starters")])
       .then(([flowsRes, tplRes]) => {
         if (!alive) return;
         setFlows(flowsRes.data.flows || []);
-        setTemplates(tplRes.data.templates || []);
+        setTemplates(tplRes.data.starters || []);
       })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
@@ -76,14 +89,12 @@ export default function CustomFlowsPage() {
     }
   };
 
-  const useTemplate = async (templateKey, name) => {
-    setInstalling(templateKey);
+  const useTemplate = async (starterKey, name) => {
+    setInstalling(starterKey);
     try {
-      const { data } = await api.post("/flows/from-template", { templateKey });
-      toast.success(`${name} added`);
-      const first = data.flows?.[0];
-      if (first?._id) navigate(`/dashboard/flow-builder/${first._id}`);
-      else setFlows((f) => [...(data.flows || []), ...f]);
+      const { data } = await api.post("/flows/from-starter", { starterKey });
+      toast.success(`"${name}" added — edit it, then hit Activate`);
+      if (data.flow?._id) navigate(`/dashboard/flow-builder/${data.flow._id}`);
     } catch (e) {
       toast.error(e.response?.data?.message || "Could not add template");
     } finally {
@@ -167,9 +178,9 @@ export default function CustomFlowsPage() {
         ].map(({ icon: Icon, title, desc }) => (
           <div
             key={title}
-            className="rounded-2xl border border-ink-100 bg-white p-5 flex gap-3.5 hover:border-violet-200 hover:shadow-sm transition"
+            className="rounded-2xl border border-ink-100 bg-white p-5 flex gap-3.5 hover:border-brand-200 hover:shadow-sm transition"
           >
-            <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
               <Icon className="w-5 h-5" />
             </div>
             <div>
@@ -216,7 +227,7 @@ export default function CustomFlowsPage() {
             {flows.map((flow) => (
               <div
                 key={flow._id}
-                className="border border-ink-100 bg-white rounded-xl px-4 py-3 flex items-center gap-3 hover:border-violet-200 hover:shadow-sm transition"
+                className="border border-ink-100 bg-white rounded-xl px-4 py-3 flex items-center gap-3 hover:border-brand-200 hover:shadow-sm transition"
               >
                 <div
                   className={`w-2 h-2 rounded-full flex-shrink-0 ${flow.status === "active" ? "bg-emerald-500" : "bg-ink-300"}`}
@@ -249,7 +260,7 @@ export default function CustomFlowsPage() {
                     onClick={() =>
                       navigate(`/dashboard/flow-builder/${flow._id}`)
                     }
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-violet-600 hover:bg-violet-50 transition"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
                     title="Edit"
                   >
                     <Pencil className="w-4 h-4" />
@@ -266,7 +277,7 @@ export default function CustomFlowsPage() {
                   onClick={() =>
                     navigate(`/dashboard/flow-builder/${flow._id}`)
                   }
-                  className="text-ink-300 hover:text-violet-600 transition flex-shrink-0"
+                  className="text-ink-300 hover:text-brand-600 transition flex-shrink-0"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -279,50 +290,70 @@ export default function CustomFlowsPage() {
       {/* ── Templates ── */}
       {templates.length > 0 && (
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <h2 className="text-base font-black text-ink-900">
-              Start from a template
-            </h2>
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-brand-500" />
+                <h2 className="text-base font-black text-ink-900">
+                  Start from a template
+                </h2>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-2 py-0.5">
+                  {templates.length} ready
+                </span>
+              </div>
+              <p className="text-xs text-ink-500 mt-1">
+                Proven flows you can install in one click, then reword to match
+                your business.
+              </p>
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {tplCategories.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setTplCat(c)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
+                    tplCat === c
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "bg-white text-ink-600 border-ink-200 hover:border-brand-300"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
-          <p className="text-xs text-ink-500 -mt-2 mb-4">
-            Ready-made flows for common business types — add one, then customize
-            it in the builder.
-          </p>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((t) => (
-              <div
+            {shownTemplates.map((t) => (
+              <button
                 key={t.key}
-                className="group flex flex-col rounded-2xl border border-ink-100 bg-white p-5 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 hover:-translate-y-0.5 transition-all duration-200"
+                type="button"
+                onClick={() => useTemplate(t.key, t.name)}
+                disabled={!!installing}
+                className="group text-left flex flex-col rounded-2xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-500/5 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60"
               >
-                {t.icon && <p className="text-2xl mb-2">{t.icon}</p>}
-                <p className="text-sm font-bold text-ink-900">{t.name}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-2xl">{t.icon}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-ink-400 bg-ink-50 rounded-full px-2 py-0.5">
+                    {t.steps} steps
+                  </span>
+                </div>
+                <p className="text-sm font-bold text-ink-900 mt-2.5">{t.name}</p>
                 <p className="text-xs text-ink-500 leading-relaxed flex-1 mt-1">
                   {t.description}
                 </p>
-                {t.keyFlows?.length > 0 && (
-                  <p className="text-[10px] text-ink-400 mt-2">
-                    Includes: {t.keyFlows.slice(0, 2).join(", ")}
-                    {t.keyFlows.length > 2 ? "…" : ""}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => useTemplate(t.key, t.name)}
-                  disabled={installing === t.key}
-                  className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 text-violet-700 text-xs font-bold py-2 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-colors"
-                >
+                <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600 group-hover:gap-1.5 transition-all">
                   {installing === t.key ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Adding…
                     </>
                   ) : (
                     <>
-                      Use template <ChevronRight className="w-3.5 h-3.5" />
+                      Use this <ChevronRight className="w-3.5 h-3.5" />
                     </>
                   )}
-                </button>
-              </div>
+                </span>
+              </button>
             ))}
           </div>
         </section>

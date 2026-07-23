@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, Search, Sparkles, ArrowRight } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -61,11 +62,32 @@ export default function StarterGallery({ open, onClose, onInstalled }) {
     }
   };
 
+  // Lock page scroll + close on Escape while the modal is open.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && onClose?.();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-4xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+  // Portal to <body> so the sidebar/canvas stacking context can never clip or
+  // bleed through the overlay.
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink-950/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-5xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      >
         {/* header */}
         <div className="px-5 py-4 border-b border-ink-100 flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -163,6 +185,7 @@ export default function StarterGallery({ open, onClose, onInstalled }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
