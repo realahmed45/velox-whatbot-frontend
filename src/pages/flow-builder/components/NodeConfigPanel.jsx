@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { X, Trash2 } from "lucide-react";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 // Field keys here MUST match the backend Flow nodeData schema + the runtime
 // flow engine so config saves, reloads, and executes consistently.
@@ -85,6 +87,7 @@ const FIELDS = {
     { key: "tagName", label: "Tag name", type: "text", placeholder: "VIP Customer" },
   ],
   assign_agent: [
+    { key: "agentId", label: "Assign to", type: "agents" },
     {
       key: "agentNote",
       label: "Note to agent (optional)",
@@ -120,16 +123,45 @@ const FIELDS = {
 };
 
 const HELP = {
-  keyword_trigger: "Starts the flow when an incoming DM matches one of these keywords.",
-  any_message_trigger: "Starts the flow on any incoming DM. Great as a catch-all.",
-  ask_question: "Sends the question, waits for the reply, and stores it. Use it later with {{variableName}}.",
-  condition: "Branches the flow. The green (Yes) path runs when the check passes, red (No) otherwise.",
+  keyword_trigger:
+    "Starts the flow when an incoming DM matches one of these keywords. Add at least one keyword or the flow can never fire.",
+  any_message_trigger:
+    "⚠️ Starts on EVERY incoming DM. While active, this flow takes priority over your AI bot, keyword automations and welcome DM.",
+  ask_question:
+    "Sends the question, waits for the reply, and stores it. Use it later with {{variableName}}.",
+  condition:
+    "Branches the flow. The green (Yes) path runs when the check passes, red (No) otherwise.",
   delay: "Pauses briefly before the next step (capped at 8s for reliability).",
+  button_menu:
+    "Sends a numbered list of options. Connect one line out of this node per option — option 1 follows the first connection, option 2 the second, and so on.",
+  list_menu:
+    "Sends a numbered list of options. Connect one line out of this node per option — option 1 follows the first connection, option 2 the second, and so on.",
+  send_image: "Sends a real image attachment. The caption goes with it.",
+  send_file: "Shares a file as a labelled download link.",
+  tag_contact:
+    "Adds a tag to this contact in Contacts. Variables like {{answer}} work here.",
+  assign_agent:
+    "Hands the chat to a human, pauses the bot, and marks it as needing a reply.",
 };
 
 export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
   const fields = FIELDS[node.type] || [];
   const data = node.data || {};
+  const { workspace } = useWorkspaceStore();
+
+  // Teammates come straight off the loaded workspace — no extra request.
+  const agents = useMemo(
+    () =>
+      (workspace?.members || [])
+        .map((m) => ({
+          id: String(m.user?._id || m.user || m._id || ""),
+          name:
+            m.user?.name || m.name || m.user?.email || m.email || "Teammate",
+          role: m.role,
+        }))
+        .filter((a) => a.id),
+    [workspace],
+  );
 
   const handleChange = (key, value) => onChange({ [key]: value });
 
@@ -196,6 +228,28 @@ export default function NodeConfigPanel({ node, onChange, onDelete, onClose }) {
                 onChange={(e) => handleChange(key, e.target.value)}
                 placeholder={placeholder}
               />
+            ) : type === "agents" ? (
+              <>
+                <select
+                  className="input"
+                  value={data[key] || ""}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                >
+                  <option value="">Anyone on the team</option>
+                  {agents.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                      {a.role ? ` · ${a.role}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {agents.length === 0 && (
+                  <p className="text-[11px] text-ink-400 mt-1">
+                    Invite teammates on the Team page to assign a specific
+                    person.
+                  </p>
+                )}
+              </>
             ) : type === "select" ? (
               <select
                 className="input"

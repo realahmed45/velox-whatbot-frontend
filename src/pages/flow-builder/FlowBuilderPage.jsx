@@ -243,8 +243,10 @@ function FlowBuilderInner() {
         fs.map((f) => (f._id === data.flow._id ? data.flow : f)),
       );
       toast.success("Flow saved");
+      return true;
     } catch (err) {
       toast.error(err.response?.data?.message || "Save failed");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -253,15 +255,19 @@ function FlowBuilderInner() {
   const toggleActive = async () => {
     if (!currentFlow) return;
     // Persist the latest canvas before activating so we never run a stale flow.
-    if (currentFlow.status !== "active") await saveFlow();
+    // If that save fails, stop — activating would publish stale nodes.
+    if (currentFlow.status !== "active") {
+      const saved = await saveFlow();
+      if (!saved) return;
+    }
     try {
       const newStatus = currentFlow.status === "active" ? "draft" : "active";
-      const { data } = await api.put(`/flows/${currentFlow._id}`, {
-        status: newStatus,
-      });
+      await api.put(`/flows/${currentFlow._id}`, { status: newStatus });
       setCurrentFlow((f) => ({ ...f, status: newStatus }));
       setFlows((fs) =>
-        fs.map((f) => (f._id === currentFlow._id ? { ...f, status: newStatus } : f)),
+        fs.map((f) =>
+          f._id === currentFlow._id ? { ...f, status: newStatus } : f,
+        ),
       );
       toast.success(
         newStatus === "active"
@@ -269,7 +275,13 @@ function FlowBuilderInner() {
           : "Flow deactivated",
       );
     } catch (err) {
-      toast.error("Failed to toggle flow");
+      // Surface the server's specific reason (e.g. which node is unreachable)
+      // instead of a generic failure the user can't act on.
+      toast.error(
+        err.response?.data?.message ||
+          "Couldn't activate this flow — check that your trigger is connected.",
+        { duration: 6000 },
+      );
     }
   };
 
