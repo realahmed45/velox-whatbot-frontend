@@ -232,11 +232,13 @@ export default function IgInboxPage() {
   });
 
   return (
-    <div className="flex h-full bg-ink-50">
+    // h-full + overflow-hidden pins the whole inbox to the viewport height so
+    // each pane scrolls on its own — the list stays put while the chat scrolls.
+    <div className="flex h-full min-h-0 overflow-hidden bg-ink-50">
       {/* List pane */}
       <div
         className={clsx(
-          "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col",
+          "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col h-full min-h-0",
           "w-full md:w-[21rem] lg:w-[23rem]",
           activeConversationId && "hidden md:flex",
         )}
@@ -293,7 +295,7 @@ export default function IgInboxPage() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {filtered.length === 0 && (
             <div className="text-center py-12 px-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-100 flex items-center justify-center mx-auto mb-3 shadow-sm">
@@ -385,7 +387,7 @@ export default function IgInboxPage() {
 
       {/* Chat pane */}
       {active ? (
-        <div className="flex-1 flex flex-col min-w-0 bg-ink-50">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 h-full bg-ink-50">
           {/* Chat header — dark, on-brand */}
           <div className="relative overflow-hidden bg-gradient-to-r from-ink-900 to-ink-800 text-white px-3 sm:px-5 py-3.5">
             <div className="pointer-events-none absolute -top-16 right-10 w-56 h-56 rounded-full bg-brand-500/15 blur-3xl" />
@@ -514,7 +516,7 @@ export default function IgInboxPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3 bg-ink-50">
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-ink-50">
             {activeMsgs.map((m) => (
               <Bubble key={m._id} msg={m} />
             ))}
