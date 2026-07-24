@@ -53,13 +53,28 @@ const STATUS = {
   },
 };
 
-function Avatar({ initial, size = "w-9 h-9", text = "text-[11px]" }) {
+function Avatar({ initial, avatar, size = "w-10 h-10", text = "text-sm" }) {
+  if (avatar) {
+    return (
+      <img
+        src={avatar}
+        alt=""
+        className={clsx(
+          size,
+          "rounded-full object-cover ring-1 ring-ink-200 flex-shrink-0",
+        )}
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    );
+  }
   return (
     <div
       className={clsx(
         size,
         text,
-        "rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-md shadow-brand-500/20 ring-1 ring-white/30 flex-shrink-0",
+        "rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-sm ring-2 ring-white flex-shrink-0",
       )}
     >
       {initial}
@@ -286,41 +301,55 @@ export default function IgInboxPage() {
           )}
           {filtered.map((conv) => {
             const meta = STATUS[conv.status] || STATUS.open;
-            const initial = (conv.contact?.name ||
-              conv.contact?.username ||
-              "?")[0]?.toUpperCase();
+            const c = conv.contact || {};
+            const displayName =
+              c.name ||
+              c.username ||
+              conv.participantName ||
+              conv.participantUsername ||
+              "Instagram user";
+            const username = c.username || conv.participantUsername || "";
+            const initial = displayName[0]?.toUpperCase() || "?";
+            const preview =
+              conv.lastMessage?.text || conv.lastMessagePreview || "";
+            const isActive = activeConversationId === conv._id;
             return (
               <button
                 key={conv._id}
                 onClick={() => setActiveConversation(conv._id)}
                 className={clsx(
-                  "w-full text-left p-3 border-b border-ink-50 border-l-2 border-l-transparent hover:bg-ink-50/70 transition-colors",
-                  activeConversationId === conv._id &&
-                    "bg-brand-50/80 border-l-brand-500 hover:bg-brand-50",
+                  "w-full text-left px-3 py-3 border-b border-ink-50 border-l-[3px] border-l-transparent transition-colors",
+                  isActive
+                    ? "bg-brand-50 border-l-brand-500"
+                    : "hover:bg-ink-50/70",
                 )}
               >
                 <div className="flex items-start gap-3">
-                  <Avatar initial={initial} />
+                  <Avatar initial={initial} avatar={c.avatar} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center justify-between gap-1.5">
                       <p className="text-[13px] font-bold text-ink-900 truncate">
-                        {conv.contact?.name ||
-                          conv.contact?.username ||
-                          "Unknown"}
+                        {displayName}
                       </p>
-                      <span className="text-[10px] text-ink-400 flex-shrink-0">
-                        {dayjs(conv.updatedAt).fromNow(true)}
+                      <span className="text-[10px] text-ink-400 flex-shrink-0 whitespace-nowrap">
+                        {dayjs(conv.lastMessageAt || conv.updatedAt).fromNow(
+                          true,
+                        )}
                       </span>
                     </div>
-                    {conv.contact?.username && (
-                      <p className="text-[10px] text-brand-600 font-medium">
-                        @{conv.contact.username}
+                    {username && (
+                      <p className="text-[11px] text-brand-600 font-semibold truncate leading-tight">
+                        @{username}
                       </p>
                     )}
-                    <p className="text-[11px] text-ink-500 truncate mt-0.5">
-                      {conv.lastMessage?.text || "…"}
+                    <p className="text-[12px] text-ink-500 truncate mt-1">
+                      {preview || (
+                        <span className="italic text-ink-300">
+                          No messages yet
+                        </span>
+                      )}
                     </p>
-                    <div className="flex items-center gap-1 mt-1.5">
+                    <div className="flex items-center gap-1.5 mt-2">
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.cls}`}
                       >
@@ -328,9 +357,17 @@ export default function IgInboxPage() {
                       </span>
                       {conv.botEnabled === false && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/60 inline-flex items-center gap-0.5">
-                          <Pause className="w-2.5 h-2.5" /> off
+                          <Pause className="w-2.5 h-2.5" /> bot off
                         </span>
                       )}
+                      {(c.tags || []).slice(0, 1).map((t) => (
+                        <span
+                          key={t}
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-ink-100 text-ink-500 truncate max-w-[80px]"
+                        >
+                          {t}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -356,15 +393,20 @@ export default function IgInboxPage() {
                 <Avatar
                   initial={(active.contact?.name ||
                     active.contact?.username ||
-                    "?")[0]?.toUpperCase()}
+                    active.participantName ||
+                    active.participantUsername ||
+                    "I")[0]?.toUpperCase()}
+                  avatar={active.contact?.avatar}
                   size="w-10 h-10"
-                  text="text-xs"
+                  text="text-sm"
                 />
                 <div className="min-w-0">
                   <p className="font-bold text-sm text-ink-900 truncate">
                     {active.contact?.name ||
                       active.contact?.username ||
-                      "Unknown"}
+                      active.participantName ||
+                      active.participantUsername ||
+                      "Instagram user"}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {active.contact?.username && (

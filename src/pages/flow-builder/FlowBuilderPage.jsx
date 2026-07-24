@@ -10,6 +10,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import api from "@/services/api";
@@ -118,11 +119,25 @@ function FlowBuilderInner() {
   const onConnect = useCallback((params) => {
     setEdges((eds) =>
       addEdge(
-        { ...params, animated: true, style: { stroke: "#ff5722", strokeWidth: 2 } },
+        {
+          ...params,
+          type: "smoothstep",
+          animated: true,
+          style: { stroke: "#ff5722", strokeWidth: 2.5 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#ff5722" },
+        },
         eds,
       ),
     );
   }, []);
+
+  // Consistent look for edges loaded from the server too.
+  const defaultEdgeOptions = {
+    type: "smoothstep",
+    animated: true,
+    style: { stroke: "#ff5722", strokeWidth: 2.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#ff5722" },
+  };
 
   const onNodeClick = useCallback((_, node) => setSelectedNode(node), []);
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
@@ -419,12 +434,30 @@ function FlowBuilderInner() {
                   onNodeClick={onNodeClick}
                   onPaneClick={onPaneClick}
                   nodeTypes={NODE_TYPES_MAP}
+                  defaultEdgeOptions={defaultEdgeOptions}
+                  connectionLineStyle={{ stroke: "#ff5722", strokeWidth: 2.5 }}
                   fitView
-                  className="bg-ink-50"
+                  fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
+                  proOptions={{ hideAttribution: true }}
+                  className="bg-white"
                 >
-                  <Background color="#e5e7eb" gap={20} />
-                  <Controls />
-                  <MiniMap pannable zoomable />
+                  <Background
+                    color="#e2e8f0"
+                    gap={22}
+                    size={1.5}
+                    variant="dots"
+                  />
+                  <Controls
+                    showInteractive={false}
+                    className="!shadow-lg !border !border-ink-100 !rounded-xl overflow-hidden"
+                  />
+                  <MiniMap
+                    pannable
+                    zoomable
+                    className="!rounded-xl !border !border-ink-100"
+                    nodeColor="#ff7d3e"
+                    maskColor="rgba(15,23,42,0.05)"
+                  />
                 </ReactFlow>
 
                 {/* First-run hint when the canvas has only the trigger */}

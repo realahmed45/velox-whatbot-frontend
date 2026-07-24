@@ -16,8 +16,6 @@ import {
   Pencil,
   Trash2,
   ChevronRight,
-  Zap,
-  ArrowRight,
   Sparkles,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
@@ -134,7 +132,12 @@ export default function CustomFlowsPage() {
       <StatHero
         icon={Workflow}
         title="Custom Flows"
-        subtitle="Visual, multi-step branching conversations"
+        subtitle="Automated, multi-step DM conversations"
+        stats={[
+          { label: "Active", value: flows.filter((f) => f.status === "active").length, accent: true },
+          { label: "Total flows", value: flows.length },
+          { label: "Templates", value: templates.length },
+        ]}
       >
         <button
           onClick={() => setShowStarters(true)}
@@ -157,45 +160,17 @@ export default function CustomFlowsPage() {
         </button>
       </StatHero>
 
-      {/* ── What are flows ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          {
-            icon: Zap,
-            title: "Trigger-based",
-            desc: "Start a flow when a keyword is sent, a story is replied to, or a comment is made.",
-          },
-          {
-            icon: Workflow,
-            title: "Visual builder",
-            desc: "Drag nodes, connect branches, add delays and conditions — no code needed.",
-          },
-          {
-            icon: ArrowRight,
-            title: "Multi-step",
-            desc: "Send a series of messages, ask questions, collect emails, route to your team.",
-          },
-        ].map(({ icon: Icon, title, desc }) => (
-          <div
-            key={title}
-            className="rounded-2xl border border-ink-100 bg-white p-5 flex gap-3.5 hover:border-brand-200 hover:shadow-sm transition"
-          >
-            <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-ink-900">{title}</p>
-              <p className="text-xs text-ink-500 mt-0.5 leading-relaxed">
-                {desc}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* ── Your flows ── */}
       <section>
-        <h2 className="text-base font-black text-ink-900 mb-3">Your flows</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-bold text-ink-900">Your flows</h2>
+          {flows.length > 0 && (
+            <span className="text-xs text-ink-400">
+              {flows.filter((f) => f.status === "active").length} active ·{" "}
+              {flows.length} total
+            </span>
+          )}
+        </div>
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-ink-400 py-8">

@@ -32,10 +32,10 @@ const COLORS = {
 };
 
 const CARD_BORDER = "border-ink-200";
-const CARD_SEL = "border-brand-500 ring-2 ring-brand-200/60";
+const CARD_SEL = "border-brand-500 ring-2 ring-brand-200/70 shadow-lg";
 
 const baseStyle =
-  "min-w-[170px] max-w-[230px] rounded-xl border-2 bg-white shadow-card text-xs font-medium transition";
+  "min-w-[190px] max-w-[240px] rounded-2xl border bg-white shadow-md shadow-ink-900/5 text-xs font-medium transition-all hover:shadow-lg";
 
 // Best-effort one-line preview of whatever the node is configured to do.
 const previewText = (data = {}) => {
@@ -52,17 +52,33 @@ const previewText = (data = {}) => {
   );
 };
 
+const HANDLE = "!w-3 !h-3 !border-2 !border-white";
+
 const mkNode = (icon, label, color) => {
   const c = COLORS[color] || COLORS.gray;
   const Comp = ({ data, selected }) => (
-    <div className={`${baseStyle} ${selected ? CARD_SEL : CARD_BORDER} p-3`}>
-      <Handle type="target" position={Position.Top} className="!bg-ink-300" />
-      <div className={`flex items-center gap-2 ${c.text} mb-1`}>
-        {icon}
-        <span className="font-semibold text-xs">{data.label || label}</span>
+    <div className={`${baseStyle} ${selected ? CARD_SEL : CARD_BORDER} p-3.5`}>
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={`${HANDLE} !bg-ink-400`}
+      />
+      <div className={`flex items-center gap-2 ${c.text} mb-1.5`}>
+        <span className={`w-5 h-5 rounded-md flex items-center justify-center ${c.text}`}>
+          {icon}
+        </span>
+        <span className="font-bold text-[13px] text-ink-800">
+          {data.label || label}
+        </span>
       </div>
-      <p className="text-ink-500 truncate text-xs">{previewText(data)}</p>
-      <Handle type="source" position={Position.Bottom} className={c.dot} />
+      <p className="text-ink-500 truncate text-[11px] pl-0.5">
+        {previewText(data)}
+      </p>
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={`${HANDLE} ${c.dot}`}
+      />
     </div>
   );
   return Comp;
@@ -126,27 +142,50 @@ export const EndFlowNode = ({ data, selected }) => (
 );
 
 // ── Trigger nodes (entry points — source handle only) ───────────────────────
+const triggerStyle = (selected) =>
+  `${baseStyle} p-3.5 bg-gradient-to-br from-brand-500 to-brand-600 text-white ${
+    selected ? "ring-2 ring-brand-300 border-brand-600" : "border-brand-500"
+  }`;
+
 export const KeywordTriggerNode = ({ data, selected }) => (
-  <div className={`${baseStyle} ${selected ? "border-brand-600" : "border-brand-400"} p-3 bg-brand-50`}>
-    <div className="flex items-center gap-2 text-brand-700 mb-1">
-      <MessageSquare className="w-3 h-3" />
-      <span className="font-semibold text-xs">{data.label || "Keyword Trigger"}</span>
+  <div className={triggerStyle(selected)}>
+    <div className="flex items-center gap-2 mb-1.5">
+      <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 rounded px-1.5 py-0.5">
+        Trigger
+      </span>
+      <MessageSquare className="w-3.5 h-3.5" />
+      <span className="font-bold text-[13px]">
+        {data.label || "Keyword Trigger"}
+      </span>
     </div>
-    <p className="text-brand-600 text-xs truncate">
-      {data.keywords?.length ? data.keywords.join(", ") : "(no keywords yet)"}
+    <p className="text-white/85 text-[11px] truncate pl-0.5">
+      {data.keywords?.length ? data.keywords.join(", ") : "(add keywords)"}
     </p>
-    <Handle type="source" position={Position.Bottom} className="!bg-brand-500" />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className={`${HANDLE} !bg-white`}
+    />
   </div>
 );
 
 export const AnyMessageTriggerNode = ({ data, selected }) => (
-  <div className={`${baseStyle} ${selected ? "border-brand-600" : "border-brand-400"} p-3 bg-brand-50`}>
-    <div className="flex items-center gap-2 text-brand-700 mb-1">
-      <Zap className="w-3 h-3" />
-      <span className="font-semibold text-xs">{data.label || "Any Message"}</span>
+  <div className={triggerStyle(selected)}>
+    <div className="flex items-center gap-2 mb-1.5">
+      <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 rounded px-1.5 py-0.5">
+        Trigger
+      </span>
+      <Zap className="w-3.5 h-3.5" />
+      <span className="font-bold text-[13px]">{data.label || "Any Message"}</span>
     </div>
-    <p className="text-brand-600 text-xs truncate">Fires on any incoming DM</p>
-    <Handle type="source" position={Position.Bottom} className="!bg-brand-500" />
+    <p className="text-white/85 text-[11px] truncate pl-0.5">
+      Fires on any incoming DM
+    </p>
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className={`${HANDLE} !bg-white`}
+    />
   </div>
 );
 
