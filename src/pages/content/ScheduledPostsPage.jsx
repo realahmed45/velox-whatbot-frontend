@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ import {
   X,
   TrendingUp,
   Trash2,
+  Pencil,
   Sparkles,
   Loader2,
   ImagePlus,
@@ -30,6 +31,7 @@ export default function ScheduledPostsPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null); // null = create, id = edit
   const [smartTiming, setSmartTiming] = useState(null);
   const [showSmartTiming, setShowSmartTiming] = useState(false);
 
@@ -195,33 +197,65 @@ export default function ScheduledPostsPage() {
 
     setSubmitting(true);
     try {
-      await api.post("/scheduled-posts", {
+      const payload = {
         imageUrl,
         caption,
         postType,
         scheduledTime: new Date(scheduledTime).toISOString(),
-      });
-
-      toast.success("Post scheduled!");
+      };
+      if (editingId) {
+        await api.put(`/scheduled-posts/${editingId}`, payload);
+        toast.success("Post updated");
+      } else {
+        await api.post("/scheduled-posts", payload);
+        toast.success("Post scheduled!");
+      }
       setShowModal(false);
+      setEditingId(null);
       resetForm();
       loadPosts();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to schedule post");
+      toast.error(err.response?.data?.message || "Failed to save post");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const cancelPost = async (id) => {
-    if (!window.confirm("Cancel this scheduled post?")) return;
+  // Open the modal pre-filled to edit an existing (not-yet-published) post.
+  const editPost = (post) => {
+    setEditingId(post._id);
+    setImageUrl(post.imageUrl || "");
+    setCaption(post.caption || "");
+    setPostType(post.postType || "image");
+    // datetime-local wants local "YYYY-MM-DDTHH:mm"
+    if (post.scheduledTime) {
+      const d = new Date(post.scheduledTime);
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      setScheduledTime(local);
+    }
+    setShowModal(true);
+  };
 
+  const openCreate = () => {
+    setEditingId(null);
+    resetForm();
+    setShowModal(true);
+  };
+
+  const cancelPost = async (post) => {
+    const published = post.status === "published";
+    const msg = published
+      ? "Remove this from your list? (The live Instagram post won't be affected.)"
+      : "Delete this scheduled post?";
+    if (!window.confirm(msg)) return;
     try {
-      await api.delete(`/scheduled-posts/${id}`);
-      setPosts((p) => p.filter((x) => x._id !== id));
-      toast.success("Post cancelled");
+      await api.delete(`/scheduled-posts/${post._id}`);
+      setPosts((p) => p.filter((x) => x._id !== post._id));
+      toast.success(published ? "Removed from list" : "Post deleted");
     } catch (err) {
-      toast.error("Failed to cancel post");
+      toast.error("Failed to delete post");
     }
   };
 
@@ -237,6 +271,7 @@ export default function ScheduledPostsPage() {
 
   const closeModal = () => {
     setShowModal(false);
+    setEditingId(null);
     resetForm();
   };
 
@@ -265,7 +300,7 @@ export default function ScheduledPostsPage() {
         language: "en",
       });
 
-      // API shape: { success, captions: [{ text, hashtags }] } — also tolerate {caption}
+      // API shape: { success, captions: [{ text, hashtags }] } â€” also tolerate {caption}
       let list = Array.isArray(data?.captions) ? data.captions : [];
       if (!list.length && data?.caption) list = [data.caption];
       const normalized = list.map(captionToText).filter(Boolean);
@@ -298,7 +333,7 @@ export default function ScheduledPostsPage() {
 
   const STATUS_TEXT = {
     pending: "Pending",
-    publishing: "Publishing…",
+    publishing: "Publishingâ€¦",
     published: "Published",
     failed: "Failed",
     cancelled: "Cancelled",
@@ -319,7 +354,7 @@ export default function ScheduledPostsPage() {
       <StatHero
         icon={CalendarClock}
         title="Scheduled posts"
-        subtitle="Plan Instagram posts and stories to publish automatically — keep your feed consistent on autopilot."
+        subtitle="Plan Instagram posts and stories to publish automatically â€” keep your feed consistent on autopilot."
         stats={[
           { label: "Total posts", value: posts.length },
           { label: "Pending", value: pendingCount, accent: true },
@@ -346,7 +381,7 @@ export default function ScheduledPostsPage() {
           />
         </label>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openCreate}
           className="bg-white text-ink-900 hover:bg-brand-50 font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition"
         >
           <Plus className="w-4 h-4" />
@@ -376,10 +411,10 @@ export default function ScheduledPostsPage() {
         <EmptyState
           icon={CalendarClock}
           title="No scheduled posts yet"
-          description="Queue posts and stories to publish automatically. Perfect for keeping your feed consistent — set it once and let it run."
+          description="Queue posts and stories to publish automatically. Perfect for keeping your feed consistent â€” set it once and let it run."
           action={
             <button
-              onClick={() => setShowModal(true)}
+              onClick={openCreate}
               className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition"
             >
               <Plus className="w-4 h-4" />
@@ -463,15 +498,24 @@ export default function ScheduledPostsPage() {
                       </p>
                     )}
 
-                    {isPending && (
+                    <div className="flex items-center gap-2">
+                      {["pending", "failed"].includes(post.status) && (
+                        <button
+                          onClick={() => editPost(post)}
+                          className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-ink-700 border border-ink-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 rounded-xl py-2 transition"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+                      )}
                       <button
-                        onClick={() => cancelPost(post._id)}
-                        className="w-full flex items-center justify-center gap-2 text-sm font-medium text-red-600 border border-ink-200 hover:border-red-300 hover:bg-red-50 rounded-xl py-2 transition"
+                        onClick={() => cancelPost(post)}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-red-600 border border-ink-200 hover:border-red-300 hover:bg-red-50 rounded-xl py-2 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Cancel
+                        {post.status === "published" ? "Remove" : "Delete"}
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -480,7 +524,7 @@ export default function ScheduledPostsPage() {
         </div>
       )}
 
-      {/* Create Post Modal — portal to body */}
+      {/* Create Post Modal â€” portal to body */}
       {showModal &&
         createPortal(
           <div
@@ -505,10 +549,12 @@ export default function ScheduledPostsPage() {
                   </div>
                   <div>
                     <h2 className="font-bold text-lg text-ink-900 leading-tight">
-                      Schedule post
+                      {editingId ? "Edit post" : "Schedule post"}
                     </h2>
                     <p className="text-xs text-ink-400">
-                      Publish automatically at the perfect time
+                      {editingId
+                        ? "Update the image, caption or time"
+                        : "Publish automatically at the perfect time"}
                     </p>
                   </div>
                 </div>
@@ -582,7 +628,7 @@ export default function ScheduledPostsPage() {
                       </div>
                       <span className="text-sm font-semibold text-ink-700">
                         {uploading
-                          ? "Uploading…"
+                          ? "Uploadingâ€¦"
                           : "Click or drag to upload image"}
                       </span>
                       <span className="text-xs text-ink-400">
@@ -650,7 +696,7 @@ export default function ScheduledPostsPage() {
                         {aiLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Generating…
+                            Generatingâ€¦
                           </>
                         ) : (
                           <>
@@ -663,7 +709,7 @@ export default function ScheduledPostsPage() {
                       {aiCaptions.length > 0 && (
                         <div className="space-y-1.5 pt-1">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">
-                            Suggestions — tap to use
+                            Suggestions â€” tap to use
                           </p>
                           {aiCaptions.map((c, i) => (
                             <button
@@ -690,7 +736,7 @@ export default function ScheduledPostsPage() {
                     rows={4}
                     maxLength={2200}
                     className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition resize-y"
-                    placeholder="Write your caption…"
+                    placeholder="Write your captionâ€¦"
                   />
                   <p
                     className={`text-xs mt-1 text-right ${
@@ -720,7 +766,7 @@ export default function ScheduledPostsPage() {
                   </p>
                 </div>
 
-                {/* Post Type — Feed image or Story */}
+                {/* Post Type â€” Feed image or Story */}
                 <div>
                   <label className="block text-sm font-semibold text-ink-700 mb-1.5">
                     Post type
@@ -777,12 +823,12 @@ export default function ScheduledPostsPage() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Scheduling…
+                      Saving…
                     </>
                   ) : (
                     <>
                       <CalendarClock className="w-4 h-4" />
-                      Schedule post
+                      {editingId ? "Save changes" : "Schedule post"}
                     </>
                   )}
                 </button>
@@ -792,7 +838,7 @@ export default function ScheduledPostsPage() {
           document.body,
         )}
 
-      {/* Smart Timing Modal — portal to body */}
+      {/* Smart Timing Modal â€” portal to body */}
       {showSmartTiming &&
         smartTiming &&
         createPortal(
@@ -866,3 +912,4 @@ export default function ScheduledPostsPage() {
     </div>
   );
 }
+
