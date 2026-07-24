@@ -110,8 +110,16 @@ export default function IgContactsPage() {
   const taggedOnPage = contacts.filter((c) => (c.tags || []).length > 0).length;
 
   return (
-    <div className="flex h-full relative bg-ink-50/40">
-      <div className="relative flex-1 flex flex-col p-4 sm:p-8 overflow-hidden max-w-6xl mx-auto w-full">
+    <div className="flex h-full relative bg-ink-50/40 overflow-hidden">
+      <div
+        className={clsx(
+          "relative flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto w-full transition-all",
+          // When the detail panel is open, don't stay narrow-centered — use the
+          // full width so there's no dead gap; otherwise cap the width for
+          // comfortable reading.
+          selected ? "" : "max-w-6xl mx-auto",
+        )}
+      >
         {/* Hero */}
         <div className="mb-6">
           <StatHero
@@ -170,7 +178,7 @@ export default function IgContactsPage() {
         </div>
 
         {/* Card grid */}
-        <div className="flex-1 overflow-auto -mx-1 px-1">
+        <div className="flex-1 -mx-1 px-1">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -385,14 +393,14 @@ function DetailPanel({ contact, onClose, onUpdate, onDelete }) {
   };
 
   return (
-    <div className="fixed inset-0 z-40 md:static md:z-auto md:w-96 md:flex-shrink-0">
+    <div className="fixed inset-0 z-40 md:static md:z-auto md:w-[26rem] md:flex-shrink-0 md:h-full">
       {/* mobile backdrop */}
       <div
         className="md:hidden absolute inset-0 bg-ink-950/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="absolute right-0 inset-y-0 w-full max-w-sm md:static md:max-w-none md:w-full h-full bg-white border-l border-ink-100 flex flex-col shadow-2xl md:shadow-none">
-        <div className="h-14 flex items-center justify-between px-5 border-b border-ink-100">
+      <div className="absolute right-0 inset-y-0 w-full max-w-md md:static md:max-w-none md:w-full h-full bg-white border-l border-ink-100 flex flex-col shadow-2xl md:shadow-none">
+        <div className="h-14 flex items-center justify-between px-5 border-b border-ink-100 flex-shrink-0 bg-white z-10">
           <h2 className="font-bold text-ink-900 text-sm">Follower details</h2>
           <button
             onClick={onClose}
@@ -401,7 +409,7 @@ function DetailPanel({ contact, onClose, onUpdate, onDelete }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
           <div className="text-center pb-5 border-b border-ink-100">
             <Avatar
               initial={(contact.name ||
