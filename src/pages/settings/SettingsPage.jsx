@@ -24,10 +24,7 @@ export default function SettingsPage() {
   const TABS = [
     { id: "general", label: "General" },
     { id: "instagram", label: "Instagram" },
-    { id: "automation", label: "Automation" },
-    { id: "ai-knowledge", label: "AI Knowledge" },
-    { id: "smart-orders", label: "Smart Orders" },
-    { id: "branding", label: "Branding" },
+    { id: "automation", label: "Automations" },
   ];
 
   return (
@@ -37,12 +34,12 @@ export default function SettingsPage() {
         title="Settings"
         subtitle="Workspace, Instagram, and automation defaults"
       />
-      <div className="flex gap-1 bg-ink-100 rounded-lg p-1 mb-5 sm:mb-6 overflow-x-auto">
+      <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-5 sm:mb-6 max-w-md">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${tab === t.id ? "bg-white text-ink-800 shadow-sm" : "text-ink-500 hover:text-ink-700"}`}
+            className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${tab === t.id ? "bg-white text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-700"}`}
           >
             {t.label}
           </button>
@@ -63,24 +60,6 @@ export default function SettingsPage() {
       )}
       {tab === "automation" && (
         <AutomationSettings
-          workspace={workspace}
-          onSave={() => fetchWorkspace(activeWorkspace)}
-        />
-      )}
-      {tab === "ai-knowledge" && (
-        <AiKnowledgeSettings
-          workspace={workspace}
-          onSave={() => fetchWorkspace(activeWorkspace)}
-        />
-      )}
-      {tab === "smart-orders" && (
-        <SmartOrdersSettings
-          workspace={workspace}
-          onSave={() => fetchWorkspace(activeWorkspace)}
-        />
-      )}
-      {tab === "branding" && (
-        <BrandingSettings
           workspace={workspace}
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
@@ -444,48 +423,26 @@ function InstagramSettings({ workspace, onSave }) {
                   </div>
                 ))}
                 {diag.checks?.some((c) => !c.ok) && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 space-y-1">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1.5">
                     <p className="font-semibold">
-                      📋 One-time Meta App setup required:
+                      Some events aren't coming through. Try this:
                     </p>
                     <ol className="list-decimal list-inside space-y-1 pl-1">
                       <li>
-                        Go to{" "}
-                        <a
-                          href="https://developers.facebook.com"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline font-medium"
-                        >
-                          developers.facebook.com
-                        </a>{" "}
-                        → your App
+                        Make sure your Instagram is a{" "}
+                        <strong>Business or Creator</strong> account.
                       </li>
                       <li>
-                        Open <strong>Instagram → Webhooks</strong>
+                        Click <strong>Re-subscribe Webhook</strong> below to
+                        refresh the connection.
                       </li>
                       <li>
-                        Set Callback URL:{" "}
-                        <code className="bg-blue-100 px-1 rounded">
-                          https://velox-whatbot-backend.onrender.com/api/instagram/webhook
-                        </code>
+                        Send a test DM from another account — it should appear in
+                        your Inbox within a few seconds.
                       </li>
                       <li>
-                        Set Verify Token:{" "}
-                        <code className="bg-blue-100 px-1 rounded">
-                          botlify_webhook_2026
-                        </code>
-                      </li>
-                      <li>
-                        Enable fields:{" "}
-                        <strong>
-                          messages, messaging_postbacks, comments,
-                          story_mentions
-                        </strong>
-                      </li>
-                      <li>
-                        Click <strong>Verify and Save</strong>, then click
-                        Re-subscribe below
+                        Still stuck? Disconnect and reconnect Instagram from the
+                        top of this page.
                       </li>
                     </ol>
                   </div>
@@ -496,7 +453,7 @@ function InstagramSettings({ workspace, onSave }) {
             <button
               onClick={resubscribe}
               disabled={resubLoading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold py-2.5 rounded-lg hover:opacity-90 transition disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold py-2.5 rounded-lg transition disabled:opacity-60"
             >
               {resubLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
