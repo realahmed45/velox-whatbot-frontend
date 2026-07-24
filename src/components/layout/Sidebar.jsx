@@ -56,18 +56,18 @@ const NAV = [
   {
     section: "Automation",
     items: [
-      { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot" },
-      { to: "/dashboard/automation", icon: Zap, label: "Smart Automations" },
-      { to: "/dashboard/flows", icon: Workflow, label: "Custom Flows" },
+      { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot", perm: "automations" },
+      { to: "/dashboard/automation", icon: Zap, label: "Smart Automations", perm: "automations" },
+      { to: "/dashboard/flows", icon: Workflow, label: "Custom Flows", perm: "automations" },
     ],
   },
   {
     section: "Management",
     items: [
-      { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
-      { to: "/dashboard/contacts", icon: Users, label: "Contacts" },
-      { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts" },
-      { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics" },
+      { to: "/dashboard/inbox", icon: Inbox, label: "Inbox", perm: "inbox" },
+      { to: "/dashboard/contacts", icon: Users, label: "Contacts", perm: "contacts" },
+      { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts", perm: "broadcasts" },
+      { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics", perm: "analytics" },
     ],
   },
   {
@@ -77,24 +77,26 @@ const NAV = [
         to: "/dashboard/scheduled-posts",
         icon: CalendarClock,
         label: "Scheduled Posts",
+        perm: "content",
       },
-      { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns" },
-      { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags" },
+      { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns", perm: "broadcasts" },
+      { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags", perm: "content" },
     ],
   },
   {
     section: "Integrations",
     items: [
-      { to: "/dashboard/apps", icon: Plug, label: "Apps" },
-      { to: "/dashboard/integrations", icon: Webhook, label: "Webhooks" },
+      { to: "/dashboard/apps", icon: Plug, label: "Apps", perm: "integrations" },
+      { to: "/dashboard/integrations", icon: Webhook, label: "Webhooks", perm: "integrations" },
     ],
   },
   {
     section: "Settings",
     items: [
-      { to: "/dashboard/team", icon: Users, label: "Team" },
-      { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing" },
-      { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings" },
+      // Team + Billing are owner-only; Settings needs the settings permission.
+      { to: "/dashboard/team", icon: Users, label: "Team", ownerOnly: true },
+      { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing", ownerOnly: true },
+      { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },
     ],
   },
 ];
@@ -115,6 +117,27 @@ export default function Sidebar({ onNavigate }) {
   const { logout, user } = useAuthStore();
   const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
+
+  // Work out the current user's role + permissions in this workspace so agents
+  // only see the areas they've been granted. Owners see everything.
+  const myId = String(user?._id || user?.id || "");
+  const ownerId = String(workspace?.owner?._id || workspace?.owner || "");
+  const isOwner = myId && ownerId && myId === ownerId;
+  const myMember = (workspace?.members || []).find(
+    (m) => String(m.user?._id || m.user) === myId,
+  );
+  const myPerms = myMember?.permissions || [];
+  const canSee = (item) => {
+    if (isOwner) return true;
+    if (item.ownerOnly) return false;
+    if (!item.perm) return true; // Dashboard etc.
+    return myPerms.includes(item.perm);
+  };
+  // Filter nav to what this user can access; drop now-empty sections.
+  const NAV_VISIBLE = NAV.map((g) => ({
+    ...g,
+    items: g.items.filter(canSee),
+  })).filter((g) => g.items.length > 0);
 
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -213,7 +236,7 @@ export default function Sidebar({ onNavigate }) {
 
       {/* ── Navigation ───────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto py-3 px-3 sidebar-scroll">
-        {NAV.map((group, gi) => (
+        {NAV_VISIBLE.map((group, gi) => (
           <div key={gi} className="mb-1">
             {group.section &&
               (collapsed ? (

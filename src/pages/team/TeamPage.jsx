@@ -14,15 +14,32 @@ import {
   UserPlus,
   Loader2,
   Send,
+  Check,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 
 export default function TeamPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ email: "", role: "agent" });
+  const [form, setForm] = useState({ email: "", role: "agent", permissions: [] });
   const [saving, setSaving] = useState(false);
   const [invites, setInvites] = useState([]);
+  const [permCatalogue, setPermCatalogue] = useState([]);
+
+  useEffect(() => {
+    api
+      .get("/workspaces/permissions")
+      .then(({ data }) => setPermCatalogue(data.permissions || []))
+      .catch(() => {});
+  }, []);
+
+  const togglePerm = (key) =>
+    setForm((f) => ({
+      ...f,
+      permissions: f.permissions.includes(key)
+        ? f.permissions.filter((p) => p !== key)
+        : [...f.permissions, key],
+    }));
 
   const owner = workspace?.owner;
   const ownerId = owner?._id || owner;
@@ -62,7 +79,7 @@ export default function TeamPage() {
       await api.post(`/workspaces/${workspace._id}/members/invite`, form);
       toast.success(`Invitation sent to ${form.email}`);
       setShowModal(false);
-      setForm({ email: "", role: "agent" });
+      setForm({ email: "", role: "agent", permissions: [] });
       refresh();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send invite");
@@ -269,17 +286,67 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-ink-700">Role</label>
-                  <select
-                    className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition bg-white"
-                    value={form.role}
-                    onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  >
-                    <option value="agent">Agent — inbox & contacts</option>
-                  </select>
-                  <p className="text-[11px] text-ink-400 mt-1">
-                    They'll get an email with a link to join. It expires in 7
-                    days.
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-ink-700">
+                      What can they access?
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          permissions:
+                            f.permissions.length === permCatalogue.length
+                              ? []
+                              : permCatalogue.map((p) => p.key),
+                        }))
+                      }
+                      className="text-[11px] font-bold text-brand-600 hover:underline"
+                    >
+                      {form.permissions.length === permCatalogue.length
+                        ? "Clear all"
+                        : "Select all"}
+                    </button>
+                  </div>
+                  <div className="mt-2 space-y-1.5">
+                    {permCatalogue.map((p) => {
+                      const on = form.permissions.includes(p.key);
+                      return (
+                        <button
+                          key={p.key}
+                          type="button"
+                          onClick={() => togglePerm(p.key)}
+                          className={`w-full flex items-start gap-3 text-left rounded-xl border p-3 transition ${
+                            on
+                              ? "border-brand-300 bg-brand-50"
+                              : "border-ink-200 hover:border-brand-200"
+                          }`}
+                        >
+                          <span
+                            className={`mt-0.5 w-4.5 h-4.5 rounded-md border flex items-center justify-center shrink-0 ${
+                              on
+                                ? "bg-brand-500 border-brand-500 text-white"
+                                : "border-ink-300"
+                            }`}
+                            style={{ width: 18, height: 18 }}
+                          >
+                            {on && <Check className="w-3 h-3" />}
+                          </span>
+                          <span>
+                            <span className="block text-sm font-semibold text-ink-900">
+                              {p.label}
+                            </span>
+                            <span className="block text-[11px] text-ink-500 leading-snug">
+                              {p.desc}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-ink-400 mt-2">
+                    They'll get an email link to join (expires in 7 days) and
+                    will only see the areas you tick.
                   </p>
                 </div>
               </div>

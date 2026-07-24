@@ -7,17 +7,19 @@ import { Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function RegisterPage() {
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next"); // e.g. a team-invite link to return to
+  const invitedEmail = searchParams.get("email") || "";
   const [form, setForm] = useState({
     name: "",
     businessName: "",
-    email: "",
+    email: invitedEmail,
     password: "",
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
   const channelHint = searchParams.get("channel"); // whatsapp | instagram | both
   const planHint = searchParams.get("plan"); // wa_starter | ig_starter | bundle_pro | bundle_business
@@ -56,7 +58,9 @@ export default function RegisterPage() {
       }
 
       // Email/password signups verify a 4-digit code before onboarding.
-      navigate("/verify-email", { state: { email: form.email } });
+      // Carry `next` (e.g. a team-invite link) through so the invitee lands
+      // back on the invite page once verified.
+      navigate("/verify-email", { state: { email: form.email, next } });
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -72,7 +76,7 @@ export default function RegisterPage() {
       <p className="text-ink-500 text-sm mt-2 mb-7">
         Already have an account?{" "}
         <Link
-          to="/login"
+          to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
           className="text-brand-600 font-semibold hover:underline"
         >
           Sign in

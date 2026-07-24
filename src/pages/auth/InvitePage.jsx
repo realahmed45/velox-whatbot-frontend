@@ -28,12 +28,18 @@ export default function InvitePage() {
       return;
     }
 
-    // Not signed in → send to login, then come back to this exact URL.
+    // Not signed in → send to REGISTER (invitees usually need an account),
+    // pre-filling the email and returning here after they sign up/in. The
+    // register page has a "sign in instead" link for people who already have
+    // an account.
     if (!authToken) {
       const next = encodeURIComponent(
         `/invite?token=${inviteToken}&workspace=${workspaceId}`,
       );
-      navigate(`/login?next=${next}`, { replace: true });
+      const emailParam = params.get("email")
+        ? `&email=${encodeURIComponent(params.get("email"))}`
+        : "";
+      navigate(`/register?next=${next}${emailParam}`, { replace: true });
       return;
     }
 

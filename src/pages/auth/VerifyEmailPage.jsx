@@ -20,6 +20,8 @@ export default function VerifyEmailPage() {
 
   // Email comes from the register redirect (state) or a ?email= fallback.
   const email = location.state?.email || params.get("email") || "";
+  // `next` (e.g. a team-invite link) carried through register → verify.
+  const next = location.state?.next || params.get("next") || "";
 
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
   const [submitting, setSubmitting] = useState(false);
@@ -74,7 +76,9 @@ export default function VerifyEmailPage() {
       const { data } = await api.post("/auth/verify-email", { email, code });
       if (data.user) setUser(data.user);
       toast.success("Email verified!");
-      navigate("/onboarding/instagram", { replace: true });
+      // Team invitees go back to their invite link to finish joining;
+      // everyone else proceeds to onboarding.
+      navigate(next || "/onboarding/instagram", { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid code. Try again.");
       setDigits(Array(CODE_LENGTH).fill(""));
