@@ -1,36 +1,66 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { Users, Mail, Shield, Trash2, Plus, X } from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
+import {
+  Users,
+  Mail,
+  Shield,
+  Trash2,
+  Plus,
+  X,
+  Clock,
+  UserPlus,
+  Loader2,
+  Send,
+} from "lucide-react";
+import StatHero from "@/components/ui/StatHero";
 
 export default function TeamPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ email: "", role: "agent" });
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (workspace?._id) fetchWorkspace(workspace._id);
-  }, []);
-
-  const refresh = () => workspace?._id && fetchWorkspace(workspace._id);
+  const [invites, setInvites] = useState([]);
 
   const members = workspace?.members || [];
   const owner = workspace?.owner;
+
+  const loadInvites = useCallback(async () => {
+    if (!workspace?._id) return;
+    try {
+      const { data } = await api.get(`/workspaces/${workspace._id}/invites`);
+      setInvites(data.invites || []);
+    } catch {
+      /* non-owners get 403 — fine, just show nothing */
+    }
+  }, [workspace?._id]);
+
+  useEffect(() => {
+    if (workspace?._id) {
+      fetchWorkspace(workspace._id);
+      loadInvites();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspace?._id]);
+
+  const refresh = () => {
+    if (workspace?._id) fetchWorkspace(workspace._id);
+    loadInvites();
+  };
 
   const invite = async () => {
     if (!form.email.trim()) return toast.error("Email required");
     setSaving(true);
     try {
       await api.post(`/workspaces/${workspace._id}/members/invite`, form);
-      toast.success("Invitation sent");
+      toast.success(`Invitation sent to ${form.email}`);
       setShowModal(false);
       setForm({ email: "", role: "agent" });
       refresh();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed");
+      toast.error(err.response?.data?.message || "Failed to send invite");
     } finally {
       setSaving(false);
     }
@@ -40,46 +70,67 @@ export default function TeamPage() {
     if (!window.confirm("Remove this team member?")) return;
     try {
       await api.delete(`/workspaces/${workspace._id}/members/${userId}`);
-      toast.success("Removed");
+      toast.success("Member removed");
       refresh();
     } catch {
-      toast.error("Failed");
+      toast.error("Failed to remove");
     }
   };
 
+  const revokeInvite = async (email) => {
+    try {
+      await api.delete(
+        `/workspaces/${workspace._id}/invites/${encodeURIComponent(email)}`,
+      );
+      toast.success("Invite revoked");
+      loadInvites();
+    } catch {
+      toast.error("Failed to revoke");
+    }
+  };
+
+  const seat = (name, email) => (name || email || "?")[0]?.toUpperCase() || "?";
+
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <PageHeader
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
+      <StatHero
         icon={Users}
         title="Team"
-        subtitle="Invite agents to help manage your inbox and automations"
+        subtitle="Invite teammates to help manage your inbox and automations"
+        stats={[
+          { label: "Members", value: members.length + (owner ? 1 : 0), accent: true },
+          { label: "Pending", value: invites.length },
+        ]}
       >
-        <button onClick={() => setShowModal(true)} className="btn-primary gap-2">
-          <Plus className="w-4 h-4" /> Invite member
+        <button
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition"
+        >
+          <UserPlus className="w-4 h-4" /> Invite
         </button>
-      </PageHeader>
+      </StatHero>
 
-      <div className="card">
-        {/* Owner */}
+      {/* Members */}
+      <section className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-ink-100">
+          <h2 className="text-sm font-bold text-ink-900">Members</h2>
+        </div>
+
         {owner && (
-          <div className="flex items-center gap-3 py-3 border-b border-ink-100">
-            <div className="w-10 h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white font-bold">
-              {(owner.name || owner.email || "O")[0].toUpperCase()}
+          <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold shadow-sm">
+              {seat(owner.name, owner.email)}
             </div>
-            <div className="flex-1">
-              <p className="font-medium text-ink-900">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-ink-900 truncate">
                 {owner.name || owner.email}
               </p>
-              <p className="text-xs text-ink-500">{owner.email}</p>
+              <p className="text-xs text-ink-500 truncate">{owner.email}</p>
             </div>
-            <span className="chip bg-brand-100 text-brand-700 text-xs">
-              <Shield className="w-3 h-3 mr-1 inline" /> Owner
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100">
+              <Shield className="w-3 h-3" /> Owner
             </span>
           </div>
-        )}
-
-        {members.length === 0 && !owner && (
-          <p className="text-center text-ink-400 py-8">No team members yet.</p>
         )}
 
         {members.map((m) => {
@@ -87,87 +138,173 @@ export default function TeamPage() {
           return (
             <div
               key={m.user?._id || m._id}
-              className="flex items-center gap-3 py-3 border-b border-ink-100 last:border-b-0"
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0 hover:bg-ink-50/50 transition"
             >
-              <div className="w-10 h-10 rounded-full bg-ink-200 flex items-center justify-center font-semibold text-ink-600">
-                {(u.name || u.email || "?")[0].toUpperCase()}
+              <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center font-bold text-ink-600">
+                {seat(u.name, u.email)}
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-ink-900">{u.name || u.email}</p>
-                <p className="text-xs text-ink-500">{u.email}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-ink-900 truncate">
+                  {u.name || u.email}
+                </p>
+                <p className="text-xs text-ink-500 truncate">{u.email}</p>
               </div>
-              <span className="chip bg-ink-100 text-ink-600 text-xs capitalize">
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-ink-100 text-ink-600 capitalize">
                 {m.role}
               </span>
               <button
                 onClick={() => remove(u._id || m.user)}
-                className="p-2 rounded hover:bg-red-50 text-red-500"
+                className="p-2 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
+                title="Remove member"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           );
         })}
+
+        {members.length === 0 && !owner && (
+          <p className="text-center text-ink-400 text-sm py-10">
+            No team members yet.
+          </p>
+        )}
+      </section>
+
+      {/* Pending invites */}
+      {invites.length > 0 && (
+        <section className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-ink-100 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-500" />
+            <h2 className="text-sm font-bold text-ink-900">
+              Pending invites ({invites.length})
+            </h2>
+          </div>
+          {invites.map((i) => (
+            <div
+              key={i.email}
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0"
+            >
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-ink-900 truncate">{i.email}</p>
+                <p className="text-xs text-ink-500">
+                  {i.expired ? (
+                    <span className="text-red-500 font-medium">Expired</span>
+                  ) : (
+                    "Invite sent · awaiting acceptance"
+                  )}{" "}
+                  · {i.role}
+                </p>
+              </div>
+              <button
+                onClick={() => revokeInvite(i.email)}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg border border-ink-200 text-ink-600 hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition"
+              >
+                Revoke
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* Roles explainer */}
+      <div className="rounded-2xl border border-ink-100 bg-white p-5 text-sm text-ink-600 leading-relaxed">
+        <p className="font-bold text-ink-900 mb-1.5">Roles</p>
+        <p>
+          <span className="font-semibold text-brand-700">Owner</span> — full
+          access: billing, settings, automations, and team.{" "}
+          <span className="font-semibold text-ink-800">Agent</span> — can view
+          and reply to the inbox and manage contacts, but can't change billing
+          or delete the workspace.
+        </p>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-md max-w-md w-full">
-            <div className="flex items-center justify-between p-5 border-b border-ink-100">
-              <h2 className="text-lg font-semibold">Invite Team Member</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1 rounded hover:bg-ink-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="label">Email address</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-                  <input
-                    className="input pl-9"
-                    type="email"
-                    placeholder="team@example.com"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                  />
+      {showModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] bg-ink-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShowModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center">
+                    <UserPlus className="w-4 h-4" />
+                  </div>
+                  <h2 className="font-black text-ink-900">Invite a teammate</h2>
+                </div>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="px-5 py-4 space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-ink-700">
+                    Email address
+                  </label>
+                  <div className="relative mt-1.5">
+                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                    <input
+                      className="w-full rounded-xl border border-ink-200 pl-9 pr-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
+                      type="email"
+                      placeholder="teammate@example.com"
+                      value={form.email}
+                      onChange={(e) =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-ink-700">Role</label>
+                  <select
+                    className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition bg-white"
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  >
+                    <option value="agent">Agent — inbox & contacts</option>
+                  </select>
+                  <p className="text-[11px] text-ink-400 mt-1">
+                    They'll get an email with a link to join. It expires in 7
+                    days.
+                  </p>
                 </div>
               </div>
-              <div>
-                <label className="label">Role</label>
-                <select
-                  className="input"
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="rounded-xl border border-ink-200 text-ink-700 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition"
                 >
-                  <option value="agent">Agent — reply to conversations</option>
-                  <option value="owner">Owner — full access</option>
-                </select>
+                  Cancel
+                </button>
+                <button
+                  onClick={invite}
+                  disabled={saving || !form.email.trim()}
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-4 py-2.5 disabled:opacity-50 transition"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" /> Send invite
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-            <div className="p-5 border-t border-ink-100 flex justify-end gap-2">
-              <button
-                onClick={() => setShowModal(false)}
-                className="btn btn-outline"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={invite}
-                disabled={saving}
-                className="btn btn-primary"
-              >
-                {saving ? "Sending…" : "Send Invite"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

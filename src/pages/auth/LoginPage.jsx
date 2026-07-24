@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login, devLogin } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +22,11 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login", form);
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome back!");
+      // Honor a post-login redirect (e.g. a team-invite link).
+      if (next) {
+        navigate(next, { replace: true });
+        return;
+      }
       const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
       navigate(ws ? "/dashboard" : "/dashboard/onboarding/choose-channel");
     } catch (err) {

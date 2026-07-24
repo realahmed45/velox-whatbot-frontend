@@ -20,6 +20,7 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 const VerifyEmailPage = lazy(() => import("@/pages/auth/VerifyEmailPage"));
+const InvitePage = lazy(() => import("@/pages/auth/InvitePage"));
 
 // App Pages (lazy-loaded)
 const OverviewPage = lazy(() => import("@/pages/dashboard/OverviewPage"));
@@ -115,6 +116,8 @@ export default function App() {
               {/* Public marketing */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/@:slug" element={<PublicBioPage />} />
+              {/* Team-invite landing (self-redirects to login if needed) */}
+              <Route path="/invite" element={<InvitePage />} />
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
