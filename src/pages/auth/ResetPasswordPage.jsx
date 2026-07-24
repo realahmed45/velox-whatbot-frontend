@@ -3,6 +3,11 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
+import PasswordStrength from "@/components/auth/PasswordStrength";
+import TurnstileWidget, {
+  turnstileEnabled,
+} from "@/components/auth/TurnstileWidget";
+import { checkPassword } from "@/utils/passwordPolicy";
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
@@ -10,6 +15,7 @@ export default function ResetPasswordPage() {
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -20,12 +26,17 @@ export default function ResetPasswordPage() {
       );
       return;
     }
-    if (form.password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    const s = checkPassword(form.password);
+    if (!s.ok) {
+      toast.error(s.message || "Choose a stronger password");
       return;
     }
     if (form.password !== form.confirmPassword) {
       toast.error("Passwords do not match");
+      return;
+    }
+    if (turnstileEnabled && !captcha) {
+      toast.error("Please complete the human check");
       return;
     }
     setLoading(true);
@@ -33,6 +44,7 @@ export default function ResetPasswordPage() {
       await api.post("/auth/reset-password", {
         token,
         password: form.password,
+        "cf-turnstile-token": captcha,
       });
       toast.success("Password reset! Please sign in.");
       navigate("/login");
@@ -91,6 +103,7 @@ export default function ResetPasswordPage() {
               )}
             </button>
           </div>
+          <PasswordStrength password={form.password} />
         </div>
         <div>
           <label className="label">Confirm password</label>
@@ -104,7 +117,15 @@ export default function ResetPasswordPage() {
               setForm({ ...form, confirmPassword: e.target.value })
             }
           />
+          {form.confirmPassword && form.confirmPassword !== form.password && (
+            <p className="text-[11px] text-red-500 mt-1">
+              Passwords don't match.
+            </p>
+          )}
         </div>
+        {turnstileEnabled && (
+          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
+        )}
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Resetting…" : "Reset password"}
         </button>

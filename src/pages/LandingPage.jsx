@@ -1183,7 +1183,7 @@ function Footer() {
               <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
               <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
               <li>
-                <a href="mailto:support@botlify.site" className="hover:text-white inline-flex items-center gap-1.5">
+                <a href="mailto:botlify.support@gmail.com" className="hover:text-white inline-flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" /> Contact
                 </a>
               </li>

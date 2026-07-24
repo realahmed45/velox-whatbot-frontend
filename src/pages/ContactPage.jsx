@@ -24,7 +24,7 @@ export default function ContactPage() {
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           {/* Email */}
           <a
-            href="mailto:contactus@botlify.com"
+            href="mailto:botlify.support@gmail.com"
             className="group p-8 bg-white rounded-2xl border border-ink-200 hover:border-accent hover:shadow-lg transition-all"
           >
             <div className="flex items-start gap-4">
@@ -39,7 +39,7 @@ export default function ContactPage() {
                   Send us an email and we'll respond within 24 hours.
                 </p>
                 <p className="text-accent font-medium group-hover:underline">
-                  contactus@botlify.com
+                  botlify.support@gmail.com
                 </p>
               </div>
             </div>

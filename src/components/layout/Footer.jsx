@@ -88,10 +88,10 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <Mail size={16} className="text-ink-500" />
                 <a
-                  href="mailto:contactus@botlify.com"
+                  href="mailto:botlify.support@gmail.com"
                   className="hover:text-white transition"
                 >
-                  contactus@botlify.com
+                  botlify.support@gmail.com
                 </a>
               </li>
             </ul>

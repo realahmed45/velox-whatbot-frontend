@@ -12,9 +12,21 @@ import {
   RefreshCw,
   Settings as SettingsIcon,
   ShoppingCart,
+  Shield,
+  Lock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  LogOut,
+  CheckCircle2,
+  LifeBuoy,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
+import PasswordStrength from "@/components/auth/PasswordStrength";
+import { checkPassword } from "@/utils/passwordPolicy";
 import { useNavigate } from "react-router-dom";
+
+const SUPPORT_EMAIL = "botlify.support@gmail.com";
 
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
@@ -25,6 +37,7 @@ export default function SettingsPage() {
     { id: "general", label: "General" },
     { id: "instagram", label: "Instagram" },
     { id: "automation", label: "Automations" },
+    { id: "security", label: "Security" },
   ];
 
   return (
@@ -64,6 +77,244 @@ export default function SettingsPage() {
           onSave={() => fetchWorkspace(activeWorkspace)}
         />
       )}
+      {tab === "security" && <SecuritySettings />}
+    </div>
+  );
+}
+
+function SecuritySettings() {
+  const { user, setUser, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [hasPassword, setHasPassword] = useState(user?.hasPassword ?? true);
+  const [hasGoogle, setHasGoogle] = useState(user?.hasGoogle ?? false);
+  const [loadingMe, setLoadingMe] = useState(true);
+  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
+  const [show, setShow] = useState({ current: false, next: false });
+  const [saving, setSaving] = useState(false);
+
+  // Fetch fresh account status so we know whether to show "set" vs "change".
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        if (!alive) return;
+        setHasPassword(!!data.user?.hasPassword);
+        setHasGoogle(!!data.user?.hasGoogle);
+        setUser({ ...user, ...data.user });
+      } catch {
+        /* keep optimistic defaults */
+      } finally {
+        if (alive) setLoadingMe(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const strength = checkPassword(form.next, {
+    email: user?.email,
+    name: user?.name,
+  });
+
+  const save = async () => {
+    if (form.next !== form.confirm) {
+      return toast.error("New passwords don't match");
+    }
+    if (!strength.ok) {
+      return toast.error(strength.message || "Choose a stronger password");
+    }
+    setSaving(true);
+    try {
+      if (hasPassword) {
+        await api.put("/auth/password", {
+          currentPassword: form.current,
+          newPassword: form.next,
+        });
+        toast.success("Password changed");
+      } else {
+        await api.post("/auth/set-password", { newPassword: form.next });
+        toast.success("Password set — you can now sign in with it");
+        setHasPassword(true);
+        setUser({ ...user, hasPassword: true });
+      }
+      setForm({ current: "", next: "", confirm: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update password");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const doLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Account identity */}
+      <div className="card p-5 flex items-center gap-3">
+        <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
+          <Shield className="w-5 h-5 text-brand-500" />
+        </div>
+        <div className="min-w-0">
+          <p className="font-bold text-ink-900 truncate">{user?.name}</p>
+          <p className="text-xs text-ink-500 truncate">{user?.email}</p>
+        </div>
+        <div className="ml-auto flex flex-wrap gap-1.5 justify-end">
+          {user?.isEmailVerified && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+              <CheckCircle2 className="w-3 h-3" /> Verified
+            </span>
+          )}
+          {hasGoogle && (
+            <span className="text-[11px] font-bold px-2 py-1 rounded-full bg-ink-100 text-ink-600">
+              Google linked
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Password */}
+      <div className="card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-ink-500" />
+          <h3 className="text-sm font-bold text-ink-900">
+            {hasPassword ? "Change password" : "Set a password"}
+          </h3>
+        </div>
+
+        {!loadingMe && !hasPassword && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg">
+            You signed up with Google, so you don't have a password yet. Set one
+            to also be able to sign in with your email.
+          </div>
+        )}
+
+        {hasPassword && (
+          <div>
+            <label className="label">Current password</label>
+            <div className="relative">
+              <input
+                type={show.current ? "text" : "password"}
+                className="input pr-10"
+                autoComplete="current-password"
+                value={form.current}
+                onChange={(e) =>
+                  setForm({ ...form, current: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShow((s) => ({ ...s, current: !s.current }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+              >
+                {show.current ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label className="label">New password</label>
+          <div className="relative">
+            <input
+              type={show.next ? "text" : "password"}
+              className="input pr-10"
+              autoComplete="new-password"
+              value={form.next}
+              onChange={(e) => setForm({ ...form, next: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => setShow((s) => ({ ...s, next: !s.next }))}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+            >
+              {show.next ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          <PasswordStrength
+            password={form.next}
+            email={user?.email}
+            name={user?.name}
+          />
+        </div>
+
+        <div>
+          <label className="label">Confirm new password</label>
+          <input
+            type="password"
+            className="input"
+            autoComplete="new-password"
+            value={form.confirm}
+            onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+          />
+          {form.confirm && form.confirm !== form.next && (
+            <p className="text-[11px] text-red-500 mt-1">
+              Passwords don't match.
+            </p>
+          )}
+        </div>
+
+        <button
+          onClick={save}
+          disabled={saving || loadingMe}
+          className="btn-primary gap-2 disabled:opacity-50"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Lock className="w-4 h-4" />
+          )}
+          {hasPassword ? "Update password" : "Set password"}
+        </button>
+      </div>
+
+      {/* Session */}
+      <div className="card p-5 sm:p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <LogOut className="w-4 h-4 text-ink-500" />
+          <h3 className="text-sm font-bold text-ink-900">Session</h3>
+        </div>
+        <p className="text-xs text-ink-500">
+          Sign out of Botlify on this device.
+        </p>
+        <button
+          onClick={doLogout}
+          className="inline-flex items-center gap-2 rounded-xl border border-red-200 text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition"
+        >
+          <LogOut className="w-4 h-4" /> Log out
+        </button>
+      </div>
+
+      {/* Support */}
+      <div className="card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-1.5">
+          <LifeBuoy className="w-4 h-4 text-ink-500" />
+          <h3 className="text-sm font-bold text-ink-900">Need help?</h3>
+        </div>
+        <p className="text-xs text-ink-500">
+          Questions, account issues, or security concerns — email us at{" "}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="font-semibold text-brand-600 hover:underline"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+          . We usually reply within a day.
+        </p>
+      </div>
     </div>
   );
 }

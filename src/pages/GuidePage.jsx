@@ -302,7 +302,7 @@ export default function GuidePage() {
           </div>
           <div className="space-y-3">
             <a
-              href="mailto:hello@botlify.site"
+              href="mailto:botlify.support@gmail.com"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
               <span className="w-10 h-10 rounded-md bg-brand-gradient flex items-center justify-center shadow-glow">
@@ -313,13 +313,13 @@ export default function GuidePage() {
                   Email us
                 </div>
                 <div className="text-xs text-ink-500 truncate">
-                  hello@botlify.site — we reply within a few hours
+                  botlify.support@gmail.com — we reply within a few hours
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />
             </a>
             <a
-              href="mailto:support@botlify.site"
+              href="mailto:botlify.support@gmail.com"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
               <span className="w-10 h-10 rounded-md bg-brand-400 flex items-center justify-center shadow">
@@ -330,7 +330,7 @@ export default function GuidePage() {
                   Email support
                 </div>
                 <div className="text-xs text-ink-500 truncate">
-                  support@botlify.site — we reply fast
+                  botlify.support@gmail.com — we reply fast
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />

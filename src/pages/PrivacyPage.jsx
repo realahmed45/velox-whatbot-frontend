@@ -115,7 +115,7 @@ export function LegalShell({ icon: Icon, eyebrow, title, updated, sections }) {
                 Contact
               </h2>
               <a
-                href="mailto:support@botlify.site"
+                href="mailto:botlify.support@gmail.com"
                 className="mt-4 inline-flex items-center gap-3 rounded-xl border border-ink-100 bg-brand-50/40 px-4 py-3 hover:border-brand-300 hover:shadow-glow transition group"
               >
                 <span className="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center text-white shrink-0">
@@ -123,7 +123,7 @@ export function LegalShell({ icon: Icon, eyebrow, title, updated, sections }) {
                 </span>
                 <span>
                   <span className="block text-sm font-bold text-ink-900">
-                    support@botlify.site
+                    botlify.support@gmail.com
                   </span>
                   <span className="block text-xs text-ink-500">
                     Questions about this policy? We reply within a few hours.

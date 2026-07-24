@@ -3,17 +3,28 @@ import { Link } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
+import TurnstileWidget, {
+  turnstileEnabled,
+} from "@/components/auth/TurnstileWidget";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (turnstileEnabled && !captcha) {
+      toast.error("Please complete the human check");
+      return;
+    }
     setLoading(true);
     try {
-      await api.post("/auth/forgot-password", { email });
+      await api.post("/auth/forgot-password", {
+        email,
+        "cf-turnstile-token": captcha,
+      });
       setSent(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -59,6 +70,9 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+        {turnstileEnabled && (
+          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
+        )}
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Sending…" : "Send reset link"}
         </button>

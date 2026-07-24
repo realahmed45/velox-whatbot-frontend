@@ -5,6 +5,11 @@ import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+import PasswordStrength from "@/components/auth/PasswordStrength";
+import TurnstileWidget, {
+  turnstileEnabled,
+} from "@/components/auth/TurnstileWidget";
+import { checkPassword } from "@/utils/passwordPolicy";
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -18,6 +23,7 @@ export default function RegisterPage() {
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState("");
   const { login, logout } = useAuthStore();
   const navigate = useNavigate();
   const refCode = searchParams.get("ref");
@@ -26,8 +32,16 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    const s = checkPassword(form.password, {
+      email: form.email,
+      name: form.name,
+    });
+    if (!s.ok) {
+      toast.error(s.message || "Choose a stronger password");
+      return;
+    }
+    if (turnstileEnabled && !captcha) {
+      toast.error("Please complete the human check");
       return;
     }
     setLoading(true);
@@ -41,6 +55,7 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
         ref: refCode || undefined,
+        "cf-turnstile-token": captcha,
       });
       login(data.user, data.token, data.refreshToken);
       toast.success("Account created — check your email for a code.");
@@ -119,10 +134,11 @@ export default function RegisterPage() {
         <div>
           <label className="label">Email address</label>
           <input
-            className="input"
+            className={`input ${invitedEmail ? "bg-ink-50 text-ink-500 cursor-not-allowed" : ""}`}
             type="email"
             placeholder="you@example.com"
             required
+            readOnly={!!invitedEmail}
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -150,7 +166,15 @@ export default function RegisterPage() {
               )}
             </button>
           </div>
+          <PasswordStrength
+            password={form.password}
+            email={form.email}
+            name={form.name}
+          />
         </div>
+        {turnstileEnabled && (
+          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
+        )}
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Creating account..." : "Create account"}
         </button>

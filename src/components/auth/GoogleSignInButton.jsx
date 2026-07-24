@@ -25,6 +25,13 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome!");
 
+      // Honor a post-auth redirect (e.g. a team-invite link) if present.
+      const next = searchParams.get("next");
+      if (next) {
+        navigate(next, { replace: true });
+        return;
+      }
+
       const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
       const igConnected =
         data.user?.activeWorkspace?.instagram?.status === "connected";

@@ -5,6 +5,9 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+import TurnstileWidget, {
+  turnstileEnabled,
+} from "@/components/auth/TurnstileWidget";
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -16,14 +19,22 @@ export default function LoginPage() {
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState("");
   const { login, devLogin } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (turnstileEnabled && !captcha) {
+      toast.error("Please complete the human check");
+      return;
+    }
     setLoading(true);
     try {
-      const { data } = await api.post("/auth/login", form);
+      const { data } = await api.post("/auth/login", {
+        ...form,
+        "cf-turnstile-token": captcha,
+      });
       login(data.user, data.token, data.refreshToken);
       toast.success("Welcome back!");
       // Honor a post-login redirect (e.g. a team-invite link).
@@ -112,6 +123,9 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
+        {turnstileEnabled && (
+          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
+        )}
         <button type="submit" className="btn-primary w-full" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </button>
