@@ -34,7 +34,18 @@ import toast from "react-hot-toast";
 export default function InvitePage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { token: authToken, user, login } = useAuthStore();
+  const { token: authToken, user, login, setActiveWorkspace } = useAuthStore();
+
+  // After joining, point the app at the owner's workspace and clear any cached
+  // (personal) workspace so the dashboard loads the owner's fresh on reload.
+  const switchIntoWorkspace = (joinedId) => {
+    try {
+      setActiveWorkspace(joinedId || workspaceId);
+      localStorage.removeItem("botlify-workspace");
+    } catch {
+      /* ignore */
+    }
+  };
 
   const inviteToken = params.get("token");
   const workspaceId = params.get("workspace");
@@ -65,6 +76,7 @@ export default function InvitePage() {
         token: inviteToken,
         workspaceId,
       });
+      switchIntoWorkspace(data.workspaceId);
       setPhase("success");
       setMessage(data.message || "You've joined the team!");
       setTimeout(() => {
@@ -138,6 +150,7 @@ export default function InvitePage() {
         "cf-turnstile-token": captcha,
       });
       login(data.user, data.token, data.refreshToken);
+      switchIntoWorkspace(data.workspaceId);
       setPhase("success");
       setMessage(data.message || "You've joined the team!");
       setTimeout(() => {
@@ -172,10 +185,11 @@ export default function InvitePage() {
         return;
       }
       login(data.user, data.token, data.refreshToken);
-      await api.post("/workspaces/accept-invite", {
-        token: inviteToken,
-        workspaceId,
-      });
+      const { data: joinData } = await api.post(
+        "/workspaces/accept-invite",
+        { token: inviteToken, workspaceId },
+      );
+      switchIntoWorkspace(joinData.workspaceId);
       setPhase("success");
       setMessage(`Welcome to ${info.workspaceName}!`);
       setTimeout(() => {

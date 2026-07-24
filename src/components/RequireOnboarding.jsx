@@ -43,6 +43,19 @@ export default function RequireOnboarding({ children }) {
   // onboarding redirect) and then correcting it a moment later.
   if (loading || !workspace) return <BrandSpinner />;
 
+  // Agents (invited team members) never run onboarding — they inherit the
+  // owner's already-connected workspace. Only the workspace OWNER is gated on
+  // connecting a channel.
+  const myId = String(user?._id || user?.id || "");
+  const ownerId = String(workspace.owner?._id || workspace.owner || "");
+  const isOwner = !!myId && !!ownerId && myId === ownerId;
+  const isMember = (workspace.members || []).some((m) => {
+    const uid = String(m.user?._id || m.user || "");
+    return uid === myId && (m.role === "agent" || uid !== ownerId);
+  });
+  // If we can positively tell they're a non-owner member, let them straight in.
+  if (!isOwner && isMember) return children;
+
   const igConnected = workspace.instagram?.status === "connected";
   const hasChannel = igConnected;
   const isExempt = EXEMPT_PATHS.some((p) => location.pathname.startsWith(p));
