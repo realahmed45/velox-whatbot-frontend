@@ -26,13 +26,46 @@ export default function InstagramOnboardingPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
-  const { activeWorkspace } = useAuthStore();
+  const { activeWorkspace, user, setActiveWorkspace } = useAuthStore();
 
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
   const [siteUrl, setSiteUrl] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [ensuring, setEnsuring] = useState(!activeWorkspace);
+
+  // A workspace is created deliberately here (not at signup). The first time an
+  // owner reaches onboarding without one, create/return their workspace so the
+  // rest of the flow (connecting Instagram) has something to attach to.
+  useEffect(() => {
+    let alive = true;
+    if (activeWorkspace) {
+      setEnsuring(false);
+      return;
+    }
+    (async () => {
+      try {
+        const { data } = await api.post("/workspaces/ensure", {
+          name: user?.name ? `${user.name}'s Workspace` : undefined,
+        });
+        if (!alive) return;
+        setActiveWorkspace(data.workspace._id);
+        fetchWorkspace(data.workspace._id);
+      } catch (e) {
+        if (alive)
+          toast.error(
+            e?.response?.data?.message || "Couldn't set up your workspace",
+          );
+      } finally {
+        if (alive) setEnsuring(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspace]);
 
   const saveBusinessProfile = async () => {
     const url = siteUrl.trim();
@@ -60,6 +93,14 @@ export default function InstagramOnboardingPage() {
   }, [params, activeWorkspace, fetchWorkspace]);
 
   const igConnected = workspace?.instagram?.status === "connected";
+
+  if (ensuring) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      </div>
+    );
+  }
 
   const startOAuth = async () => {
     setConnecting(true);

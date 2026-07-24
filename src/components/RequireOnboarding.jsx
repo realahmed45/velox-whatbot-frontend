@@ -38,6 +38,13 @@ export default function RequireOnboarding({ children }) {
     return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
   }
 
+  // A brand-new owner has NO workspace yet (we no longer create one at signup).
+  // Send them to onboarding, which creates their workspace and connects
+  // Instagram. Verified users with no active workspace land here.
+  if (!activeWorkspace) {
+    return <Navigate to="/onboarding/instagram" replace />;
+  }
+
   // While the workspace is still loading we don't yet know if Instagram is
   // connected — show a spinner instead of flashing the dashboard (or the
   // onboarding redirect) and then correcting it a moment later.
