@@ -481,15 +481,18 @@ export default function DripCampaignsPage() {
                         setForm({ ...form, triggerType: e.target.value })
                       }
                     >
+                      {/* Instagram (via Zernio) only reliably delivers DM
+                          events, so we only expose triggers that actually fire.
+                          "New follower" / comment triggers aren't supported. */}
                       <option value="keyword">Keyword in DM</option>
-                      <option value="new_follower">New Follower</option>
-                      <option value="comment_keyword">Keyword in Comment</option>
-                      <option value="manual">Manual</option>
+                      <option value="manual">Manual (add people yourself)</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-ink-700 mb-1.5">
-                      Trigger value
+                      {form.triggerType === "manual"
+                        ? "Label (internal)"
+                        : "Trigger keyword"}
                     </label>
                     <input
                       className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
@@ -497,7 +500,11 @@ export default function DripCampaignsPage() {
                       onChange={(e) =>
                         setForm({ ...form, triggerValue: e.target.value })
                       }
-                      placeholder="E.g. price, info, start"
+                      placeholder={
+                        form.triggerType === "manual"
+                          ? "E.g. VIP list"
+                          : "E.g. price, info, start"
+                      }
                     />
                   </div>
                 </div>
