@@ -7,13 +7,17 @@ import { Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next");
+  // Team-invite links prefill the invited email so it lines up with the invite.
+  const [form, setForm] = useState({
+    email: searchParams.get("email") || "",
+    password: "",
+  });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, devLogin } = useAuthStore();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const next = searchParams.get("next");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
