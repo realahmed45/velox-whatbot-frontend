@@ -53,13 +53,20 @@ export const useAuthStore = create(
           activeWorkspace: "dev-workspace",
         }),
 
-      logout: () =>
+      logout: () => {
+        // Clear the cached workspace too so nothing leaks to the next account.
+        try {
+          localStorage.removeItem("botlify-workspace");
+        } catch {
+          /* ignore */
+        }
         set({
           user: null,
           token: null,
           refreshToken: null,
           activeWorkspace: null,
-        }),
+        });
+      },
     }),
     {
       name: "botlify-auth",
