@@ -232,59 +232,65 @@ export default function IgInboxPage() {
   });
 
   return (
-    <div className="flex h-full bg-gradient-to-b from-ink-50 to-ink-100/40">
+    <div className="flex h-full bg-ink-50">
       {/* List pane */}
       <div
         className={clsx(
           "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col",
-          "w-full md:w-80 lg:w-[22rem]",
+          "w-full md:w-[21rem] lg:w-[23rem]",
           activeConversationId && "hidden md:flex",
         )}
       >
-        {/* Header */}
-        <div className="px-4 py-3.5 border-b border-ink-100 bg-white/90 backdrop-blur-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm shadow-brand-500/25">
-              <Instagram className="w-4 h-4 text-white" />
+        {/* ── Dark gradient header (matches the rest of the dashboard) ── */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-ink-900 to-ink-800 text-white px-4 pt-4 pb-3.5">
+          <div className="pointer-events-none absolute -top-16 right-4 w-48 h-48 rounded-full bg-brand-500/20 blur-3xl" />
+          <div className="relative flex items-center gap-2.5 mb-3.5">
+            <span className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+              <Instagram className="w-5 h-5 text-brand-300" />
             </span>
-            <h2 className="font-black text-ink-900 text-base tracking-tight">
-              DMs
-            </h2>
-            <span className="ml-auto text-[10px] uppercase tracking-wider font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full ring-1 ring-brand-100">
-              {conversations.length} active
+            <div>
+              <h2 className="font-black text-[17px] leading-none tracking-tight">
+                Inbox
+              </h2>
+              <p className="text-[11px] text-white/50 mt-1">
+                {conversations.length} conversation
+                {conversations.length === 1 ? "" : "s"}
+              </p>
+            </div>
+            <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live
             </span>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input
-              className="input !pl-9 !text-sm"
-              placeholder="Search @username or name…"
+              className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder-white/40 focus:bg-white/15 focus:border-white/30 outline-none transition"
+              placeholder="Search name or @username…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-1.5 mt-2.5 overflow-x-auto pb-0.5">
-            {[
-              "all",
-              "bot_active",
-              "awaiting_human",
-              "human_active",
-              "resolved",
-            ].map((f) => (
+        </div>
+
+        {/* Filter chips */}
+        <div className="flex gap-1.5 px-3 py-2.5 border-b border-ink-100 overflow-x-auto no-scrollbar">
+          {["all", "bot_active", "awaiting_human", "human_active", "resolved"].map(
+            (f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={clsx(
-                  "flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-bold transition-all border",
+                  "flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border",
                   filter === f
-                    ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/30"
-                    : "border-ink-200 text-ink-600 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/50",
+                    ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/25"
+                    : "border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
                 )}
               >
                 {f === "all" ? "All" : STATUS[f]?.label || f}
               </button>
-            ))}
-          </div>
+            ),
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -379,16 +385,17 @@ export default function IgInboxPage() {
 
       {/* Chat pane */}
       {active ? (
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Chat header */}
-          <div className="bg-white/90 backdrop-blur-xl border-b border-ink-100 px-3 sm:px-4 py-3 shadow-sm shadow-ink-100/40">
+        <div className="flex-1 flex flex-col min-w-0 bg-ink-50">
+          {/* Chat header — dark, on-brand */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-ink-900 to-ink-800 text-white px-3 sm:px-5 py-3.5">
+            <div className="pointer-events-none absolute -top-16 right-10 w-56 h-56 rounded-full bg-brand-500/15 blur-3xl" />
             <button
               onClick={() => setActiveConversation(null)}
-              className="md:hidden mb-2 text-xs text-brand-600 font-bold inline-flex items-center gap-1"
+              className="md:hidden mb-2 text-xs text-brand-300 font-bold inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> All DMs
             </button>
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="relative flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar
                   initial={(active.contact?.name ||
@@ -397,11 +404,11 @@ export default function IgInboxPage() {
                     active.participantUsername ||
                     "I")[0]?.toUpperCase()}
                   avatar={active.contact?.avatar}
-                  size="w-10 h-10"
+                  size="w-11 h-11"
                   text="text-sm"
                 />
                 <div className="min-w-0">
-                  <p className="font-bold text-sm text-ink-900 truncate">
+                  <p className="font-bold text-[15px] truncate">
                     {active.contact?.name ||
                       active.contact?.username ||
                       active.participantName ||
@@ -414,14 +421,22 @@ export default function IgInboxPage() {
                         href={`https://instagram.com/${active.contact.username}`}
                         target="_blank"
                         rel="noopener"
-                        className="text-[11px] text-brand-600 font-medium hover:underline truncate"
+                        className="text-[11px] text-white/50 font-medium hover:text-brand-300 truncate transition"
                       >
                         @{active.contact.username}
                       </a>
                     )}
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${(STATUS[active.status] || STATUS.open).cls}`}
-                    >
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/70">
+                      <span
+                        className={clsx(
+                          "w-1.5 h-1.5 rounded-full",
+                          active.status === "human_active"
+                            ? "bg-emerald-400"
+                            : active.status === "awaiting_human"
+                              ? "bg-amber-400"
+                              : "bg-brand-400",
+                        )}
+                      />
                       {(STATUS[active.status] || STATUS.open).label}
                     </span>
                   </div>
@@ -431,10 +446,10 @@ export default function IgInboxPage() {
                 <button
                   onClick={toggleBot}
                   className={clsx(
-                    "text-[11px] font-bold px-2.5 py-1.5 rounded-xl border flex items-center gap-1 transition-all",
+                    "text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all",
                     active.botEnabled === false
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/30"
+                      : "bg-white/10 text-white/80 border border-white/15 hover:bg-white/20",
                   )}
                 >
                   {active.botEnabled === false ? (
@@ -450,7 +465,7 @@ export default function IgInboxPage() {
                 {active.status !== "human_active" && (
                   <button
                     onClick={takeover}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition-all shadow-sm shadow-brand-500/30"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition-all"
                   >
                     <UserCheck className="w-3 h-3" /> Take over
                   </button>
@@ -458,7 +473,7 @@ export default function IgInboxPage() {
                 {active.status !== "resolved" && active.status !== "closed" && (
                   <button
                     onClick={resolve}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-ink-100 text-ink-700 hover:bg-ink-200 flex items-center gap-1 transition-all"
+                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-white/10 text-white/80 border border-white/15 hover:bg-white/20 flex items-center gap-1 transition-all"
                   >
                     <CheckCheck className="w-3 h-3" /> Done
                   </button>
@@ -467,26 +482,26 @@ export default function IgInboxPage() {
             </div>
 
             {/* Tag row */}
-            <div className="flex items-center flex-wrap gap-1.5 mt-2.5">
-              <TagIcon className="w-3 h-3 text-ink-400" />
+            <div className="relative flex items-center flex-wrap gap-1.5 mt-3">
+              <TagIcon className="w-3 h-3 text-white/40" />
               {(active.tags || []).map((t) => (
                 <span
                   key={t}
-                  className="text-[10px] font-bold rounded-full bg-brand-100 text-brand-700 ring-1 ring-brand-200/60 px-2 py-0.5 inline-flex items-center gap-0.5"
+                  className="text-[10px] font-bold rounded-full bg-white/10 text-white/80 border border-white/15 px-2 py-0.5 inline-flex items-center gap-0.5"
                 >
                   #{t}
                   <button
                     onClick={() => removeTag(t)}
-                    className="hover:text-brand-900"
+                    className="hover:text-white"
                   >
                     <X className="w-2.5 h-2.5" />
                   </button>
                 </span>
               ))}
               <div className="relative">
-                <Plus className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-400" />
+                <Plus className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40" />
                 <input
-                  className="input text-[11px] !h-6 !py-0 !pl-6 !pr-2 w-28 rounded-full"
+                  className="text-[11px] h-6 pl-6 pr-2 w-28 rounded-full bg-white/10 border border-white/15 text-white placeholder-white/40 focus:bg-white/15 outline-none"
                   placeholder="add tag…"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
@@ -499,7 +514,7 @@ export default function IgInboxPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-gradient-to-b from-ink-50/60 to-ink-100/30">
+          <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3 bg-ink-50">
             {activeMsgs.map((m) => (
               <Bubble key={m._id} msg={m} />
             ))}
@@ -507,18 +522,18 @@ export default function IgInboxPage() {
           </div>
 
           {/* Reply box */}
-          <div className="bg-white/90 backdrop-blur-xl border-t border-ink-100 p-3">
+          <div className="bg-white border-t border-ink-100 p-3">
             {active.botEnabled === false && (
               <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5 mb-2 flex items-center gap-1.5">
                 <Pause className="w-3 h-3 flex-shrink-0" />
                 Auto-DM is paused — only your manual replies go out.
               </div>
             )}
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2 rounded-2xl border border-ink-200 bg-ink-50/50 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition p-1.5">
               <textarea
-                className="input resize-none flex-1 text-sm !rounded-2xl focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-                rows={2}
-                placeholder="Send a DM…"
+                className="resize-none flex-1 text-sm bg-transparent outline-none px-2.5 py-2 max-h-32"
+                rows={1}
+                placeholder="Type a reply…"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => {
@@ -531,11 +546,18 @@ export default function IgInboxPage() {
               <button
                 onClick={sendReply}
                 disabled={sending || !replyText.trim()}
-                className="bg-brand-500 hover:bg-brand-600 text-white p-3 rounded-2xl shadow-md shadow-brand-500/30 disabled:opacity-50 disabled:shadow-none transition-all flex-shrink-0 active:scale-95"
+                className="bg-brand-500 hover:bg-brand-600 text-white p-2.5 rounded-xl shadow-sm shadow-brand-500/30 disabled:opacity-40 disabled:shadow-none transition-all flex-shrink-0 active:scale-95"
               >
-                <Send className="w-4 h-4" />
+                {sending ? (
+                  <span className="block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </div>
+            <p className="text-[10px] text-ink-400 mt-1.5 px-1">
+              Enter to send · Shift+Enter for a new line
+            </p>
           </div>
         </div>
       ) : (
@@ -618,7 +640,11 @@ function Bubble({ msg }) {
             out ? "text-white/70" : "text-ink-400",
           )}
         >
-          {isBot && out && <Sparkles className="w-2.5 h-2.5" />}
+          {isBot && out && (
+            <span className="inline-flex items-center gap-0.5 font-semibold">
+              <Sparkles className="w-2.5 h-2.5" /> Bot ·
+            </span>
+          )}
           <span>{dayjs(msg.createdAt).format("h:mm A")}</span>
         </div>
       </div>
