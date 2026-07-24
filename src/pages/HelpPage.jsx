@@ -211,7 +211,7 @@ export default function HelpPage() {
               <ul className="space-y-2 text-sm text-ink-600">
                 <li>
                   <a href="#" className="hover:text-accent">
-                    • Shopify integration
+                    • Webhooks (Zapier, Make, n8n)
                   </a>
                 </li>
                 <li>

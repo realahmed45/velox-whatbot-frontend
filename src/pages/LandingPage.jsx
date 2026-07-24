@@ -583,7 +583,7 @@ const IG_FEATURES = [
   {
     icon: Reply,
     title: "DM keywords",
-    desc: "Instant replies for 'price', 'sizes', 'link in bio'.",
+    desc: "Instant replies for 'price', 'sizes', 'shipping'.",
   },
   {
     icon: Share2,
@@ -1064,8 +1064,8 @@ const FAQS = [
     a: "Basic plan gets AI · Standard. Pro unlocks faster, smarter responses with longer memory. Either way, the AI is trained on your business — not generic.",
   },
   {
-    q: "Does Botlify work with my existing CRM / Shopify / Stripe?",
-    a: "Webhooks are open out of the box. Native integrations are rolling out monthly — first up: Shopify, Zapier, Make.",
+    q: "Does Botlify connect to my other tools?",
+    a: "Yes — outbound webhooks are open out of the box, so you can pipe every DM, comment, and new lead into Zapier, Make, n8n, or your own server. Mailchimp is built in for email capture.",
   },
   {
     q: "Is there a free plan?",

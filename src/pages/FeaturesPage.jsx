@@ -49,28 +49,28 @@ export default function FeaturesPage() {
       color: "purple",
       title: "Analytics",
       description:
-        "Track performance with detailed analytics. Monitor engagement, conversion rates, and ROI.",
+        "Track DM volume, reply rate, AI-handled %, peak hours and audience growth in a clean dashboard.",
     },
     {
       icon: ShoppingCart,
       color: "pink",
-      title: "Shopify Integration",
+      title: "Scheduled Posts & Drips",
       description:
-        "Native Shopify integration. Sync products, automate order notifications, recover abandoned carts.",
+        "Schedule Instagram posts and stories, and nurture leads with multi-step drip DM sequences.",
     },
     {
       icon: Sparkles,
       color: "yellow",
       title: "AI Tools",
       description:
-        "Generate captions, research hashtags, analyze sentiment, and get reply suggestions with AI.",
+        "Generate captions and research hashtags grouped by reach — powered by the same AI as your bot.",
     },
     {
       icon: Instagram,
       color: "red",
       title: "Instagram Native",
       description:
-        "Built specifically for Instagram. Send DMs, manage inbox, schedule posts, track competitors.",
+        "Built specifically for Instagram: DMs, comment-to-DM, story replies & mentions, and a live inbox.",
     },
   ];
 
