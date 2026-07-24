@@ -24,8 +24,13 @@ export default function TeamPage() {
   const [saving, setSaving] = useState(false);
   const [invites, setInvites] = useState([]);
 
-  const members = workspace?.members || [];
   const owner = workspace?.owner;
+  const ownerId = owner?._id || owner;
+  // The owner may also appear in members — don't render them twice.
+  const members = (workspace?.members || []).filter((m) => {
+    const uid = m.user?._id || m.user;
+    return String(uid) !== String(ownerId);
+  });
 
   const loadInvites = useCallback(async () => {
     if (!workspace?._id) return;

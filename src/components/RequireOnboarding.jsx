@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
+import BrandSpinner from "@/components/ui/BrandSpinner";
 
 const EXEMPT_PATHS = [
   "/dashboard/billing",
@@ -37,7 +38,10 @@ export default function RequireOnboarding({ children }) {
     return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
   }
 
-  if (loading || !workspace) return children;
+  // While the workspace is still loading we don't yet know if Instagram is
+  // connected — show a spinner instead of flashing the dashboard (or the
+  // onboarding redirect) and then correcting it a moment later.
+  if (loading || !workspace) return <BrandSpinner />;
 
   const igConnected = workspace.instagram?.status === "connected";
   const hasChannel = igConnected;
