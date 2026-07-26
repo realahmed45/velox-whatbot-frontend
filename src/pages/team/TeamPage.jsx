@@ -381,9 +381,9 @@ export default function TeamPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 overflow-hidden"
+              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center">
                     <UserPlus className="w-4 h-4" />
@@ -397,7 +397,7 @@ export default function TeamPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="px-5 py-4 space-y-4">
+              <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1">
                 <div>
                   <label className="text-xs font-bold text-ink-700">
                     Email address
@@ -428,7 +428,7 @@ export default function TeamPage() {
                   </p>
                 </div>
               </div>
-              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2">
+              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2 shrink-0">
                 <button
                   onClick={() => setShowModal(false)}
                   className="rounded-xl border border-ink-200 text-ink-700 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition"
@@ -464,9 +464,9 @@ export default function TeamPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 overflow-hidden"
+              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 shrink-0">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center shrink-0">
                     <SlidersHorizontal className="w-4 h-4" />
@@ -487,7 +487,7 @@ export default function TeamPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="px-5 py-4">
+              <div className="px-5 py-4 overflow-y-auto flex-1">
                 <PermissionGrid
                   catalogue={permCatalogue}
                   selected={editPerms}
@@ -499,7 +499,7 @@ export default function TeamPage() {
                   you tick next time they load the app.
                 </p>
               </div>
-              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2">
+              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2 shrink-0">
                 <button
                   onClick={() => setEditMember(null)}
                   className="rounded-xl border border-ink-200 text-ink-700 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition"
