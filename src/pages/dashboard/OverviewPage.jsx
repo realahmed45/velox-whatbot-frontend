@@ -7,6 +7,7 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Instagram,
   MessageSquare,
@@ -30,6 +31,27 @@ import {
   Users2,
 } from "lucide-react";
 import { clsx } from "clsx";
+
+// Which permission each dashboard quick-link needs. Mirrors the sidebar + route
+// guard so agents don't see tiles for areas they can't open. ownerOnly for
+// team/billing; anything not listed is open to all.
+const TILE_ACCESS = {
+  "/dashboard/ai-bot": { perm: "automations" },
+  "/dashboard/automation": { perm: "automations" },
+  "/dashboard/flows": { perm: "automations" },
+  "/dashboard/inbox": { perm: "inbox" },
+  "/dashboard/contacts": { perm: "contacts" },
+  "/dashboard/broadcasts": { perm: "broadcasts" },
+  "/dashboard/analytics": { perm: "analytics" },
+  "/dashboard/scheduled-posts": { perm: "content" },
+  "/dashboard/drip": { perm: "broadcasts" },
+  "/dashboard/hashtags": { perm: "content" },
+  "/dashboard/apps": { perm: "integrations" },
+  "/dashboard/integrations": { perm: "integrations" },
+  "/dashboard/team": { ownerOnly: true },
+  "/dashboard/billing": { ownerOnly: true },
+  "/dashboard/settings": { perm: "settings" },
+};
 
 export default function OverviewPage() {
   const { activeWorkspace } = useAuthStore();
@@ -309,6 +331,32 @@ export default function OverviewPage() {
 
 // ─── Section ─────────────────────────────────────────────────────────────────
 function Section({ title, subtitle, accent = "ink", children }) {
+  const { isOwner, ready, can } = usePermissions();
+
+  // Hide the whole section (heading + grid) when the user can access NONE of
+  // its tiles. We walk the tiles' `to` props and check TILE_ACCESS so a section
+  // like "Settings" (all owner-only) doesn't leave a lone heading for agents.
+  if (ready && !isOwner) {
+    const tos = [];
+    const collect = (node) => {
+      if (!node) return;
+      if (Array.isArray(node)) return node.forEach(collect);
+      if (node.props?.to) tos.push(node.props.to);
+      if (node.props?.children) collect(node.props.children);
+    };
+    collect(children);
+    const gated = tos.filter((to) => TILE_ACCESS[to]); // only tiles we gate
+    if (gated.length) {
+      const anyAllowed = gated.some((to) => {
+        const a = TILE_ACCESS[to];
+        return a.ownerOnly ? false : can(a.perm);
+      });
+      // If every gated tile is denied and there are no ungated tiles, hide it.
+      const hasUngated = tos.some((to) => !TILE_ACCESS[to]);
+      if (!anyAllowed && !hasUngated) return null;
+    }
+  }
+
   const bar =
     {
       brand: "bg-brand-500",
@@ -496,6 +544,15 @@ function StatCard({ icon: Icon, label, value, color }) {
 
 // ─── Action Tile (rectangular) ───────────────────────────────────────────────
 function ActionTile({ icon: Icon, title, desc, to, primary }) {
+  const { isOwner, ready, can } = usePermissions();
+  // Hide tiles the current user can't access (agents). Owners see all. Until
+  // permissions are known we render (owner is the common case; the route guard
+  // still blocks any real navigation).
+  const access = TILE_ACCESS[to];
+  if (ready && !isOwner && access) {
+    const allowed = access.ownerOnly ? false : can(access.perm);
+    if (!allowed) return null;
+  }
   return (
     <Link
       to={to}

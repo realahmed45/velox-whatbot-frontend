@@ -7,6 +7,7 @@ import BrandSpinner from "@/components/ui/BrandSpinner";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 import ConnectChannelGate from "@/components/ConnectChannelGate";
 import RequireOnboarding from "@/components/RequireOnboarding";
+import RequirePermission from "@/components/RequirePermission";
 
 // Layouts
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -177,12 +178,54 @@ export default function App() {
                 }
               >
                 <Route index element={<OverviewPage />} />
-                <Route path="automation" element={<AutomationSetupPage />} />
-                <Route path="flows" element={<CustomFlowsPage />} />
-                <Route path="contacts" element={<ContactsPage />} />
-                <Route path="ai-bot" element={<AiBotPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="billing" element={<BillingPage />} />
+                <Route
+                  path="automation"
+                  element={
+                    <RequirePermission perm="automations">
+                      <AutomationSetupPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="flows"
+                  element={
+                    <RequirePermission perm="automations">
+                      <CustomFlowsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="contacts"
+                  element={
+                    <RequirePermission perm="contacts">
+                      <ContactsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="ai-bot"
+                  element={
+                    <RequirePermission perm="automations">
+                      <AiBotPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <RequirePermission perm="settings">
+                      <SettingsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="billing"
+                  element={
+                    <RequirePermission ownerOnly>
+                      <BillingPage />
+                    </RequirePermission>
+                  }
+                />
                 <Route path="pricing" element={<PricingPage embedded />} />
                 <Route path="guide" element={<GuidePage />} />
                 <Route
@@ -191,43 +234,92 @@ export default function App() {
                 />
                 <Route
                   path="flow-builder/:flowId"
-                  element={<FlowBuilderPage />}
+                  element={
+                    <RequirePermission perm="automations">
+                      <FlowBuilderPage />
+                    </RequirePermission>
+                  }
                 />
 
                 {/* Growth tools */}
                 <Route
                   path="scheduled-posts"
-                  element={<ScheduledPostsPage />}
+                  element={
+                    <RequirePermission perm="content">
+                      <ScheduledPostsPage />
+                    </RequirePermission>
+                  }
                 />
-                <Route path="drip" element={<DripCampaignsPage />} />
-                <Route path="hashtags" element={<HashtagsPage />} />
-                <Route path="integrations" element={<IntegrationsPage />} />
-                <Route path="apps" element={<AppsIntegrationsPage />} />
-                <Route path="team" element={<TeamPage />} />
+                <Route
+                  path="drip"
+                  element={
+                    <RequirePermission perm="broadcasts">
+                      <DripCampaignsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="hashtags"
+                  element={
+                    <RequirePermission perm="content">
+                      <HashtagsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="integrations"
+                  element={
+                    <RequirePermission perm="integrations">
+                      <IntegrationsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="apps"
+                  element={
+                    <RequirePermission perm="integrations">
+                      <AppsIntegrationsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="team"
+                  element={
+                    <RequirePermission ownerOnly>
+                      <TeamPage />
+                    </RequirePermission>
+                  }
+                />
 
                 {/* Channel-gated pages */}
                 <Route
                   path="inbox"
                   element={
-                    <ConnectChannelGate feature="Inbox">
-                      <InboxPage />
-                    </ConnectChannelGate>
+                    <RequirePermission perm="inbox">
+                      <ConnectChannelGate feature="Inbox">
+                        <InboxPage />
+                      </ConnectChannelGate>
+                    </RequirePermission>
                   }
                 />
                 <Route
                   path="broadcasts"
                   element={
-                    <ConnectChannelGate feature="Broadcasts">
-                      <BroadcastsPage />
-                    </ConnectChannelGate>
+                    <RequirePermission perm="broadcasts">
+                      <ConnectChannelGate feature="Broadcasts">
+                        <BroadcastsPage />
+                      </ConnectChannelGate>
+                    </RequirePermission>
                   }
                 />
                 <Route
                   path="analytics"
                   element={
-                    <ConnectChannelGate feature="Analytics">
-                      <AnalyticsPage />
-                    </ConnectChannelGate>
+                    <RequirePermission perm="analytics">
+                      <ConnectChannelGate feature="Analytics">
+                        <AnalyticsPage />
+                      </ConnectChannelGate>
+                    </RequirePermission>
                   }
                 />
 

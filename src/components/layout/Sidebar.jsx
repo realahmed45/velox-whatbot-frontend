@@ -35,6 +35,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import { clsx } from "clsx";
 
 const COLLAPSE_KEY = "botlify-sidebar-collapsed";
@@ -118,25 +119,14 @@ export default function Sidebar({ onNavigate }) {
   const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
 
-  // Work out the current user's role + permissions in this workspace so agents
-  // only see the areas they've been granted. Owners see everything.
-  const myId = String(user?._id || user?.id || "");
-  const ownerId = String(workspace?.owner?._id || workspace?.owner || "");
-  const isOwner = myId && ownerId && myId === ownerId;
-  const myMember = (workspace?.members || []).find(
-    (m) => String(m.user?._id || m.user) === myId,
-  );
-  const myPerms = myMember?.permissions || [];
-  const canSee = (item) => {
-    if (isOwner) return true;
-    if (item.ownerOnly) return false;
-    if (!item.perm) return true; // Dashboard etc.
-    return myPerms.includes(item.perm);
-  };
+  // Agents only see the areas they've been granted; owners see everything.
+  // Shared with the route guard (RequirePermission) via usePermissions so the
+  // sidebar and the actual access checks can never disagree.
+  const { canItem } = usePermissions();
   // Filter nav to what this user can access; drop now-empty sections.
   const NAV_VISIBLE = NAV.map((g) => ({
     ...g,
-    items: g.items.filter(canSee),
+    items: g.items.filter(canItem),
   })).filter((g) => g.items.length > 0);
 
   const [collapsed, setCollapsed] = useState(() => {
