@@ -1,9 +1,9 @@
 /**
  * BotlifyMark — Botlify's brand mark.
  *
- * A "b" monogram orbited by a tilted ring and a spark — the letter stays
- * grounded while the orbit says "out of this world / always in motion." Bold,
- * ownable, and razor-sharp from a 16px favicon to the hero.
+ * An automation loop (a circular arrow) wrapped around a lightning bolt:
+ * "automated + instant." It says what the product does — triggers that fire
+ * automatically — and stays razor-sharp from a 16px favicon to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -40,46 +40,18 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
         />
       )}
 
-      {/* tilted orbit ring behind the letter */}
-      <ellipse
-        cx="24"
-        cy="24"
-        rx="17"
-        ry="6.5"
+      {/* automation loop — an open circular arrow */}
+      <path
+        d="M33.5 20 A11 11 0 1 0 34.5 27.5"
         fill="none"
         stroke={glyph}
-        strokeWidth="2.4"
-        opacity="0.55"
-        transform="rotate(-28 24 24)"
+        strokeWidth="3.4"
+        strokeLinecap="round"
       />
+      <path d="M31.5 13.5 L35.6 20.6 L27.7 21 Z" fill={glyph} />
 
-      {/* the "b" — stem + bowl, counter cut so the tile shows through */}
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={glyph}
-        d="
-          M15.5 10
-          a2.8 2.8 0 0 1 2.8 2.8
-          V19
-          A9.2 9.2 0 0 1 24 17.2
-          A9.6 9.6 0 0 1 33.6 26.8
-          A9.6 9.6 0 0 1 24 36.4
-          A9.2 9.2 0 0 1 18.3 34.6
-          V35
-          a2.8 2.8 0 0 1 -5.6 0
-          V12.8
-          A2.8 2.8 0 0 1 15.5 10
-          Z
-          M24 22.3
-          a4.5 4.5 0 1 0 0 9
-          a4.5 4.5 0 0 0 0 -9
-          Z
-        "
-      />
-
-      {/* spark / satellite on the orbit */}
-      <circle cx="38" cy="14" r="2.6" fill={glyph} />
+      {/* lightning bolt — instant / triggered */}
+      <path d="M26.5 14 L18.5 25 H23.3 L21.5 32.5 L29.5 21 H24.6 Z" fill={glyph} />
 
       <defs>
         <linearGradient
