@@ -22,12 +22,12 @@ import {
   Zap,
   Bot,
   Users,
+  Users2,
   TrendingUp,
   Droplet,
   CalendarClock,
   Megaphone,
   Heart,
-  Share2,
   Clock,
   Shield,
   Rocket,
@@ -38,9 +38,7 @@ import {
   Workflow,
   Inbox,
   BarChart3,
-  AtSign,
   Reply,
-  Tag,
   Instagram,
 } from "lucide-react";
 import {
@@ -608,56 +606,59 @@ function TrustBar() {
 /* ────────────────────────────────────────────────────────────
  * Instagram features section
  * ──────────────────────────────────────────────────────────── */
+// Mirrors the real product: the Smart Automations types + every major
+// dashboard component (AI Bot, Custom Flows, Inbox, Contacts, Broadcasts,
+// Drips, Scheduled Posts, Hashtags, Analytics, Team).
 const IG_FEATURES = [
   {
-    icon: Hash,
+    icon: Bot,
+    title: "AI Bot",
+    desc: "An AI trained on your business answers DMs, comments & stories 24/7.",
+  },
+  {
+    icon: Zap,
+    title: "Smart Automations",
+    desc: "Comment-to-DM, keyword replies, story triggers, welcome messages.",
+  },
+  {
+    icon: Workflow,
+    title: "Custom Flows",
+    desc: "Drag-and-drop, multi-step conversation builder — no code.",
+  },
+  {
+    icon: MessageCircle,
     title: "Comment → DM",
     desc: "Auto-DM anyone who comments your keyword on a post or reel.",
   },
   {
+    icon: Reply,
+    title: "DM keyword replies",
+    desc: "Instant answers for 'price', 'sizes', 'shipping' and more.",
+  },
+  {
     icon: Heart,
     title: "Story replies & mentions",
-    desc: "Auto-respond when someone replies to or tags your story.",
+    desc: "Auto-respond when someone replies to or mentions your story.",
   },
   {
-    icon: Bot,
-    title: "AI chatbot",
-    desc: "Smart conversations that close sales in your DMs.",
+    icon: Send,
+    title: "Welcome & default replies",
+    desc: "Greet first-time DMs and never leave a message unanswered.",
   },
   {
-    icon: Reply,
-    title: "DM keywords",
-    desc: "Instant replies for 'price', 'sizes', 'shipping'.",
+    icon: Inbox,
+    title: "Shared Inbox",
+    desc: "One place for every conversation — take over from the bot anytime.",
   },
   {
-    icon: Share2,
-    title: "Share-to-story trigger",
-    desc: "Reward customers who share your post to their story.",
-  },
-  {
-    icon: AtSign,
-    title: "Mention tracker",
-    desc: "Catch every brand mention and reply automatically.",
+    icon: Users,
+    title: "Contacts & tagging",
+    desc: "Auto-saved audience you can segment with tags and notes.",
   },
   {
     icon: Megaphone,
-    title: "Bulk broadcasts",
-    desc: "Send promos & updates to thousands of DM subscribers.",
-  },
-  {
-    icon: Workflow,
-    title: "Visual flow builder",
-    desc: "Drag-and-drop conversation flows — no coding needed.",
-  },
-  {
-    icon: Tag,
-    title: "Contact tagging",
-    desc: "Segment followers and send targeted campaigns.",
-  },
-  {
-    icon: BarChart3,
-    title: "Advanced analytics",
-    desc: "Track replies, leads and engagement in real time.",
+    title: "Broadcasts",
+    desc: "Send a promo or update to a whole segment in one click.",
   },
   {
     icon: Droplet,
@@ -670,9 +671,19 @@ const IG_FEATURES = [
     desc: "Plan and auto-publish your Instagram content.",
   },
   {
-    icon: Inbox,
-    title: "Team inbox",
-    desc: "Hand off conversations to your team with granular access.",
+    icon: Hash,
+    title: "Hashtag research",
+    desc: "AI-picked hashtags grouped by reach to grow your posts.",
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics",
+    desc: "Track replies, reply rate and engagement in real time.",
+  },
+  {
+    icon: Users2,
+    title: "Team & permissions",
+    desc: "Invite teammates with granular, per-area access.",
   },
 ];
 

@@ -1,9 +1,9 @@
 /**
  * BotlifyMark — Botlify's brand mark.
  *
- * An automation loop (a circular arrow) wrapped around a lightning bolt:
- * "automated + instant." It says what the product does — triggers that fire
- * automatically — and stays razor-sharp from a 16px favicon to the hero.
+ * A friendly bot face (eyes + smile) wrapped by an automation loop arrow —
+ * "a bot that replies, on autopilot." It fuses the two things Botlify is about:
+ * the bot and the automation. Razor-sharp from a 16px favicon to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -40,18 +40,26 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
         />
       )}
 
-      {/* automation loop — an open circular arrow */}
+      {/* automation loop circling the face */}
       <path
-        d="M33.5 20 A11 11 0 1 0 34.5 27.5"
+        d="M34.5 17.5 A11.5 11.5 0 1 0 35.5 26"
         fill="none"
         stroke={glyph}
-        strokeWidth="3.4"
+        strokeWidth="2.8"
         strokeLinecap="round"
       />
-      <path d="M31.5 13.5 L35.6 20.6 L27.7 21 Z" fill={glyph} />
+      <path d="M32.8 11.5 L36.4 18 L29.6 18.4 Z" fill={glyph} />
 
-      {/* lightning bolt — instant / triggered */}
-      <path d="M26.5 14 L18.5 25 H23.3 L21.5 32.5 L29.5 21 H24.6 Z" fill={glyph} />
+      {/* bot face — two eyes + a smile */}
+      <circle cx="20.3" cy="22.5" r="1.9" fill={glyph} />
+      <circle cx="27.7" cy="22.5" r="1.9" fill={glyph} />
+      <path
+        d="M20 28 q4 3 8 0"
+        stroke={glyph}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        fill="none"
+      />
 
       <defs>
         <linearGradient
