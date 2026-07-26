@@ -1,10 +1,9 @@
 /**
  * BotlifyMark — Botlify's brand mark.
  *
- * A speech bubble with a lightning bolt struck through it: "instant, automated
- * messaging." Bold, ownable, and razor-sharp at every size — the bolt reads
- * clearly all the way down to a 16px favicon. The bubble tail sits bottom-left
- * so it's unmistakably a message/DM.
+ * A "b" monogram orbited by a tilted ring and a spark — the letter stays
+ * grounded while the orbit says "out of this world / always in motion." Bold,
+ * ownable, and razor-sharp from a 16px favicon to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -13,8 +12,8 @@
  */
 export default function BotlifyMark({ size = 36, className = "", mono = false }) {
   const gid = "blf_g";
-  const bubble = mono ? "currentColor" : `url(#${gid})`;
-  const bolt = mono ? "#fff" : "#fff";
+  const tile = mono ? "currentColor" : `url(#${gid})`;
+  const glyph = "#fff";
 
   return (
     <svg
@@ -27,32 +26,60 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       role="img"
       aria-label="Botlify"
     >
-      {/* speech bubble with a bottom-left tail */}
-      <path
-        d="M13 8 H35
-           A9.5 9.5 0 0 1 44.5 17.5 V28.5
-           A9.5 9.5 0 0 1 35 38 H23.5
-           L15 44.8
-           A1 1 0 0 1 13.4 44 V37.9
-           A9.5 9.5 0 0 1 4 28.5 V17.5
-           A9.5 9.5 0 0 1 13 8 Z"
-        fill={bubble}
-      />
-
-      {/* subtle top sheen for depth */}
+      {/* rounded tile */}
+      <rect x="2" y="2" width="44" height="44" rx="13" fill={tile} />
       {!mono && (
-        <path
-          d="M13 8 H35 A9.5 9.5 0 0 1 44.5 17.5 V21 H4 V17.5 A9.5 9.5 0 0 1 13 8 Z"
-          fill="#fff"
-          opacity="0.14"
+        <rect
+          x="2"
+          y="2"
+          width="44"
+          height="44"
+          rx="13"
+          fill="url(#blf_sheen)"
+          opacity="0.16"
         />
       )}
 
-      {/* lightning bolt = instant / automated */}
-      <path
-        d="M27 13.5 L18 25.5 H23.2 L21 34 L31 21.5 H25.4 Z"
-        fill={bolt}
+      {/* tilted orbit ring behind the letter */}
+      <ellipse
+        cx="24"
+        cy="24"
+        rx="17"
+        ry="6.5"
+        fill="none"
+        stroke={glyph}
+        strokeWidth="2.4"
+        opacity="0.55"
+        transform="rotate(-28 24 24)"
       />
+
+      {/* the "b" — stem + bowl, counter cut so the tile shows through */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        fill={glyph}
+        d="
+          M15.5 10
+          a2.8 2.8 0 0 1 2.8 2.8
+          V19
+          A9.2 9.2 0 0 1 24 17.2
+          A9.6 9.6 0 0 1 33.6 26.8
+          A9.6 9.6 0 0 1 24 36.4
+          A9.2 9.2 0 0 1 18.3 34.6
+          V35
+          a2.8 2.8 0 0 1 -5.6 0
+          V12.8
+          A2.8 2.8 0 0 1 15.5 10
+          Z
+          M24 22.3
+          a4.5 4.5 0 1 0 0 9
+          a4.5 4.5 0 0 0 0 -9
+          Z
+        "
+      />
+
+      {/* spark / satellite on the orbit */}
+      <circle cx="38" cy="14" r="2.6" fill={glyph} />
 
       <defs>
         <linearGradient
@@ -66,6 +93,17 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
           <stop stopColor="#ff8a4c" />
           <stop offset="0.5" stopColor="#ff5722" />
           <stop offset="1" stopColor="#e13c08" />
+        </linearGradient>
+        <linearGradient
+          id="blf_sheen"
+          x1="6"
+          y1="4"
+          x2="26"
+          y2="30"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#fff" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
       </defs>
     </svg>
