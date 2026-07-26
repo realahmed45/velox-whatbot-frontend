@@ -4,6 +4,7 @@
  * Calls /inbox?channel=instagram so WhatsApp conversations don't bleed in.
  */
 import { useEffect, useRef, useState } from "react";
+import BotlifyMark from "@/components/BotlifyMark";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useInboxStore } from "@/store/inboxStore";
@@ -571,11 +572,7 @@ export default function IgInboxPage() {
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 rounded-3xl bg-brand-500/20 blur-xl" />
               <div className="relative w-24 h-24 rounded-3xl bg-white ring-1 ring-brand-100 shadow-xl shadow-brand-500/10 flex items-center justify-center animate-float">
-                <img
-                  src="/logo.png"
-                  alt=""
-                  className="w-14 object-contain drop-shadow"
-                />
+                <BotlifyMark size={56} className="drop-shadow" />
               </div>
             </div>
             <p className="text-ink-900 font-black text-xl tracking-tight">

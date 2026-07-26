@@ -33,6 +33,7 @@ import {
   Webhook,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import BotlifyMark from "@/components/BotlifyMark";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -187,11 +188,7 @@ export default function Sidebar({ onNavigate }) {
           onClick={onNavigate}
           className="flex items-center gap-2.5 min-w-0"
         >
-          <img
-            src="/logo.png"
-            alt="Botlify"
-            className="w-9 h-9 flex-shrink-0 object-contain drop-shadow"
-          />
+          <BotlifyMark size={34} className="flex-shrink-0 drop-shadow" />
           {!collapsed && (
             <div className="flex flex-col leading-none min-w-0">
               <span className="font-black text-white text-[17px] tracking-tight">

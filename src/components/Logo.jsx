@@ -1,12 +1,14 @@
+import BotlifyMark from "@/components/BotlifyMark";
+
 /**
- * Botlify logo — orange robot mascot + wordmark.
- * Renders the actual mascot image (public/logo.png).
- * Sizes: sm (28px), md (36px), lg (44px), xl (64px), 2xl (88px)
+ * Botlify logo — crisp SVG robot mark + wordmark.
+ * Uses the vector BotlifyMark (razor-sharp at every size).
  *
  * Props:
+ *  - size: sm (28px), md (36px), lg (44px), xl (64px), 2xl (88px)
  *  - showWordmark: show the "Botlify" text (default true)
- *  - dark: use light wordmark text for dark backgrounds (default false)
- *  - animated: gently float/bob the mascot (wordmark stays steady)
+ *  - dark: light wordmark text for dark backgrounds (default false)
+ *  - animated: gently float the mark
  */
 export default function Logo({
   size = "md",
@@ -16,24 +18,21 @@ export default function Logo({
   className = "",
 }) {
   const sizes = {
-    sm: { img: "w-7 h-7", text: "text-lg" },
-    md: { img: "w-9 h-9", text: "text-2xl" },
-    lg: { img: "w-11 h-11", text: "text-[1.7rem]" },
-    xl: { img: "w-16 h-16", text: "text-4xl" },
-    "2xl": { img: "w-20 h-20", text: "text-5xl" },
+    sm: { px: 28, text: "text-lg" },
+    md: { px: 34, text: "text-2xl" },
+    lg: { px: 42, text: "text-[1.7rem]" },
+    xl: { px: 60, text: "text-4xl" },
+    "2xl": { px: 84, text: "text-5xl" },
   };
   const s = sizes[size] || sizes.md;
 
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
-      <img
-        src="/logo.png"
-        alt="Botlify"
-        className={`${s.img} object-contain shrink-0 drop-shadow-sm ${
+      <BotlifyMark
+        size={s.px}
+        className={`shrink-0 ${
           animated ? "animate-float will-change-transform" : ""
         }`}
-        loading="eager"
-        decoding="async"
       />
       {showWordmark && (
         <span

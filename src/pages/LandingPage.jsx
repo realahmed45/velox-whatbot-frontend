@@ -54,6 +54,7 @@ import {
 } from "recharts";
 import * as THREE from "three";
 import Logo from "@/components/Logo";
+import BotlifyMark from "@/components/BotlifyMark";
 
 // vanta.net reads `window.THREE` at module-evaluation time, so it MUST exist
 // before the vanta module is imported. We set it here, then dynamically import
@@ -272,39 +273,86 @@ function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-16 sm:pb-24">
         <div className="grid lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-xs font-semibold text-ink-700">
-              <Sparkles className="w-3.5 h-3.5 text-brand-500" />
-              Instagram automation platform
-              <span className="ml-1 text-ink-400">·</span>
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur border border-brand-200 shadow-sm text-xs font-bold text-ink-700">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
+              </span>
+              Instagram automation, on autopilot
+              <span className="text-ink-300">·</span>
               <InstagramMark className="w-3.5 h-3.5 text-brand-500" />
             </span>
 
-            <h1 className="mt-5 text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-ink-950 leading-[1.02]">
+            <h1 className="mt-5 text-[2.7rem] leading-[1.02] sm:text-6xl lg:text-[4.6rem] font-black tracking-tighter text-ink-950">
               Turn every Instagram{" "}
-              <span className="text-brand-500">chat into a customer.</span>
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
+                  chat into a customer
+                </span>
+                <svg
+                  className="absolute -bottom-1 left-0 w-full"
+                  height="10"
+                  viewBox="0 0 300 10"
+                  fill="none"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 7 C 80 2, 220 2, 298 6"
+                    stroke="#ff5722"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    opacity="0.5"
+                  />
+                </svg>
+              </span>
+              .
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
-              Botlify automates your DMs, comments, story replies, broadcasts and AI replies — on autopilot. Set up once. Sells while you sleep.
+              Botlify replies to your DMs, comments and story mentions — instantly,
+              24/7, in your voice. Capture every lead, answer every question, and
+              close sales while you sleep.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Link
                 to="/register"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition shadow-glow"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition-all shadow-glow hover:shadow-glow-lg hover:-translate-y-0.5"
               >
-                Start free — 3 days
-                <ArrowRight className="w-4 h-4" />
+                Start your 3-day free trial
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <a
                 href="#features"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-white border border-ink-200 text-ink-800 font-bold text-sm hover:border-brand-300 hover:text-brand-600 transition"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white border border-ink-200 text-ink-800 font-bold text-[15px] hover:border-brand-300 hover:text-brand-600 transition"
               >
                 <PlayCircle className="w-4 h-4" /> See what it automates
               </a>
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-500">
+            {/* Punchy proof stats */}
+            <div className="mt-9 grid grid-cols-3 gap-3 max-w-lg">
+              {[
+                { n: "24/7", l: "Always replying" },
+                { n: "<5s", l: "Avg. reply time" },
+                { n: "5 min", l: "To set up" },
+              ].map((s) => (
+                <div
+                  key={s.l}
+                  className="rounded-xl border border-ink-100 bg-white/70 backdrop-blur px-3 py-3 text-center"
+                >
+                  <p className="text-xl sm:text-2xl font-black text-ink-950">
+                    {s.n}
+                  </p>
+                  <p className="text-[11px] text-ink-500 mt-0.5 font-medium">
+                    {s.l}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-500">
               <span className="inline-flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-brand-500" /> 3-day free trial
               </span>
@@ -312,7 +360,7 @@ function Hero() {
                 <Check className="w-3.5 h-3.5 text-brand-500" /> Cancel anytime
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-500" /> Set up in minutes
+                <Check className="w-3.5 h-3.5 text-brand-500" /> No code needed
               </span>
             </div>
           </div>
@@ -381,12 +429,13 @@ function IgChatMockup() {
   return (
     <div className="relative h-[460px] sm:h-[540px] flex items-center justify-center">
       {/* Mascot peeking above the phone — kept clear of the AI-replied badge */}
-      <img
-        src="/logo.png"
-        alt=""
+      <div
         aria-hidden="true"
-        className="pointer-events-none select-none absolute -top-10 right-2 sm:right-0 w-24 sm:w-32 object-contain z-0 animate-float drop-shadow-xl"
-      />
+        className="pointer-events-none select-none absolute -top-10 right-2 sm:right-0 z-0 animate-float drop-shadow-xl"
+      >
+        <BotlifyMark size={112} className="sm:hidden" />
+        <BotlifyMark size={128} className="hidden sm:block" />
+      </div>
 
       {/* Phone */}
       <div className="relative z-10 w-[288px] sm:w-[320px] rounded-[2.4rem] bg-ink-950 p-2.5 shadow-2xl ring-1 ring-black/5">
@@ -397,11 +446,9 @@ function IgChatMockup() {
           <div className="flex items-center gap-3 px-3.5 pt-6 pb-2.5 border-b border-ink-100 bg-white">
             <ChevronLeft className="w-5 h-5 text-ink-900 shrink-0" />
             <div className="relative shrink-0">
-              <img
-                src="/logo.png"
-                alt=""
-                className="w-9 h-9 rounded-full object-contain bg-white ring-1 ring-ink-200 p-0.5"
-              />
+              <div className="w-9 h-9 rounded-full bg-white ring-1 ring-ink-200 flex items-center justify-center overflow-hidden">
+                <BotlifyMark size={30} />
+              </div>
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -419,11 +466,9 @@ function IgChatMockup() {
           <div className="px-3 py-3 h-[330px] sm:h-[392px] overflow-hidden bg-white flex flex-col">
             {/* meta row */}
             <div className="flex flex-col items-center gap-1.5 pb-3 text-center">
-              <img
-                src="/logo.png"
-                alt=""
-                className="w-12 h-12 rounded-full object-contain bg-white ring-1 ring-ink-100 p-1"
-              />
+              <div className="w-12 h-12 rounded-full bg-white ring-1 ring-ink-100 flex items-center justify-center">
+                <BotlifyMark size={38} />
+              </div>
               <p className="text-xs font-bold text-ink-800">yourbrand</p>
               <p className="text-[10px] text-ink-400">
                 Instagram · Automated by Botlify
@@ -446,11 +491,9 @@ function IgChatMockup() {
                   >
                     {!isMe &&
                       (lastInGroup ? (
-                        <img
-                          src="/logo.png"
-                          alt=""
-                          className="w-5 h-5 rounded-full object-contain bg-white ring-1 ring-ink-100 shrink-0"
-                        />
+                        <span className="w-5 h-5 rounded-full bg-white ring-1 ring-ink-100 shrink-0 flex items-center justify-center overflow-hidden">
+                          <BotlifyMark size={16} />
+                        </span>
                       ) : (
                         <span className="w-5 shrink-0" />
                       ))}
@@ -1119,12 +1162,12 @@ function FinalCTA() {
             <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-brand-600 blur-3xl" />
           </div>
           <div className="relative">
-            <img
-              src="/logo.png"
-              alt=""
+            <div
               aria-hidden="true"
-              className="mx-auto w-24 sm:w-28 object-contain mb-5 animate-float drop-shadow-2xl"
-            />
+              className="mx-auto w-fit mb-5 animate-float drop-shadow-2xl"
+            >
+              <BotlifyMark size={104} />
+            </div>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white max-w-3xl mx-auto">
               Stop replying. Start automating.
             </h2>

@@ -1,8 +1,10 @@
+import BotlifyMark from "@/components/BotlifyMark";
+
 /**
  * BrandSpinner — Botlify's signature loading animation.
  *
- * A dual orange ring that spins around the Botlify logo, on brand
- * (#FF6B2C). Used as the Suspense fallback and anywhere a full-screen
+ * A dual orange ring that spins around the Botlify robot mark, on brand
+ * (#ff5722). Used as the Suspense fallback and anywhere a full-screen
  * or inline loading state is needed.
  */
 export default function BrandSpinner({ fullScreen = true, label = "Loading" }) {
@@ -20,11 +22,7 @@ export default function BrandSpinner({ fullScreen = true, label = "Loading" }) {
         />
         {/* logo core */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src="/logo.png"
-            alt="Botlify"
-            className="w-7 h-7 object-contain animate-pulse"
-          />
+          <BotlifyMark size={28} className="animate-pulse" />
         </div>
       </div>
       {label && (

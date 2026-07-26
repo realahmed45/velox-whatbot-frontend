@@ -1,6 +1,7 @@
 import { Outlet, Link } from "react-router-dom";
 import { Sparkles, Shield, Check, Zap, ArrowLeft } from "lucide-react";
 import Logo from "@/components/Logo";
+import BotlifyMark from "@/components/BotlifyMark";
 
 const POINTS = [
   "AI chatbot that handles every DM",
@@ -27,10 +28,9 @@ export default function AuthLayout() {
           to="/"
           className="relative flex flex-col items-center gap-4 group"
         >
-          <img
-            src="/logo.png"
-            alt="Botlify"
-            className="w-40 xl:w-48 object-contain animate-float drop-shadow-2xl transition-transform group-hover:scale-105"
+          <BotlifyMark
+            size={128}
+            className="animate-float drop-shadow-2xl transition-transform group-hover:scale-105"
           />
           <span className="text-5xl xl:text-6xl font-black tracking-tight">
             Botl<span className="text-brand-500">ify</span>
