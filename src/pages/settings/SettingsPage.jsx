@@ -196,7 +196,16 @@ function SecuritySettings() {
 
         {hasPassword && (
           <div>
-            <label className="label">Current password</label>
+            <div className="flex items-center justify-between">
+              <label className="label">Current password</label>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-[11px] font-semibold text-brand-600 hover:underline"
+              >
+                Forgot your password?
+              </button>
+            </div>
             <div className="relative">
               <input
                 type={show.current ? "text" : "password"}

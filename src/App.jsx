@@ -149,11 +149,7 @@ export default function App() {
                 />
                 <Route
                   path="/forgot-password"
-                  element={
-                    <GuestRoute>
-                      <ForgotPasswordPage />
-                    </GuestRoute>
-                  }
+                  element={<ForgotPasswordPage />}
                 />
                 <Route
                   path="/reset-password"

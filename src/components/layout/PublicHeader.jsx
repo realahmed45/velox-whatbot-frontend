@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { ChevronDown, LayoutDashboard } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -11,17 +11,30 @@ import Logo from "@/components/Logo";
  * Anchor links point at "/#section" so they work from any page (navigate home
  * then scroll); real routes use <Link>.
  */
-const NAV_LINKS = [
+const FULL_NAV = [
   { label: "Features", href: "/#features", anchor: true },
   { label: "Results", href: "/#results", anchor: true },
   { label: "Pricing", to: "/pricing" },
   { label: "Guide", to: "/guide" },
 ];
 
+// On pages that AREN'T the landing page (pricing, guide), the home-anchor links
+// (#features / #results) would jump away — so keep it minimal: just Home +
+// Pricing, nothing more.
+const MINIMAL_NAV = [
+  { label: "Home", to: "/" },
+  { label: "Pricing", to: "/pricing" },
+];
+
 export default function PublicHeader() {
   const token = useAuthStore((s) => s.token);
   const isAuthed = !!token;
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  // Simplified nav on the standalone marketing pages.
+  const minimal = pathname === "/pricing" || pathname === "/guide";
+  const NAV_LINKS = minimal ? MINIMAL_NAV : FULL_NAV;
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-ink-100">
