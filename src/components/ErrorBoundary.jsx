@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { AlertTriangle } from "lucide-react";
+import { reportError } from "@/utils/errorMonitor";
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -12,10 +13,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.error("[ErrorBoundary]", error, info);
-    }
+    reportError(error, { componentStack: info?.componentStack });
   }
 
   reset = () => {

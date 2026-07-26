@@ -99,7 +99,9 @@ export default function Modal({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className={clsx(
-              "relative w-full bg-white rounded-lg shadow-card-lg overflow-hidden focus:outline-none",
+              // Flex column capped at 90vh so tall content never pushes the
+              // header/footer off-screen — the body scrolls instead.
+              "relative w-full bg-white rounded-lg shadow-card-lg overflow-hidden focus:outline-none flex flex-col max-h-[90vh]",
               sizes[size],
             )}
             role="dialog"
@@ -107,7 +109,7 @@ export default function Modal({
             aria-labelledby={title ? "modal-title" : undefined}
           >
             {(title || onClose) && (
-              <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b border-ink-100">
+              <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b border-ink-100 shrink-0">
                 <div>
                   {title && (
                     <h2
@@ -132,9 +134,9 @@ export default function Modal({
                 )}
               </div>
             )}
-            <div className="px-6 py-5">{children}</div>
+            <div className="px-6 py-5 overflow-y-auto flex-1">{children}</div>
             {footer && (
-              <div className="px-6 py-4 border-t border-ink-100 bg-ink-50/60 flex items-center justify-end gap-2">
+              <div className="px-6 py-4 border-t border-ink-100 bg-ink-50/60 flex items-center justify-end gap-2 shrink-0">
                 {footer}
               </div>
             )}

@@ -104,10 +104,12 @@ const NAV = [
 
 function planLabel(id) {
   const map = {
-    free: "Free Plan",
+    // No free tier — an account without an active paid plan is on trial.
+    free: "Trial",
+    trial: "Trial",
     ig_starter: "Basic Plan",
     ig_pro: "Pro Plan",
-    starter: "Starter",
+    starter: "Basic Plan",
     growth: "Basic Plan",
     scale: "Pro Plan",
   };

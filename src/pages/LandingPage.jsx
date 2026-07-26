@@ -1036,7 +1036,7 @@ function PricingTeaser() {
           })}
         </div>
         <p className="mt-6 text-center text-xs text-ink-500">
-          Both plans include a 3-day free trial · No credit card required
+          Both plans include a 3-day free trial · Cancel anytime before it ends
         </p>
       </div>
     </section>
