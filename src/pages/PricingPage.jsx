@@ -90,27 +90,34 @@ export default function PricingPage({ embedded = false }) {
 
   const handlePick = async (plan) => {
     if (!plan) return;
+    // Not logged in → register first, carrying the chosen plan so we can send
+    // them to checkout right after signup.
     if (!isAuthenticated) {
       navigate(`/register?plan=${plan.key}&channel=instagram`);
       return;
     }
-    if (embedded) {
-      setSelecting(plan.key);
-      try {
-        await api.post("/billing/select-plan", {
-          plan: plan.key,
-          billingCycle: cycle,
-        });
-        toast.success(`Switched to ${plan.name}`);
-        setTimeout(() => window.location.reload(), 800);
-      } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to switch plan");
-      } finally {
-        setSelecting(null);
+
+    // Logged in → start the Lemon Squeezy checkout (3-day trial, card upfront).
+    // The backend returns a hosted checkout URL we redirect to.
+    setSelecting(plan.key);
+    try {
+      const billingCycle = cycle === "yearly" ? "annual" : "monthly";
+      const { data } = await api.post("/billing/lemonsqueezy/checkout", {
+        plan: plan.key,
+        billingCycle,
+      });
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
       }
-      return;
+      throw new Error("No checkout URL returned");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+          "Couldn't start checkout. Please try again.",
+      );
+      setSelecting(null);
     }
-    navigate(`/onboarding/pricing?channel=instagram&plan=${plan.key}`);
   };
 
   return (
@@ -190,7 +197,7 @@ export default function PricingPage({ embedded = false }) {
 
             <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-brand-500" />
-              Secure checkout · Easypaisa · JazzCash · Card · Manual transfer
+              Secure card checkout · 3-day free trial · Cancel anytime
             </div>
           </>
         )}

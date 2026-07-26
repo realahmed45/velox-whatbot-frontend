@@ -8,6 +8,8 @@ import {
   CreditCard,
   AlertCircle,
   Calendar,
+  Settings2,
+  Loader2,
 } from "lucide-react";
 import { clsx } from "clsx";
 import PricingPage from "../PricingPage";
@@ -16,29 +18,70 @@ import PageHeader from "@/components/ui/PageHeader";
 export default function BillingPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
+  const load = () =>
     api
       .get("/billing/subscription")
       .then(({ data }) => setData(data))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+  useEffect(() => {
+    load();
   }, []);
 
-  // Show a toast when returning from the Xendit hosted checkout.
+  // Toast when returning from the Lemon Squeezy hosted checkout. The webhook
+  // activates the plan async, so refetch a moment later to reflect it.
   useEffect(() => {
-    const billing = searchParams.get("billing");
+    const billing = searchParams.get("billing") || searchParams.get("checkout");
     if (billing === "success") {
-      toast.success("Payment received — your subscription is being activated.");
+      toast.success("Payment received — activating your subscription…");
+      setTimeout(load, 2500);
     } else if (billing === "failed") {
-      toast.error("Checkout was cancelled or failed. No card was charged.");
+      toast.error("Checkout was cancelled. No card was charged.");
     }
-    if (billing) {
+    if (searchParams.get("billing") || searchParams.get("checkout")) {
       searchParams.delete("billing");
+      searchParams.delete("checkout");
       setSearchParams(searchParams, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data } = await api.get("/billing/lemonsqueezy/portal");
+      if (data?.url) window.location.href = data.url;
+      else throw new Error();
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Couldn't open the billing portal.",
+      );
+      setPortalLoading(false);
+    }
+  };
+
+  const cancelPlan = async () => {
+    if (
+      !window.confirm(
+        "Cancel your subscription? You'll keep access until the end of the current billing period.",
+      )
+    )
+      return;
+    setCancelling(true);
+    try {
+      await api.post("/billing/cancel");
+      toast.success("Subscription will cancel at the end of your period.");
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Couldn't cancel.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-8 text-ink-400 text-sm">Loading…</div>;
@@ -50,6 +93,9 @@ export default function BillingPage() {
   const planId = sub?.plan || limits.planId || "free";
   const status = sub?.status || "trialing";
   const isTrial = status === "trialing" || planId === "free";
+  // A live paid/trialing subscription we can manage via the LS portal.
+  const hasManageable = !!sub?.lemonSqueezySubscriptionId && planId !== "free";
+  const cancelPending = sub?.cancelAtPeriodEnd;
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
@@ -76,15 +122,21 @@ export default function BillingPage() {
         <div className="flex-1">
           <h2 className="font-semibold text-ink-900">
             {isTrial
-              ? "You're on the free trial"
+              ? status === "trialing"
+                ? "You're on your 3-day free trial"
+                : "Choose a plan to get started"
               : `${formatPlan(planId)} · ${capitalize(status)}`}
           </h2>
           <p className="text-sm text-ink-500 mt-0.5">
-            {isTrial
-              ? "Pick a plan below to unlock unlimited Instagram automations and premium AI."
-              : sub?.currentPeriodEnd
-                ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
-                : "Subscription active."}
+            {status === "trialing" && sub?.trialEndsAt
+              ? `Trial ends ${new Date(sub.trialEndsAt).toLocaleDateString()} — your card is charged then unless you cancel.`
+              : isTrial
+                ? "Pick a plan below to unlock your Instagram automations."
+                : cancelPending
+                  ? `Cancels on ${sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : "period end"} — you keep access until then.`
+                  : sub?.currentPeriodEnd
+                    ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
+                    : "Subscription active."}
           </p>
         </div>
         {sub?.billingCycle && (
@@ -94,6 +146,36 @@ export default function BillingPage() {
           </span>
         )}
       </div>
+
+      {/* Manage buttons for an active card subscription */}
+      {hasManageable && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            onClick={openPortal}
+            disabled={portalLoading}
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 text-ink-800 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition disabled:opacity-50"
+          >
+            {portalLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Settings2 className="w-4 h-4" />
+            )}
+            Manage subscription · update card · invoices
+          </button>
+          {!cancelPending && (
+            <button
+              onClick={cancelPlan}
+              disabled={cancelling}
+              className="inline-flex items-center gap-2 rounded-xl border border-red-200 text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition disabled:opacity-50"
+            >
+              {cancelling ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : null}
+              Cancel plan
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Usage card */}
       <div className="card p-6 mb-6">
