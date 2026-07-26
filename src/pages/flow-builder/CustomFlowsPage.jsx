@@ -133,6 +133,16 @@ export default function CustomFlowsPage() {
         icon={Workflow}
         title="Custom Flows"
         subtitle="Automated, multi-step DM conversations"
+        help={{
+          title: "Custom Flows",
+          tips: [
+            "A flow is a visual, multi-step DM conversation you build by connecting blocks.",
+            "Start from a ready-made template, or hit New flow for a blank canvas.",
+            "Every flow begins with a trigger (a keyword or comment) that starts the conversation.",
+            "Edit and reword any step to match your business before going live.",
+            "A flow only runs once you activate it; drafts stay paused.",
+          ],
+        }}
         stats={[
           { label: "Active", value: flows.filter((f) => f.status === "active").length, accent: true },
           { label: "Total flows", value: flows.length },

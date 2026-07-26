@@ -136,6 +136,16 @@ export default function HashtagsPage() {
             </span>
           }
           subtitle="AI-picked hashtags grouped by reach. Mix big, medium, and niche in every post."
+          help={{
+            title: "Hashtag research",
+            tips: [
+              "Enter a topic or niche and get 30 AI-picked hashtags built to grow your reach.",
+              "Results are grouped by size: big for reach, medium for visibility, niche for engaged audiences.",
+              "Mix all three groups in every post for the best balance of reach and ranking.",
+              "Tap any tag to copy it, or copy a whole group at once.",
+              "Switch language if you post in Urdu (Roman) instead of English.",
+            ],
+          }}
           stats={
             total > 0
               ? [

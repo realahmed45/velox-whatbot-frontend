@@ -146,6 +146,16 @@ export default function IgAnalyticsPage() {
           icon={BarChart2}
           title="Analytics"
           subtitle="DM volume, audience growth, automation reach — see what's resonating."
+          help={{
+            title: "Analytics",
+            tips: [
+              "Track DMs sent and received, reply rate, and how many replies your AI handled.",
+              "Watch audience growth and see the hours your followers most often message you.",
+              "Switch the time range (7 days, 30 days, 3 months) to spot trends.",
+              "The flows table shows each automation's trigger-to-completion rate.",
+              "Plan usage shows how many messages you've used against your monthly limit.",
+            ],
+          }}
           stats={heroStats}
         >
           <div className="flex gap-1.5 flex-wrap">

@@ -51,8 +51,8 @@ export default function ContactPage() {
             className="group p-8 bg-white rounded-2xl border border-ink-200 hover:border-accent hover:shadow-lg transition-all"
           >
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-violet-500/10 rounded-xl">
-                <MessageSquare className="w-6 h-6 text-violet-500" />
+              <div className="p-3 bg-brand-500/10 rounded-xl">
+                <MessageSquare className="w-6 h-6 text-brand-500" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-ink-900 mb-2">
@@ -61,7 +61,7 @@ export default function ContactPage() {
                 <p className="text-ink-600 mb-3">
                   Browse our guides and tutorials to get started quickly.
                 </p>
-                <p className="text-violet-500 font-medium group-hover:underline">
+                <p className="text-brand-500 font-medium group-hover:underline">
                   Visit Help Center →
                 </p>
               </div>

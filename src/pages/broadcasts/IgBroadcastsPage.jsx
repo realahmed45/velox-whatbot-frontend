@@ -97,6 +97,16 @@ export default function IgBroadcastsPage() {
         icon={Send}
         title="Instagram DM Blasts"
         subtitle="Send a one-off DM to followers who interacted with you recently. Perfect for drops, restocks, story teasers and exclusive offers."
+        help={{
+          title: "DM Blasts",
+          tips: [
+            "A blast sends one message to a group of contacts at once.",
+            "Instagram only lets you reach people who DM'd you in the last 24 hours; others are skipped.",
+            "Target everyone recently engaged, or narrow the audience by tag.",
+            "Send now, or set a date and time to schedule it.",
+            "Use {{name}} in your message to personalise each DM automatically.",
+          ],
+        }}
         stats={[
           { label: "Campaigns", value: campaigns.length },
           { label: "Sent", value: sentCount },

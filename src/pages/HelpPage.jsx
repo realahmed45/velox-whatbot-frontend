@@ -42,11 +42,11 @@ export default function HelpPage() {
               </p>
             </Link>
 
-            <div className="group p-6 bg-white rounded-xl border border-ink-200 hover:border-violet-500 hover:shadow-lg transition-all">
-              <div className="p-3 bg-violet-500/10 rounded-lg w-fit mb-4">
-                <Bot className="w-6 h-6 text-violet-500" />
+            <div className="group p-6 bg-white rounded-xl border border-ink-200 hover:border-brand-500 hover:shadow-lg transition-all">
+              <div className="p-3 bg-brand-500/10 rounded-lg w-fit mb-4">
+                <Bot className="w-6 h-6 text-brand-500" />
               </div>
-              <h3 className="font-semibold text-ink-900 mb-2 group-hover:text-violet-500 transition">
+              <h3 className="font-semibold text-ink-900 mb-2 group-hover:text-brand-500 transition">
                 Set Up AI Bot
               </h3>
               <p className="text-ink-600 text-sm">
@@ -54,11 +54,11 @@ export default function HelpPage() {
               </p>
             </div>
 
-            <div className="group p-6 bg-white rounded-xl border border-ink-200 hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="p-3 bg-blue-500/10 rounded-lg w-fit mb-4">
-                <Zap className="w-6 h-6 text-blue-500" />
+            <div className="group p-6 bg-white rounded-xl border border-ink-200 hover:border-accent hover:shadow-lg transition-all">
+              <div className="p-3 bg-accent/10 rounded-lg w-fit mb-4">
+                <Zap className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="font-semibold text-ink-900 mb-2 group-hover:text-blue-500 transition">
+              <h3 className="font-semibold text-ink-900 mb-2 group-hover:text-accent transition">
                 Create Your First Flow
               </h3>
               <p className="text-ink-600 text-sm">

@@ -76,14 +76,14 @@ export default function FeaturesPage() {
 
   const colorMap = {
     violet:
-      "from-violet-500/10 to-violet-500/5 text-violet-500 border-violet-500/20",
+      "from-brand-500/10 to-brand-500/5 text-brand-500 border-brand-500/20",
     orange: "from-accent/10 to-accent/5 text-accent border-accent/20",
-    blue: "from-blue-500/10 to-blue-500/5 text-blue-500 border-blue-500/20",
+    blue: "from-brand-500/10 to-brand-500/5 text-brand-500 border-brand-500/20",
     green:
       "from-green-500/10 to-green-500/5 text-green-500 border-green-500/20",
     purple:
-      "from-purple-500/10 to-purple-500/5 text-purple-500 border-purple-500/20",
-    pink: "from-pink-500/10 to-pink-500/5 text-pink-500 border-pink-500/20",
+      "from-brand-600/10 to-brand-600/5 text-brand-600 border-brand-600/20",
+    pink: "from-accent/10 to-accent/5 text-accent border-accent/20",
     yellow:
       "from-yellow-500/10 to-yellow-500/5 text-yellow-500 border-yellow-500/20",
     red: "from-red-500/10 to-red-500/5 text-red-500 border-red-500/20",
@@ -127,7 +127,7 @@ export default function FeaturesPage() {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-gradient-to-br from-accent/5 to-violet-500/5 rounded-2xl border border-accent/20 p-12">
+        <div className="text-center bg-gradient-to-br from-accent/5 to-brand-500/5 rounded-2xl border border-accent/20 p-12">
           <h2 className="text-3xl font-bold text-ink-900 mb-4">
             Ready to Get Started?
           </h2>

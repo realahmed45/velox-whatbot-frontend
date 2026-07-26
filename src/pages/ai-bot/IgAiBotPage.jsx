@@ -44,9 +44,9 @@ const DEFAULTS = {
 };
 
 const SOURCE_META = {
-  website: { Icon: Globe, tint: "text-blue-600 bg-blue-50" },
-  text: { Icon: FileText, tint: "text-violet-600 bg-violet-50" },
-  document: { Icon: FileText, tint: "text-violet-600 bg-violet-50" },
+  website: { Icon: Globe, tint: "text-ink-600 bg-ink-100" },
+  text: { Icon: FileText, tint: "text-brand-600 bg-brand-50" },
+  document: { Icon: FileText, tint: "text-brand-600 bg-brand-50" },
   image: { Icon: ImageIcon, tint: "text-amber-600 bg-amber-50" },
 };
 
@@ -221,6 +221,7 @@ export default function IgAiBotPage() {
                 {igHandle && (
                   <span className="text-xs text-white/60">@{igHandle}</span>
                 )}
+                <AiBotHelp />
               </div>
               <p className="text-sm text-white/70 mt-1 max-w-md">
                 Teach it about your business once. It answers DMs, comments &
@@ -586,6 +587,61 @@ function Section({ title, subtitle, icon: Icon, children }) {
         </div>
       </div>
       {children}
+    </div>
+  );
+}
+
+/* Contextual help popover for the AI Bot hero (dark-styled). */
+function AiBotHelp() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e) =>
+      ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const tips = [
+    "The AI bot replies when no automation rule matches an incoming message.",
+    "Add your website and FAQs under Knowledge so answers sound like your business.",
+    "It answers DMs, comments and story replies 24/7 — in the tone you set.",
+    "Instagram only allows replies within 24 hours of a person's last message.",
+    "Watch the readiness meter, then Save before turning the bot Live.",
+  ];
+
+  return (
+    <div className="relative inline-flex" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 rounded-lg bg-white/10 border border-white/15 px-2 py-0.5 text-[11px] font-semibold text-white/85 hover:bg-white/15 transition"
+        aria-label="Help"
+      >
+        <HelpCircle className="w-3.5 h-3.5" /> Help
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-2 w-72 sm:w-80 rounded-xl border border-ink-100 bg-white shadow-card-lg p-4 text-left">
+          <p className="text-sm font-black text-ink-900 mb-2">AI Bot</p>
+          <ul className="space-y-2">
+            {tips.map((t, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-2 text-[13px] text-ink-600 leading-snug"
+              >
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

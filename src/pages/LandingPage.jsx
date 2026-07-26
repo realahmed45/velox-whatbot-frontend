@@ -306,13 +306,13 @@ function Hero() {
 
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-500">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-500" /> No credit card
-              </span>
-              <span className="inline-flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-brand-500" /> 3-day free trial
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-brand-500" /> Cancel anytime
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-brand-500" /> Set up in minutes
               </span>
             </div>
           </div>

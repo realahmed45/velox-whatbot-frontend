@@ -265,6 +265,16 @@ export default function AutomationSetupPage() {
           isGallery ? "Smart Automations" : activeTab?.label || "Automation"
         }
         subtitle={headerSubtitle}
+        help={{
+          title: "Smart Automations",
+          tips: [
+            "Automations reply to Instagram DMs, comments and story interactions instantly, without you online.",
+            "Pick a type: welcome DMs, comment-to-DM, DM keywords, story replies or a catch-all default reply.",
+            "Toggle any automation on or off, and add your own message or use the one-click example.",
+            "Connect your Instagram account first, or nothing will fire.",
+            "The default reply is the safety net when no other automation matches a message.",
+          ],
+        }}
       />
 
       {isGallery ? (
@@ -900,7 +910,7 @@ function AutomationTypeCard({ tone, title, items }) {
       className={`rounded-xl border ${
         isWa
           ? "border-emerald-100 bg-emerald-50/30"
-          : "border-pink-100 bg-pink-50/30"
+          : "border-brand-100 bg-brand-50/30"
       } p-4`}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -908,7 +918,7 @@ function AutomationTypeCard({ tone, title, items }) {
           className={`w-7 h-7 rounded-md flex items-center justify-center ${
             isWa
               ? "bg-emerald-500"
-              : "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400"
+              : "bg-gradient-to-br from-brand-500 via-brand-600 to-accent-500"
           }`}
         >
           {isWa ? (
@@ -944,7 +954,7 @@ function AutomationTypeCard({ tone, title, items }) {
             className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
               isWa
                 ? "bg-white border-emerald-200 text-emerald-800"
-                : "bg-white border-pink-200 text-pink-800"
+                : "bg-white border-brand-200 text-brand-800"
             }`}
           >
             {it}

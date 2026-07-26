@@ -228,6 +228,16 @@ export default function TeamPage() {
         icon={Users}
         title="Team"
         subtitle="Invite teammates to help manage your inbox and automations"
+        help={{
+          title: "Team",
+          tips: [
+            "Invite teammates by email; they get a link to join that expires in 7 days.",
+            "Tick exactly which areas each agent can access when you invite them.",
+            "Agents only see the areas you grant, and can't touch billing or delete the workspace.",
+            "Edit any agent's permissions later with the sliders icon; changes apply immediately.",
+            "Only the owner controls billing and workspace settings.",
+          ],
+        }}
         stats={[
           { label: "Members", value: members.length + (owner ? 1 : 0), accent: true },
           { label: "Pending", value: invites.length },

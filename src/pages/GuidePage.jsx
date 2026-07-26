@@ -4,7 +4,6 @@ import {
   Sparkles,
   Instagram,
   Bot,
-  PlayCircle,
   Mail,
   CheckCircle2,
   Circle,
@@ -14,7 +13,6 @@ import {
   Rocket,
   Settings as SettingsIcon,
   HelpCircle,
-  Clock,
 } from "lucide-react";
 
 const STEPS = [
@@ -32,7 +30,7 @@ const STEPS = [
     ],
     cta: {
       label: "Connect Instagram",
-      to: "/dashboard/onboarding/instagram",
+      to: "/onboarding/instagram",
     },
     helpLink: "/dashboard/settings",
   },
@@ -145,40 +143,35 @@ export default function GuidePage() {
         </div>
       </div>
 
-      {/* Video placeholder */}
-      <div className="relative overflow-hidden rounded-lg border border-ink-200 bg-white shadow-card">
-        <div className="grid md:grid-cols-[1.2fr,1fr]">
-          <div className="relative aspect-video md:aspect-auto bg-gradient-to-br from-ink-900 to-brand-900 flex items-center justify-center">
-            <div className="absolute inset-0 bg-grid-dark opacity-20" />
-            <button
-              type="button"
-              className="relative group flex flex-col items-center gap-3 text-white"
-              disabled
-              aria-label="Walkthrough video coming soon"
+      {/* What you'll set up — quick orientation */}
+      <div className="rounded-lg border border-ink-200 bg-white shadow-card p-6 sm:p-8">
+        <h2 className="text-xl font-bold text-ink-900">
+          What you'll set up
+        </h2>
+        <p className="mt-2 text-sm text-ink-600 leading-relaxed max-w-2xl">
+          Botlify turns your Instagram into a 24/7 sales and support channel.
+          Follow the five steps below in order — each links straight to the page
+          where you'll do it, and you can tick them off as you go. No prior
+          experience needed.
+        </p>
+        <div className="mt-5 grid sm:grid-cols-3 gap-3">
+          {[
+            { icon: Instagram, label: "Connect Instagram" },
+            { icon: Zap, label: "Turn on automations" },
+            { icon: Bot, label: "Teach your AI bot" },
+          ].map(({ icon: I, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-2.5 rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-3"
             >
-              <span className="w-20 h-20 rounded-full bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center group-hover:scale-105 transition shadow-glow">
-                <PlayCircle className="w-10 h-10" />
+              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-500 flex items-center justify-center shrink-0">
+                <I className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold text-ink-800">
+                {label}
               </span>
-              <span className="text-xs uppercase tracking-wider text-white/70">
-                Coming soon
-              </span>
-            </button>
-          </div>
-          <div className="p-6 sm:p-8">
-            <span className="badge badge-brand">Video walkthrough</span>
-            <h2 className="mt-3 text-2xl font-bold text-ink-900">
-              60-second setup video
-            </h2>
-            <p className="mt-2 text-ink-600 text-sm leading-relaxed">
-              We're filming a tight, jargon-free walkthrough that takes you from
-              sign-up to your first automated reply. While we wrap that up,
-              follow the written steps below — they're step-for-step identical.
-            </p>
-            <div className="mt-5 flex items-center gap-2 text-xs text-ink-500">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Drops next week. Bookmark this page.</span>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -236,12 +229,6 @@ export default function GuidePage() {
                       </li>
                     ))}
                   </ul>
-
-                  {/* Screenshot placeholder */}
-                  <div className="mt-5 rounded-md border border-dashed border-ink-200 bg-ink-50 px-4 py-6 text-center text-xs text-ink-400">
-                    <Icon className="w-5 h-5 mx-auto mb-1 text-ink-300" />
-                    Screenshot — coming with the video walkthrough
-                  </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Link to={step.cta.to} className="btn-primary">

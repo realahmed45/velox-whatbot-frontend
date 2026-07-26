@@ -355,6 +355,16 @@ export default function ScheduledPostsPage() {
         icon={CalendarClock}
         title="Scheduled posts"
         subtitle="Plan Instagram posts and stories to publish automatically â€” keep your feed consistent on autopilot."
+        help={{
+          title: "Scheduled posts",
+          tips: [
+            "Queue Instagram feed posts and stories to publish automatically at a set date and time.",
+            "Upload an image, write a caption, and pick when it should go live.",
+            "Pending posts can be edited or deleted any time before they publish.",
+            "Use Smart timing to see the hours your audience is most active.",
+            "Bulk CSV lets you schedule many posts at once from a spreadsheet.",
+          ],
+        }}
         stats={[
           { label: "Total posts", value: posts.length },
           { label: "Pending", value: pendingCount, accent: true },

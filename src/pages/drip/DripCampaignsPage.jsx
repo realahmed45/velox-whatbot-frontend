@@ -257,6 +257,16 @@ export default function DripCampaignsPage() {
         icon={Droplet}
         title="Drip campaigns"
         subtitle="Multi-step DM sequences triggered by keywords or events — nurture leads on autopilot."
+        help={{
+          title: "Drip campaigns",
+          tips: [
+            "A drip is a sequence of DMs sent automatically over minutes, hours or days.",
+            "Contacts are enrolled by a keyword they send, or added manually.",
+            "Each step waits a delay you set before the next message goes out.",
+            "Great for onboarding, nurturing leads and win-back follow-ups.",
+            "Start from a template, then edit the steps and timing to fit your business.",
+          ],
+        }}
         stats={[
           { label: "Campaigns", value: campaigns.length },
           { label: "Active", value: activeCount, accent: true },

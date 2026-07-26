@@ -127,6 +127,16 @@ export default function IgContactsPage() {
             eyebrow="Instagram"
             title="Contacts"
             subtitle="Followers and DMers captured from your Instagram automations, all in one place."
+            help={{
+              title: "Contacts",
+              tips: [
+                "Everyone who DMs you or triggers an automation is saved here automatically.",
+                "Open a contact to add tags, notes, or an email address.",
+                "Tags let you segment your audience, e.g. vip or story-watcher.",
+                "Use those tags to target Broadcasts and Drip campaigns.",
+                "Search by name or @username, and export the whole list to CSV.",
+              ],
+            }}
             stats={[
               { label: "Total contacts", value: total.toLocaleString(), accent: true },
               { label: "Active (on page)", value: optedInOnPage },

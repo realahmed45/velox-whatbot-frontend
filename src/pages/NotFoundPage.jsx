@@ -7,9 +7,9 @@ import { Home, ArrowLeft } from "lucide-react";
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ink-50 via-white to-violet-50/30 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-ink-50 via-white to-brand-50/30 flex items-center justify-center p-6">
       <div className="text-center max-w-md">
-        <div className="text-7xl font-black bg-gradient-to-br from-violet-500 to-pink-500 bg-clip-text text-transparent mb-4">
+        <div className="text-7xl font-black bg-gradient-to-br from-brand-500 to-brand-600 bg-clip-text text-transparent mb-4">
           404
         </div>
         <h1 className="text-2xl font-bold text-ink-900 mb-2">Page not found</h1>
@@ -26,7 +26,7 @@ export default function NotFoundPage() {
           </button>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition"
           >
             <Home className="w-4 h-4" />
             Home
