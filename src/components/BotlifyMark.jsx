@@ -1,9 +1,9 @@
 /**
- * BotlifyMark — Botlify's brand mark.
+ * BotlifyMark — Botlify's icon: a clean, iconic orange robot head.
  *
- * A friendly bot face (eyes + smile) wrapped by an automation loop arrow —
- * "a bot that replies, on autopilot." It fuses the two things Botlify is about:
- * the bot and the automation. Razor-sharp from a 16px favicon to the hero.
+ * Transparent background (no tile), single warm-orange gradient, thick friendly
+ * geometry — a rounded head with an antenna, two eyes, and side panels. Reads
+ * instantly as "a bot" on light or dark, from a 16px favicon to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -12,8 +12,8 @@
  */
 export default function BotlifyMark({ size = 36, className = "", mono = false }) {
   const gid = "blf_g";
-  const tile = mono ? "currentColor" : `url(#${gid})`;
-  const glyph = "#fff";
+  const body = mono ? "currentColor" : `url(#${gid})`;
+  const face = "#fff";
 
   return (
     <svg
@@ -26,64 +26,47 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       role="img"
       aria-label="Botlify"
     >
-      {/* rounded tile */}
-      <rect x="2" y="2" width="44" height="44" rx="13" fill={tile} />
-      {!mono && (
-        <rect
-          x="2"
-          y="2"
-          width="44"
-          height="44"
-          rx="13"
-          fill="url(#blf_sheen)"
-          opacity="0.16"
-        />
-      )}
-
-      {/* automation loop circling the face */}
+      {/* antenna */}
       <path
-        d="M34.5 17.5 A11.5 11.5 0 1 0 35.5 26"
-        fill="none"
-        stroke={glyph}
-        strokeWidth="2.8"
+        d="M24 4 V8"
+        stroke={body}
+        strokeWidth="3"
         strokeLinecap="round"
       />
-      <path d="M32.8 11.5 L36.4 18 L29.6 18.4 Z" fill={glyph} />
+      <circle cx="24" cy="3" r="3" fill={body} />
 
-      {/* bot face — two eyes + a smile */}
-      <circle cx="20.3" cy="22.5" r="1.9" fill={glyph} />
-      <circle cx="27.7" cy="22.5" r="1.9" fill={glyph} />
+      {/* head */}
       <path
-        d="M20 28 q4 3 8 0"
-        stroke={glyph}
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        fill="none"
+        d="M13 11 h22 a7 7 0 0 1 7 7 v13 a7 7 0 0 1 -7 7 h-22 a7 7 0 0 1 -7 -7 v-13 a7 7 0 0 1 7 -7 Z"
+        fill={body}
       />
+
+      {/* side ear-panels */}
+      <path
+        d="M6 22 h-2 a2 2 0 0 0 -2 2 v3 a2 2 0 0 0 2 2 h2 Z"
+        fill={body}
+      />
+      <path
+        d="M42 22 h2 a2 2 0 0 1 2 2 v3 a2 2 0 0 1 -2 2 h-2 Z"
+        fill={body}
+      />
+
+      {/* eyes */}
+      <circle cx="18" cy="24" r="3" fill={face} />
+      <circle cx="30" cy="24" r="3" fill={face} />
 
       <defs>
         <linearGradient
           id={gid}
-          x1="4"
+          x1="6"
           y1="4"
-          x2="44"
+          x2="42"
           y2="44"
           gradientUnits="userSpaceOnUse"
         >
           <stop stopColor="#ff8a4c" />
           <stop offset="0.5" stopColor="#ff5722" />
           <stop offset="1" stopColor="#e13c08" />
-        </linearGradient>
-        <linearGradient
-          id="blf_sheen"
-          x1="6"
-          y1="4"
-          x2="26"
-          y2="30"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#fff" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
       </defs>
     </svg>
