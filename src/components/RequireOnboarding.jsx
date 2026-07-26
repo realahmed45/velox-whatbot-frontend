@@ -8,7 +8,7 @@
  *
  * Billing/settings remain accessible so users can pay or sign out.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -26,11 +26,31 @@ export default function RequireOnboarding({ children }) {
   const { activeWorkspace, user } = useAuthStore();
   const location = useLocation();
 
+  // Just came back from connecting Instagram (?connected=true). The cached
+  // workspace still shows "not connected", which would bounce us straight back
+  // to onboarding — a loop. Force ONE fresh fetch and hold the gate until it
+  // resolves so we read the real, just-connected status.
+  const justConnected = new URLSearchParams(location.search).get("connected") ===
+    "true";
+  const [refreshing, setRefreshing] = useState(justConnected);
+  useEffect(() => {
+    if (justConnected && activeWorkspace) {
+      setRefreshing(true);
+      Promise.resolve(fetchWorkspace(activeWorkspace, { force: true })).finally(
+        () => setRefreshing(false),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justConnected, activeWorkspace]);
+
   useEffect(() => {
     if (!workspace && activeWorkspace && !loading) {
       fetchWorkspace(activeWorkspace);
     }
   }, [workspace, activeWorkspace, loading, fetchWorkspace]);
+
+  // Hold everything while we refresh the just-connected workspace.
+  if (justConnected && refreshing) return <BrandSpinner />;
 
   // Email/password signups must confirm their 4-digit code first. Google
   // signups arrive with isEmailVerified: true, so they pass straight through.

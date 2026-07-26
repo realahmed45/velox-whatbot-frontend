@@ -12,12 +12,15 @@ export const useWorkspaceStore = create(
       // Fetch the workspace. If we already have a cached copy (from a previous
       // session/persisted state), show it INSTANTLY and refresh in the
       // background — so the UI never blocks on a spinner after the first load.
-      fetchWorkspace: async (workspaceId) => {
+      fetchWorkspace: async (workspaceId, opts = {}) => {
         if (!workspaceId) return;
         const cached = get().workspace;
-        const haveCachedMatch = cached && String(cached._id) === String(workspaceId);
-        // Only show the blocking spinner when we have nothing to show yet.
-        set({ loading: !haveCachedMatch });
+        const haveCachedMatch =
+          cached && String(cached._id) === String(workspaceId);
+        // Only show the blocking spinner when we have nothing to show yet —
+        // unless `force` is set (e.g. right after connecting Instagram, when the
+        // cached copy is known-stale and we must not render off it).
+        set({ loading: opts.force || !haveCachedMatch });
         try {
           const { data } = await api.get(`/workspaces/${workspaceId}`);
           set({ workspace: data.workspace });
