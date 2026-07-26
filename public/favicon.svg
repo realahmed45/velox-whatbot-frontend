@@ -1,18 +1,12 @@
 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g" x1="6" y1="8" x2="42" y2="44" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ff7d3e"/>
-      <stop offset="0.55" stop-color="#ff5722"/>
-      <stop offset="1" stop-color="#f2440c"/>
+    <linearGradient id="g" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff8a4c"/>
+      <stop offset="0.5" stop-color="#ff5722"/>
+      <stop offset="1" stop-color="#e13c08"/>
     </linearGradient>
   </defs>
-  <rect width="48" height="48" rx="12" fill="#fff4ec"/>
-  <path d="M24 6.5 V3.2" stroke="#ff5722" stroke-width="2.6" stroke-linecap="round"/>
-  <circle cx="24" cy="2.6" r="2.5" fill="#ff5722"/>
-  <path d="M14 7.5 H34 A9.5 9.5 0 0 1 43.5 17 V29 A9.5 9.5 0 0 1 34 38.5 H23 L14.5 45.2 A1 1 0 0 1 13 44.4 V38.4 A9.5 9.5 0 0 1 4.5 29 V17 A9.5 9.5 0 0 1 14 7.5 Z" fill="url(#g)"/>
-  <circle cx="18.5" cy="21" r="2.7" fill="#fff"/>
-  <circle cx="29.5" cy="21" r="2.7" fill="#fff"/>
-  <circle cx="18.5" cy="21" r="1.1" fill="#f2440c"/>
-  <circle cx="29.5" cy="21" r="1.1" fill="#f2440c"/>
-  <path d="M18 27.5 Q24 32 30 27.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#g)"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" fill="#fff" d="M15.4 8.5 a3 3 0 0 1 3 3 V18 A10 10 0 0 1 24.3 16 A10.4 10.4 0 0 1 34.7 26.4 A10.4 10.4 0 0 1 24.3 36.8 A10 10 0 0 1 18.4 34.8 V35.5 a3 3 0 0 1 -6 0 V11.5 A3 3 0 0 1 15.4 8.5 Z M23.9 21.6 a4.8 4.8 0 1 0 0 9.6 a4.8 4.8 0 0 0 0 -9.6 Z"/>
+  <path d="M31.4 33.2 L36.6 37.4 L31 37.9 Z" fill="#fff"/>
 </svg>

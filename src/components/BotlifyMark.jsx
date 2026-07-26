@@ -1,23 +1,30 @@
 /**
  * BotlifyMark — Botlify's brand mark.
  *
- * A unique "chat-bot" glyph: a rounded speech bubble (Botlify automates DMs)
- * that doubles as a robot's face — a single antenna, two friendly eyes, and a
- * warm smile. It fuses the two ideas the product is about — conversations and
- * a bot — into one confident, geometric mark with a warm orange gradient.
- *
- * Pure vector, so it stays razor-sharp from a 16px favicon to a 128px hero.
+ * A custom monogram: a bold lowercase "b" (for Botlify) on a rounded gradient
+ * tile, where the bowl of the "b" carries a chat-bubble tail — so the letter
+ * itself reads as a message. Simple, ownable, and razor-sharp at any size
+ * (the concept survives all the way down to a 16px favicon).
  *
  * Props:
  *   size      pixel size (width = height), default 36
  *   className extra classes on the <svg>
- *   mono      single-color render (uses currentColor) for subtle/dark uses
+ *   mono      single-color render (uses currentColor); knockout becomes
+ *             transparent so it works on top of a colored surface
+ *   plain     omit the tile — just the "b" glyph in brand color (for use on
+ *             already-branded/coloured backgrounds)
  */
-export default function BotlifyMark({ size = 36, className = "", mono = false }) {
+export default function BotlifyMark({
+  size = 36,
+  className = "",
+  mono = false,
+  plain = false,
+}) {
   const gid = "blf_g";
-  const bubbleFill = mono ? "currentColor" : `url(#${gid})`;
-  const faceInk = mono ? "#fff" : "#fff";
-  const featureInk = mono ? "currentColor" : "#f2440c";
+  const tile = mono ? "currentColor" : `url(#${gid})`;
+  // The "b" is knocked out of the tile (white). In plain mode there's no tile,
+  // so the "b" is drawn in brand orange instead.
+  const glyph = plain ? (mono ? "currentColor" : "#ff5722") : "#fff";
 
   return (
     <svg
@@ -30,64 +37,79 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       role="img"
       aria-label="Botlify"
     >
-      {/* antenna — marks it as a bot */}
-      <path
-        d="M24 6.5 V3.2"
-        stroke={mono ? "currentColor" : "#ff5722"}
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-      <circle cx="24" cy="2.6" r="2.5" fill={mono ? "currentColor" : "#ff5722"} />
-
-      {/* speech bubble = head. rounded body + a tail at the bottom-left,
-          so it reads unmistakably as a chat/DM shape. */}
-      <path
-        d="M14 7.5 H34
-           A9.5 9.5 0 0 1 43.5 17 V29
-           A9.5 9.5 0 0 1 34 38.5 H23
-           L14.5 45.2
-           A1 1 0 0 1 13 44.4 V38.4
-           A9.5 9.5 0 0 1 4.5 29 V17
-           A9.5 9.5 0 0 1 14 7.5 Z"
-        fill={bubbleFill}
-      />
-
-      {/* subtle top-light sheen for depth */}
-      {!mono && (
-        <path
-          d="M14 7.5 H34 A9.5 9.5 0 0 1 43.5 17 V22 H4.5 V17 A9.5 9.5 0 0 1 14 7.5 Z"
-          fill="#fff"
-          opacity="0.14"
-        />
+      {!plain && (
+        <>
+          <rect x="2" y="2" width="44" height="44" rx="13" fill={tile} />
+          {!mono && (
+            <rect
+              x="2"
+              y="2"
+              width="44"
+              height="44"
+              rx="13"
+              fill="url(#blf_sheen)"
+              opacity="0.18"
+            />
+          )}
+        </>
       )}
 
-      {/* eyes */}
-      <circle cx="18.5" cy="21" r="2.7" fill={faceInk} />
-      <circle cx="29.5" cy="21" r="2.7" fill={faceInk} />
-      <circle cx="18.5" cy="21" r="1.1" fill={featureInk} />
-      <circle cx="29.5" cy="21" r="1.1" fill={featureInk} />
-
-      {/* smile */}
+      {/* The "b": bold stem + a round bowl. even-odd cuts the counter (the hole)
+          so the tile/background shows through — that hole is what makes it a
+          clean, high-contrast letter at tiny sizes. */}
       <path
-        d="M18 27.5 Q24 32 30 27.5"
-        stroke={faceInk}
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        fill="none"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        fill={glyph}
+        d="
+          M15.4 8.5
+          a3 3 0 0 1 3 3
+          V18
+          A10 10 0 0 1 24.3 16
+          A10.4 10.4 0 0 1 34.7 26.4
+          A10.4 10.4 0 0 1 24.3 36.8
+          A10 10 0 0 1 18.4 34.8
+          V35.5
+          a3 3 0 0 1 -6 0
+          V11.5
+          A3 3 0 0 1 15.4 8.5
+          Z
+          M23.9 21.6
+          a4.8 4.8 0 1 0 0 9.6
+          a4.8 4.8 0 0 0 0 -9.6
+          Z
+        "
+      />
+
+      {/* chat-bubble tail on the bowl → the 'b' is a message */}
+      <path
+        d="M31.4 33.2 L36.6 37.4 L31 37.9 Z"
+        fill={glyph}
       />
 
       <defs>
         <linearGradient
           id={gid}
-          x1="6"
-          y1="8"
-          x2="42"
+          x1="4"
+          y1="4"
+          x2="44"
           y2="44"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#ff7d3e" />
-          <stop offset="0.55" stopColor="#ff5722" />
-          <stop offset="1" stopColor="#f2440c" />
+          <stop stopColor="#ff8a4c" />
+          <stop offset="0.5" stopColor="#ff5722" />
+          <stop offset="1" stopColor="#e13c08" />
+        </linearGradient>
+        <linearGradient
+          id="blf_sheen"
+          x1="6"
+          y1="4"
+          x2="26"
+          y2="30"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#fff" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
       </defs>
     </svg>
