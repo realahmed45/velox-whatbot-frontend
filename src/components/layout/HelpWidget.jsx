@@ -31,7 +31,7 @@ const LINKS = [
     icon: MessageSquare,
     label: "Contact support",
     hint: "Email our team",
-    href: "mailto:botlify.support@gmail.com",
+    href: "mailto:contactus@botlify.site",
   },
 ];
 

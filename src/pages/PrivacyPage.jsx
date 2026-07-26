@@ -61,7 +61,7 @@ const SECTIONS = [
   },
   {
     h: "Data Retention & Deletion",
-    p: "We keep your data while your account is active. When you disconnect an Instagram account we stop processing its messages immediately. When you delete your workspace or account, we permanently delete the associated data within 30 days (backups within 90 days). You can request deletion at any time by emailing botlify.support@gmail.com, and end users can ask the connected business to remove their contact record.",
+    p: "We keep your data while your account is active. When you disconnect an Instagram account we stop processing its messages immediately. When you delete your workspace or account, we permanently delete the associated data within 30 days (backups within 90 days). You can request deletion at any time by emailing contactus@botlify.site, and end users can ask the connected business to remove their contact record.",
   },
   {
     h: "Your Rights",
@@ -155,7 +155,7 @@ export function LegalShell({ icon: Icon, eyebrow, title, updated, sections }) {
                 Contact
               </h2>
               <a
-                href="mailto:botlify.support@gmail.com"
+                href="mailto:contactus@botlify.site"
                 className="mt-4 inline-flex items-center gap-3 rounded-xl border border-ink-100 bg-brand-50/40 px-4 py-3 hover:border-brand-300 hover:shadow-glow transition group"
               >
                 <span className="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center text-white shrink-0">
@@ -163,7 +163,7 @@ export function LegalShell({ icon: Icon, eyebrow, title, updated, sections }) {
                 </span>
                 <span>
                   <span className="block text-sm font-bold text-ink-900">
-                    botlify.support@gmail.com
+                    contactus@botlify.site
                   </span>
                   <span className="block text-xs text-ink-500">
                     Questions about this policy? We reply within a few hours.

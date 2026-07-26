@@ -1,20 +1,23 @@
 /**
- * BotlifyMark — the Botlify robot mark, redesigned as a crisp inline SVG.
+ * BotlifyMark — Botlify's brand mark.
  *
- * A bold, geometric orange robot head: solid fills, thick rounded strokes, a
- * friendly screen-face, and two antennae. Built to stay razor-sharp and
- * recognizable at any size — from a 16px favicon to a 96px hero — unlike the
- * old hand-drawn PNG.
+ * A unique "chat-bot" glyph: a rounded speech bubble (Botlify automates DMs)
+ * that doubles as a robot's face — a single antenna, two friendly eyes, and a
+ * warm smile. It fuses the two ideas the product is about — conversations and
+ * a bot — into one confident, geometric mark with a warm orange gradient.
+ *
+ * Pure vector, so it stays razor-sharp from a 16px favicon to a 128px hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
  *   className extra classes on the <svg>
- *   mono      render single-color (uses currentColor) — for dark/subtle uses
+ *   mono      single-color render (uses currentColor) for subtle/dark uses
  */
 export default function BotlifyMark({ size = 36, className = "", mono = false }) {
-  const orange = mono ? "currentColor" : "#ff5722";
-  const orangeDeep = mono ? "currentColor" : "#f2440c";
-  const face = mono ? "#fff" : "#fff";
+  const gid = "blf_g";
+  const bubbleFill = mono ? "currentColor" : `url(#${gid})`;
+  const faceInk = mono ? "#fff" : "#fff";
+  const featureInk = mono ? "currentColor" : "#f2440c";
 
   return (
     <svg
@@ -27,65 +30,64 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       role="img"
       aria-label="Botlify"
     >
-      {/* antennae */}
+      {/* antenna — marks it as a bot */}
       <path
-        d="M18 9 L15.5 4.5"
-        stroke={orange}
+        d="M24 6.5 V3.2"
+        stroke={mono ? "currentColor" : "#ff5722"}
         strokeWidth="2.6"
         strokeLinecap="round"
       />
-      <path
-        d="M30 9 L32.5 4.5"
-        stroke={orange}
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-      <circle cx="15" cy="4" r="2.4" fill={orange} />
-      <circle cx="33" cy="4" r="2.4" fill={orange} />
+      <circle cx="24" cy="2.6" r="2.5" fill={mono ? "currentColor" : "#ff5722"} />
 
-      {/* head — rounded square with a soft depth edge */}
-      <rect
-        x="7"
-        y="8"
-        width="34"
-        height="28"
-        rx="9"
-        fill={orange}
+      {/* speech bubble = head. rounded body + a tail at the bottom-left,
+          so it reads unmistakably as a chat/DM shape. */}
+      <path
+        d="M14 7.5 H34
+           A9.5 9.5 0 0 1 43.5 17 V29
+           A9.5 9.5 0 0 1 34 38.5 H23
+           L14.5 45.2
+           A1 1 0 0 1 13 44.4 V38.4
+           A9.5 9.5 0 0 1 4.5 29 V17
+           A9.5 9.5 0 0 1 14 7.5 Z"
+        fill={bubbleFill}
       />
+
+      {/* subtle top-light sheen for depth */}
       {!mono && (
-        <rect
-          x="7"
-          y="8"
-          width="34"
-          height="28"
-          rx="9"
-          fill="url(#blf_grad)"
-          opacity="0.18"
+        <path
+          d="M14 7.5 H34 A9.5 9.5 0 0 1 43.5 17 V22 H4.5 V17 A9.5 9.5 0 0 1 14 7.5 Z"
+          fill="#fff"
+          opacity="0.14"
         />
       )}
 
-      {/* screen face */}
-      <rect x="13" y="14" width="22" height="16" rx="6" fill={face} />
-
       {/* eyes */}
-      <circle cx="20" cy="21.5" r="2.3" fill={orangeDeep} />
-      <circle cx="28" cy="21.5" r="2.3" fill={orangeDeep} />
+      <circle cx="18.5" cy="21" r="2.7" fill={faceInk} />
+      <circle cx="29.5" cy="21" r="2.7" fill={faceInk} />
+      <circle cx="18.5" cy="21" r="1.1" fill={featureInk} />
+      <circle cx="29.5" cy="21" r="1.1" fill={featureInk} />
+
       {/* smile */}
       <path
-        d="M20 25.5 Q24 28.5 28 25.5"
-        stroke={orangeDeep}
-        strokeWidth="2.2"
+        d="M18 27.5 Q24 32 30 27.5"
+        stroke={faceInk}
+        strokeWidth="2.6"
         strokeLinecap="round"
         fill="none"
       />
 
-      {/* little neck / body hint */}
-      <rect x="20.5" y="36" width="7" height="5" rx="2.5" fill={orangeDeep} />
-
       <defs>
-        <linearGradient id="blf_grad" x1="7" y1="8" x2="41" y2="36">
-          <stop stopColor="#fff" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        <linearGradient
+          id={gid}
+          x1="6"
+          y1="8"
+          x2="42"
+          y2="44"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#ff7d3e" />
+          <stop offset="0.55" stopColor="#ff5722" />
+          <stop offset="1" stopColor="#f2440c" />
         </linearGradient>
       </defs>
     </svg>

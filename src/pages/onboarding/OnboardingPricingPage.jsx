@@ -127,16 +127,16 @@ export default function OnboardingPricingPage() {
           Back
         </button>
 
-        <div className="text-center mb-10">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-brand-200 text-xs font-bold text-brand-700 shadow-sm">
-            <Sparkles className="w-3 h-3" /> Final step · Choose a plan
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-100 text-xs font-bold text-brand-700">
+            <Sparkles className="w-3.5 h-3.5" /> Choose your plan
           </span>
-          <h1 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-ink-900">
-            You're connected — pick a plan
+          <h1 className="mt-4 text-3xl sm:text-5xl font-black tracking-tighter text-ink-950">
+            Start your <span className="text-brand-500">3-day free trial</span>
           </h1>
-          <p className="mt-3 text-ink-600 max-w-xl mx-auto text-sm">
-            Start with a free trial. Upgrade anytime from Billing — your
-            automations are already ready to configure.
+          <p className="mt-3 text-ink-600 max-w-lg mx-auto text-[15px]">
+            Pick a plan to unlock every Botlify feature. You won't be charged
+            until your trial ends — cancel anytime before then.
           </p>
         </div>
 
@@ -153,7 +153,7 @@ export default function OnboardingPricingPage() {
             </p>
             <p className="text-xs text-amber-700 mt-1">
               Please refresh and try again. If it keeps happening, email
-              botlify.support@gmail.com.
+              contactus@botlify.site.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -191,115 +191,89 @@ export default function OnboardingPricingPage() {
 }
 
 function PlanCard({ plan, picking, onPick }) {
-  const isRecommended = plan.recommended;
-  const isPremium = plan.premium;
+  // Pro is the elevated / recommended tier (dark, "Most popular").
+  const isPro = plan.key === "ig_pro" || plan.premium || plan.recommended;
+
   return (
     <div
       className={clsx(
-        "rounded-2xl p-6 flex flex-col border transition",
-        isRecommended
-          ? "border-brand-500 shadow-glow relative bg-white"
-          : "border-ink-100 bg-white hover:border-ink-200",
-        isPremium && "bg-gradient-to-br from-ink-900 to-ink-800 text-white",
+        "relative rounded-3xl p-7 flex flex-col transition-all duration-300",
+        isPro
+          ? "bg-gradient-to-br from-ink-900 to-ink-800 text-white shadow-2xl shadow-ink-900/25 ring-1 ring-white/10 md:-translate-y-2"
+          : "bg-white text-ink-900 border border-ink-200 shadow-sm hover:shadow-lg hover:-translate-y-1",
       )}
     >
-      {isRecommended && (
+      {isPro && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="px-3 py-1 rounded-full bg-brand-gradient text-white text-[11px] font-bold shadow">
-            Most popular
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-500 text-white text-[11px] font-bold shadow-glow">
+            <Sparkles className="w-3 h-3" /> Most popular
           </span>
         </div>
       )}
 
-      <h3
-        className={clsx(
-          "text-lg font-black tracking-tight",
-          isPremium ? "text-white" : "text-ink-900",
-        )}
-      >
-        {plan.name}
-      </h3>
-      <p
-        className={clsx(
-          "text-xs mt-0.5",
-          isPremium ? "text-white/60" : "text-ink-500",
-        )}
-      >
+      {/* name + tagline */}
+      <h3 className="text-xl font-black tracking-tight">{plan.name}</h3>
+      <p className={clsx("text-xs mt-1", isPro ? "text-white/55" : "text-ink-500")}>
         {plan.tagline}
       </p>
 
-      <div className="mt-4">
-        <div className="flex items-baseline gap-1">
-          <span
-            className={clsx(
-              "text-3xl font-black",
-              isPremium ? "text-white" : "text-ink-900",
-            )}
-          >
-            ${plan.usd}
-          </span>
-          <span
-            className={clsx(
-              "text-sm",
-              isPremium ? "text-white/50" : "text-ink-400",
-            )}
-          >
-            /mo
-          </span>
-        </div>
-        <p
-          className={clsx(
-            "text-[11px] mt-0.5",
-            isPremium ? "text-white/50" : "text-ink-400",
-          )}
-        >
-          ≈ Rs {plan.monthlyPrice?.toLocaleString()} /mo
-        </p>
+      {/* price */}
+      <div className="mt-5 flex items-end gap-1.5">
+        <span className="text-[2.6rem] leading-none font-black tracking-tighter">
+          ${plan.usd}
+        </span>
+        <span className={clsx("text-sm mb-1", isPro ? "text-white/50" : "text-ink-400")}>
+          /month
+        </span>
       </div>
+      <p className={clsx("text-[11px] mt-1", isPro ? "text-white/45" : "text-ink-400")}>
+        ≈ Rs {plan.monthlyPrice?.toLocaleString()} · billed monthly
+      </p>
 
-      <ul className="mt-5 space-y-2 flex-1">
+      <div className={clsx("my-5 h-px", isPro ? "bg-white/10" : "bg-ink-100")} />
+
+      {/* features */}
+      <ul className="space-y-2.5 flex-1">
         {(plan.highlights || []).map((h) => (
-          <li
-            key={h}
-            className={clsx(
-              "flex items-start gap-2 text-xs",
-              isPremium ? "text-white/80" : "text-ink-700",
-            )}
-          >
-            <Check
+          <li key={h} className="flex items-start gap-2.5 text-[13px]">
+            <span
               className={clsx(
-                "w-3.5 h-3.5 flex-shrink-0 mt-0.5",
-                isPremium ? "text-emerald-300" : "text-emerald-500",
+                "mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0",
+                isPro ? "bg-brand-500/20 text-brand-300" : "bg-brand-50 text-brand-500",
               )}
-            />
-            <span>{h}</span>
+            >
+              <Check className="w-2.5 h-2.5" strokeWidth={3.5} />
+            </span>
+            <span className={isPro ? "text-white/85" : "text-ink-700"}>{h}</span>
           </li>
         ))}
       </ul>
 
+      {/* CTA */}
       <button
         onClick={onPick}
         disabled={picking}
         className={clsx(
-          "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
-          isRecommended
-            ? "bg-brand-gradient text-white hover:opacity-90 shadow-glow"
-            : isPremium
-              ? "bg-white text-ink-900 hover:bg-ink-100"
-              : "bg-ink-900 text-white hover:bg-ink-800",
+          "mt-7 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition disabled:opacity-60",
+          isPro
+            ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow"
+            : "bg-ink-900 text-white hover:bg-ink-800",
         )}
       >
         {picking ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+            <Loader2 className="w-4 h-4 animate-spin" /> Starting…
           </>
         ) : (
           <>
-            Start with {plan.name}
+            Start free trial
             <ArrowRight className="w-4 h-4" />
           </>
         )}
       </button>
+      <p className={clsx("mt-2.5 text-center text-[11px]", isPro ? "text-white/40" : "text-ink-400")}>
+        3 days free, then ${plan.usd}/mo
+      </p>
     </div>
   );
 }

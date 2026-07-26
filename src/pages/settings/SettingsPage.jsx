@@ -24,7 +24,7 @@ import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
 import { useNavigate } from "react-router-dom";
 
-const SUPPORT_EMAIL = "botlify.support@gmail.com";
+const SUPPORT_EMAIL = "contactus@botlify.site";
 
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();

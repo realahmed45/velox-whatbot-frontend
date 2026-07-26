@@ -31,6 +31,7 @@ import {
   ArrowUpRight,
   Zap,
   Webhook,
+  Globe,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -293,6 +294,26 @@ export default function Sidebar({ onNavigate }) {
             </Link>
           </div>
         )}
+
+        {/* Visit public website — opens landing page in a new tab, keeps session */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          title={collapsed ? "Visit website" : undefined}
+          className={clsx(
+            "group flex items-center rounded-xl text-[13.5px] font-medium text-gray-400 transition-all duration-200 hover:text-white hover:bg-white/[0.04]",
+            collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-3 py-2.5",
+          )}
+        >
+          <Globe className="w-[19px] h-[19px] flex-shrink-0 text-gray-500 transition-colors duration-200 group-hover:text-[#ff5722]" />
+          {!collapsed && (
+            <>
+              <span className="truncate">Visit website</span>
+              <ArrowUpRight className="ml-auto w-4 h-4 flex-shrink-0 text-gray-600 transition-colors group-hover:text-[#ff5722]" />
+            </>
+          )}
+        </a>
 
         {/* Profile card */}
         <div

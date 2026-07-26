@@ -4,7 +4,7 @@
  * Professional, clean, enterprise-grade
  */
 import { Link } from "react-router-dom";
-import { Instagram, Mail } from "lucide-react";
+import { Instagram, Facebook, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
 
 export default function Footer() {
@@ -19,16 +19,30 @@ export default function Footer() {
               The Instagram automation platform for creators and brands. Set up
               once. Sells while you sleep.
             </p>
-            <div className="flex items-center gap-3">
-              <a
-                href="https://instagram.com/botlify"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-ink-500 hover:text-accent transition"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">
+                Follow us
+              </p>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://instagram.com/botlify"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram"
+                  className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-ink-400 hover:text-white hover:bg-brand-500 hover:border-brand-500 transition"
+                >
+                  <Instagram size={18} />
+                </a>
+                <a
+                  href="https://facebook.com/botlify"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Facebook"
+                  className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-ink-400 hover:text-white hover:bg-brand-500 hover:border-brand-500 transition"
+                >
+                  <Facebook size={18} />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -88,10 +102,10 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <Mail size={16} className="text-ink-500" />
                 <a
-                  href="mailto:botlify.support@gmail.com"
+                  href="mailto:contactus@botlify.site"
                   className="hover:text-white transition"
                 >
-                  botlify.support@gmail.com
+                  contactus@botlify.site
                 </a>
               </li>
             </ul>

@@ -1,18 +1,14 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles,
   Instagram,
   Bot,
   Mail,
-  CheckCircle2,
-  Circle,
   ArrowRight,
   Zap,
   Target,
   Rocket,
   Settings as SettingsIcon,
-  HelpCircle,
 } from "lucide-react";
 
 const STEPS = [
@@ -22,7 +18,7 @@ const STEPS = [
     title: "Connect your Instagram account",
     eyebrow: "1 min",
     description:
-      "Connect your Instagram Business or Creator account via the official Meta OAuth. It takes under a minute — no app review required.",
+      "Connect your Instagram Business or Creator account. It takes under a minute.",
     bullets: [
       "Click 'Connect Instagram' from the dashboard.",
       "Authorize Botlify to manage messages and comments.",
@@ -32,7 +28,6 @@ const STEPS = [
       label: "Connect Instagram",
       to: "/onboarding/instagram",
     },
-    helpLink: "/dashboard/settings",
   },
   {
     id: 2,
@@ -47,7 +42,6 @@ const STEPS = [
       "Story reply — respond automatically to story interactions.",
     ],
     cta: { label: "Create a trigger", to: "/dashboard/automation" },
-    helpLink: "/dashboard/automation",
   },
   {
     id: 3,
@@ -62,7 +56,6 @@ const STEPS = [
       "Set handoff keywords when a team member should take over.",
     ],
     cta: { label: "Open business profile", to: "/dashboard/ai-bot" },
-    helpLink: "/dashboard/ai-bot",
   },
   {
     id: 4,
@@ -77,7 +70,6 @@ const STEPS = [
       "Adjust your profile if needed — changes apply instantly.",
     ],
     cta: { label: "Open Inbox", to: "/dashboard/inbox" },
-    helpLink: "/dashboard/inbox",
   },
   {
     id: 5,
@@ -88,21 +80,14 @@ const STEPS = [
       "Turn automation ON, drive traffic, and watch automated DMs roll in. Check Analytics weekly to see which triggers convert best.",
     bullets: [
       "Toggle automations Active from the Automations page.",
-      "Drive traffic — story polls, Reels, paid ads, link-in-bio.",
+      "Drive traffic — story polls, Reels, paid ads, and your bio link.",
       "Review Analytics → optimize winning triggers.",
     ],
     cta: { label: "View Analytics", to: "/dashboard/analytics" },
-    helpLink: "/dashboard/analytics",
   },
 ];
 
 export default function GuidePage() {
-  const [done, setDone] = useState({});
-  const completedCount = Object.values(done).filter(Boolean).length;
-  const progressPct = Math.round((completedCount / STEPS.length) * 100);
-
-  const toggle = (id) => setDone((d) => ({ ...d, [id]: !d[id] }));
-
   return (
     <div className="space-y-6 sm:space-y-8 pb-12">
       {/* Hero */}
@@ -120,39 +105,20 @@ export default function GuidePage() {
             </span>
           </h1>
           <p className="mt-4 text-ink-200 max-w-2xl text-base sm:text-lg">
-            Five focused steps. We'll walk you from picking a channel all the
-            way to your AI bot replying to real DMs in your voice. Need help any
-            step of the way? Scroll down — we're one click away.
+            Five focused steps. We'll walk you from connecting your account all
+            the way to your AI bot replying to real DMs in your voice. Need help
+            any step of the way? Scroll down — we're one click away.
           </p>
-
-          {/* Progress */}
-          <div className="mt-8 max-w-md">
-            <div className="flex items-center justify-between text-xs text-ink-300 mb-2">
-              <span>
-                Step {completedCount} of {STEPS.length}
-              </span>
-              <span className="font-semibold text-white">{progressPct}%</span>
-            </div>
-            <div className="h-2 bg-white/10 rounded-md overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent-400 to-brand-400 transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-          </div>
         </div>
       </div>
 
       {/* What you'll set up — quick orientation */}
       <div className="rounded-lg border border-ink-200 bg-white shadow-card p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-ink-900">
-          What you'll set up
-        </h2>
+        <h2 className="text-xl font-bold text-ink-900">What you'll set up</h2>
         <p className="mt-2 text-sm text-ink-600 leading-relaxed max-w-2xl">
           Botlify turns your Instagram into a 24/7 sales and support channel.
           Follow the five steps below in order — each links straight to the page
-          where you'll do it, and you can tick them off as you go. No prior
-          experience needed.
+          where you'll do it. No prior experience needed.
         </p>
         <div className="mt-5 grid sm:grid-cols-3 gap-3">
           {[
@@ -175,30 +141,19 @@ export default function GuidePage() {
         </div>
       </div>
 
-      {/* Steps */}
+      {/* Steps — formal written guide */}
       <div className="space-y-4 sm:space-y-5">
         {STEPS.map((step, idx) => {
           const Icon = step.icon;
-          const isDone = !!done[step.id];
           return (
             <div
               key={step.id}
-              className={`group relative rounded-lg border bg-white shadow-card transition ${
-                isDone
-                  ? "border-emerald-300 ring-1 ring-emerald-200"
-                  : "border-ink-200 hover:border-brand-300 hover:shadow-glow"
-              }`}
+              className="relative rounded-lg border border-ink-200 bg-white shadow-card"
             >
-              <div className="grid md:grid-cols-[auto,1fr,auto] gap-5 p-5 sm:p-7">
+              <div className="grid md:grid-cols-[auto,1fr] gap-5 p-5 sm:p-7">
                 <div className="flex md:flex-col items-center md:items-center gap-3 md:gap-2">
-                  <div
-                    className={`w-12 h-12 rounded-md flex items-center justify-center font-bold text-lg ${
-                      isDone
-                        ? "bg-emerald-500 text-white"
-                        : "bg-brand-gradient text-white shadow-glow"
-                    }`}
-                  >
-                    {isDone ? <CheckCircle2 className="w-6 h-6" /> : idx + 1}
+                  <div className="w-12 h-12 rounded-md flex items-center justify-center font-bold text-lg bg-brand-gradient text-white shadow-glow">
+                    {idx + 1}
                   </div>
                   <div className="hidden md:flex flex-col items-center text-[10px] text-ink-400 uppercase tracking-wider">
                     <Icon className="w-4 h-4 mb-1" />
@@ -234,37 +189,6 @@ export default function GuidePage() {
                     <Link to={step.cta.to} className="btn-primary">
                       {step.cta.label} <ArrowRight className="w-4 h-4" />
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => toggle(step.id)}
-                      className={
-                        isDone
-                          ? "btn bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "btn-secondary"
-                      }
-                    >
-                      {isDone ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" /> Marked done
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="w-4 h-4" /> Mark as done
-                        </>
-                      )}
-                    </button>
-                    <Link
-                      to={step.helpLink}
-                      className="btn-ghost text-ink-500 hover:text-brand-600"
-                    >
-                      <HelpCircle className="w-4 h-4" /> Need help?
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="hidden md:flex items-start">
-                  <div className="text-[10px] uppercase tracking-wider text-ink-300">
-                    Step {idx + 1}/{STEPS.length}
                   </div>
                 </div>
               </div>
@@ -289,7 +213,7 @@ export default function GuidePage() {
           </div>
           <div className="space-y-3">
             <a
-              href="mailto:botlify.support@gmail.com"
+              href="mailto:contactus@botlify.site"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
               <span className="w-10 h-10 rounded-md bg-brand-gradient flex items-center justify-center shadow-glow">
@@ -300,13 +224,13 @@ export default function GuidePage() {
                   Email us
                 </div>
                 <div className="text-xs text-ink-500 truncate">
-                  botlify.support@gmail.com — we reply within a few hours
+                  contactus@botlify.site — we reply within a few hours
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />
             </a>
             <a
-              href="mailto:botlify.support@gmail.com"
+              href="mailto:contactus@botlify.site"
               className="flex items-center gap-3 p-4 rounded-md border border-ink-200 bg-white hover:border-brand-400 hover:shadow-glow transition group"
             >
               <span className="w-10 h-10 rounded-md bg-brand-400 flex items-center justify-center shadow">
@@ -317,7 +241,7 @@ export default function GuidePage() {
                   Email support
                 </div>
                 <div className="text-xs text-ink-500 truncate">
-                  botlify.support@gmail.com — we reply fast
+                  contactus@botlify.site — we reply fast
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-ink-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition" />

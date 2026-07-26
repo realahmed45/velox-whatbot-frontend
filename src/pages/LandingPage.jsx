@@ -23,7 +23,8 @@ import {
   Bot,
   Users,
   TrendingUp,
-  ShoppingBag,
+  Droplet,
+  CalendarClock,
   Megaphone,
   Heart,
   Share2,
@@ -656,17 +657,22 @@ const IG_FEATURES = [
   {
     icon: BarChart3,
     title: "Advanced analytics",
-    desc: "Track replies, leads and sales in real time.",
+    desc: "Track replies, leads and engagement in real time.",
   },
   {
-    icon: ShoppingBag,
-    title: "Smart orders",
-    desc: "Take orders via DM with COD / delivery tracking built in.",
+    icon: Droplet,
+    title: "Drip campaigns",
+    desc: "Automated DM sequences that nurture leads over days.",
+  },
+  {
+    icon: CalendarClock,
+    title: "Scheduled posts",
+    desc: "Plan and auto-publish your Instagram content.",
   },
   {
     icon: Inbox,
     title: "Team inbox",
-    desc: "Hand off conversations to your human agents seamlessly.",
+    desc: "Hand off conversations to your team with granular access.",
   },
 ];
 
@@ -953,8 +959,8 @@ function PricingTeaser() {
   const tiers = [
     {
       name: "Basic",
-      usd: 8,
-      pkr: 2240,
+      usd: 9,
+      pkr: 2520,
       desc: "For solo creators & small brands.",
       features: [
         "1 Instagram account",
@@ -1091,28 +1097,36 @@ function PricingTeaser() {
  * ──────────────────────────────────────────────────────────── */
 const FAQS = [
   {
-    q: "Is the AI chatbot the only thing Botlify does?",
-    a: "Far from it. Botlify is the full automation platform — AI replies are one feature. You also get comment → DM, story replies, mention triggers, broadcasts, drag-drop flows, contact tagging, drip campaigns, analytics, and more.",
+    q: "What exactly does Botlify do?",
+    a: "Botlify automates your Instagram DMs and comments. It auto-replies to messages, turns comments into DMs, responds to story replies and mentions, runs broadcasts and drip campaigns, schedules posts, and uses an AI bot trained on your business to answer questions 24/7 — all from one dashboard.",
   },
   {
-    q: "Will Meta ban my Instagram account?",
-    a: "Botlify uses the official Instagram API — 100% Meta-approved. Your account stays safe.",
+    q: "How does the free trial and billing work?",
+    a: "Both plans start with a 3-day free trial. You add a card when you start the trial, and you're only charged when the 3 days end — cancel anytime before then and you pay nothing. After that it renews automatically each cycle until you cancel.",
+  },
+  {
+    q: "Is it safe for my Instagram account?",
+    a: "Yes. Botlify connects through an approved Instagram messaging provider and only sends replies within Instagram's allowed rules (including its 24-hour messaging window). You connect once by authorizing access — no password sharing.",
+  },
+  {
+    q: "Do I need a Business or Creator account?",
+    a: "Yes. Instagram only allows messaging automation on Business or Creator accounts. Switching is free and takes a minute in the Instagram app.",
   },
   {
     q: "How long does setup take?",
-    a: "About 6 minutes. Connect Instagram, add your first trigger, flip the switch — done.",
+    a: "About 5 minutes. Connect Instagram, turn on an automation or two, add your business info so the AI sounds like you, and you're live.",
   },
   {
-    q: "What does the AI run on?",
-    a: "Basic plan gets AI · Standard. Pro unlocks faster, smarter responses with longer memory. Either way, the AI is trained on your business — not generic.",
+    q: "Do I need any technical or coding skills?",
+    a: "No. Everything is point-and-click — automations, the visual flow builder, and the AI bot all work without code.",
   },
   {
-    q: "Does Botlify connect to my other tools?",
-    a: "Yes — outbound webhooks are open out of the box, so you can pipe every DM, comment, and new lead into Zapier, Make, n8n, or your own server. Mailchimp is built in for email capture.",
+    q: "Can I add my team?",
+    a: "Yes, on the Pro plan. Invite teammates and give each one access only to the areas you choose — inbox, contacts, automations, and more.",
   },
   {
-    q: "Is there a free plan?",
-    a: "Every plan starts with a 3-day free trial — no card required. After that, pick Basic or Pro.",
+    q: "Can I cancel anytime?",
+    a: "Anytime. Manage or cancel your subscription in one click from the Billing page. If you cancel, you keep access until the end of your current period.",
   },
 ];
 
@@ -1226,7 +1240,7 @@ function Footer() {
               <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
               <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
               <li>
-                <a href="mailto:botlify.support@gmail.com" className="hover:text-white inline-flex items-center gap-1.5">
+                <a href="mailto:contactus@botlify.site" className="hover:text-white inline-flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" /> Contact
                 </a>
               </li>

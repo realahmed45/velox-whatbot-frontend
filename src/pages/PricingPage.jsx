@@ -25,8 +25,8 @@ const FALLBACK_PLANS = [
     id: "ig_starter",
     name: "Basic — Instagram",
     tagline: "Instagram only · automate DMs and comments",
-    usd: 8,
-    monthlyPrice: 2240,
+    usd: 9,
+    monthlyPrice: 2520,
     trialDays: 3,
     highlights: [
       "1 Instagram account",
