@@ -18,13 +18,15 @@ export const initSocket = () => {
     },
   );
 
-  socket.on("connect", () => console.log("[Socket] Connected:", socket.id));
-  socket.on("disconnect", (reason) =>
-    console.log("[Socket] Disconnected:", reason),
-  );
-  socket.on("connect_error", (err) =>
-    console.error("[Socket] Error:", err.message),
-  );
+  if (import.meta.env.DEV) {
+    socket.on("connect", () => console.log("[Socket] Connected:", socket.id));
+    socket.on("disconnect", (reason) =>
+      console.log("[Socket] Disconnected:", reason),
+    );
+    socket.on("connect_error", (err) =>
+      console.error("[Socket] Error:", err.message),
+    );
+  }
 
   return socket;
 };

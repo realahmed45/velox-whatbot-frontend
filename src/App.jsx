@@ -71,7 +71,6 @@ const InstagramOnboardingPage = lazy(
 
 // Public
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
-const PublicBioPage = lazy(() => import("@/pages/link-in-bio/PublicBioPage"));
 const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
 const ContactPage = lazy(() => import("@/pages/ContactPage"));
@@ -116,7 +115,6 @@ export default function App() {
             <Routes>
               {/* Public marketing */}
               <Route path="/" element={<LandingPage />} />
-              <Route path="/@:slug" element={<PublicBioPage />} />
               {/* Team-invite landing (self-redirects to login if needed) */}
               <Route path="/invite" element={<InvitePage />} />
               <Route element={<MarketingLayout />}>

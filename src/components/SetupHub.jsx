@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Instagram,
   Sparkles,
-  ShoppingBag,
   MessageCircle,
   Check,
   ArrowRight,
@@ -15,15 +14,12 @@ import {
   Bot,
 } from "lucide-react";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import ShopifyConnect from "@/components/integrations/ShopifyConnect";
 
 export default function SetupHub({ onConnectInstagram }) {
   const { workspace } = useWorkspaceStore();
   const navigate = useNavigate();
 
   const igConnected = workspace?.instagram?.status === "connected";
-  const shopifyConnected = !!workspace?.integrations?.shopify?.storeUrl;
-  const shopifyOrders = !!workspace?.integrations?.shopify?.scopes?.orders;
   const hasKnowledge =
     !!(workspace?.aiKnowledge?.content?.trim()) ||
     (workspace?.aiKnowledge?.sources?.length || 0) > 0 ||
@@ -51,15 +47,6 @@ export default function SetupHub({ onConnectInstagram }) {
         actionLabel: "Set up profile",
       },
       {
-        id: "shopify",
-        label: "Connect your store",
-        desc: "Optional — for brands selling through Shopify.",
-        done: shopifyConnected,
-        optional: true,
-        icon: ShoppingBag,
-        embedShopify: true,
-      },
-      {
         id: "welcome",
         label: "Set a welcome message",
         desc: "Send an instant reply when someone messages you for the first time.",
@@ -78,15 +65,7 @@ export default function SetupHub({ onConnectInstagram }) {
         actionLabel: "Open preview",
       },
     ],
-    [
-      igConnected,
-      hasKnowledge,
-      shopifyConnected,
-      welcomeSet,
-      workspace,
-      navigate,
-      onConnectInstagram,
-    ],
+    [igConnected, hasKnowledge, welcomeSet, workspace, navigate, onConnectInstagram],
   );
 
   const requiredDone = steps.filter((s) => !s.optional && s.done).length;
@@ -94,14 +73,14 @@ export default function SetupHub({ onConnectInstagram }) {
   const pct = Math.round((requiredDone / requiredTotal) * 100);
   const allRequiredDone = requiredDone === requiredTotal;
 
-  if (allRequiredDone && shopifyConnected) return null;
+  if (allRequiredDone) return null;
 
   return (
-    <div className="border border-violet-200/70 bg-gradient-to-br from-violet-50/80 via-white to-emerald-50/50 shadow-sm">
+    <div className="border border-brand-200/70 bg-gradient-to-br from-brand-50/80 via-white to-brand-50/40 shadow-sm rounded-2xl">
       <div className="p-5 sm:p-6 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-600">
               Setup
             </p>
             <h2 className="text-lg font-black text-ink-950 mt-0.5">
@@ -112,14 +91,14 @@ export default function SetupHub({ onConnectInstagram }) {
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-2xl font-black text-violet-600">{pct}%</p>
+            <p className="text-2xl font-black text-brand-600">{pct}%</p>
             <p className="text-[10px] text-ink-400">required steps</p>
           </div>
         </div>
 
-        <div className="h-1.5 bg-ink-100 overflow-hidden">
+        <div className="h-1.5 bg-ink-100 overflow-hidden rounded-full">
           <div
-            className="h-full bg-gradient-to-r from-violet-500 to-emerald-500 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-500"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -167,33 +146,15 @@ export default function SetupHub({ onConnectInstagram }) {
                     </div>
                     <p className="text-xs text-ink-500 mt-0.5">{step.desc}</p>
 
-                    {!step.done && step.embedShopify && (
-                      <div className="mt-3">
-                        <ShopifyConnect compact />
-                      </div>
-                    )}
-
-                    {!step.done && step.action && !step.embedShopify && (
+                    {!step.done && step.action && (
                       <button
                         type="button"
                         onClick={step.action}
-                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 hover:text-violet-900"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700"
                       >
                         {step.actionLabel}
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
-                    )}
-
-                    {step.id === "shopify" && step.done && (
-                      <div className="mt-2">
-                        <ShopifyConnect
-                          compact
-                          connected
-                          storeUrl={workspace?.integrations?.shopify?.storeUrl}
-                          orderTracking={shopifyOrders}
-                          showManageLink={false}
-                        />
-                      </div>
                     )}
                   </div>
                 </div>
