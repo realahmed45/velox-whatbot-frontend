@@ -309,9 +309,9 @@ function Hero() {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
-              Botlify replies to your DMs, comments and story mentions — instantly,
-              24/7, in your voice. Capture every lead, answer every question, and
-              close sales while you sleep.
+              Getting more DMs than you can answer? Botlify replies to your DMs,
+              comments and story mentions instantly — 24/7, in your voice. Never
+              leave a follower on read again.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -913,22 +913,22 @@ function Testimonials() {
   // reviews or customer counts.
   const items = [
     {
-      icon: Megaphone,
-      role: "Online stores",
+      icon: Bot,
+      role: "Creators & influencers",
       quote:
-        "Reply to product questions, share prices and links, and turn comments into orders — automatically.",
+        "Getting more DMs than you can answer? Botlify replies to every one instantly, in your voice — so no fan or follower is left on read.",
     },
     {
-      icon: Bot,
-      role: "Creators & coaches",
+      icon: Megaphone,
+      role: "Businesses & stores",
       quote:
-        "Handle DMs from reels and stories at scale, capture leads, and answer FAQs in your own voice 24/7.",
+        "Answer product questions, share prices and links, and turn comments into conversations — automatically, around the clock.",
     },
     {
       icon: Users,
       role: "Agencies & teams",
       quote:
-        "Manage multiple conversations from a shared inbox with granular team permissions and analytics.",
+        "Manage every conversation from a shared inbox with granular team permissions and analytics across accounts.",
     },
   ];
   return (
@@ -937,8 +937,12 @@ function Testimonials() {
         <div className="text-center max-w-2xl mx-auto">
           <Eyebrow>Who it's for</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            Built for anyone who sells on Instagram.
+            Built for anyone who can't reply to everyone.
           </h2>
+          <p className="mt-3 text-ink-600 text-base sm:text-lg">
+            If your Instagram gets more DMs and comments than you can keep up
+            with, Botlify handles them for you — 24/7.
+          </p>
         </div>
         <div className="mt-12 grid md:grid-cols-3 gap-5">
           {items.map((t, i) => (
@@ -1228,7 +1232,8 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo size="md" dark />
             <p className="mt-3 text-sm max-w-xs">
-              The Instagram automation platform for creators and brands. Set up once. Sells while you sleep.
+              The Instagram automation platform for creators and brands. Reply to
+              every DM, comment and story — automatically, 24/7.
             </p>
             <div className="mt-4 flex items-center gap-3 text-ink-500">
               <InstagramMark className="w-5 h-5" />
