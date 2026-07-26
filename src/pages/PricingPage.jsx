@@ -97,12 +97,12 @@ export default function PricingPage({ embedded = false }) {
       return;
     }
 
-    // Logged in → start the Lemon Squeezy checkout (3-day trial, card upfront).
-    // The backend returns a hosted checkout URL we redirect to.
+    // Logged in → start the Creem hosted checkout (3-day trial, card upfront)
+    // and redirect the browser to it.
     setSelecting(plan.key);
     try {
       const billingCycle = cycle === "yearly" ? "annual" : "monthly";
-      const { data } = await api.post("/billing/lemonsqueezy/checkout", {
+      const { data } = await api.post("/billing/creem/checkout", {
         plan: plan.key,
         billingCycle,
       });

@@ -53,7 +53,7 @@ export default function BillingPage() {
   const openPortal = async () => {
     setPortalLoading(true);
     try {
-      const { data } = await api.get("/billing/lemonsqueezy/portal");
+      const { data } = await api.get("/billing/creem/portal");
       if (data?.url) window.location.href = data.url;
       else throw new Error();
     } catch (err) {
@@ -93,8 +93,13 @@ export default function BillingPage() {
   const planId = sub?.plan || limits.planId || "free";
   const status = sub?.status || "trialing";
   const isTrial = status === "trialing" || planId === "free";
-  // A live paid/trialing subscription we can manage via the LS portal.
-  const hasManageable = !!sub?.lemonSqueezySubscriptionId && planId !== "free";
+  // A live paid/trialing subscription we can manage via the Creem portal.
+  const hasManageable =
+    !!(
+      sub?.creemSubscriptionId ||
+      sub?.paddleSubscriptionId ||
+      sub?.lemonSqueezySubscriptionId
+    ) && planId !== "free";
   const cancelPending = sub?.cancelAtPeriodEnd;
 
   return (
