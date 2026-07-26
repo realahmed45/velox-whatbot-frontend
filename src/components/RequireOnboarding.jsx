@@ -83,9 +83,19 @@ export default function RequireOnboarding({ children }) {
   // If we can positively tell they're a non-owner member, let them straight in.
   if (!isOwner && isMember) return children;
 
+  const isExempt = EXEMPT_PATHS.some((p) => location.pathname.startsWith(p));
+
+  // PAYWALL: Botlify has no free tier. An owner without an active/trialing paid
+  // plan must start a plan (card required) before using the app. Billing +
+  // settings stay reachable so they can pay or sign out. Agents already bypassed
+  // above (they use the owner's paid workspace).
+  const entitled = workspace.entitled === true;
+  if (isOwner && !entitled && !isExempt) {
+    return <Navigate to="/onboarding/pricing" replace />;
+  }
+
   const igConnected = workspace.instagram?.status === "connected";
   const hasChannel = igConnected;
-  const isExempt = EXEMPT_PATHS.some((p) => location.pathname.startsWith(p));
 
   if (!hasChannel && !isExempt) {
     return (

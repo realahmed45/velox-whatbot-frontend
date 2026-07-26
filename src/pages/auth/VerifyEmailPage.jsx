@@ -76,9 +76,10 @@ export default function VerifyEmailPage() {
       const { data } = await api.post("/auth/verify-email", { email, code });
       if (data.user) setUser(data.user);
       toast.success("Email verified!");
-      // Team invitees go back to their invite link to finish joining;
-      // everyone else proceeds to onboarding.
-      navigate(next || "/onboarding/instagram", { replace: true });
+      // Team invitees go back to their invite link to finish joining. Everyone
+      // else must pick a plan (card required, 3-day trial) BEFORE using the app
+      // — Botlify has no free tier.
+      navigate(next || "/onboarding/pricing", { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid code. Try again.");
       setDigits(Array(CODE_LENGTH).fill(""));

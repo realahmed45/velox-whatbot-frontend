@@ -32,14 +32,13 @@ export default function GoogleSignInButton({ label = "Continue with Google" }) {
         return;
       }
 
-      const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
-      const igConnected =
-        data.user?.activeWorkspace?.instagram?.status === "connected";
-
-      if (data.isNew || !ws || !igConnected) {
-        navigate("/onboarding/instagram");
+      // New Google signups have no plan yet → pick one (card, 3-day trial)
+      // before the app. Returning users go to the dashboard; the paywall gate
+      // there will redirect them to pricing if their plan lapsed.
+      if (data.isNew) {
+        navigate("/onboarding/pricing", { replace: true });
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Google sign-in failed");

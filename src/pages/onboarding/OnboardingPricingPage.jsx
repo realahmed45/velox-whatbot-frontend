@@ -1,5 +1,6 @@
 /**
- * Onboarding pricing — shown AFTER Instagram is connected (pay later).
+ * Onboarding pricing — the paywall shown BEFORE the dashboard. A plan (card,
+ * 3-day trial) is required to use Botlify; there is no free tier.
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -21,7 +22,7 @@ export default function OnboardingPricingPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const planHint = params.get("plan");
-  const { activeWorkspace } = useAuthStore();
+  const { activeWorkspace, user, setActiveWorkspace } = useAuthStore();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
 
   const [plans, setPlans] = useState([]);
@@ -30,17 +31,26 @@ export default function OnboardingPricingPage() {
   const [picking, setPicking] = useState(null);
   const [autoApplied, setAutoApplied] = useState(false);
 
-  const igConnected = workspace?.instagram?.status === "connected";
-
+  // Pricing comes BEFORE connecting Instagram — a plan (card, 3-day trial) is
+  // required first, so we do NOT redirect to the Instagram step from here.
+  // A brand-new owner has no workspace yet (we don't auto-create at signup), so
+  // ensure one exists — the checkout endpoint is workspace-scoped.
   useEffect(() => {
-    if (activeWorkspace) fetchWorkspace(activeWorkspace);
-  }, [activeWorkspace, fetchWorkspace]);
-
-  useEffect(() => {
-    if (!igConnected && workspace) {
-      navigate("/onboarding/instagram", { replace: true });
+    if (activeWorkspace) {
+      fetchWorkspace(activeWorkspace);
+      return;
     }
-  }, [igConnected, workspace, navigate]);
+    api
+      .post("/workspaces/ensure", {
+        name: user?.name ? `${user.name}'s Workspace` : undefined,
+      })
+      .then(({ data }) => {
+        setActiveWorkspace(data.workspace._id);
+        fetchWorkspace(data.workspace._id);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspace]);
 
   useEffect(() => {
     let alive = true;
@@ -66,45 +76,43 @@ export default function OnboardingPricingPage() {
     };
   }, []);
 
+  // Start the Lemon Squeezy checkout (3-day trial, card upfront) for a plan and
+  // redirect the browser to the hosted checkout.
+  const startCheckout = async (planKey, billingCycle = "monthly") => {
+    const { data } = await api.post("/billing/lemonsqueezy/checkout", {
+      plan: planKey,
+      billingCycle,
+    });
+    if (data?.url) {
+      window.location.href = data.url;
+      return true;
+    }
+    throw new Error("No checkout URL");
+  };
+
+  // If they arrived with a chosen plan (?plan=), send them straight to checkout.
   useEffect(() => {
     if (autoApplied || !planHint || plans.length === 0) return;
     const plan = plans.find((p) => p.key === planHint);
     if (!plan) return;
     setAutoApplied(true);
-    (async () => {
-      try {
-        await api.post("/billing/select-plan", {
-          plan: plan.key,
-          billingCycle: "monthly",
-        });
-        toast.success(`${plan.name} activated`);
-      } catch {
-        /* non-fatal */
-      }
-      navigate("/dashboard", { replace: true });
-    })();
-  }, [planHint, plans, autoApplied, navigate]);
+    startCheckout(plan.key).catch(() => {
+      /* fall through to the plan picker below if checkout can't start */
+      setAutoApplied(false);
+    });
+  }, [planHint, plans, autoApplied]);
 
   const visiblePlans = useMemo(() => plans, [plans]);
-
-  const goDashboard = () => navigate("/dashboard");
 
   const pickPlan = async (plan) => {
     setPicking(plan.key);
     try {
-      await api.post("/billing/select-plan", {
-        plan: plan.key,
-        billingCycle: "monthly",
-      });
-      toast.success(`${plan.name} selected`);
-      goDashboard();
+      await startCheckout(plan.key);
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          "Couldn't activate plan — you can choose one later in Billing.",
+          "Couldn't start checkout. Please try again.",
       );
-      goDashboard();
-    } finally {
       setPicking(null);
     }
   };
@@ -145,13 +153,14 @@ export default function OnboardingPricingPage() {
               Couldn't load pricing
             </p>
             <p className="text-xs text-amber-700 mt-1">
-              Continue with your trial — pick a plan anytime from Billing.
+              Please refresh and try again. If it keeps happening, email
+              botlify.support@gmail.com.
             </p>
             <button
-              onClick={goDashboard}
+              onClick={() => window.location.reload()}
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-lg transition"
             >
-              Go to dashboard <ArrowRight className="w-4 h-4" />
+              Retry <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -171,16 +180,9 @@ export default function OnboardingPricingPage() {
 
         {!errored && (
           <div className="mt-10 flex flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={goDashboard}
-              className="text-sm font-semibold text-ink-600 hover:text-ink-900 underline-offset-2 hover:underline"
-            >
-              Continue with free trial — choose a plan later
-            </button>
             <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-400">
               <ShieldCheck className="w-3 h-3" />
-              3-day free trial · cancel anytime
+              3-day free trial · card required · cancel anytime before it ends
             </p>
           </div>
         )}
