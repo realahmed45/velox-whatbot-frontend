@@ -577,11 +577,12 @@ function Eyebrow({ children }) {
  * Trust / social-proof bar
  * ──────────────────────────────────────────────────────────── */
 function TrustBar() {
+  // Capability statements (true for every user) — no unverifiable metrics.
   const stats = [
-    { value: "1,200+", label: "Creators & brands" },
-    { value: "2M+", label: "DMs automated" },
-    { value: "34%", label: "Avg DM conversion" },
     { value: "24/7", label: "Always-on replies" },
+    { value: "<5s", label: "Instant response" },
+    { value: "5 min", label: "To set up" },
+    { value: "No code", label: "Point & click" },
   ];
   return (
     <section className="border-y border-ink-100 bg-brand-50/60">
@@ -908,51 +909,47 @@ function HowItWorks() {
  * Testimonials
  * ──────────────────────────────────────────────────────────── */
 function Testimonials() {
+  // Factual use cases (who Botlify is for + what it does) — no fabricated
+  // reviews or customer counts.
   const items = [
     {
-      name: "Sara K.",
-      role: "Founder, Karachi Skincare",
-      quote: "Comment-to-DM alone tripled our DM lead flow. Botlify pays for itself in two days.",
+      icon: Megaphone,
+      role: "Online stores",
+      quote:
+        "Reply to product questions, share prices and links, and turn comments into orders — automatically.",
     },
     {
-      name: "Hamza R.",
-      role: "Owner, FitMart Gym",
-      quote: "AI replies at midnight. We close Instagram sales while we sleep — every single night.",
+      icon: Bot,
+      role: "Creators & coaches",
+      quote:
+        "Handle DMs from reels and stories at scale, capture leads, and answer FAQs in your own voice 24/7.",
     },
     {
-      name: "Zoya M.",
-      role: "Boutique owner",
-      quote: "Set up in one evening. Customers DM us from reels and get answered instantly. Game changer.",
+      icon: Users,
+      role: "Agencies & teams",
+      quote:
+        "Manage multiple conversations from a shared inbox with granular team permissions and analytics.",
     },
   ];
   return (
     <section className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto">
-          <Eyebrow>Loved by creators</Eyebrow>
+          <Eyebrow>Who it's for</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            Loved by busy founders.
+            Built for anyone who sells on Instagram.
           </h2>
         </div>
         <div className="mt-12 grid md:grid-cols-3 gap-5">
           {items.map((t, i) => (
             <div key={i} className="rounded-2xl border border-ink-100 bg-white p-6 shadow-card">
-              <div className="flex items-center gap-1 text-brand-500">
-                {Array.from({ length: 5 }).map((_, k) => (
-                  <Star key={k} className="w-4 h-4 fill-brand-500" />
-                ))}
+              <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center">
+                <t.icon className="w-5 h-5" />
               </div>
-              <p className="mt-4 text-ink-800 leading-relaxed">"{t.quote}"</p>
-              <div className="mt-5 pt-4 border-t border-ink-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold">
-                  {t.name[0]}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-ink-900">{t.name}</p>
-                  <p className="text-xs text-ink-500">{t.role}</p>
-                </div>
-                <InstagramMark className="w-5 h-5 text-brand-500" />
-              </div>
+              <p className="mt-4 text-sm font-black uppercase tracking-wider text-brand-600">
+                {t.role}
+              </p>
+              <p className="mt-2 text-ink-700 leading-relaxed">{t.quote}</p>
             </div>
           ))}
         </div>

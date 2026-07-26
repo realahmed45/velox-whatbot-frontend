@@ -132,12 +132,12 @@ export default function FeaturesPage() {
             Ready to Get Started?
           </h2>
           <p className="text-ink-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of creators and brands using Botlify to automate
-            their Instagram and grow their business.
+            Automate your Instagram DMs, comments and stories — and turn every
+            conversation into a customer. Start your 3-day free trial.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/signup"
+              to="/register"
               className="px-8 py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent/90 transition"
             >
               Start Free Trial
