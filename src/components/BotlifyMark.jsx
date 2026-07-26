@@ -1,30 +1,20 @@
 /**
  * BotlifyMark — Botlify's brand mark.
  *
- * A custom monogram: a bold lowercase "b" (for Botlify) on a rounded gradient
- * tile, where the bowl of the "b" carries a chat-bubble tail — so the letter
- * itself reads as a message. Simple, ownable, and razor-sharp at any size
- * (the concept survives all the way down to a 16px favicon).
+ * A speech bubble with a lightning bolt struck through it: "instant, automated
+ * messaging." Bold, ownable, and razor-sharp at every size — the bolt reads
+ * clearly all the way down to a 16px favicon. The bubble tail sits bottom-left
+ * so it's unmistakably a message/DM.
  *
  * Props:
  *   size      pixel size (width = height), default 36
  *   className extra classes on the <svg>
- *   mono      single-color render (uses currentColor); knockout becomes
- *             transparent so it works on top of a colored surface
- *   plain     omit the tile — just the "b" glyph in brand color (for use on
- *             already-branded/coloured backgrounds)
+ *   mono      single-color render (uses currentColor) for subtle/dark uses
  */
-export default function BotlifyMark({
-  size = 36,
-  className = "",
-  mono = false,
-  plain = false,
-}) {
+export default function BotlifyMark({ size = 36, className = "", mono = false }) {
   const gid = "blf_g";
-  const tile = mono ? "currentColor" : `url(#${gid})`;
-  // The "b" is knocked out of the tile (white). In plain mode there's no tile,
-  // so the "b" is drawn in brand orange instead.
-  const glyph = plain ? (mono ? "currentColor" : "#ff5722") : "#fff";
+  const bubble = mono ? "currentColor" : `url(#${gid})`;
+  const bolt = mono ? "#fff" : "#fff";
 
   return (
     <svg
@@ -37,54 +27,31 @@ export default function BotlifyMark({
       role="img"
       aria-label="Botlify"
     >
-      {!plain && (
-        <>
-          <rect x="2" y="2" width="44" height="44" rx="13" fill={tile} />
-          {!mono && (
-            <rect
-              x="2"
-              y="2"
-              width="44"
-              height="44"
-              rx="13"
-              fill="url(#blf_sheen)"
-              opacity="0.18"
-            />
-          )}
-        </>
-      )}
-
-      {/* The "b": bold stem + a round bowl. even-odd cuts the counter (the hole)
-          so the tile/background shows through — that hole is what makes it a
-          clean, high-contrast letter at tiny sizes. */}
+      {/* speech bubble with a bottom-left tail */}
       <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={glyph}
-        d="
-          M15.4 8.5
-          a3 3 0 0 1 3 3
-          V18
-          A10 10 0 0 1 24.3 16
-          A10.4 10.4 0 0 1 34.7 26.4
-          A10.4 10.4 0 0 1 24.3 36.8
-          A10 10 0 0 1 18.4 34.8
-          V35.5
-          a3 3 0 0 1 -6 0
-          V11.5
-          A3 3 0 0 1 15.4 8.5
-          Z
-          M23.9 21.6
-          a4.8 4.8 0 1 0 0 9.6
-          a4.8 4.8 0 0 0 0 -9.6
-          Z
-        "
+        d="M13 8 H35
+           A9.5 9.5 0 0 1 44.5 17.5 V28.5
+           A9.5 9.5 0 0 1 35 38 H23.5
+           L15 44.8
+           A1 1 0 0 1 13.4 44 V37.9
+           A9.5 9.5 0 0 1 4 28.5 V17.5
+           A9.5 9.5 0 0 1 13 8 Z"
+        fill={bubble}
       />
 
-      {/* chat-bubble tail on the bowl → the 'b' is a message */}
+      {/* subtle top sheen for depth */}
+      {!mono && (
+        <path
+          d="M13 8 H35 A9.5 9.5 0 0 1 44.5 17.5 V21 H4 V17.5 A9.5 9.5 0 0 1 13 8 Z"
+          fill="#fff"
+          opacity="0.14"
+        />
+      )}
+
+      {/* lightning bolt = instant / automated */}
       <path
-        d="M31.4 33.2 L36.6 37.4 L31 37.9 Z"
-        fill={glyph}
+        d="M27 13.5 L18 25.5 H23.2 L21 34 L31 21.5 H25.4 Z"
+        fill={bolt}
       />
 
       <defs>
@@ -99,17 +66,6 @@ export default function BotlifyMark({
           <stop stopColor="#ff8a4c" />
           <stop offset="0.5" stopColor="#ff5722" />
           <stop offset="1" stopColor="#e13c08" />
-        </linearGradient>
-        <linearGradient
-          id="blf_sheen"
-          x1="6"
-          y1="4"
-          x2="26"
-          y2="30"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#fff" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
       </defs>
     </svg>
