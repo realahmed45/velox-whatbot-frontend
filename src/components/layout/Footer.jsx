@@ -114,7 +114,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink-500">
-          <p>© {new Date().getFullYear()} Botlify. Built for creators.</p>
+          <p>© {new Date().getFullYear()} Botlify. All rights reserved.</p>
           <p className="text-xs">Made with care · Karachi · Pakistan</p>
         </div>
       </div>

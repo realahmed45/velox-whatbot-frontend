@@ -64,7 +64,7 @@ export default function AuthLayout() {
             <Shield className="w-3.5 h-3.5 text-brand-400" /> Meta-approved API
           </span>
           <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-brand-400" /> 2,500+ creators
+            <Zap className="w-3.5 h-3.5 text-brand-400" /> Replies in seconds
           </span>
         </div>
       </div>
@@ -116,6 +116,10 @@ export default function AuthLayout() {
               Privacy
             </Link>
             .
+          </p>
+
+          <p className="mt-3 text-center text-[11px] text-ink-300">
+            © {new Date().getFullYear()} Botlify. All rights reserved.
           </p>
         </div>
       </div>

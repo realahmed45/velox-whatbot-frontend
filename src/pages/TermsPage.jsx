@@ -4,7 +4,7 @@ import { LegalShell } from "./PrivacyPage";
 const SECTIONS = [
   {
     h: "Agreement to Terms",
-    p: "By accessing or using Botlify (botlify.site), you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, you may not use the Service. If you use Botlify on behalf of a business, you confirm you are authorized to bind that business to these Terms.",
+    p: 'By accessing or using Botlify (botlify.site), you agree to be bound by these Terms of Service and our Privacy Policy. "Botlify" ("we", "us", "our") refers to the Service and its owner-operator. If you do not agree, you may not use the Service. If you use Botlify on behalf of a business, you confirm you are authorized to bind that business to these Terms.',
   },
   {
     h: "Description of Service",

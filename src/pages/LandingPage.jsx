@@ -1261,7 +1261,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <p>© {new Date().getFullYear()} Botlify. Built for creators.</p>
+          <p>© {new Date().getFullYear()} Botlify. All rights reserved.</p>
           <p className="text-ink-500">Made with care · Karachi · Pakistan</p>
         </div>
       </div>
