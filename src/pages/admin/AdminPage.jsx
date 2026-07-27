@@ -15,7 +15,6 @@ import {
   CreditCard,
   Instagram,
   TrendingUp,
-  Star,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -226,10 +225,10 @@ function AdminDashboard({ onLogout }) {
                 sub={`${overview?.workspaces?.total ?? 0} workspaces`}
               />
               <StatCard
-                icon={Star}
-                label="Early-bird used"
-                value={`${overview?.users?.earlyBird ?? 0}/${overview?.users?.earlyBirdLimit ?? 100}`}
-                sub={`${overview?.users?.earlyBirdRemaining ?? 0} spots left`}
+                icon={TrendingUp}
+                label="Est. MRR"
+                value={`$${overview?.subscriptions?.estimatedMrr ?? 0}`}
+                sub={`${overview?.users?.verified ?? 0} verified users`}
               />
             </div>
 
@@ -293,9 +292,6 @@ function AdminDashboard({ onLogout }) {
                                 <Badge tone="green">verified</Badge>
                               ) : (
                                 <Badge tone="gray">unverified</Badge>
-                              )}
-                              {u.earlyBird && (
-                                <Badge tone="brand">early-bird</Badge>
                               )}
                             </div>
                           </td>
