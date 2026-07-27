@@ -71,6 +71,7 @@ const InstagramOnboardingPage = lazy(
 
 // Public
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
+const AdminPage = lazy(() => import("@/pages/admin/AdminPage"));
 const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
 const ContactPage = lazy(() => import("@/pages/ContactPage"));
@@ -115,6 +116,8 @@ export default function App() {
             <Routes>
               {/* Public marketing */}
               <Route path="/" element={<LandingPage />} />
+              {/* Admin panel — self-contained auth, no user session */}
+              <Route path="/admin" element={<AdminPage />} />
               {/* Team-invite landing (self-redirects to login if needed) */}
               <Route path="/invite" element={<InvitePage />} />
               <Route element={<MarketingLayout />}>
