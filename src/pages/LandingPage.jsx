@@ -877,28 +877,63 @@ function HowItWorks() {
     },
   ];
   return (
-    <section className="py-16 sm:py-24 bg-ink-50/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="relative py-16 sm:py-24 overflow-hidden bg-gradient-to-b from-white via-ink-50/50 to-white">
+      {/* soft brand glow behind the section */}
+      <div className="pointer-events-none absolute inset-x-0 top-1/3 -z-0 mx-auto h-64 max-w-3xl rounded-full bg-brand-500/10 blur-3xl" />
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto">
           <Eyebrow>How it works</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            From zero to automated in three steps.
+            From zero to automated in{" "}
+            <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
+              three steps.
+            </span>
           </h2>
+          <p className="mt-4 text-ink-600">
+            No code, no complicated setup. You can be live before your coffee gets cold.
+          </p>
         </div>
-        <div className="mt-12 grid md:grid-cols-3 gap-5">
-          {steps.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.n} className="relative rounded-2xl border border-ink-100 bg-white p-6 shadow-card">
-                <p className="text-5xl font-black text-ink-100 leading-none">{s.n}</p>
-                <div className="mt-3 w-11 h-11 rounded-xl bg-brand-500 flex items-center justify-center shadow-glow">
-                  <Icon className="w-5 h-5 text-white" />
+
+        <div className="relative mt-16">
+          {/* connecting line across the three cards (desktop) */}
+          <div className="pointer-events-none absolute left-0 right-0 top-9 hidden md:block">
+            <div className="mx-auto h-px w-2/3 bg-gradient-to-r from-transparent via-brand-200 to-transparent" />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {steps.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div
+                  key={s.n}
+                  className="group relative flex flex-col items-center text-center"
+                >
+                  {/* floating number + icon badge */}
+                  <div className="relative mb-6">
+                    <div className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 shadow-lg shadow-brand-500/30 ring-4 ring-white transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105">
+                      <Icon className="h-8 w-8 text-white" strokeWidth={2.2} />
+                    </div>
+                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink-950 text-xs font-black text-white ring-2 ring-white">
+                      {i + 1}
+                    </span>
+                  </div>
+
+                  <div className="w-full rounded-2xl border border-ink-100 bg-white p-6 shadow-card transition-all duration-300 group-hover:-translate-y-1 group-hover:border-brand-200 group-hover:shadow-card-lg">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-brand-500">
+                      Step {s.n}
+                    </span>
+                    <h3 className="mt-2 text-lg font-black text-ink-950">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                      {s.desc}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="mt-4 font-bold text-ink-950 text-lg">{s.title}</h3>
-                <p className="mt-1 text-sm text-ink-600 leading-relaxed">{s.desc}</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
