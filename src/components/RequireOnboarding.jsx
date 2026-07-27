@@ -49,8 +49,11 @@ export default function RequireOnboarding({ children }) {
     }
   }, [workspace, activeWorkspace, loading, fetchWorkspace]);
 
-  // Hold everything while we refresh the just-connected workspace.
-  if (justConnected && refreshing) return <BrandSpinner />;
+  // Hold everything while we refresh the just-connected workspace. Show a
+  // reassuring label so the brief window after Instagram's redirect reads as
+  // "we're finishing up", not a broken page.
+  if (justConnected && refreshing)
+    return <BrandSpinner label="Finishing your Instagram connection" />;
 
   // Email/password signups must confirm their 4-digit code first. Google
   // signups arrive with isEmailVerified: true, so they pass straight through.
