@@ -142,7 +142,8 @@ export default function OnboardingPricingPage() {
           {user?.earlyBird && (
             <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-accent-500 px-4 py-2 text-sm font-bold text-white shadow-glow">
               <Sparkles className="w-4 h-4" />
-              Founding member — 25% off forever, applied at checkout 🎉
+              Founding member — 25% off your first 3 months, applied at checkout
+              🎉
             </div>
           )}
         </div>
