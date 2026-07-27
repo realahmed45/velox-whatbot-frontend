@@ -1,9 +1,10 @@
 /**
- * BotlifyMark — Botlify's icon: a clean, iconic orange robot head.
+ * BotlifyMark — Botlify's icon: a winking robot with a lightning-bolt eye.
  *
- * Transparent background (no tile), single warm-orange gradient, thick friendly
- * geometry — a rounded head with an antenna, two eyes, and side panels. Reads
- * instantly as "a bot" on light or dark, from a 16px favicon to the hero.
+ * A rounded orange bot head with an antenna, one round eye, and one eye shaped
+ * like a lightning bolt — "a bot that fires instantly." The asymmetry is what
+ * makes it distinctive and ownable, not a generic robot face. Transparent
+ * background, single warm gradient, crisp from a 16px favicon to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -27,33 +28,20 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       aria-label="Botlify"
     >
       {/* antenna */}
-      <path
-        d="M24 4 V8"
-        stroke={body}
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
+      <path d="M24 4 V8" stroke={body} strokeWidth="3" strokeLinecap="round" />
       <circle cx="24" cy="3" r="3" fill={body} />
 
       {/* head */}
       <path
-        d="M13 11 h22 a7 7 0 0 1 7 7 v13 a7 7 0 0 1 -7 7 h-22 a7 7 0 0 1 -7 -7 v-13 a7 7 0 0 1 7 -7 Z"
+        d="M12 11 h24 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-24 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8 Z"
         fill={body}
       />
 
-      {/* side ear-panels */}
-      <path
-        d="M6 22 h-2 a2 2 0 0 0 -2 2 v3 a2 2 0 0 0 2 2 h2 Z"
-        fill={body}
-      />
-      <path
-        d="M42 22 h2 a2 2 0 0 1 2 2 v3 a2 2 0 0 1 -2 2 h-2 Z"
-        fill={body}
-      />
+      {/* left eye — round */}
+      <circle cx="18" cy="24" r="3.2" fill={face} />
 
-      {/* eyes */}
-      <circle cx="18" cy="24" r="3" fill={face} />
-      <circle cx="30" cy="24" r="3" fill={face} />
+      {/* right eye — lightning bolt (the signature detail) */}
+      <path d="M31 19 l-4 6 h3 l-2 5 5 -7 h-3 Z" fill={face} />
 
       <defs>
         <linearGradient
@@ -64,9 +52,9 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
           y2="44"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#ff8a4c" />
+          <stop stopColor="#ff9a5c" />
           <stop offset="0.5" stopColor="#ff5722" />
-          <stop offset="1" stopColor="#e13c08" />
+          <stop offset="1" stopColor="#d93b06" />
         </linearGradient>
       </defs>
     </svg>
