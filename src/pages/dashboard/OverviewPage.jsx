@@ -76,6 +76,9 @@ export default function OverviewPage() {
         no_ig_account:
           "We couldn't find an Instagram Business or Creator account on your profile.",
         invalid_state: "Connection failed — please try again.",
+        already_connected:
+          "This Instagram account is already connected to another Botlify account. Disconnect it there first.",
+        oauth_failed: "Instagram connection failed. Please try again.",
       };
       toast.error(
         msgs[error] || "Instagram connection failed. Please try again.",

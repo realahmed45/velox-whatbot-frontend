@@ -201,7 +201,9 @@ export default function InstagramOnboardingPage() {
                       ? "We couldn't find a Business/Creator account. Switch your account type in the Instagram app, then try again."
                       : error === "access_denied"
                         ? "Authorization was cancelled. Please try again."
-                        : "Something went wrong. Please try again."}
+                        : error === "already_connected"
+                          ? "This Instagram account is already connected to another Botlify account. Disconnect it there first, then try again."
+                          : "Something went wrong. Please try again."}
                   </span>
                 </div>
               )}
