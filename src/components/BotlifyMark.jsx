@@ -1,10 +1,10 @@
 /**
- * BotlifyMark — Botlify's icon: a winking robot with a lightning-bolt eye.
+ * BotlifyMark — Botlify's icon: a friendly, aesthetic bot.
  *
- * A rounded orange bot head with an antenna, one round eye, and one eye shaped
- * like a lightning bolt — "a bot that fires instantly." The asymmetry is what
- * makes it distinctive and ownable, not a generic robot face. Transparent
- * background, single warm gradient, crisp from a 16px favicon to the hero.
+ * A soft rounded (squircle) head in a warm orange gradient, a tiny antenna,
+ * two calm dot eyes and a gentle smile. Simple, approachable, unmistakably a
+ * bot. Transparent background (bare SVG, no tile) so it drops cleanly onto any
+ * surface, and it stays crisp from a 16px favicon up to the hero.
  *
  * Props:
  *   size      pixel size (width = height), default 36
@@ -28,33 +28,37 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       aria-label="Botlify"
     >
       {/* antenna */}
-      <path d="M24 4 V8" stroke={body} strokeWidth="3" strokeLinecap="round" />
-      <circle cx="24" cy="3" r="3" fill={body} />
+      <circle cx="24" cy="7" r="2.3" fill={body} />
+      <path d="M24 9 V12" stroke={body} strokeWidth="2.6" strokeLinecap="round" />
 
-      {/* head */}
+      {/* head — soft squircle */}
+      <rect x="8" y="12" width="32" height="27" rx="13" fill={body} />
+
+      {/* eyes */}
+      <circle cx="18.5" cy="24" r="2.6" fill={face} />
+      <circle cx="29.5" cy="24" r="2.6" fill={face} />
+
+      {/* gentle smile */}
       <path
-        d="M12 11 h24 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-24 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8 Z"
-        fill={body}
+        d="M19 30 q5 3.5 10 0"
+        stroke={face}
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        fill="none"
       />
-
-      {/* left eye — round */}
-      <circle cx="18" cy="24" r="3.2" fill={face} />
-
-      {/* right eye — lightning bolt (the signature detail) */}
-      <path d="M31 19 l-4 6 h3 l-2 5 5 -7 h-3 Z" fill={face} />
 
       <defs>
         <linearGradient
           id={gid}
-          x1="6"
-          y1="4"
-          x2="42"
-          y2="44"
+          x1="8"
+          y1="6"
+          x2="40"
+          y2="42"
           gradientUnits="userSpaceOnUse"
         >
           <stop stopColor="#ff9a5c" />
-          <stop offset="0.5" stopColor="#ff5722" />
-          <stop offset="1" stopColor="#d93b06" />
+          <stop offset="0.55" stopColor="#ff5722" />
+          <stop offset="1" stopColor="#e13c08" />
         </linearGradient>
       </defs>
     </svg>
