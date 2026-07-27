@@ -42,8 +42,6 @@ import { X, Sparkle } from "lucide-react";
 
 const DEFAULTS = {
   enabled: true,
-  provider: "openai",
-  model: "gpt-4o-mini",
   businessContext: "",
   faqs: [],
 };
@@ -229,7 +227,7 @@ export default function IgAiBotPage() {
     setSaving(true);
     try {
       await api.put(`/workspaces/${activeWorkspace}`, {
-        aiSettings: { ...cfg, model: "gpt-4o-mini", provider: "openai" },
+        aiSettings: { ...cfg },
       });
       await api.put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
         content: bizText,
