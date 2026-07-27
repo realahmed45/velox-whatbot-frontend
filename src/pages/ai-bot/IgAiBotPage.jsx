@@ -34,6 +34,11 @@ import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import {
+  TEMPLATES_BY_CATEGORY,
+  FAQ_TEMPLATE_COUNT,
+} from "@/data/faqTemplates";
+import { X, Sparkle } from "lucide-react";
 
 const DEFAULTS = {
   enabled: true,
@@ -64,6 +69,7 @@ export default function IgAiBotPage() {
   const [urlInput, setUrlInput] = useState("");
   const [showUrl, setShowUrl] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
+  const [showTemplates, setShowTemplates] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -174,6 +180,49 @@ export default function IgAiBotPage() {
   };
   const removeFaq = (i) =>
     set({ faqs: (cfg.faqs || []).filter((_, x) => x !== i) });
+
+  // Toggle a library template on/off. "On" = a FAQ with the same question
+  // already exists (case-insensitive). Adding copies question+answer into the
+  // user's own faqs where they can edit it; toggling off removes that entry.
+  const isTemplateOn = (tpl) =>
+    (cfg.faqs || []).some(
+      (f) => f.question.trim().toLowerCase() === tpl.question.trim().toLowerCase(),
+    );
+  const toggleTemplate = (tpl) => {
+    const on = isTemplateOn(tpl);
+    if (on) {
+      set({
+        faqs: (cfg.faqs || []).filter(
+          (f) =>
+            f.question.trim().toLowerCase() !==
+            tpl.question.trim().toLowerCase(),
+        ),
+      });
+    } else {
+      set({
+        faqs: [
+          ...(cfg.faqs || []),
+          { question: tpl.question, answer: tpl.answer },
+        ],
+      });
+    }
+  };
+  const addWholeCategory = (items) => {
+    const existing = new Set(
+      (cfg.faqs || []).map((f) => f.question.trim().toLowerCase()),
+    );
+    const toAdd = items.filter(
+      (t) => !existing.has(t.question.trim().toLowerCase()),
+    );
+    if (!toAdd.length) return toast("All of these are already added");
+    set({
+      faqs: [
+        ...(cfg.faqs || []),
+        ...toAdd.map((t) => ({ question: t.question, answer: t.answer })),
+      ],
+    });
+    toast.success(`Added ${toAdd.length} FAQ${toAdd.length > 1 ? "s" : ""} ✓`);
+  };
 
   /* ── Save ───────────────────────────────────────────────────────── */
   const save = async () => {
@@ -431,6 +480,26 @@ export default function IgAiBotPage() {
           title="Exact-answer FAQs"
           subtitle="For questions that need a precise reply (price, hours, shipping) — the bot answers these word-for-word."
         >
+          {/* Browse the template library */}
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="w-full mb-3 rounded-xl border border-brand-200 bg-gradient-to-br from-brand-50 to-accent-50/40 p-3.5 flex items-center gap-3 text-left hover:border-brand-300 hover:shadow-card transition group"
+          >
+            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shrink-0 shadow-glow">
+              <Sparkle className="w-5 h-5 text-white" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-ink-900">
+                Browse {FAQ_TEMPLATE_COUNT}+ ready-made FAQs
+              </span>
+              <span className="block text-xs text-ink-500">
+                Pick from templates for stores, creators & services — toggle on,
+                then edit to fit your business.
+              </span>
+            </span>
+            <Plus className="w-4 h-4 text-brand-500 ml-auto shrink-0 group-hover:scale-110 transition" />
+          </button>
+
           {(cfg.faqs?.length || 0) > 0 && (
             <div className="space-y-2 mb-3">
               {cfg.faqs.map((f, i) => (
@@ -519,11 +588,144 @@ export default function IgAiBotPage() {
           </button>
         </div>
       </div>
+
+      {showTemplates && (
+        <TemplatesModal
+          isOn={isTemplateOn}
+          onToggle={toggleTemplate}
+          onAddCategory={addWholeCategory}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
     </div>
   );
 }
 
 /* ── Sub-components ──────────────────────────────────────────────── */
+
+function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
+  const [activeCat, setActiveCat] = useState(TEMPLATES_BY_CATEGORY[0].key);
+  const cat =
+    TEMPLATES_BY_CATEGORY.find((c) => c.key === activeCat) ||
+    TEMPLATES_BY_CATEGORY[0];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink-950/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-4xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* header */}
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shrink-0">
+              <Sparkle className="w-5 h-5 text-white" />
+            </span>
+            <div className="min-w-0">
+              <h3 className="font-black text-ink-900 leading-tight">
+                FAQ template library
+              </h3>
+              <p className="text-xs text-ink-500">
+                Toggle any on — it's copied to your FAQs where you can edit it.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-400 shrink-0"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex flex-1 min-h-0">
+          {/* category rail */}
+          <div className="w-40 sm:w-52 shrink-0 border-r border-ink-100 overflow-y-auto py-2 bg-ink-50/40">
+            {TEMPLATES_BY_CATEGORY.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setActiveCat(c.key)}
+                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${
+                  c.key === activeCat
+                    ? "bg-brand-50 text-brand-700 font-bold border-r-2 border-brand-500"
+                    : "text-ink-600 hover:bg-ink-100"
+                }`}
+              >
+                <span>{c.emoji}</span>
+                <span className="truncate">{c.label}</span>
+                <span className="ml-auto text-[10px] text-ink-400">
+                  {c.items.length}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* template list */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-ink-800">
+                {cat.emoji} {cat.label}
+              </p>
+              <button
+                onClick={() => onAddCategory(cat.items)}
+                className="text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-2.5 py-1.5 transition"
+              >
+                Add all
+              </button>
+            </div>
+            <div className="space-y-2">
+              {cat.items.map((tpl, i) => {
+                const on = isOn(tpl);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => onToggle(tpl)}
+                    className={`w-full text-left rounded-xl border p-3 transition flex items-start gap-3 ${
+                      on
+                        ? "border-brand-300 bg-brand-50/60"
+                        : "border-ink-100 bg-white hover:border-ink-200"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center shrink-0 border ${
+                        on
+                          ? "bg-brand-500 border-brand-500 text-white"
+                          : "border-ink-300 text-transparent"
+                      }`}
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-ink-900">
+                        {tpl.question}
+                      </span>
+                      <span className="block text-xs text-ink-500 mt-0.5">
+                        {tpl.answer}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* footer */}
+        <div className="px-5 py-3 border-t border-ink-100 flex items-center justify-between gap-3">
+          <p className="text-xs text-ink-500">
+            Remember to <b>Save changes</b> after you've picked your FAQs.
+          </p>
+          <button onClick={onClose} className="btn-primary px-4 py-2 text-sm">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ReadyChip({ ok, label }) {
   return (
