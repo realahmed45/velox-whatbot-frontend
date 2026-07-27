@@ -27,20 +27,20 @@ export default function BotlifyMark({ size = 36, className = "", mono = false })
       role="img"
       aria-label="Botlify"
     >
-      {/* antenna */}
-      <circle cx="24" cy="7" r="2.3" fill={body} />
-      <path d="M24 9 V12" stroke={body} strokeWidth="2.6" strokeLinecap="round" />
+      {/* antenna — thin stalk + round bulb, reads as tech not a stem */}
+      <path d="M24 6 V10" stroke={body} strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="24" cy="5" r="2.4" fill={body} />
 
-      {/* head — soft squircle */}
-      <rect x="8" y="12" width="32" height="27" rx="13" fill={body} />
+      {/* head — wide rounded bot head (wider than tall so it never reads as fruit) */}
+      <rect x="6" y="13" width="36" height="26" rx="11" fill={body} />
 
       {/* eyes */}
-      <circle cx="18.5" cy="24" r="2.6" fill={face} />
-      <circle cx="29.5" cy="24" r="2.6" fill={face} />
+      <circle cx="18" cy="25" r="2.7" fill={face} />
+      <circle cx="30" cy="25" r="2.7" fill={face} />
 
       {/* gentle smile */}
       <path
-        d="M19 30 q5 3.5 10 0"
+        d="M18.5 31 q5.5 3.5 11 0"
         stroke={face}
         strokeWidth="2.4"
         strokeLinecap="round"
