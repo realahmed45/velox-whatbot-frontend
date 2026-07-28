@@ -102,6 +102,8 @@ export default function IgAiBotPage() {
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [showTemplates, setShowTemplates] = useState(false);
   const [drafting, setDrafting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTabState] = useState(() => {
     const t = searchParams.get("tab");
@@ -323,6 +325,44 @@ export default function IgAiBotPage() {
   const removeProduct = (i) =>
     set({ productCatalog: catalog.filter((_, x) => x !== i) });
 
+  // Bulk import: upload a CSV/PDF/image → AI extracts products → append.
+  const importProducts = async (file) => {
+    if (!file) return;
+    setImporting(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const { data } = await api.post(
+        `/workspaces/${activeWorkspace}/ai/import-products`,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      const found = data?.products || [];
+      if (!found.length) {
+        toast.error("No products found in that file.");
+        return;
+      }
+      // Skip duplicates by name (case-insensitive).
+      const existing = new Set(
+        catalog.map((p) => (p.name || "").trim().toLowerCase()),
+      );
+      const toAdd = found.filter(
+        (p) => !existing.has((p.name || "").trim().toLowerCase()),
+      );
+      set({ productCatalog: [...catalog, ...toAdd] });
+      toast.success(
+        `Imported ${toAdd.length} product${toAdd.length === 1 ? "" : "s"} ✨ — review & save`,
+      );
+    } catch (e) {
+      toast.error(
+        e?.response?.data?.message || "Import failed — try a CSV or clearer file.",
+      );
+    } finally {
+      setImporting(false);
+      if (importRef.current) importRef.current.value = "";
+    }
+  };
+
   /* ── Save ───────────────────────────────────────────────────────── */
   const save = async () => {
     setSaving(true);
@@ -529,6 +569,21 @@ export default function IgAiBotPage() {
           title="Add knowledge sources"
           subtitle="Upload a menu/price list or import your website — the bot reads it and answers from it."
         >
+          <div className="mb-4 rounded-xl border border-brand-100 bg-brand-50/50 p-3 flex items-start gap-2.5">
+            <ShoppingBag className="w-4 h-4 text-brand-500 mt-0.5 shrink-0" />
+            <p className="text-xs text-ink-600 leading-relaxed">
+              <b className="text-ink-900">Selling products on your website?</b>{" "}
+              Add them in the{" "}
+              <button
+                onClick={() => setTab("catalog")}
+                className="font-bold text-brand-600 hover:underline"
+              >
+                Catalog
+              </button>{" "}
+              tab instead — you can bulk-import a CSV or price list and the bot
+              quotes exact prices.
+            </p>
+          </div>
           <input
             ref={fileRef}
             type="file"
@@ -731,6 +786,65 @@ export default function IgAiBotPage() {
           title="Product catalog"
           subtitle="Add products with exact prices so the bot can recommend and quote them — never guessing."
         >
+          {/* Website hint */}
+          <div className="mb-4 rounded-xl border border-ink-100 bg-ink-50/60 p-3 flex items-start gap-2.5">
+            <Globe className="w-4 h-4 text-ink-400 mt-0.5 shrink-0" />
+            <p className="text-xs text-ink-500 leading-relaxed">
+              Already sell on a website? Add your products here so the bot quotes
+              exact prices. You can import them in seconds below — no manual
+              typing.
+            </p>
+          </div>
+
+          {/* Bulk AI import */}
+          <input
+            ref={importRef}
+            type="file"
+            hidden
+            accept=".csv,.pdf,.txt,.xlsx,.doc,.docx,.png,.jpg,.jpeg"
+            onChange={(e) => importProducts(e.target.files?.[0])}
+          />
+          <button
+            onClick={() => importRef.current?.click()}
+            disabled={importing}
+            className="w-full mb-4 rounded-xl border-2 border-dashed border-brand-200 bg-gradient-to-br from-brand-50/60 to-accent-50/30 p-4 flex items-center gap-3 text-left hover:border-brand-300 transition disabled:opacity-60 group"
+          >
+            <span className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              {importing ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Upload className="w-5 h-5" />
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-black text-ink-900">
+                {importing
+                  ? "Reading your file & extracting products…"
+                  : "Bulk import — upload a CSV, PDF or price list"}
+              </span>
+              <span className="block text-xs text-ink-500 mt-0.5">
+                Drop your product list and AI adds every item + price for you.
+                Review, then save.
+              </span>
+            </span>
+            <Sparkle className="w-4 h-4 text-brand-500 ml-auto shrink-0 group-hover:scale-110 transition" />
+          </button>
+
+          {catalog.length > 0 && (
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-ink-500">
+                {catalog.length} product{catalog.length === 1 ? "" : "s"}
+              </span>
+              {catalog.length > 1 && (
+                <button
+                  onClick={() => set({ productCatalog: [] })}
+                  className="text-xs font-semibold text-ink-400 hover:text-red-500 transition"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          )}
           {catalog.length > 0 && (
             <div className="space-y-2 mb-3">
               {catalog.map((p, i) => (
