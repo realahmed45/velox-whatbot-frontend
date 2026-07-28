@@ -38,7 +38,7 @@ import {
   TEMPLATES_BY_CATEGORY,
   FAQ_TEMPLATE_COUNT,
 } from "@/data/faqTemplates";
-import { X, Sparkle } from "lucide-react";
+import { X, Sparkle, ShoppingBag, Send, MessageSquare } from "lucide-react";
 
 const DEFAULTS = {
   enabled: true,
@@ -68,6 +68,7 @@ export default function IgAiBotPage() {
   const [showUrl, setShowUrl] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [showTemplates, setShowTemplates] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -222,6 +223,53 @@ export default function IgAiBotPage() {
     toast.success(`Added ${toAdd.length} FAQ${toAdd.length > 1 ? "s" : ""} ✓`);
   };
 
+  /* ── Persona auto-draft (Phase 1) ───────────────────────────────── */
+  const draftPersona = async () => {
+    setDrafting(true);
+    try {
+      // Save any typed business context first so the draft can use it.
+      await api
+        .put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
+          content: bizText,
+          enabled: cfg.enabled,
+        })
+        .catch(() => {});
+      const { data } = await api.post(
+        `/workspaces/${activeWorkspace}/ai/draft-persona`,
+      );
+      if (data?.persona) {
+        set({
+          aiRole: data.persona.aiRole || cfg.aiRole || "",
+          brandVoice: data.persona.brandVoice || cfg.brandVoice || "",
+          guardrails: data.persona.guardrails || cfg.guardrails || "",
+        });
+        toast.success("Drafted from your Instagram ✨ — tweak & save");
+      } else {
+        toast.error("Couldn't draft — fill the fields manually");
+      }
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Draft failed");
+    } finally {
+      setDrafting(false);
+    }
+  };
+
+  /* ── Product catalog (Phase 3) ──────────────────────────────────── */
+  const catalog = Array.isArray(cfg.productCatalog) ? cfg.productCatalog : [];
+  const addProduct = () =>
+    set({
+      productCatalog: [
+        ...catalog,
+        { name: "", price: "", description: "", inStock: true },
+      ],
+    });
+  const updateProduct = (i, patch) =>
+    set({
+      productCatalog: catalog.map((p, x) => (x === i ? { ...p, ...patch } : p)),
+    });
+  const removeProduct = (i) =>
+    set({ productCatalog: catalog.filter((_, x) => x !== i) });
+
   /* ── Save ───────────────────────────────────────────────────────── */
   const save = async () => {
     setSaving(true);
@@ -263,7 +311,7 @@ export default function IgAiBotPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold tracking-tight">AI Bot</h1>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-200">
-                  <Sparkles className="w-3 h-3" /> GPT-4o
+                  <Sparkles className="w-3 h-3" /> AI-powered
                 </span>
                 {igHandle && (
                   <span className="text-xs text-white/60">@{igHandle}</span>
@@ -272,7 +320,7 @@ export default function IgAiBotPage() {
               </div>
               <p className="text-sm text-white/70 mt-1 max-w-md">
                 Teach it about your business once. It answers DMs, comments &
-                story replies 24/7 — in your voice, powered by GPT-4o-mini.
+                story replies 24/7 — in your voice, with advanced AI.
               </p>
             </div>
 
@@ -334,6 +382,60 @@ export default function IgAiBotPage() {
         </div>
 
         {/* ── Business description ───────────────────────────────── */}
+        {/* ── Persona: role · voice · guardrails (Phase 1) ────────── */}
+        <Section
+          icon={Bot}
+          title="Bot personality"
+          subtitle="Shape exactly how your bot sounds and what it must never do. Auto-draft it from your Instagram, then fine-tune."
+        >
+          <div className="mb-4">
+            <button
+              onClick={draftPersona}
+              disabled={drafting}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-accent-500 text-white text-sm font-bold px-4 py-2.5 shadow-glow disabled:opacity-60 transition hover:brightness-105"
+            >
+              {drafting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkle className="w-4 h-4" />
+              )}
+              {drafting ? "Reading your Instagram…" : "Auto-draft from my Instagram"}
+            </button>
+            <p className="text-[11px] text-ink-400 mt-1.5">
+              We read your profile + business info to draft all three fields. You
+              stay in full control — edit anything.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <PersonaField
+              label="AI Role"
+              hint="Who the bot is."
+              value={cfg.aiRole || ""}
+              onChange={(v) => set({ aiRole: v })}
+              rows={2}
+              placeholder="You are the friendly assistant for [brand], a Karachi skincare shop. You help followers over DM."
+            />
+            <PersonaField
+              label="Brand voice"
+              hint="Tone & formatting rules."
+              value={cfg.brandVoice || ""}
+              onChange={(v) => set({ brandVoice: v })}
+              rows={2}
+              placeholder="warm and friendly; concise 1-2 lines; at most 1 emoji; mirror the customer's language; never pushy"
+            />
+            <PersonaField
+              label="Guardrails"
+              hint="Things the bot must NEVER do."
+              value={cfg.guardrails || ""}
+              onChange={(v) => set({ guardrails: v })}
+              rows={2}
+              danger
+              placeholder="never quote a price you weren't given; never promise refunds; never share personal data; hand off complaints to a human"
+            />
+          </div>
+        </Section>
+
         <Section
           icon={BookOpen}
           title="What does your business do?"
@@ -547,6 +649,78 @@ export default function IgAiBotPage() {
             </button>
           </div>
         </Section>
+
+        {/* ── Product catalog (Phase 3) ──────────────────────────── */}
+        <Section
+          icon={ShoppingBag}
+          title="Product catalog"
+          subtitle="Add products with exact prices so the bot can recommend and quote them — never guessing."
+        >
+          {catalog.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {catalog.map((p, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-ink-100 bg-white p-3"
+                >
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm font-semibold outline-none focus:border-brand-400"
+                      value={p.name}
+                      onChange={(e) => updateProduct(i, { name: e.target.value })}
+                      placeholder="Product name"
+                    />
+                    <input
+                      className="w-28 rounded-lg border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                      value={p.price}
+                      onChange={(e) =>
+                        updateProduct(i, { price: e.target.value })
+                      }
+                      placeholder="Rs 2,500"
+                    />
+                    <button
+                      onClick={() => removeProduct(i)}
+                      className="text-ink-300 hover:text-red-500 transition px-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs outline-none focus:border-brand-400"
+                      value={p.description || ""}
+                      onChange={(e) =>
+                        updateProduct(i, { description: e.target.value })
+                      }
+                      placeholder="Short description (sizes, colours, details…)"
+                    />
+                    <button
+                      onClick={() =>
+                        updateProduct(i, { inStock: !(p.inStock !== false) })
+                      }
+                      className={`text-[11px] font-bold px-2.5 py-1.5 rounded-lg border transition ${
+                        p.inStock !== false
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-ink-100 text-ink-500 border-ink-200"
+                      }`}
+                    >
+                      {p.inStock !== false ? "In stock" : "Out of stock"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={addProduct}
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-3 py-2 transition"
+          >
+            <Plus className="w-4 h-4" /> Add product
+          </button>
+        </Section>
+
+        {/* ── Playground (Phase 2) ───────────────────────────────── */}
+        <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
 
         {/* How it answers — trust/explainer */}
         <div className="rounded-2xl border border-ink-100 bg-white p-5 flex items-start gap-3">
@@ -765,6 +939,190 @@ function SourceButton({ Icon, title, hint, loading, onClick, active }) {
         <p className="text-xs text-ink-500">{hint}</p>
       </div>
     </button>
+  );
+}
+
+function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, danger }) {
+  return (
+    <div>
+      <div className="flex items-baseline gap-2 mb-1">
+        <label className="text-sm font-bold text-ink-800">{label}</label>
+        <span
+          className={`text-[11px] ${danger ? "text-rose-500" : "text-ink-400"}`}
+        >
+          {hint}
+        </span>
+      </div>
+      <textarea
+        rows={rows}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm leading-relaxed outline-none transition focus:ring-2 ${
+          danger
+            ? "border-rose-200 focus:border-rose-400 focus:ring-rose-100"
+            : "border-ink-200 focus:border-brand-400 focus:ring-brand-100"
+        }`}
+      />
+    </div>
+  );
+}
+
+/* Playground — try the real bot in a sandbox chat. No DM is sent. (Phase 2) */
+function Playground({ workspaceId, enabled }) {
+  const [msgs, setMsgs] = useState([]); // {role:'user'|'assistant', content}
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 9e9, behavior: "smooth" });
+  }, [msgs, sending]);
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || sending) return;
+    const history = msgs.map((m) => ({ role: m.role, content: m.content }));
+    setMsgs((m) => [...m, { role: "user", content: text }]);
+    setInput("");
+    setSending(true);
+    try {
+      const { data } = await api.post(
+        `/workspaces/${workspaceId}/ai/playground`,
+        { message: text, history },
+      );
+      setMsgs((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            data?.reply ||
+            (data?.escalate ? "(would hand off to a human)" : "(no reply)"),
+          escalate: data?.escalate,
+        },
+      ]);
+    } catch (e) {
+      setMsgs((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            e?.response?.data?.message ||
+            "Something went wrong — save your changes and try again.",
+          error: true,
+        },
+      ]);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100 bg-gradient-to-r from-brand-50/60 to-accent-50/40">
+        <div className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <MessageSquare className="w-5 h-5" />
+          </span>
+          <div>
+            <h2 className="font-black text-ink-900 text-[15px] leading-tight">
+              Test your bot
+            </h2>
+            <p className="text-xs text-ink-500 mt-0.5">
+              A safe sandbox — try messages before going live. No real DM is
+              sent.
+            </p>
+          </div>
+        </div>
+        {msgs.length > 0 && (
+          <button
+            onClick={() => setMsgs([])}
+            className="text-xs font-semibold text-ink-400 hover:text-ink-700 transition"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* chat window */}
+      <div
+        ref={scrollRef}
+        className="h-72 overflow-y-auto px-4 py-4 bg-ink-50/40 space-y-2.5"
+      >
+        {msgs.length === 0 && (
+          <div className="h-full flex flex-col items-center justify-center text-center px-6">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-ink-100 flex items-center justify-center mb-3">
+              <Bot className="w-6 h-6 text-brand-500" />
+            </div>
+            <p className="text-sm font-semibold text-ink-700">
+              Say hi to your bot 👋
+            </p>
+            <p className="text-xs text-ink-400 mt-1 max-w-xs">
+              Try "Do you ship to Lahore?" or "How much is your serum?" to see
+              how it replies with your current setup.
+            </p>
+          </div>
+        )}
+        {msgs.map((m, i) => (
+          <div
+            key={i}
+            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
+                m.role === "user"
+                  ? "bg-brand-500 text-white rounded-br-sm"
+                  : m.error
+                    ? "bg-rose-50 text-rose-700 border border-rose-200 rounded-bl-sm"
+                    : "bg-white text-ink-800 border border-ink-100 rounded-bl-sm"
+              }`}
+            >
+              {m.escalate && (
+                <span className="block text-[10px] font-bold uppercase tracking-wide text-amber-600 mb-0.5">
+                  ⚡ Would hand off to a human
+                </span>
+              )}
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {sending && (
+          <div className="flex justify-start">
+            <div className="bg-white border border-ink-100 rounded-2xl rounded-bl-sm px-4 py-3">
+              <span className="flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-300 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-300 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-300 animate-bounce" style={{ animationDelay: "300ms" }} />
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* input */}
+      <div className="p-3 border-t border-ink-100 flex items-center gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && send()}
+          placeholder="Type a test message…"
+          className="flex-1 rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+        />
+        <button
+          onClick={send}
+          disabled={sending || !input.trim()}
+          className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 disabled:opacity-40 transition shrink-0"
+        >
+          <Send className="w-4 h-4" />
+        </button>
+      </div>
+      {!enabled && (
+        <p className="px-4 pb-3 text-[11px] text-amber-600">
+          Note: the bot is currently paused — testing still works here, but it
+          won't reply to real DMs until you turn it on and save.
+        </p>
+      )}
+    </div>
   );
 }
 
