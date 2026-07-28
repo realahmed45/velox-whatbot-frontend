@@ -1223,6 +1223,203 @@ function MockAnalytics() {
   );
 }
 
+// Smart Automations mock — trigger cards.
+function MockAutomations() {
+  const rows = [
+    ["Comment → DM", "Keyword: PRICE", MessageCircle, true],
+    ["Welcome DM", "First-time messagers", Sparkles, true],
+    ["Story reply", "Auto-reply to mentions", Heart, false],
+  ];
+  return (
+    <div className="p-3 text-left h-full">
+      <div className="text-xs font-black text-ink-900 mb-2">
+        Smart Automations
+      </div>
+      <div className="space-y-2">
+        {rows.map(([t, s, Icon, on], i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2.5 rounded-lg border border-ink-100 p-2"
+          >
+            <span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+              <Icon className="w-3.5 h-3.5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-ink-800">{t}</div>
+              <div className="text-[9px] text-ink-400 truncate">{s}</div>
+            </div>
+            <span
+              className={`w-8 h-4 rounded-full relative shrink-0 ${on ? "bg-emerald-500" : "bg-ink-200"}`}
+            >
+              <span
+                className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${on ? "left-4" : "left-0.5"}`}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Broadcasts mock — campaign compose.
+function MockBroadcasts() {
+  return (
+    <div className="p-3 text-left h-full flex flex-col">
+      <div className="text-xs font-black text-ink-900 mb-2">Broadcast</div>
+      <div className="rounded-lg border border-ink-100 p-2.5 flex-1">
+        <div className="text-[9px] text-ink-400 uppercase font-bold mb-1">
+          To: taggedContacts · 842 people
+        </div>
+        <div className="rounded-md bg-ink-50 p-2 text-[10px] text-ink-700 leading-snug">
+          Hey {"{name}"}! 🎉 New drop is live — 20% off this weekend only. Tap to
+          shop 👇
+        </div>
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-brand-100 text-brand-600">
+            #vip
+          </span>
+          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-ink-100 text-ink-500">
+            #interested
+          </span>
+        </div>
+      </div>
+      <button className="mt-2 rounded-lg bg-brand-500 text-white text-[11px] font-bold py-2">
+        Send broadcast →
+      </button>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+ * What we provide — alternating feature rows with dashboard shots
+ * ──────────────────────────────────────────────────────────── */
+function WhatWeProvide() {
+  const features = [
+    {
+      icon: Bot,
+      tag: "AI Bot",
+      title: "An AI that talks like you — 24/7",
+      desc: "Teach it once with your persona, guardrails, FAQs and catalog. It reads DMs, comments and stories and replies instantly, in your voice — and hands off to you when it matters.",
+      points: ["Auto-draft from your Instagram", "Reads photos & PDFs", "Captures leads automatically"],
+      Mock: MockAiBot,
+      url: "botlify.site/dashboard/ai-bot",
+      nav: "AI Bot",
+    },
+    {
+      icon: Zap,
+      tag: "Smart Automations",
+      title: "Turn comments into conversations",
+      desc: "Comment-to-DM, welcome messages, story-reply triggers and keyword rules — set up in a couple of clicks, no code. Every automation is one toggle away.",
+      points: ["Comment → DM keywords", "Welcome & away replies", "Story mentions & replies"],
+      Mock: MockAutomations,
+      url: "botlify.site/dashboard/automation",
+      nav: "Smart Automations",
+    },
+    {
+      icon: Inbox,
+      tag: "Shared Inbox",
+      title: "Your whole team, one inbox",
+      desc: "See every conversation in real time, jump in whenever you want, and let the bot handle the rest. AI-handled messages are clearly marked so nothing slips.",
+      points: ["Live conversations", "Human takeover anytime", "Contacts & tags built in"],
+      Mock: MockInbox,
+      url: "botlify.site/dashboard/inbox",
+      nav: "Inbox",
+    },
+    {
+      icon: Megaphone,
+      tag: "Broadcasts & Drips",
+      title: "Reach everyone, personally",
+      desc: "Broadcast to segments by tag, or nurture leads with multi-step drip campaigns — right inside Instagram, with personalised {name} fields.",
+      points: ["Target by tags", "Drip sequences", "Scheduled posts"],
+      Mock: MockBroadcasts,
+      url: "botlify.site/dashboard/broadcasts",
+      nav: "Broadcasts",
+    },
+    {
+      icon: BarChart3,
+      tag: "Analytics",
+      title: "See what's actually working",
+      desc: "DM volume, AI reply rate, response time and audience growth — a clean dashboard that tells you exactly how your automations are performing.",
+      points: ["DMs handled", "AI reply rate", "Peak hours & growth"],
+      Mock: MockAnalytics,
+      url: "botlify.site/dashboard/analytics",
+      nav: "Analytics",
+    },
+  ];
+
+  return (
+    <section className="relative py-16 sm:py-24 bg-white overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <Eyebrow>What we provide</Eyebrow>
+          <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
+            Everything you need to run Instagram{" "}
+            <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
+              on autopilot.
+            </span>
+          </h2>
+          <p className="mt-4 text-ink-600">
+            One platform, every tool — see it all in action below.
+          </p>
+        </div>
+
+        <div className="space-y-16 sm:space-y-24">
+          {features.map((f, i) => {
+            const Icon = f.icon;
+            const Mock = f.Mock;
+            const flip = i % 2 === 1;
+            return (
+              <div
+                key={f.tag}
+                className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center"
+              >
+                {/* Copy */}
+                <div className={flip ? "lg:order-2" : ""}>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 border border-brand-100 rounded-full px-3 py-1">
+                    <Icon className="w-3.5 h-3.5" /> {f.tag}
+                  </span>
+                  <h3 className="mt-4 text-2xl sm:text-3xl font-black tracking-tight text-ink-950">
+                    {f.title}
+                  </h3>
+                  <p className="mt-3 text-ink-600 leading-relaxed">{f.desc}</p>
+                  <ul className="mt-5 space-y-2.5">
+                    {f.points.map((p) => (
+                      <li
+                        key={p}
+                        className="flex items-center gap-2.5 text-sm font-medium text-ink-800"
+                      >
+                        <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3" />
+                        </span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Mock shot */}
+                <div className={flip ? "lg:order-1" : ""}>
+                  <BrowserFrame url={f.url}>
+                    <div className="h-64 bg-ink-50/40 flex">
+                      <div className="hidden md:block">
+                        <MockSidebar active={f.nav} />
+                      </div>
+                      <div className="flex-1 min-w-0 bg-white overflow-hidden">
+                        <Mock />
+                      </div>
+                    </div>
+                  </BrowserFrame>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ────────────────────────────────────────────────────────────
  * Testimonials
  * ──────────────────────────────────────────────────────────── */
@@ -1600,6 +1797,7 @@ export default function LandingPage() {
       <Results />
       <HowItWorks />
       <ProductShowcase />
+      <WhatWeProvide />
       <Testimonials />
       <PricingTeaser />
       <FAQ />

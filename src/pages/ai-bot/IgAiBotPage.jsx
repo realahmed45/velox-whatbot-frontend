@@ -969,7 +969,7 @@ export default function IgAiBotPage() {
 
       {/* ── Sticky save bar (stays inside the content column) ──── */}
       <div className="sticky bottom-0 z-20 border-t border-ink-100 bg-white/90 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <p className="text-xs text-ink-500 hidden sm:block">
             {cfg.enabled
               ? "Bot is live — it replies automatically to new messages."
