@@ -385,6 +385,31 @@ export default function IgAiBotPage() {
 
   return (
     <div className="relative min-h-full bg-ink-50/60">
+      {busy === "doc" && (
+        <AiWorkingOverlay
+          title="Reading your document…"
+          subtitle="AI is scanning every page and teaching your bot. This takes a few seconds."
+        />
+      )}
+      {busy === "url" && (
+        <AiWorkingOverlay
+          title="Importing your website…"
+          subtitle="Reading your pages and distilling them into knowledge for your bot."
+        />
+      )}
+      {importing && (
+        <AiWorkingOverlay
+          title="Extracting your products…"
+          subtitle="AI is reading your file and pulling out every item and price."
+        />
+      )}
+      {drafting && (
+        <AiWorkingOverlay
+          title="Crafting your bot's personality…"
+          subtitle="Reading your Instagram to draft the perfect role, voice and guardrails."
+        />
+      )}
+
       <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-5">
         {/* ── Hero ───────────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-5 py-5 sm:px-6">
@@ -639,62 +664,15 @@ export default function IgAiBotPage() {
               <p className="text-xs font-semibold text-ink-500">
                 Your bot knows ({sources.length})
               </p>
-              {sources.map((s) => {
-                const isImage = IMAGE_RE.test(s.title || s.url || "");
-                const meta =
-                  SOURCE_META[isImage ? "image" : s.type] || SOURCE_META.text;
-                const Icon = meta.Icon;
-                const ready = s.status ? s.status === "ready" : true;
-                return (
-                  <div
-                    key={s._id}
-                    className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white px-3 py-2.5"
-                  >
-                    <span
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${meta.tint}`}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-ink-900 truncate">
-                        {s.title || s.url || "Untitled source"}
-                      </p>
-                      <p className="text-[11px] text-ink-400 flex items-center gap-1">
-                        {ready ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-500" /> Ready
-                          </>
-                        ) : (
-                          <>
-                            <Loader2 className="w-3 h-3 animate-spin" />{" "}
-                            Processing…
-                          </>
-                        )}
-                        {s.type ? ` · ${s.type}` : ""}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => resyncSource(s._id)}
-                      disabled={busy === s._id}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
-                      title="Refresh"
-                    >
-                      {busy === s._id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => removeSource(s._id)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
-                      title="Remove"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-              })}
+              {sources.map((s) => (
+                <SourceCard
+                  key={s._id}
+                  s={s}
+                  busy={busy === s._id}
+                  onResync={() => resyncSource(s._id)}
+                  onRemove={() => removeSource(s._id)}
+                />
+              ))}
             </div>
           )}
         </Section>
@@ -1169,6 +1147,114 @@ function SourceButton({ Icon, title, hint, loading, onClick, active }) {
         <p className="text-xs text-ink-500">{hint}</p>
       </div>
     </button>
+  );
+}
+
+// Full-screen "AI is working" overlay — blurs the page so the user knows
+// something is cooking while a document/import/draft is processing.
+function AiWorkingOverlay({ title, subtitle }) {
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink-950/40 backdrop-blur-md animate-[fadeIn_.15s_ease-out]">
+      <div className="relative flex flex-col items-center text-center px-6">
+        {/* pulsing rings */}
+        <div className="relative w-24 h-24 mb-6">
+          <span className="absolute inset-0 rounded-full bg-brand-500/30 animate-ping" />
+          <span
+            className="absolute inset-2 rounded-full bg-brand-500/20 animate-ping"
+            style={{ animationDelay: "0.3s" }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-glow">
+              <Sparkles className="w-8 h-8 text-white animate-pulse" />
+            </div>
+          </div>
+        </div>
+        <h3 className="text-lg font-black text-white">{title}</h3>
+        <p className="text-sm text-white/70 mt-1 max-w-xs">{subtitle}</p>
+        {/* shimmer bar */}
+        <div className="mt-5 w-52 h-1.5 rounded-full bg-white/15 overflow-hidden">
+          <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-brand-400 to-accent-400 animate-[shimmerMove_1.2s_ease-in-out_infinite]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SourceCard({ s, busy, onResync, onRemove }) {
+  const [open, setOpen] = useState(false);
+  const isImage = IMAGE_RE.test(s.title || s.url || "");
+  const meta = SOURCE_META[isImage ? "image" : s.type] || SOURCE_META.text;
+  const Icon = meta.Icon;
+  const ready = s.status ? s.status === "ready" : true;
+  const content = (s.content || "").trim();
+  const hasPreview = ready && content.length > 0;
+
+  return (
+    <div className="rounded-xl border border-ink-100 bg-white overflow-hidden">
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        <span
+          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${meta.tint}`}
+        >
+          <Icon className="w-4 h-4" />
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-ink-900 truncate">
+            {s.title || s.url || "Untitled source"}
+          </p>
+          <p className="text-[11px] text-ink-400 flex items-center gap-1">
+            {ready ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-500" /> Learned
+                {content ? ` · ${content.length.toLocaleString()} chars` : ""}
+              </>
+            ) : (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" /> Processing…
+              </>
+            )}
+          </p>
+        </div>
+        {hasPreview && (
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="text-[11px] font-bold text-brand-600 hover:text-brand-700 px-2 py-1 rounded-lg hover:bg-brand-50 transition"
+          >
+            {open ? "Hide" : "View"}
+          </button>
+        )}
+        <button
+          onClick={onResync}
+          disabled={busy}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
+          title="Refresh"
+        >
+          {busy ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCw className="w-4 h-4" />
+          )}
+        </button>
+        <button
+          onClick={onRemove}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
+          title="Remove"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+      {open && hasPreview && (
+        <div className="px-3 pb-3">
+          <div className="rounded-lg bg-ink-50 border border-ink-100 p-3 max-h-52 overflow-y-auto">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
+              What your bot learned
+            </p>
+            <p className="text-xs text-ink-600 whitespace-pre-wrap leading-relaxed">
+              {content}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

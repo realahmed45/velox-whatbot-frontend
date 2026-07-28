@@ -162,6 +162,14 @@
       transform: scale(1) translateY(0);
     }
   }
+  @keyframes shimmerMove {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(320%);
+    }
+  }
   @keyframes pulseSoft {
     0%,
     100% {
