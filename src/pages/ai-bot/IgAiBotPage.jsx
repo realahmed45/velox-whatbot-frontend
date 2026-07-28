@@ -719,6 +719,42 @@ export default function IgAiBotPage() {
           </button>
         </Section>
 
+        {/* ── AI actions (Phase 5) ───────────────────────────────── */}
+        <Section
+          icon={Zap}
+          title="Smart actions"
+          subtitle="Let your bot quietly work behind the scenes while it chats — no extra effort from you."
+        >
+          <div className="space-y-2.5">
+            <ActionToggle
+              title="Auto-tag contacts"
+              desc="The bot tags people by what they want (interested, VIP, complaint…) so you can filter and follow up."
+              on={cfg.actions?.autoTag !== false}
+              onToggle={() =>
+                set({
+                  actions: {
+                    ...(cfg.actions || {}),
+                    autoTag: !(cfg.actions?.autoTag !== false),
+                  },
+                })
+              }
+            />
+            <ActionToggle
+              title="Capture leads"
+              desc="When someone shows real interest and shares their name + email/phone, the bot saves them as a lead automatically."
+              on={cfg.actions?.captureLead !== false}
+              onToggle={() =>
+                set({
+                  actions: {
+                    ...(cfg.actions || {}),
+                    captureLead: !(cfg.actions?.captureLead !== false),
+                  },
+                })
+              }
+            />
+          </div>
+        </Section>
+
         {/* ── Playground (Phase 2) ───────────────────────────────── */}
         <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
 
@@ -942,6 +978,35 @@ function SourceButton({ Icon, title, hint, loading, onClick, active }) {
   );
 }
 
+function ActionToggle({ title, desc, on, onToggle }) {
+  return (
+    <div
+      className={`flex items-start justify-between gap-4 rounded-xl border p-3.5 transition ${
+        on ? "border-brand-200 bg-brand-50/40" : "border-ink-100 bg-white"
+      }`}
+    >
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-ink-900">{title}</p>
+        <p className="text-xs text-ink-500 mt-0.5">{desc}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+          on ? "bg-brand-600" : "bg-ink-300"
+        }`}
+        aria-label={`Toggle ${title}`}
+      >
+        <span
+          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+            on ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, danger }) {
   return (
     <div>
@@ -999,6 +1064,8 @@ function Playground({ workspaceId, enabled }) {
             data?.reply ||
             (data?.escalate ? "(would hand off to a human)" : "(no reply)"),
           escalate: data?.escalate,
+          intent: data?.intent,
+          tags: data?.tags,
         },
       ]);
     } catch (e) {
@@ -1083,6 +1150,23 @@ function Playground({ workspaceId, enabled }) {
                 </span>
               )}
               {m.content}
+              {m.role === "assistant" && (m.intent || m.tags?.length) ? (
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {m.intent && (
+                    <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-ink-100 text-ink-500">
+                      intent: {m.intent}
+                    </span>
+                  )}
+                  {(m.tags || []).map((t) => (
+                    <span
+                      key={t}
+                      className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-brand-100 text-brand-600"
+                    >
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         ))}
