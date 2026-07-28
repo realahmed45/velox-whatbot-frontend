@@ -20,6 +20,7 @@ import {
 import IntegrationsTabs from "./IntegrationsTabs";
 import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 const EVENTS = [
   { key: "dm.received", label: "DM received" },
@@ -47,6 +48,7 @@ const PAYLOAD_EXAMPLE = `{
 }`;
 
 export default function IntegrationsPage() {
+  const confirm = useConfirm();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -97,7 +99,14 @@ export default function IntegrationsPage() {
   };
 
   const remove = async (id) => {
-    if (!window.confirm("Delete this integration?")) return;
+    const ok = await confirm({
+      title: "Delete this integration?",
+      description: "This webhook will be permanently deleted and stop receiving events.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/integrations/${id}`);
       setList((c) => c.filter((x) => x._id !== id));

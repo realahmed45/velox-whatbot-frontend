@@ -24,10 +24,12 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 dayjs.extend(relativeTime);
 
 export default function ScheduledPostsPage() {
+  const confirm = useConfirm();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -249,7 +251,14 @@ export default function ScheduledPostsPage() {
     const msg = published
       ? "Remove this from your list? (The live Instagram post won't be affected.)"
       : "Delete this scheduled post?";
-    if (!window.confirm(msg)) return;
+    const ok = await confirm({
+      title: published ? "Remove this post?" : "Delete this post?",
+      description: msg,
+      confirmLabel: published ? "Remove" : "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/scheduled-posts/${post._id}`);
       setPosts((p) => p.filter((x) => x._id !== post._id));

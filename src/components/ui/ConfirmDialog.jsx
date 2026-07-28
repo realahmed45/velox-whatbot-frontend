@@ -45,40 +45,50 @@ export function ConfirmProvider({ children }) {
     <ConfirmContext.Provider value={confirm}>
       {children}
       {state && (
-        <div className="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card max-w-md w-full p-6">
-            <div className="flex gap-4">
-              <div
-                className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${
-                  state.danger
-                    ? "bg-rose-100 text-rose-600"
-                    : "bg-brand-100 text-brand-600"
-                }`}
-              >
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-ink-900">
-                  {state.title || "Are you sure?"}
-                </h3>
-                {state.description && (
-                  <p className="text-sm text-ink-500 mt-1">
-                    {state.description}
-                  </p>
-                )}
-              </div>
+        <div
+          className="fixed inset-0 z-[95] bg-ink-950/50 backdrop-blur-sm flex items-center justify-center p-4 animate-[fadeIn_.12s_ease-out]"
+          onClick={() => close(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-7 text-center animate-[popIn_.16s_cubic-bezier(.16,1,.3,1)]"
+            onClick={(e) => e.stopPropagation()}
+            role="alertdialog"
+            aria-modal="true"
+          >
+            <div
+              className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
+                state.danger
+                  ? "bg-rose-50 text-rose-500"
+                  : "bg-brand-50 text-brand-500"
+              }`}
+            >
+              <AlertTriangle className="w-7 h-7" />
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+
+            <h3 className="text-lg font-black text-ink-900">
+              {state.title || "Are you sure?"}
+            </h3>
+            {state.description && (
+              <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+                {state.description}
+              </p>
+            )}
+
+            <div className="flex flex-col-reverse sm:flex-row gap-2.5 mt-6">
               <button
                 onClick={() => close(false)}
-                className="btn-secondary"
-                autoFocus
+                className="flex-1 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700 hover:bg-ink-50 transition"
               >
                 {state.cancelLabel || "Cancel"}
               </button>
               <button
                 onClick={() => close(true)}
-                className={state.danger ? "btn-danger" : "btn-primary"}
+                autoFocus
+                className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition ${
+                  state.danger
+                    ? "bg-rose-500 hover:bg-rose-600"
+                    : "bg-brand-500 hover:bg-brand-600"
+                }`}
               >
                 {state.confirmLabel || "Confirm"}
               </button>

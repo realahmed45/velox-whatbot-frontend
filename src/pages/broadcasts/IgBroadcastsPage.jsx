@@ -26,6 +26,7 @@ import {
 import dayjs from "dayjs";
 import EmptyState from "@/components/ui/EmptyState";
 import StatHero from "@/components/ui/StatHero";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 const STATUS_BADGE = {
   draft: "bg-ink-100 text-ink-600",
@@ -37,6 +38,7 @@ const STATUS_BADGE = {
 };
 
 export default function IgBroadcastsPage() {
+  const confirm = useConfirm();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -58,12 +60,15 @@ export default function IgBroadcastsPage() {
   };
 
   const sendCampaign = async (id) => {
-    if (
-      !window.confirm(
+    const ok = await confirm({
+      title: "Send this broadcast?",
+      description:
         "Send this DM blast now? Only users who messaged you in the last 24h will receive it.",
-      )
-    )
-      return;
+      confirmLabel: "Send",
+      cancelLabel: "Cancel",
+      danger: false,
+    });
+    if (!ok) return;
     try {
       await api.post(`/broadcasts/${id}/send`);
       toast.success("DM blast queued");
@@ -74,7 +79,14 @@ export default function IgBroadcastsPage() {
   };
 
   const del = async (id) => {
-    if (!window.confirm("Delete this campaign?")) return;
+    const ok = await confirm({
+      title: "Delete this campaign?",
+      description: "This broadcast campaign will be permanently deleted.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/broadcasts/${id}`);
       setCampaigns((cs) => cs.filter((c) => c._id !== id));

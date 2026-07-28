@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
 import StatHero from "@/components/ui/StatHero";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function AppsIntegrationsPage() {
   // Mailchimp connection state is lifted here so the StatHero can reflect the
@@ -116,6 +117,7 @@ function MakeCard() {
 /* ── Mailchimp ──────────────────────────────────────────────────── */
 
 function MailchimpCard({ onStatusChange }) {
+  const confirm = useConfirm();
   const [state, setState] = useState({ connected: false });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -177,7 +179,14 @@ function MailchimpCard({ onStatusChange }) {
   };
 
   const disconnect = async () => {
-    if (!window.confirm("Disconnect Mailchimp?")) return;
+    const ok = await confirm({
+      title: "Disconnect Mailchimp?",
+      description: "Emails captured in DMs will no longer sync to your Mailchimp audience.",
+      confirmLabel: "Disconnect",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete("/integrations/mailchimp");
       toast.success("Disconnected");

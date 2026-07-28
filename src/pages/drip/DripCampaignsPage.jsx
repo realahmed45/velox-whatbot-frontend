@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 const EMPTY_STEP = { delayMinutes: 60, message: "" };
 const EMPTY_CAMPAIGN = {
@@ -144,6 +145,7 @@ const TEMPLATES = [
 ];
 
 export default function DripCampaignsPage() {
+  const confirm = useConfirm();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -210,7 +212,14 @@ export default function DripCampaignsPage() {
   };
 
   const remove = async (id) => {
-    if (!window.confirm("Delete this drip campaign?")) return;
+    const ok = await confirm({
+      title: "Delete this drip campaign?",
+      description: "This drip campaign and its sequence will be permanently deleted.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/drip-campaigns/${id}`);
       setCampaigns((c) => c.filter((x) => x._id !== id));

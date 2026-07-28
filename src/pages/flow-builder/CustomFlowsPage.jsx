@@ -20,9 +20,11 @@ import {
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 import StarterGallery from "./components/StarterGallery";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function CustomFlowsPage() {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [flows, setFlows] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +119,14 @@ export default function CustomFlowsPage() {
   };
 
   const deleteFlow = async (id) => {
-    if (!window.confirm("Delete this flow?")) return;
+    const ok = await confirm({
+      title: "Delete this flow?",
+      description: "This flow will be permanently deleted.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/flows/${id}`);
       setFlows((prev) => prev.filter((f) => f._id !== id));

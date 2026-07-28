@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { clsx } from "clsx";
 import StatHero from "@/components/ui/StatHero";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 dayjs.extend(relativeTime);
 
 function Avatar({ initial, size = "w-11 h-11", text = "text-sm" }) {
@@ -42,6 +43,7 @@ function Avatar({ initial, size = "w-11 h-11", text = "text-sm" }) {
 }
 
 export default function IgContactsPage() {
+  const confirm = useConfirm();
   const [contacts, setContacts] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -95,7 +97,14 @@ export default function IgContactsPage() {
   };
 
   const deleteContact = async (id) => {
-    if (!window.confirm("Remove this follower from your contacts?")) return;
+    const ok = await confirm({
+      title: "Remove this contact?",
+      description: "Remove this follower from your contacts?",
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/contacts/${id}`);
       setContacts((c) => c.filter((x) => x._id !== id));

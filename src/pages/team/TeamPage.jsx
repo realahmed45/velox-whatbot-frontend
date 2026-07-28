@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 /**
  * Shared permission checkbox grid used by both the invite and edit modals.
@@ -80,6 +81,7 @@ function PermissionGrid({ catalogue, selected, onToggle, onToggleAll }) {
 }
 
 export default function TeamPage() {
+  const confirm = useConfirm();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ email: "", role: "agent", permissions: [] });
@@ -198,7 +200,14 @@ export default function TeamPage() {
   };
 
   const remove = async (userId) => {
-    if (!window.confirm("Remove this team member?")) return;
+    const ok = await confirm({
+      title: "Remove this team member?",
+      description: "They will lose access to this workspace immediately.",
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/workspaces/${workspace._id}/members/${userId}`);
       toast.success("Member removed");

@@ -15,8 +15,10 @@ import {
 import { clsx } from "clsx";
 import PricingPage from "../PricingPage";
 import PageHeader from "@/components/ui/PageHeader";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function BillingPage() {
+  const confirm = useConfirm();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -66,12 +68,15 @@ export default function BillingPage() {
   };
 
   const cancelPlan = async () => {
-    if (
-      !window.confirm(
-        "Cancel your subscription? You'll keep access until the end of the current billing period.",
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: "Cancel your subscription?",
+      description:
+        "You'll keep full access until the end of your current billing period. Your account and data stay safe — you can resubscribe anytime.",
+      confirmLabel: "Yes, cancel",
+      cancelLabel: "Keep my plan",
+      danger: true,
+    });
+    if (!ok) return;
     setCancelling(true);
     try {
       await api.post("/billing/cancel");

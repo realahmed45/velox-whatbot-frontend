@@ -20,6 +20,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
 import { useNavigate } from "react-router-dom";
@@ -416,6 +417,7 @@ function GeneralSettings({ workspace, onSave }) {
 }
 
 function InstagramSettings({ workspace, onSave }) {
+  const confirm = useConfirm();
   const ig = workspace?.instagram;
   const [oauthLoading, setOauthLoading] = useState(false);
   const [diagLoading, setDiagLoading] = useState(false);
@@ -436,7 +438,15 @@ function InstagramSettings({ workspace, onSave }) {
   };
 
   const disconnect = async () => {
-    if (!window.confirm("Disconnect Instagram? Automations will stop.")) return;
+    const ok = await confirm({
+      title: "Disconnect Instagram?",
+      description:
+        "Your automations will stop replying until you reconnect.",
+      confirmLabel: "Disconnect",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete("/instagram/connect");
       toast.success("Disconnected");
