@@ -17,9 +17,11 @@ import {
   Clock,
   CircleDot,
   AlertTriangle,
+  LifeBuoy,
 } from "lucide-react";
 import PlanGate from "@/components/PlanGate";
 import StatHero from "@/components/ui/StatHero";
+import HolidayModeCard from "@/components/HolidayModeCard";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
 import { ArrowLeft } from "lucide-react";
@@ -89,6 +91,15 @@ const ALL_TABS = [
     category: "settings",
     icon: Clock,
     plan: "growth",
+    channels: ["instagram"],
+  },
+  {
+    id: "holiday",
+    label: "Holiday / away mode",
+    desc: "One switch — pause everything and reply 'a manager will get back to you'.",
+    category: "settings",
+    icon: LifeBuoy,
+    plan: "starter",
     channels: ["instagram"],
   },
 ];
@@ -340,6 +351,12 @@ export default function AutomationSetupPage() {
               )}
               {tab === "hours" && (
                 <HoursTab cfg={cfg} save={save} setCfg={setCfg} />
+              )}
+              {tab === "holiday" && (
+                <HolidayModeCard
+                  workspace={workspace}
+                  onSave={() => fetchWorkspace(activeWorkspace)}
+                />
               )}
             </PlanGate>
           </div>
