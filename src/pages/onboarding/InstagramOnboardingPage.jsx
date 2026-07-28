@@ -94,6 +94,13 @@ export default function InstagramOnboardingPage() {
 
   const igConnected = workspace?.instagram?.status === "connected";
 
+  // Once Instagram is connected, onboarding is done — go straight to the
+  // dashboard. No intermediate "teach your bot / add your site" step; users
+  // add their site + knowledge later from the AI Bot page.
+  useEffect(() => {
+    if (igConnected) navigate("/dashboard", { replace: true });
+  }, [igConnected, navigate]);
+
   if (ensuring) {
     return (
       <div className="flex items-center justify-center py-24">

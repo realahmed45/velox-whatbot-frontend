@@ -8,8 +8,9 @@ import {
   CreditCard,
   AlertCircle,
   Calendar,
-  Settings2,
   Loader2,
+  FileText,
+  XCircle,
 } from "lucide-react";
 import { clsx } from "clsx";
 import PricingPage from "../PricingPage";
@@ -152,33 +153,91 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Manage buttons for an active card subscription */}
+      {/* Manage your subscription — prominent self-service actions */}
       {hasManageable && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button
-            onClick={openPortal}
-            disabled={portalLoading}
-            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 text-ink-800 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition disabled:opacity-50"
-          >
-            {portalLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Settings2 className="w-4 h-4" />
-            )}
-            Manage subscription · update card · invoices
-          </button>
-          {!cancelPending && (
+        <div className="card p-6 mb-6">
+          <h3 className="font-semibold text-ink-900 mb-1">
+            Manage your subscription
+          </h3>
+          <p className="text-sm text-ink-500 mb-5">
+            Everything's self-service — cancel, update your card or download
+            invoices right here.
+          </p>
+
+          {cancelPending ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 mb-4 flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold text-amber-900">
+                  Your plan is set to cancel
+                </p>
+                <p className="text-amber-700 mt-0.5">
+                  You keep full access until{" "}
+                  {sub?.currentPeriodEnd
+                    ? new Date(sub.currentPeriodEnd).toLocaleDateString()
+                    : "the end of your period"}
+                  . Changed your mind? Just pick a plan below to stay.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="grid sm:grid-cols-3 gap-3">
+            {/* Update payment method */}
             <button
-              onClick={cancelPlan}
-              disabled={cancelling}
-              className="inline-flex items-center gap-2 rounded-xl border border-red-200 text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition disabled:opacity-50"
+              onClick={openPortal}
+              disabled={portalLoading}
+              className="group rounded-xl border border-ink-200 bg-white p-4 text-left hover:border-brand-300 hover:shadow-card transition disabled:opacity-50"
             >
-              {cancelling ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : null}
-              Cancel plan
+              <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2.5">
+                {portalLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CreditCard className="w-4 h-4" />
+                )}
+              </div>
+              <p className="font-bold text-sm text-ink-900">Update card</p>
+              <p className="text-xs text-ink-500 mt-0.5">
+                Change your payment method securely.
+              </p>
             </button>
-          )}
+
+            {/* Invoices / receipts */}
+            <button
+              onClick={openPortal}
+              disabled={portalLoading}
+              className="group rounded-xl border border-ink-200 bg-white p-4 text-left hover:border-brand-300 hover:shadow-card transition disabled:opacity-50"
+            >
+              <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2.5">
+                <FileText className="w-4 h-4" />
+              </div>
+              <p className="font-bold text-sm text-ink-900">Invoices</p>
+              <p className="text-xs text-ink-500 mt-0.5">
+                View and download your receipts.
+              </p>
+            </button>
+
+            {/* Cancel */}
+            {!cancelPending && (
+              <button
+                onClick={cancelPlan}
+                disabled={cancelling}
+                className="group rounded-xl border border-red-200 bg-white p-4 text-left hover:border-red-300 hover:bg-red-50/40 transition disabled:opacity-50"
+              >
+                <div className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mb-2.5">
+                  {cancelling ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                </div>
+                <p className="font-bold text-sm text-red-600">Cancel plan</p>
+                <p className="text-xs text-ink-500 mt-0.5">
+                  Cancel anytime — keep access till period end.
+                </p>
+              </button>
+            )}
+          </div>
         </div>
       )}
 
