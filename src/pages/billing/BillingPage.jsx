@@ -271,15 +271,22 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Embedded pricing */}
+      {/* Embedded pricing — plan-aware: hides the current plan and any
+          downgrades, only offering sensible upgrades. */}
       <div className="card p-6">
         <h3 className="font-semibold text-ink-900 mb-1">
-          {isTrial ? "Choose a plan" : "Change plan"}
+          {isTrial ? "Choose a plan" : "Upgrade your plan"}
         </h3>
         <p className="text-sm text-ink-500 mb-6">
-          Switch plans anytime. Annual billing saves ~17%.
+          {isTrial
+            ? "Switch plans anytime. Annual billing saves ~17%."
+            : "Upgrade for more — annual billing saves ~17%. You keep everything you already have."}
         </p>
-        <PricingPage embedded />
+        <PricingPage
+          embedded
+          currentPlan={isTrial ? null : planId}
+          currentCycle={sub?.billingCycle || null}
+        />
       </div>
 
       <p className="text-xs text-ink-400 text-center mt-6">

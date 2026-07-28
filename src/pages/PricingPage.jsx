@@ -57,7 +57,16 @@ const FALLBACK_PLANS = [
   },
 ];
 
-export default function PricingPage({ embedded = false }) {
+// Tier rank for plans (higher = more features).
+const TIER = { ig_starter: 1, ig_pro: 2 };
+// Normalise a stored billing cycle to our toggle values.
+const normCycle = (c) => (c === "annual" || c === "yearly" ? "yearly" : "monthly");
+
+export default function PricingPage({
+  embedded = false,
+  currentPlan = null,
+  currentCycle = null,
+}) {
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
   const isAuthenticated = !!token;
@@ -65,7 +74,27 @@ export default function PricingPage({ embedded = false }) {
   // Start with the fallback so the page is never blank / never redirects.
   const [plans, setPlans] = useState(FALLBACK_PLANS);
   const [selecting, setSelecting] = useState(null);
-  const [cycle, setCycle] = useState("monthly"); // "monthly" | "yearly"
+  // Default the toggle to the user's current cycle so the "obvious" upgrade
+  // (same plan, other cycle) is easy to see.
+  const [cycle, setCycle] = useState(
+    currentCycle ? normCycle(currentCycle) : "monthly",
+  );
+
+  const curCycle = currentCycle ? normCycle(currentCycle) : null;
+  const curTier = currentPlan ? TIER[currentPlan] || 0 : 0;
+
+  // Decide how a given plan card should behave relative to the current plan.
+  // Returns "current" (their active plan+cycle — disabled), "downgrade" (hide),
+  // or "offer" (a valid upgrade they can pick).
+  const cardState = (planKey) => {
+    if (!currentPlan) return "offer"; // trial / no plan → everything is pickable
+    const tier = TIER[planKey] || 0;
+    if (planKey === currentPlan && cycle === curCycle) return "current";
+    if (tier < curTier) return "downgrade"; // lower tier → not shown
+    // Same tier: only the OTHER cycle is a meaningful move (monthly → yearly).
+    if (tier === curTier && cycle === curCycle) return "current";
+    return "offer";
+  };
 
   useEffect(() => {
     let alive = true;
@@ -141,25 +170,53 @@ export default function PricingPage({ embedded = false }) {
 
         <BillingToggle cycle={cycle} setCycle={setCycle} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-          {starter && (
-            <PlanCard
-              plan={starter}
-              cycle={cycle}
-              onPick={handlePick}
-              selecting={selecting === starter.key}
-            />
-          )}
-          {pro && (
-            <PlanCard
-              plan={pro}
-              cycle={cycle}
-              onPick={handlePick}
-              selecting={selecting === pro.key}
-              highlight
-            />
-          )}
-        </div>
+        {(() => {
+          const cards = [
+            starter && { plan: starter, highlight: false },
+            pro && { plan: pro, highlight: true },
+          ].filter(Boolean);
+          const visible = cards.filter(
+            (c) => cardState(c.plan.key) !== "downgrade",
+          );
+          if (visible.length === 0) {
+            // Already on the top plan + cycle — nothing to upgrade to.
+            return (
+              <div className="max-w-md mx-auto text-center rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6">
+                <p className="font-bold text-ink-900">
+                  You're on our top plan 🎉
+                </p>
+                <p className="text-sm text-ink-500 mt-1">
+                  Instagram Pro ({curCycle === "yearly" ? "yearly" : "monthly"})
+                  — you already have every feature. Nothing to upgrade.
+                </p>
+              </div>
+            );
+          }
+          return (
+            <div
+              className={clsx(
+                "grid grid-cols-1 gap-6 mx-auto",
+                visible.length > 1 ? "md:grid-cols-2 max-w-2xl" : "max-w-sm",
+              )}
+            >
+              {visible.map(({ plan, highlight }) => {
+                const state = cardState(plan.key);
+                return (
+                  <PlanCard
+                    key={plan.key}
+                    plan={plan}
+                    cycle={cycle}
+                    onPick={handlePick}
+                    selecting={selecting === plan.key}
+                    highlight={highlight}
+                    isCurrent={state === "current"}
+                    ctaVerb={currentPlan ? "Switch to" : "Start"}
+                  />
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {!embedded && (
           <>
@@ -240,7 +297,15 @@ function BillingToggle({ cycle, setCycle }) {
   );
 }
 
-function PlanCard({ plan, cycle, onPick, selecting, highlight }) {
+function PlanCard({
+  plan,
+  cycle,
+  onPick,
+  selecting,
+  highlight,
+  isCurrent,
+  ctaVerb = "Start",
+}) {
   const isYearly = cycle === "yearly";
   // Annual = 10× monthly (2 months free), matching the backend catalog.
   const usd = isYearly ? plan.usd * 10 : plan.usd;
@@ -303,26 +368,32 @@ function PlanCard({ plan, cycle, onPick, selecting, highlight }) {
         ))}
       </ul>
 
-      <button
-        onClick={() => onPick(plan)}
-        disabled={selecting}
-        className={clsx(
-          "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
-          highlight
-            ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow"
-            : "bg-ink-900 text-white hover:bg-ink-800",
-        )}
-      >
-        {selecting ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Activating…
-          </>
-        ) : (
-          <>
-            Start {plan.name} <ArrowRight className="w-4 h-4" />
-          </>
-        )}
-      </button>
+      {isCurrent ? (
+        <div className="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <Check className="w-4 h-4" /> Your current plan
+        </div>
+      ) : (
+        <button
+          onClick={() => onPick(plan)}
+          disabled={selecting}
+          className={clsx(
+            "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
+            highlight
+              ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow"
+              : "bg-ink-900 text-white hover:bg-ink-800",
+          )}
+        >
+          {selecting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+            </>
+          ) : (
+            <>
+              {ctaVerb} {plan.name} <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
