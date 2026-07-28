@@ -68,6 +68,7 @@ const OnboardingPricingPage = lazy(
 const InstagramOnboardingPage = lazy(
   () => import("@/pages/onboarding/InstagramOnboardingPage"),
 );
+const ReactivatePage = lazy(() => import("@/pages/onboarding/ReactivatePage"));
 
 // Public
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -354,6 +355,10 @@ export default function App() {
                 <Route
                   path="/onboarding/instagram"
                   element={<InstagramOnboardingPage />}
+                />
+                <Route
+                  path="/onboarding/reactivate"
+                  element={<ReactivatePage />}
                 />
               </Route>
 

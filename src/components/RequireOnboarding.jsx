@@ -94,7 +94,17 @@ export default function RequireOnboarding({ children }) {
   // above (they use the owner's paid workspace).
   const entitled = workspace.entitled === true;
   if (isOwner && !entitled && !isExempt) {
-    return <Navigate to="/onboarding/pricing" replace />;
+    // Distinguish a lapsed user (had a plan, it ended → reactivate screen with
+    // "your data is safe") from a brand-new owner (never subscribed → the
+    // first-time pricing/onboarding).
+    const status = workspace.subscription?.status;
+    const lapsed = ["cancelled", "expired", "past_due"].includes(status);
+    return (
+      <Navigate
+        to={lapsed ? "/onboarding/reactivate" : "/onboarding/pricing"}
+        replace
+      />
+    );
   }
 
   const igConnected = workspace.instagram?.status === "connected";
