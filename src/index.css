@@ -45,6 +45,13 @@
   .card {
     @apply bg-white rounded-lg border border-ink-100 shadow-card;
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
   .card-hover {
     @apply card transition-all hover:shadow-glow hover:-translate-y-0.5;
   }

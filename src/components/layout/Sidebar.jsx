@@ -32,6 +32,7 @@ import {
   Zap,
   Webhook,
   Globe,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -60,6 +61,12 @@ const NAV = [
     section: "Automation",
     items: [
       { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot", perm: "automations" },
+      {
+        to: "/dashboard/ai-bot?tab=test",
+        icon: MessageSquare,
+        label: "Test your bot",
+        perm: "automations",
+      },
       { to: "/dashboard/automation", icon: Zap, label: "Smart Automations", perm: "automations" },
       { to: "/dashboard/flows", icon: Workflow, label: "Custom Flows", perm: "automations" },
     ],
@@ -375,7 +382,11 @@ function NavItem({ item, collapsed, onNavigate, badge }) {
     : hash
       ? location.pathname === pathname && location.hash === `#${hash}`
       : location.pathname === pathname &&
-        (search ? location.search.includes(search) : true);
+        (search
+          ? location.search.includes(search)
+          : // A plain link (no ?search) is NOT active when the URL carries a
+            // ?tab= param that a sibling link owns (e.g. ?tab=test).
+            !/[?&]tab=/.test(location.search));
 
   const handleClick = (e) => {
     if (hash) {

@@ -12,6 +12,7 @@
  * (content + sources[]); enable flag + FAQs persist to workspace.aiSettings.
  */
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Sparkles,
   Save,
@@ -46,6 +47,38 @@ const DEFAULTS = {
   faqs: [],
 };
 
+// Tabs — each maps to one section so nothing needs endless scrolling. `ready`
+// puts a green tick on tabs that are configured.
+const TABS = [
+  {
+    id: "personality",
+    label: "Personality",
+    icon: Bot,
+    ready: (cfg) => !!(cfg.aiRole || cfg.brandVoice || cfg.guardrails),
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    icon: BookOpen,
+    ready: (cfg, bizText, sources) =>
+      (bizText || "").trim().length > 40 || (sources || []).length > 0,
+  },
+  {
+    id: "faqs",
+    label: "FAQs",
+    icon: HelpCircle,
+    ready: (cfg) => (cfg.faqs?.length || 0) > 0,
+  },
+  {
+    id: "catalog",
+    label: "Catalog",
+    icon: ShoppingBag,
+    ready: (cfg, _b, _s, catalog) => (catalog || []).length > 0,
+  },
+  { id: "actions", label: "Actions", icon: Zap },
+  { id: "test", label: "Test bot", icon: MessageSquare },
+];
+
 const SOURCE_META = {
   website: { Icon: Globe, tint: "text-ink-600 bg-ink-100" },
   text: { Icon: FileText, tint: "text-brand-600 bg-brand-50" },
@@ -69,7 +102,27 @@ export default function IgAiBotPage() {
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [showTemplates, setShowTemplates] = useState(false);
   const [drafting, setDrafting] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTabState] = useState(() => {
+    const t = searchParams.get("tab");
+    return TABS.some((x) => x.id === t) ? t : "personality";
+  });
   const fileRef = useRef(null);
+
+  // Keep the tab and the ?tab= URL param in sync (so the sidebar "Test your
+  // bot" deep-link and the in-page tabs stay consistent).
+  const setTab = (id) => {
+    setTabState(id);
+    const next = new URLSearchParams(searchParams);
+    if (id === "personality") next.delete("tab");
+    else next.set("tab", id);
+    setSearchParams(next, { replace: true });
+  };
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && TABS.some((x) => x.id === t) && t !== tab) setTabState(t);
+    if (!t && tab !== "personality") setTabState("personality");
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const stored = workspace?.aiSettings;
@@ -291,98 +344,111 @@ export default function IgAiBotPage() {
   };
 
   return (
-    <div className="relative min-h-full bg-ink-50/40">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 right-0 w-[40rem] h-[40rem] rounded-full bg-brand-500/10 blur-[140px]" />
-        <div className="absolute top-1/3 -left-32 w-[32rem] h-[32rem] rounded-full bg-brand-400/10 blur-[140px]" />
-      </div>
-
-      <div className="relative max-w-4xl mx-auto p-4 sm:p-6 pb-6 space-y-6">
+    <div className="relative min-h-full bg-ink-50/60">
+      <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-5">
         {/* ── Hero ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 text-white px-5 py-5 sm:px-6 shadow-lg shadow-ink-900/10">
-          <div className="pointer-events-none absolute -top-16 right-8 w-56 h-56 rounded-full bg-brand-500/20 blur-3xl" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-900/40 to-transparent" />
+        <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-5 py-5 sm:px-6">
+          <div className="pointer-events-none absolute -top-24 right-12 w-64 h-64 rounded-full bg-brand-500/15 blur-[90px]" />
 
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
-              <Bot className="w-6 h-6 text-brand-300" />
+            <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+              <Bot className="w-6 h-6 text-brand-400" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold tracking-tight">AI Bot</h1>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-200">
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-white/60">
                   <Sparkles className="w-3 h-3" /> AI-powered
                 </span>
                 {igHandle && (
-                  <span className="text-xs text-white/60">@{igHandle}</span>
+                  <span className="text-xs text-white/50">@{igHandle}</span>
                 )}
                 <AiBotHelp />
               </div>
-              <p className="text-sm text-white/70 mt-1 max-w-md">
+              <p className="text-sm text-white/60 mt-1 max-w-md">
                 Teach it about your business once. It answers DMs, comments &
-                story replies 24/7 — in your voice, with advanced AI.
+                story replies 24/7 — in your voice.
               </p>
             </div>
 
-            {/* Master toggle */}
-            <div className="shrink-0 flex flex-col items-start sm:items-end gap-2">
-              <button
-                onClick={() => set({ enabled: !cfg.enabled })}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
-                  cfg.enabled ? "bg-brand-500" : "bg-white/20"
-                }`}
-                aria-label="Toggle AI bot"
-              >
-                <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
-                    cfg.enabled ? "translate-x-7" : "translate-x-1"
+            {/* Readiness + master toggle */}
+            <div className="shrink-0 flex items-center gap-5">
+              <div className="hidden sm:flex flex-col items-end">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-white/50">Readiness</span>
+                  <span className="text-sm font-black text-white">
+                    {readiness}%
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 w-28 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-400 transition-all duration-500"
+                    style={{ width: `${readiness}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <button
+                  onClick={() => set({ enabled: !cfg.enabled })}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
+                    cfg.enabled ? "bg-emerald-500" : "bg-white/20"
                   }`}
-                />
-              </button>
-              <span
-                className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
-                  cfg.enabled ? "text-emerald-300" : "text-white/50"
-                }`}
-              >
+                  aria-label="Toggle AI bot"
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
+                      cfg.enabled ? "translate-x-7" : "translate-x-1"
+                    }`}
+                  />
+                </button>
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    cfg.enabled ? "bg-emerald-400 animate-pulse" : "bg-white/40"
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${
+                    cfg.enabled ? "text-emerald-300" : "text-white/50"
                   }`}
-                />
-                {cfg.enabled ? "Live" : "Paused"}
-              </span>
-            </div>
-          </div>
-
-          {/* Readiness meter */}
-          <div className="relative mt-6 rounded-2xl bg-white/[0.06] border border-white/10 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-white/80">
-                Bot readiness
-              </span>
-              <span className="text-xs font-mono text-brand-300">
-                {readiness}%
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-all duration-500"
-                style={{ width: `${readiness}%` }}
-              />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[11px]">
-              <ReadyChip
-                ok={bizText.trim().length > 40}
-                label="Business description"
-              />
-              <ReadyChip ok={sources.length > 0} label="Knowledge source" />
-              <ReadyChip ok={(cfg.faqs?.length || 0) > 0} label="FAQs" />
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      cfg.enabled ? "bg-emerald-400 animate-pulse" : "bg-white/40"
+                    }`}
+                  />
+                  {cfg.enabled ? "Live" : "Paused"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ── Business description ───────────────────────────────── */}
-        {/* ── Persona: role · voice · guardrails (Phase 1) ────────── */}
+        {/* ── Tab bar (no endless scroll — jump to any section) ───── */}
+        <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-ink-50/80 backdrop-blur-xl border-b border-ink-100">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar">
+            {TABS.map((t) => {
+              const TabIcon = t.icon;
+              const done = t.ready?.(cfg, bizText, sources, catalog);
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+                    tab === t.id
+                      ? "bg-ink-900 text-white shadow-sm"
+                      : "text-ink-500 hover:text-ink-900 hover:bg-ink-100"
+                  }`}
+                >
+                  <TabIcon className="w-4 h-4" />
+                  {t.label}
+                  {done && (
+                    <Check
+                      className={`w-3.5 h-3.5 ${tab === t.id ? "text-emerald-300" : "text-emerald-500"}`}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Personality tab ────────────────────────────────────── */}
+        {tab === "personality" && (
         <Section
           icon={Bot}
           title="Bot personality"
@@ -435,7 +501,11 @@ export default function IgAiBotPage() {
             />
           </div>
         </Section>
+        )}
 
+        {/* ── Knowledge tab ──────────────────────────────────────── */}
+        {tab === "knowledge" && (
+        <div className="space-y-5">
         <Section
           icon={BookOpen}
           title="What does your business do?"
@@ -573,8 +643,11 @@ export default function IgAiBotPage() {
             </div>
           )}
         </Section>
+        </div>
+        )}
 
-        {/* ── FAQs ───────────────────────────────────────────────── */}
+        {/* ── FAQs tab ───────────────────────────────────────────── */}
+        {tab === "faqs" && (
         <Section
           icon={HelpCircle}
           title="Exact-answer FAQs"
@@ -649,8 +722,10 @@ export default function IgAiBotPage() {
             </button>
           </div>
         </Section>
+        )}
 
-        {/* ── Product catalog (Phase 3) ──────────────────────────── */}
+        {/* ── Catalog tab ────────────────────────────────────────── */}
+        {tab === "catalog" && (
         <Section
           icon={ShoppingBag}
           title="Product catalog"
@@ -718,8 +793,10 @@ export default function IgAiBotPage() {
             <Plus className="w-4 h-4" /> Add product
           </button>
         </Section>
+        )}
 
-        {/* ── AI actions (Phase 5) ───────────────────────────────── */}
+        {/* ── Actions tab ────────────────────────────────────────── */}
+        {tab === "actions" && (
         <Section
           icon={Zap}
           title="Smart actions"
@@ -754,23 +831,26 @@ export default function IgAiBotPage() {
             />
           </div>
         </Section>
+        )}
 
-        {/* ── Playground (Phase 2) ───────────────────────────────── */}
-        <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
-
-        {/* How it answers — trust/explainer */}
-        <div className="rounded-2xl border border-ink-100 bg-white p-5 flex items-start gap-3">
-          <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </span>
-          <div className="text-sm text-ink-600 leading-relaxed">
-            <span className="font-bold text-ink-900">How replies work: </span>
-            the bot first checks your FAQs for an exact match, then your
-            knowledge sources, then your business description — and only replies
-            about your business. It never makes up prices or policies you
-            haven't given it.
+        {/* ── Test bot tab ───────────────────────────────────────── */}
+        {tab === "test" && (
+          <div className="space-y-5">
+            <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
+            <div className="rounded-2xl border border-ink-100 bg-white p-5 flex items-start gap-3">
+              <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </span>
+              <div className="text-sm text-ink-600 leading-relaxed">
+                <span className="font-bold text-ink-900">How replies work: </span>
+                the bot first checks your FAQs for an exact match, then your
+                knowledge sources, then your business description — and only
+                replies about your business. It never makes up prices or
+                policies you haven't given it.
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Sticky save bar (stays inside the content column) ──── */}
@@ -1086,9 +1166,9 @@ function Playground({ workspaceId, enabled }) {
 
   return (
     <div className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100 bg-gradient-to-r from-brand-50/60 to-accent-50/40">
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100 bg-ink-50/60">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+          <span className="w-10 h-10 rounded-xl bg-ink-900 text-white flex items-center justify-center shrink-0">
             <MessageSquare className="w-5 h-5" />
           </span>
           <div>
@@ -1214,7 +1294,7 @@ function Section({ title, subtitle, icon: Icon, children }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-sm">
       <div className="flex items-start gap-3 mb-4">
-        <span className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-brand-500/30">
+        <span className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
           <Icon className="w-5 h-5" />
         </span>
         <div>
