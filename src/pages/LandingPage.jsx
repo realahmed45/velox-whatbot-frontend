@@ -941,6 +941,289 @@ function HowItWorks() {
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Product showcase — realistic dashboard mockups in a browser frame
+ * ──────────────────────────────────────────────────────────── */
+
+// A macOS-style browser chrome wrapper for product shots.
+function BrowserFrame({ url = "botlify.site/dashboard", children, className = "" }) {
+  return (
+    <div
+      className={`rounded-2xl border border-ink-200/70 bg-white shadow-2xl shadow-ink-900/10 overflow-hidden ${className}`}
+    >
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-ink-50 border-b border-ink-100">
+        <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+        <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+        <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+        <div className="ml-3 flex-1 max-w-xs">
+          <div className="rounded-md bg-white border border-ink-200 px-3 py-1 text-[11px] text-ink-400 truncate">
+            {url}
+          </div>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// The Botlify sidebar, reproduced faithfully for the mockup.
+function MockSidebar({ active = "AI Bot" }) {
+  const groups = [
+    { title: null, items: [["Dashboard", LayoutDashboard]] },
+    {
+      title: "Automation",
+      items: [
+        ["AI Bot", Bot],
+        ["Smart Automations", Zap],
+        ["Custom Flows", Workflow],
+      ],
+    },
+    {
+      title: "Management",
+      items: [
+        ["Inbox", Inbox],
+        ["Contacts", Users],
+        ["Broadcasts", Send],
+        ["Analytics", BarChart3],
+      ],
+    },
+  ];
+  return (
+    <div className="w-48 shrink-0 bg-ink-950 text-white/80 py-3 hidden sm:block">
+      <div className="flex items-center gap-2 px-4 pb-3 mb-1 border-b border-white/5">
+        <BotlifyMark size={26} />
+        <div className="leading-none">
+          <div className="text-white font-black text-sm">Botlify</div>
+          <div className="text-[8px] uppercase tracking-wider text-white/40">
+            Instagram Automation
+          </div>
+        </div>
+      </div>
+      {groups.map((g, gi) => (
+        <div key={gi} className="px-2 mt-2">
+          {g.title && (
+            <div className="px-2 text-[8px] font-bold uppercase tracking-widest text-white/30 mb-1">
+              {g.title}
+            </div>
+          )}
+          {g.items.map(([label, Icon]) => {
+            const on = label === active;
+            return (
+              <div
+                key={label}
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium mb-0.5 ${
+                  on
+                    ? "bg-brand-500 text-white shadow-sm"
+                    : "text-white/60"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                {label}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductShowcase() {
+  return (
+    <section className="relative py-16 sm:py-24 overflow-hidden bg-ink-950">
+      {/* glow */}
+      <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[50rem] h-[30rem] rounded-full bg-brand-500/20 blur-[130px]" />
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="inline-block px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-wider text-brand-200">
+            See it in action
+          </span>
+          <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-white">
+            A dashboard your whole team will{" "}
+            <span className="bg-gradient-to-r from-brand-400 to-accent-400 bg-clip-text text-transparent">
+              actually enjoy.
+            </span>
+          </h2>
+          <p className="mt-4 text-white/60">
+            Everything in one clean place — teach your AI, automate replies, and
+            watch the conversations roll in.
+          </p>
+        </div>
+
+        {/* Main product shot — AI Bot page */}
+        <BrowserFrame className="mx-auto max-w-5xl" url="botlify.site/dashboard/ai-bot">
+          <div className="flex bg-ink-50/60 h-[420px]">
+            <MockSidebar active="AI Bot" />
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <MockAiBot />
+            </div>
+          </div>
+        </BrowserFrame>
+
+        {/* Secondary shots row */}
+        <div className="grid md:grid-cols-2 gap-6 mt-6 max-w-5xl mx-auto">
+          <BrowserFrame url="botlify.site/dashboard/inbox">
+            <div className="h-56 bg-white">
+              <MockInbox />
+            </div>
+          </BrowserFrame>
+          <BrowserFrame url="botlify.site/dashboard/analytics">
+            <div className="h-56 bg-white">
+              <MockAnalytics />
+            </div>
+          </BrowserFrame>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// AI Bot page mock — persona + playground snippet.
+function MockAiBot() {
+  return (
+    <div className="p-4 space-y-3 text-left">
+      <div className="rounded-xl bg-gradient-to-r from-ink-900 to-ink-800 text-white px-4 py-3 flex items-center gap-3">
+        <span className="w-8 h-8 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center">
+          <Bot className="w-4 h-4 text-brand-300" />
+        </span>
+        <div>
+          <div className="text-sm font-bold flex items-center gap-1.5">
+            AI Bot
+            <span className="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-brand-200">
+              AI-powered
+            </span>
+          </div>
+          <div className="text-[10px] text-white/60">
+            Answers DMs, comments & stories 24/7 — in your voice.
+          </div>
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-emerald-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Live
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-ink-100 bg-white p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-6 h-6 rounded-lg bg-brand-500 text-white flex items-center justify-center">
+            <Bot className="w-3.5 h-3.5" />
+          </span>
+          <span className="text-xs font-black text-ink-900">Bot personality</span>
+          <span className="ml-auto text-[9px] font-bold text-white bg-gradient-to-r from-brand-500 to-accent-500 px-2 py-1 rounded-lg inline-flex items-center gap-1">
+            <Sparkles className="w-2.5 h-2.5" /> Auto-draft
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          <div className="rounded-lg border border-ink-200 px-2.5 py-1.5 text-[10px] text-ink-600">
+            <b className="text-ink-800">AI Role:</b> You are the assistant for
+            Glow Skincare, a Karachi shop…
+          </div>
+          <div className="rounded-lg border border-rose-200 px-2.5 py-1.5 text-[10px] text-ink-600">
+            <b className="text-rose-600">Guardrails:</b> never quote a price you
+            weren't given; hand off complaints…
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-ink-100 bg-white overflow-hidden">
+        <div className="px-3 py-2 bg-gradient-to-r from-brand-50/60 to-accent-50/40 border-b border-ink-100 text-xs font-black text-ink-900 flex items-center gap-1.5">
+          <MessageCircle className="w-3.5 h-3.5 text-brand-500" /> Test your bot
+        </div>
+        <div className="p-2.5 space-y-1.5 bg-ink-50/40">
+          <div className="flex justify-end">
+            <span className="bg-brand-500 text-white text-[10px] rounded-lg rounded-br-sm px-2.5 py-1.5">
+              How much is your serum?
+            </span>
+          </div>
+          <div className="flex justify-start">
+            <span className="bg-white border border-ink-100 text-ink-800 text-[10px] rounded-lg rounded-bl-sm px-2.5 py-1.5">
+              Our Glow Serum is Rs 2,500 😊 Want the link?
+              <span className="block mt-1 text-[8px] font-bold uppercase text-brand-500">
+                intent: pricing · #interested
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MockInbox() {
+  const chats = [
+    ["ayesha.k", "Do you deliver to Lahore?", true],
+    ["fitwithsam", "Loved the reel 🔥 price?", false],
+    ["glow.store", "COD available?", false],
+  ];
+  return (
+    <div className="flex h-full text-left">
+      <div className="w-40 border-r border-ink-100 shrink-0">
+        <div className="px-3 py-2 text-xs font-black text-ink-900 border-b border-ink-100">
+          Inbox
+        </div>
+        {chats.map(([u, m, active], i) => (
+          <div
+            key={i}
+            className={`px-3 py-2 border-b border-ink-50 ${active ? "bg-brand-50/60" : ""}`}
+          >
+            <div className="text-[11px] font-bold text-ink-800">@{u}</div>
+            <div className="text-[9px] text-ink-500 truncate">{m}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 flex flex-col bg-ink-50/40">
+        <div className="p-2.5 space-y-1.5 flex-1">
+          <div className="flex justify-start">
+            <span className="bg-white border border-ink-100 text-[10px] rounded-lg px-2.5 py-1.5">
+              Do you deliver to Lahore?
+            </span>
+          </div>
+          <div className="flex justify-end">
+            <span className="bg-brand-500 text-white text-[10px] rounded-lg px-2.5 py-1.5">
+              Yes! 3–5 days, Rs 200 🚚
+              <span className="block text-[7px] opacity-70">
+                ⚡ AI replied
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MockAnalytics() {
+  const bars = [40, 65, 50, 80, 60, 95, 75];
+  return (
+    <div className="p-3 text-left h-full flex flex-col">
+      <div className="text-xs font-black text-ink-900 mb-2">Analytics</div>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {[
+          ["DMs handled", "1,204"],
+          ["AI reply rate", "92%"],
+          ["Avg. reply", "4s"],
+        ].map(([l, v]) => (
+          <div key={l} className="rounded-lg border border-ink-100 p-2">
+            <div className="text-[8px] text-ink-400 uppercase font-bold">
+              {l}
+            </div>
+            <div className="text-sm font-black text-ink-900">{v}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 flex items-end gap-1.5 px-1">
+        {bars.map((h, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-t bg-gradient-to-t from-brand-500 to-brand-400"
+            style={{ height: `${h}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
  * Testimonials
  * ──────────────────────────────────────────────────────────── */
 function Testimonials() {
@@ -1316,6 +1599,7 @@ export default function LandingPage() {
       <Features />
       <Results />
       <HowItWorks />
+      <ProductShowcase />
       <Testimonials />
       <PricingTeaser />
       <FAQ />
