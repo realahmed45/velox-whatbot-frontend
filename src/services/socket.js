@@ -10,11 +10,18 @@ export const initSocket = () => {
 
   socket = io(
     import.meta.env.VITE_SOCKET_URL ||
-      "https://botlify-whatbot-backend.onrender.com",
+      "https://velox-whatbot-backend.onrender.com",
     {
       auth: { token },
-      transports: ["websocket"],
-      reconnectionAttempts: 5,
+      // Allow polling first, then upgrade to WebSocket. Forcing websocket-only
+      // fails hard when the backend is cold-starting (Render free tier) or
+      // behind a proxy that doesn't immediately upgrade — which showed up as
+      // "WebSocket connection failed" in the console.
+      transports: ["polling", "websocket"],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 8000,
+      timeout: 20000,
     },
   );
 
