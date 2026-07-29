@@ -156,6 +156,15 @@ export default function IgAiBotPage() {
     setSources(ws?.aiKnowledge?.sources || []);
   };
 
+  // While a source is still crawling in the background, poll until it's done.
+  useEffect(() => {
+    const anyProcessing = sources.some((s) => s.status === "processing");
+    if (!anyProcessing) return;
+    const t = setInterval(refreshSources, 4000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sources, activeWorkspace]);
+
   const uploadDoc = async (file) => {
     if (!file) return;
     setBusy("doc");
@@ -191,7 +200,11 @@ export default function IgAiBotPage() {
       setUrlInput("");
       setShowUrl(false);
       set({ enabled: true });
-      toast.success("Website imported — bot updated 🌐");
+      if (data.processing) {
+        toast.success("Reading your whole site… this can take a minute 🌐");
+      } else {
+        toast.success("Website imported — bot updated 🌐");
+      }
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't import that website");
     } finally {
@@ -1199,17 +1212,25 @@ function SourceCard({ s, busy, onResync, onRemove }) {
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink-900 truncate">
-            {s.title || s.url || "Untitled source"}
+            {s.label || s.title || s.url || "Untitled source"}
           </p>
           <p className="text-[11px] text-ink-400 flex items-center gap-1">
-            {ready ? (
+            {s.status === "error" ? (
+              <span className="text-red-500 truncate">
+                {s.error || "Import failed"}
+              </span>
+            ) : ready ? (
               <>
                 <Check className="w-3 h-3 text-emerald-500" /> Learned
-                {content ? ` · ${content.length.toLocaleString()} chars` : ""}
+                {s.charCount
+                  ? ` · ${s.charCount.toLocaleString()} chars`
+                  : content
+                    ? ` · ${content.length.toLocaleString()} chars`
+                    : ""}
               </>
             ) : (
               <>
-                <Loader2 className="w-3 h-3 animate-spin" /> Processing…
+                <Loader2 className="w-3 h-3 animate-spin" /> Reading your site…
               </>
             )}
           </p>
