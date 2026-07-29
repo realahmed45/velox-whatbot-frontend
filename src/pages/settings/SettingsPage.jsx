@@ -24,6 +24,7 @@ import HolidayModeCard from "@/components/HolidayModeCard";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
+import { connectInstagram } from "@/utils/connectInstagram";
 import { useNavigate } from "react-router-dom";
 
 const SUPPORT_EMAIL = "contactus@botlify.site";
@@ -427,15 +428,20 @@ function InstagramSettings({ workspace, onSave }) {
 
   const startOAuth = async () => {
     setOauthLoading(true);
-    try {
-      const { data } = await api.get("/instagram/connect/oauth-url");
-      window.location.href = data.url;
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Connection failed. Please try again.",
-      );
-      setOauthLoading(false);
+    const { connected, reason } = await connectInstagram();
+    if (connected) {
+      toast.success("Instagram connected!");
+      window.location.reload();
+    } else if (reason === "redirected") {
+      return; // full-page redirect in progress
+    } else if (reason === "cancelled") {
+      toast("Connection cancelled.");
+    } else if (reason === "timeout") {
+      toast.error("Timed out. If you finished, refresh the page.");
+    } else {
+      toast.error("Connection failed. Please try again.");
     }
+    setOauthLoading(false);
   };
 
   const disconnect = async () => {

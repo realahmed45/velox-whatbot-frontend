@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { usePermissions } from "@/hooks/usePermissions";
+import { connectInstagram } from "@/utils/connectInstagram";
 import {
   Instagram,
   MessageSquare,
@@ -102,10 +103,19 @@ export default function OverviewPage() {
   const firstName = (user?.name || "").split(" ")[0] || "there";
 
   const startIgOAuth = async () => {
-    try {
-      const { data } = await api.get("/instagram/connect/oauth-url");
-      window.location.href = data.url;
-    } catch {
+    const t = toast.loading("Waiting for Instagram authorization…");
+    const { connected, reason } = await connectInstagram();
+    toast.dismiss(t);
+    if (connected) {
+      toast.success("Instagram connected successfully!");
+      fetchWorkspace(activeWorkspace);
+    } else if (reason === "redirected") {
+      // Popup was blocked; a full-page redirect is in progress.
+    } else if (reason === "cancelled") {
+      toast("Connection cancelled.");
+    } else if (reason === "timeout") {
+      toast.error("Timed out. If you finished, refresh the page.");
+    } else {
       toast.error("Could not start Instagram connection. Try again.");
     }
   };

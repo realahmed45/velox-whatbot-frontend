@@ -23,6 +23,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
+import { connectInstagram } from "@/utils/connectInstagram";
 
 export default function Header({ onMenuClick, onSearchClick }) {
   const { workspace } = useWorkspaceStore();
@@ -61,11 +62,10 @@ export default function Header({ onMenuClick, onSearchClick }) {
   };
 
   const startIgOAuth = async () => {
-    try {
-      const { data } = await api.get("/instagram/connect/oauth-url");
-      window.location.href = data.url;
-    } catch {
-      /* api interceptor shows error toast */
+    const { connected, reason } = await connectInstagram();
+    if (connected) window.location.reload();
+    else if (reason && reason !== "redirected" && reason !== "cancelled") {
+      /* api interceptor / util shows error toast */
     }
   };
 

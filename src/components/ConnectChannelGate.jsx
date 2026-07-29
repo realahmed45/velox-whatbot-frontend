@@ -5,11 +5,13 @@
  */
 import { Instagram } from "lucide-react";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import api from "@/services/api";
 import { useState } from "react";
+import { connectInstagram } from "@/utils/connectInstagram";
+import { useAuthStore } from "@/store/authStore";
 
 export default function ConnectChannelGate({ children, feature }) {
-  const { workspace, loading } = useWorkspaceStore();
+  const { workspace, loading, fetchWorkspace } = useWorkspaceStore();
+  const { activeWorkspace } = useAuthStore();
   const [connecting, setConnecting] = useState(false);
 
   const igConnected = workspace?.instagram?.status === "connected";
@@ -18,12 +20,11 @@ export default function ConnectChannelGate({ children, feature }) {
 
   const startIg = async () => {
     setConnecting(true);
-    try {
-      const { data } = await api.get("/instagram/connect/oauth-url");
-      window.location.href = data.url;
-    } catch {
-      setConnecting(false);
+    const { connected, reason } = await connectInstagram();
+    if (connected) {
+      fetchWorkspace?.(activeWorkspace);
     }
+    if (reason !== "redirected") setConnecting(false);
   };
 
   return (

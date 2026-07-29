@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
+import { connectInstagram } from "@/utils/connectInstagram";
 
 export default function InstagramOnboardingPage() {
   const navigate = useNavigate();
@@ -112,16 +113,19 @@ export default function InstagramOnboardingPage() {
   const startOAuth = async () => {
     setConnecting(true);
     setError(null);
-    try {
-      const { data } = await api.get("/instagram/connect/oauth-url");
-      window.location.href = data.url;
-    } catch (e) {
-      setError(
-        e.response?.data?.message ||
-          "Failed to start connection. Please try again.",
-      );
-      setConnecting(false);
+    const { connected, reason } = await connectInstagram();
+    if (connected) {
+      await fetchWorkspace(activeWorkspace);
+      toast.success("Instagram connected!");
+      navigate("/dashboard?connected=true");
+      return;
     }
+    if (reason === "redirected") return; // full-page redirect fallback
+    if (reason === "timeout")
+      setError("Timed out. If you finished, refresh the page.");
+    else if (reason && reason !== "cancelled")
+      setError("Failed to start connection. Please try again.");
+    setConnecting(false);
   };
 
   return (

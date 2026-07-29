@@ -25,11 +25,16 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import InstagramPreview from "./InstagramPreview";
 
 dayjs.extend(relativeTime);
 
 export default function ScheduledPostsPage() {
   const confirm = useConfirm();
+  const workspace = useWorkspaceStore((s) => s.workspace);
+  const workspaceHandle =
+    workspace?.instagram?.username || workspace?.name || "your_handle";
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -39,9 +44,10 @@ export default function ScheduledPostsPage() {
 
   // Form state
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [caption, setCaption] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
-  const [postType, setPostType] = useState("image"); // image | story
+  const [postType, setPostType] = useState("image"); // image | story | reel
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -134,6 +140,35 @@ export default function ScheduledPostsPage() {
     }
   };
 
+  const uploadVideo = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please upload a video file (mp4)");
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Video must be under 100 MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await api.post("/upload/video", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (!data.url) throw new Error("No URL returned from upload");
+      setVideoUrl(data.url);
+      toast.success("Video uploaded!");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (err) {
+      console.error("[Upload] Video error:", err);
+      toast.error(err.response?.data?.message || "Failed to upload video");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleCsvUpload = async (file) => {
     try {
       const text = await file.text();
@@ -188,7 +223,12 @@ export default function ScheduledPostsPage() {
   const createPost = async (e) => {
     e.preventDefault();
 
-    if (!imageUrl) {
+    if (postType === "reel") {
+      if (!videoUrl) {
+        toast.error("Please upload a video for the reel");
+        return;
+      }
+    } else if (!imageUrl) {
       toast.error("Please upload an image");
       return;
     }
@@ -196,11 +236,17 @@ export default function ScheduledPostsPage() {
       toast.error("Please select a time");
       return;
     }
+    // Guard against past times (the min attribute alone can be bypassed by typing).
+    if (new Date(scheduledTime).getTime() <= Date.now() + 60_000) {
+      toast.error("Please pick a time at least a minute from now");
+      return;
+    }
 
     setSubmitting(true);
     try {
       const payload = {
         imageUrl,
+        videoUrl: postType === "reel" ? videoUrl : "",
         caption,
         postType,
         scheduledTime: new Date(scheduledTime).toISOString(),
@@ -227,6 +273,7 @@ export default function ScheduledPostsPage() {
   const editPost = (post) => {
     setEditingId(post._id);
     setImageUrl(post.imageUrl || "");
+    setVideoUrl(post.videoUrl || "");
     setCaption(post.caption || "");
     setPostType(post.postType || "image");
     // datetime-local wants local "YYYY-MM-DDTHH:mm"
@@ -270,6 +317,7 @@ export default function ScheduledPostsPage() {
 
   const resetForm = () => {
     setImageUrl("");
+    setVideoUrl("");
     setCaption("");
     setScheduledTime("");
     setPostType("image");
@@ -309,7 +357,7 @@ export default function ScheduledPostsPage() {
         language: "en",
       });
 
-      // API shape: { success, captions: [{ text, hashtags }] } â€” also tolerate {caption}
+      // API shape: { success, captions: [{ text, hashtags }] } — also tolerate {caption}
       let list = Array.isArray(data?.captions) ? data.captions : [];
       if (!list.length && data?.caption) list = [data.caption];
       const normalized = list.map(captionToText).filter(Boolean);
@@ -342,17 +390,21 @@ export default function ScheduledPostsPage() {
 
   const STATUS_TEXT = {
     pending: "Pending",
-    publishing: "Publishingâ€¦",
+    publishing: "Publishing…",
     published: "Published",
     failed: "Failed",
     cancelled: "Cancelled",
   };
 
-  // Get minimum datetime (5 minutes from now)
+  // Get minimum datetime (5 minutes from now), in the user's LOCAL time so the
+  // datetime-local input's min matches what the picker shows. (toISOString would
+  // return UTC and be off by the timezone offset — e.g. 5h in the past at UTC+5.)
   const minDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 5);
-    return now.toISOString().slice(0, 16);
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
   };
 
   const pendingCount = posts.filter((p) => p.status === "pending").length;
@@ -363,7 +415,7 @@ export default function ScheduledPostsPage() {
       <StatHero
         icon={CalendarClock}
         title="Scheduled posts"
-        subtitle="Plan Instagram posts and stories to publish automatically â€” keep your feed consistent on autopilot."
+        subtitle="Plan Instagram posts and stories to publish automatically — keep your feed consistent on autopilot."
         help={{
           title: "Scheduled posts",
           tips: [
@@ -430,7 +482,7 @@ export default function ScheduledPostsPage() {
         <EmptyState
           icon={CalendarClock}
           title="No scheduled posts yet"
-          description="Queue posts and stories to publish automatically. Perfect for keeping your feed consistent â€” set it once and let it run."
+          description="Queue posts and stories to publish automatically. Perfect for keeping your feed consistent — set it once and let it run."
           action={
             <button
               onClick={openCreate}
@@ -543,7 +595,7 @@ export default function ScheduledPostsPage() {
         </div>
       )}
 
-      {/* Create Post Modal â€” portal to body */}
+      {/* Create Post Modal — portal to body */}
       {showModal &&
         createPortal(
           <div
@@ -592,12 +644,69 @@ export default function ScheduledPostsPage() {
                 onSubmit={createPost}
                 className="flex-1 overflow-y-auto px-6 py-5 space-y-5"
               >
-                {/* Image upload */}
+                {/* Post Type — Feed image, Story, or Reel (drives the uploader below) */}
                 <div>
                   <label className="block text-sm font-semibold text-ink-700 mb-1.5">
-                    Image <span className="text-brand-500">*</span>
+                    Post type
                   </label>
-                  {imageUrl ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "image", label: "Feed", icon: LayoutGrid },
+                      { id: "story", label: "Story", icon: ImageIcon },
+                      { id: "reel", label: "Reel", icon: Film },
+                    ].map(({ id, label, icon: Ic }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setPostType(id)}
+                        className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-sm font-semibold border transition ${
+                          postType === id
+                            ? "bg-brand-500 text-white border-brand-500 shadow-sm"
+                            : "bg-white text-ink-700 border-ink-200 hover:border-brand-300"
+                        }`}
+                      >
+                        <Ic className="w-4 h-4" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {postType === "reel" && (
+                    <p className="text-xs text-ink-400 mt-1.5">
+                      Upload an MP4 with your audio already in it — Instagram
+                      can't add its catalog music to auto-published reels.
+                    </p>
+                  )}
+                  {postType === "story" && (
+                    <p className="text-xs text-amber-600 mt-1.5">
+                      Stories don't use captions. Image-only stories supported.
+                    </p>
+                  )}
+                </div>
+
+                {/* Media upload — image for feed/story, video for reel */}
+                <div>
+                  <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                    {postType === "reel" ? "Video" : "Image"}{" "}
+                    <span className="text-brand-500">*</span>
+                  </label>
+
+                  {postType === "reel" && videoUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-ink-100 bg-black">
+                      <video
+                        src={videoUrl}
+                        className="w-full max-h-72 object-contain"
+                        controls
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setVideoUrl("")}
+                        className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md hover:bg-red-50 hover:text-red-600 text-ink-700 transition"
+                        aria-label="Remove video"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : postType !== "reel" && imageUrl ? (
                     <div className="relative group rounded-xl overflow-hidden border border-ink-100">
                       <img
                         src={imageUrl}
@@ -630,7 +739,8 @@ export default function ScheduledPostsPage() {
                         e.preventDefault();
                         setDragging(false);
                         const f = e.dataTransfer.files?.[0];
-                        if (f) uploadImage(f);
+                        if (f)
+                          postType === "reel" ? uploadVideo(f) : uploadImage(f);
                       }}
                       className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
                         dragging
@@ -641,31 +751,49 @@ export default function ScheduledPostsPage() {
                       <div className="w-11 h-11 rounded-2xl bg-ink-50 flex items-center justify-center">
                         {uploading ? (
                           <Loader2 className="w-5 h-5 text-brand-500 animate-spin" />
+                        ) : postType === "reel" ? (
+                          <Film className="w-5 h-5 text-ink-400" />
                         ) : (
                           <ImagePlus className="w-5 h-5 text-ink-400" />
                         )}
                       </div>
                       <span className="text-sm font-semibold text-ink-700">
                         {uploading
-                          ? "Uploadingâ€¦"
-                          : "Click or drag to upload image"}
+                          ? "Uploading…"
+                          : postType === "reel"
+                            ? "Click or drag to upload video"
+                            : "Click or drag to upload image"}
                       </span>
                       <span className="text-xs text-ink-400">
-                        PNG, JPG up to 10 MB
+                        {postType === "reel"
+                          ? "MP4 with audio, up to 100 MB"
+                          : "PNG, JPG up to 10 MB"}
                       </span>
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept={postType === "reel" ? "video/*" : "image/*"}
                         className="hidden"
                         disabled={uploading}
                         onChange={(e) =>
-                          e.target.files[0] && uploadImage(e.target.files[0])
+                          e.target.files[0] &&
+                          (postType === "reel"
+                            ? uploadVideo(e.target.files[0])
+                            : uploadImage(e.target.files[0]))
                         }
                       />
                     </label>
                   )}
                 </div>
+
+                {/* Live Instagram preview */}
+                <InstagramPreview
+                  postType={postType}
+                  imageUrl={imageUrl}
+                  videoUrl={videoUrl}
+                  caption={caption}
+                  workspaceName={workspaceHandle}
+                />
 
                 {/* Caption */}
                 <div>
@@ -715,7 +843,7 @@ export default function ScheduledPostsPage() {
                         {aiLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Generatingâ€¦
+                            Generating…
                           </>
                         ) : (
                           <>
@@ -728,7 +856,7 @@ export default function ScheduledPostsPage() {
                       {aiCaptions.length > 0 && (
                         <div className="space-y-1.5 pt-1">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">
-                            Suggestions â€” tap to use
+                            Suggestions — tap to use
                           </p>
                           {aiCaptions.map((c, i) => (
                             <button
@@ -755,7 +883,7 @@ export default function ScheduledPostsPage() {
                     rows={4}
                     maxLength={2200}
                     className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition resize-y"
-                    placeholder="Write your captionâ€¦"
+                    placeholder="Write your caption…"
                   />
                   <p
                     className={`text-xs mt-1 text-right ${
@@ -785,43 +913,6 @@ export default function ScheduledPostsPage() {
                   </p>
                 </div>
 
-                {/* Post Type â€” Feed image or Story */}
-                <div>
-                  <label className="block text-sm font-semibold text-ink-700 mb-1.5">
-                    Post type
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPostType("image")}
-                      className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold border transition ${
-                        postType === "image"
-                          ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                          : "bg-white text-ink-700 border-ink-200 hover:border-brand-300"
-                      }`}
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                      Feed image
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPostType("story")}
-                      className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold border transition ${
-                        postType === "story"
-                          ? "bg-brand-500 text-white border-brand-500 shadow-sm"
-                          : "bg-white text-ink-700 border-ink-200 hover:border-brand-300"
-                      }`}
-                    >
-                      <Film className="w-4 h-4" />
-                      Story (24h)
-                    </button>
-                  </div>
-                  {postType === "story" && (
-                    <p className="text-xs text-amber-600 mt-1.5">
-                      Stories don't use captions. Image-only stories supported.
-                    </p>
-                  )}
-                </div>
               </form>
 
               {/* Sticky footer */}
@@ -857,7 +948,7 @@ export default function ScheduledPostsPage() {
           document.body,
         )}
 
-      {/* Smart Timing Modal â€” portal to body */}
+      {/* Smart Timing Modal — portal to body */}
       {showSmartTiming &&
         smartTiming &&
         createPortal(
