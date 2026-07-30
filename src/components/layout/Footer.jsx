@@ -4,7 +4,7 @@
  * Professional, clean, enterprise-grade
  */
 import { Link } from "react-router-dom";
-import { Instagram, Facebook, Mail } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
 
 export default function Footer() {
@@ -25,22 +25,21 @@ export default function Footer() {
               </p>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://instagram.com/botlify"
+                  href="https://www.instagram.com/bot_lify"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Instagram"
+                  aria-label="Instagram — @bot_lify"
                   className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-ink-400 hover:text-white hover:bg-brand-500 hover:border-brand-500 transition"
                 >
                   <Instagram size={18} />
                 </a>
                 <a
-                  href="https://facebook.com/botlify"
+                  href="https://www.instagram.com/bot_lify"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Facebook"
-                  className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-ink-400 hover:text-white hover:bg-brand-500 hover:border-brand-500 transition"
+                  className="text-sm font-medium text-ink-400 hover:text-white transition"
                 >
-                  <Facebook size={18} />
+                  @bot_lify
                 </a>
               </div>
             </div>
