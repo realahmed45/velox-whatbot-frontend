@@ -22,9 +22,23 @@ const CATEGORIES = [
   },
 ];
 
-function GalleryCard({ tab, plan, onOpen }) {
+const RANK = {
+  free: 0,
+  ig_starter: 1,
+  ig_pro: 2,
+  starter: 1,
+  growth: 1,
+  scale: 2,
+  business: 2,
+  agency: 2,
+};
+
+function GalleryCard({ tab, plan, lifetime, onOpen }) {
   const Icon = tab.icon;
-  const locked = tab.plan !== "starter" && plan === "starter";
+  // Locked only if the account's tier is below what the feature needs (and not
+  // a lifetime/comped account, which gets everything).
+  const locked =
+    !lifetime && (RANK[plan] ?? 0) < (RANK[tab.plan] ?? 0);
 
   return (
     <button
@@ -54,7 +68,12 @@ function GalleryCard({ tab, plan, onOpen }) {
   );
 }
 
-export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
+export default function AutomationsHubGallery({
+  tabs,
+  onOpenTab,
+  plan,
+  lifetime,
+}) {
   return (
     <div className="space-y-9">
       {CATEGORIES.map((cat) => {
@@ -77,6 +96,7 @@ export default function AutomationsHubGallery({ tabs, onOpenTab, plan }) {
                   key={t.id}
                   tab={t}
                   plan={plan}
+                  lifetime={lifetime}
                   onOpen={() => onOpenTab(t.id)}
                 />
               ))}

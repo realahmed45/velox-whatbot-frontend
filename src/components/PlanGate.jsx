@@ -15,8 +15,8 @@ const PLAN_RANK = {
   free: 0,
   ig_starter: 1,
   ig_pro: 2,
-  // legacy / tier aliases
-  starter: 0,
+  // legacy / tier aliases (map to the closest live tier)
+  starter: 1,
   growth: 1,
   scale: 2,
   business: 2,
@@ -25,20 +25,22 @@ const PLAN_RANK = {
 
 export default function PlanGate({
   currentPlan = "free",
-  requiredPlan = "growth",
+  requiredPlan = "ig_starter",
   feature = "",
+  lifetime = false,
   children,
   compact = false,
 }) {
   const navigate = useNavigate();
+  // Lifetime/comped accounts get everything. Otherwise compare tier ranks.
   const hasAccess =
+    lifetime ||
     (PLAN_RANK[currentPlan] ?? 0) >= (PLAN_RANK[requiredPlan] ?? 1);
 
   if (hasAccess) return children;
 
-  const Icon = requiredPlan === "scale" ? Sparkles : Lock;
-  const cta =
-    requiredPlan === "scale" ? "Upgrade to Scale" : "Upgrade to Growth";
+  const Icon = Sparkles;
+  const cta = "Upgrade to Pro";
 
   if (compact) {
     return (
@@ -46,7 +48,7 @@ export default function PlanGate({
         <div className="flex items-center gap-2 text-sm text-ink-700">
           <Icon className="w-4 h-4 text-brand-600" />
           <span>
-            Available on <b className="capitalize">{requiredPlan}</b> plan
+            Available on the <b>Pro</b> plan
           </span>
         </div>
         <button
@@ -73,8 +75,7 @@ export default function PlanGate({
             {feature || "Premium feature"}
           </h3>
           <p className="text-sm text-ink-500 mt-1">
-            This feature is available on the{" "}
-            <b className="capitalize">{requiredPlan}</b> plan and above.
+            This feature is available on the <b>Pro</b> plan.
           </p>
           <button
             onClick={() => navigate("/dashboard/pricing")}

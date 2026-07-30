@@ -24,8 +24,10 @@ export const useWorkspaceStore = create(
         try {
           const { data } = await api.get(`/workspaces/${workspaceId}`);
           set({ workspace: data.workspace });
+          return data.workspace;
         } catch (err) {
           console.error("fetchWorkspace error", err);
+          return null;
         } finally {
           set({ loading: false });
         }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "@/services/api";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useAuthStore } from "@/store/authStore";
 import {
   CheckCircle2,
   TrendingUp,
@@ -20,6 +22,9 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function BillingPage() {
   const confirm = useConfirm();
+  const navigate = useNavigate();
+  const { fetchWorkspace } = useWorkspaceStore();
+  const { activeWorkspace } = useAuthStore();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -37,13 +42,39 @@ export default function BillingPage() {
     load();
   }, []);
 
-  // Toast when returning from the Lemon Squeezy hosted checkout. The webhook
-  // activates the plan async, so refetch a moment later to reflect it.
+  // Returning from checkout. Activation is async (provider webhook), so POLL the
+  // workspace until it's entitled, then move the user forward automatically
+  // (dashboard, or Instagram onboarding if not connected yet) instead of
+  // stranding them on the billing page.
   useEffect(() => {
     const billing = searchParams.get("billing") || searchParams.get("checkout");
     if (billing === "success") {
       toast.success("Payment received — activating your subscription…");
-      setTimeout(load, 2500);
+      let tries = 0;
+      const poll = setInterval(async () => {
+        tries += 1;
+        load(); // refresh local billing view
+        let ws = null;
+        try {
+          ws = await fetchWorkspace(activeWorkspace, { force: true });
+        } catch {
+          /* keep polling */
+        }
+        const entitled =
+          ws?.entitled === true ||
+          ws?.subscription?.lifetime === true ||
+          ["active", "trialing"].includes(ws?.subscription?.status);
+        if (entitled || tries >= 8) {
+          clearInterval(poll);
+          if (entitled) {
+            toast.success("You're all set! 🎉");
+            const connected = ws?.instagram?.status === "connected";
+            navigate(connected ? "/dashboard" : "/onboarding/instagram", {
+              replace: true,
+            });
+          }
+        }
+      }, 2500);
     } else if (billing === "failed") {
       toast.error("Checkout was cancelled. No card was charged.");
     }

@@ -36,7 +36,7 @@ const ALL_TABS = [
     desc: "Send an instant reply when someone messages you for the first time.",
     category: "popular",
     icon: MessageCircle,
-    plan: "starter",
+    plan: "ig_starter",
     channels: ["instagram"],
   },
   {
@@ -45,7 +45,7 @@ const ALL_TABS = [
     desc: "When someone comments a keyword on your post, send them a DM automatically.",
     category: "popular",
     icon: Hash,
-    plan: "starter",
+    plan: "ig_starter",
     channels: ["instagram"],
   },
   {
@@ -54,7 +54,7 @@ const ALL_TABS = [
     desc: "Reply automatically when a customer sends a specific word or phrase.",
     category: "popular",
     icon: MessageCircle,
-    plan: "starter",
+    plan: "ig_starter",
     channels: ["instagram"],
   },
   {
@@ -63,7 +63,7 @@ const ALL_TABS = [
     desc: "Respond when someone replies to your Instagram story.",
     category: "engagement",
     icon: Heart,
-    plan: "growth",
+    plan: "ig_pro",
     channels: ["instagram"],
   },
   {
@@ -72,7 +72,7 @@ const ALL_TABS = [
     desc: "Reply when your brand is mentioned in a customer's story.",
     category: "engagement",
     icon: Heart,
-    plan: "growth",
+    plan: "ig_pro",
     channels: ["instagram"],
   },
   {
@@ -81,7 +81,7 @@ const ALL_TABS = [
     desc: "A professional catch-all when no other automation matches.",
     category: "settings",
     icon: CircleDot,
-    plan: "starter",
+    plan: "ig_starter",
     channels: ["instagram"],
   },
   {
@@ -90,7 +90,7 @@ const ALL_TABS = [
     desc: "Different replies during and outside your working hours.",
     category: "settings",
     icon: Clock,
-    plan: "growth",
+    plan: "ig_pro",
     channels: ["instagram"],
   },
   {
@@ -99,7 +99,7 @@ const ALL_TABS = [
     desc: "One switch — pause everything and reply 'a manager will get back to you'.",
     category: "settings",
     icon: LifeBuoy,
-    plan: "starter",
+    plan: "ig_starter",
     channels: ["instagram"],
   },
 ];
@@ -212,7 +212,10 @@ export default function AutomationSetupPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const plan = workspace?.subscription?.plan || "starter";
+  const isLifetime = workspace?.subscription?.lifetime === true;
+  const plan = isLifetime
+    ? "ig_pro"
+    : workspace?.subscription?.plan || "ig_starter";
 
   const reload = async () => {
     try {
@@ -289,7 +292,12 @@ export default function AutomationSetupPage() {
       />
 
       {isGallery ? (
-        <AutomationsHubGallery tabs={TABS} onOpenTab={openTab} plan={plan} />
+        <AutomationsHubGallery
+          tabs={TABS}
+          onOpenTab={openTab}
+          plan={plan}
+          lifetime={isLifetime}
+        />
       ) : (
         <>
           <div className="mb-5 flex flex-wrap gap-2">
@@ -320,6 +328,7 @@ export default function AutomationSetupPage() {
               currentPlan={plan}
               requiredPlan={activeTab.plan}
               feature={activeTab.label}
+              lifetime={isLifetime}
             >
               {tab === "welcome" && (
                 <WelcomeTab

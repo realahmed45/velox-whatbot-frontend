@@ -157,15 +157,25 @@ export default function Sidebar({ onNavigate }) {
     navigate("/login");
   };
 
-  const plan = workspace?.subscription?.plan || "free";
+  const isLifetime = workspace?.subscription?.lifetime === true;
+  // Lifetime accounts are effectively Pro.
+  const plan = isLifetime
+    ? "ig_pro"
+    : workspace?.subscription?.plan || "free";
   const usage = useMemo(() => {
     const used = workspace?.usage?.messagesThisMonth || 0;
-    const limit = workspace?.usage?.messagesLimit || 500;
-    const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-    return { used, limit, pct };
-  }, [workspace]);
+    const rawLimit = workspace?.usage?.messagesLimit;
+    // -1 (or 0/undefined on unlimited plans) means UNLIMITED.
+    const unlimited = isLifetime || rawLimit === -1 || rawLimit == null;
+    const limit = unlimited ? Infinity : rawLimit;
+    const pct =
+      unlimited || !(limit > 0)
+        ? 0
+        : Math.min(100, Math.round((used / limit) * 100));
+    return { used, limit, pct, unlimited };
+  }, [workspace, isLifetime]);
 
-  const isPremium = ["ig_pro", "scale"].includes(plan);
+  const isPremium = isLifetime || ["ig_pro", "scale"].includes(plan);
 
   const initial = (
     workspace?.name?.[0] ||
@@ -267,38 +277,47 @@ export default function Sidebar({ onNavigate }) {
             <div className="flex items-center justify-between mb-3">
               <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-300">
                 {isPremium && <Crown className="w-3.5 h-3.5 text-amber-400" />}
-                {planLabel(plan)}
+                {isLifetime ? "Lifetime" : planLabel(plan)}
               </span>
-              <span className="text-[11px] font-mono text-gray-500">
-                {usage.pct}%
-              </span>
+              {!usage.unlimited && (
+                <span className="text-[11px] font-mono text-gray-500">
+                  {usage.pct}%
+                </span>
+              )}
             </div>
             <div className="flex items-center justify-between text-[11px] mb-1.5">
               <span className="text-gray-400">Messages Used</span>
               <span className="text-white font-semibold">
-                {usage.used.toLocaleString()} / {usage.limit.toLocaleString()}
+                {usage.unlimited
+                  ? `${usage.used.toLocaleString()} · Unlimited`
+                  : `${usage.used.toLocaleString()} / ${usage.limit.toLocaleString()}`}
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${usage.pct}%`,
-                  background:
-                    usage.pct > 90
-                      ? "#ef4444"
-                      : `linear-gradient(90deg, ${ACCENT}, #ff9466)`,
-                }}
-              />
-            </div>
-            <Link
-              to="/dashboard/billing"
-              onClick={onNavigate}
-              className="mt-3.5 w-full inline-flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold text-white transition hover:opacity-90"
-              style={{ background: ACCENT }}
-            >
-              Upgrade Plan <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
+            {!usage.unlimited && (
+              <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${usage.pct}%`,
+                    background:
+                      usage.pct > 90
+                        ? "#ef4444"
+                        : `linear-gradient(90deg, ${ACCENT}, #ff9466)`,
+                  }}
+                />
+              </div>
+            )}
+            {/* Only show upgrade for non-premium, non-lifetime accounts. */}
+            {!isPremium && !isLifetime && (
+              <Link
+                to="/dashboard/billing"
+                onClick={onNavigate}
+                className="mt-3.5 w-full inline-flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold text-white transition hover:opacity-90"
+                style={{ background: ACCENT }}
+              >
+                Upgrade Plan <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
           </div>
         )}
 
