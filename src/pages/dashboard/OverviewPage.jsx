@@ -97,6 +97,31 @@ export default function OverviewPage() {
       .catch(() => {});
   }, [activeWorkspace]);
 
+  // Keep the follower count / profile fresh: hitting /instagram/connection
+  // triggers a throttled live re-sync from Instagram on the backend, and we
+  // refresh the cached workspace so the number updates without a reconnect.
+  const [liveFollowers, setLiveFollowers] = useState(null);
+  useEffect(() => {
+    if (!activeWorkspace) return;
+    let alive = true;
+    const sync = async () => {
+      try {
+        const { data } = await api.get("/instagram/connection");
+        if (alive && typeof data?.followersCount === "number") {
+          setLiveFollowers(data.followersCount);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    sync();
+    const t = setInterval(sync, 30000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [activeWorkspace]);
+
   const igConnected = workspace?.instagram?.status === "connected";
 
   const ig = workspace?.instagram;
@@ -156,7 +181,7 @@ export default function OverviewPage() {
             igConnected
               ? {
                   messages: stats?.igMessages ?? stats?.totalMessages ?? "—",
-                  followers: ig?.followersCount ?? "—",
+                  followers: liveFollowers ?? ig?.followersCount ?? "—",
                 }
               : null
           }

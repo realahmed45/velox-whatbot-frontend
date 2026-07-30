@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
+import lazyWithRetry from "@/utils/lazyWithRetry";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -20,65 +21,65 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
-const VerifyEmailPage = lazy(() => import("@/pages/auth/VerifyEmailPage"));
-const InvitePage = lazy(() => import("@/pages/auth/InvitePage"));
+const VerifyEmailPage = lazyWithRetry(() => import("@/pages/auth/VerifyEmailPage"));
+const InvitePage = lazyWithRetry(() => import("@/pages/auth/InvitePage"));
 
 // App Pages (lazy-loaded)
-const OverviewPage = lazy(() => import("@/pages/dashboard/OverviewPage"));
-const AutomationSetupPage = lazy(
+const OverviewPage = lazyWithRetry(() => import("@/pages/dashboard/OverviewPage"));
+const AutomationSetupPage = lazyWithRetry(
   () => import("@/pages/automation/AutomationSetupPage"),
 );
-const AnalyticsPage = lazy(() => import("@/pages/analytics/AnalyticsPage"));
-const InboxPage = lazy(() => import("@/pages/inbox/InboxPage"));
-const ContactsPage = lazy(() => import("@/pages/contacts/ContactsPage"));
-const BroadcastsPage = lazy(() => import("@/pages/broadcasts/BroadcastsPage"));
-const AiBotPage = lazy(() => import("@/pages/ai-bot/AiBotPage"));
-const PricingPage = lazy(() => import("@/pages/PricingPage"));
-const GuidePage = lazy(() => import("@/pages/GuidePage"));
-const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
-const FlowBuilderPage = lazy(
+const AnalyticsPage = lazyWithRetry(() => import("@/pages/analytics/AnalyticsPage"));
+const InboxPage = lazyWithRetry(() => import("@/pages/inbox/InboxPage"));
+const ContactsPage = lazyWithRetry(() => import("@/pages/contacts/ContactsPage"));
+const BroadcastsPage = lazyWithRetry(() => import("@/pages/broadcasts/BroadcastsPage"));
+const AiBotPage = lazyWithRetry(() => import("@/pages/ai-bot/AiBotPage"));
+const PricingPage = lazyWithRetry(() => import("@/pages/PricingPage"));
+const GuidePage = lazyWithRetry(() => import("@/pages/GuidePage"));
+const SettingsPage = lazyWithRetry(() => import("@/pages/settings/SettingsPage"));
+const FlowBuilderPage = lazyWithRetry(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
 );
-const CustomFlowsPage = lazy(
+const CustomFlowsPage = lazyWithRetry(
   () => import("@/pages/flow-builder/CustomFlowsPage"),
 );
-const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
+const BillingPage = lazyWithRetry(() => import("@/pages/billing/BillingPage"));
 
 // Growth tools (lazy-loaded)
-const ScheduledPostsPage = lazy(
+const ScheduledPostsPage = lazyWithRetry(
   () => import("@/pages/content/ScheduledPostsPage"),
 );
-const DripCampaignsPage = lazy(() => import("@/pages/drip/DripCampaignsPage"));
-const HashtagsPage = lazy(() => import("@/pages/hashtags/HashtagsPage"));
-const IntegrationsPage = lazy(
+const DripCampaignsPage = lazyWithRetry(() => import("@/pages/drip/DripCampaignsPage"));
+const HashtagsPage = lazyWithRetry(() => import("@/pages/hashtags/HashtagsPage"));
+const IntegrationsPage = lazyWithRetry(
   () => import("@/pages/integrations/IntegrationsPage"),
 );
-const AppsIntegrationsPage = lazy(
+const AppsIntegrationsPage = lazyWithRetry(
   () => import("@/pages/integrations/AppsIntegrationsPage"),
 );
-const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
+const TeamPage = lazyWithRetry(() => import("@/pages/team/TeamPage"));
 
 // Onboarding
-const ChooseChannelPage = lazy(
+const ChooseChannelPage = lazyWithRetry(
   () => import("@/pages/onboarding/ChooseChannelPage"),
 );
-const OnboardingPricingPage = lazy(
+const OnboardingPricingPage = lazyWithRetry(
   () => import("@/pages/onboarding/OnboardingPricingPage"),
 );
-const InstagramOnboardingPage = lazy(
+const InstagramOnboardingPage = lazyWithRetry(
   () => import("@/pages/onboarding/InstagramOnboardingPage"),
 );
-const ReactivatePage = lazy(() => import("@/pages/onboarding/ReactivatePage"));
+const ReactivatePage = lazyWithRetry(() => import("@/pages/onboarding/ReactivatePage"));
 
 // Public
-const LandingPage = lazy(() => import("@/pages/LandingPage"));
-const AdminPage = lazy(() => import("@/pages/admin/AdminPage"));
-const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
-const TermsPage = lazy(() => import("@/pages/TermsPage"));
-const ContactPage = lazy(() => import("@/pages/ContactPage"));
-const HelpPage = lazy(() => import("@/pages/HelpPage"));
-const FeaturesPage = lazy(() => import("@/pages/FeaturesPage"));
-const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+const LandingPage = lazyWithRetry(() => import("@/pages/LandingPage"));
+const AdminPage = lazyWithRetry(() => import("@/pages/admin/AdminPage"));
+const PrivacyPage = lazyWithRetry(() => import("@/pages/PrivacyPage"));
+const TermsPage = lazyWithRetry(() => import("@/pages/TermsPage"));
+const ContactPage = lazyWithRetry(() => import("@/pages/ContactPage"));
+const HelpPage = lazyWithRetry(() => import("@/pages/HelpPage"));
+const FeaturesPage = lazyWithRetry(() => import("@/pages/FeaturesPage"));
+const NotFoundPage = lazyWithRetry(() => import("@/pages/NotFoundPage"));
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuthStore();

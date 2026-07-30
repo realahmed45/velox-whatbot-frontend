@@ -13,6 +13,17 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
+    // A stale-deploy chunk 404 that slipped past lazyWithRetry — reload once
+    // (guarded) instead of showing the error screen.
+    const isChunkError =
+      /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(
+        error?.message || "",
+      );
+    if (isChunkError && !sessionStorage.getItem("botlify_chunk_reload")) {
+      sessionStorage.setItem("botlify_chunk_reload", "1");
+      window.location.reload();
+      return;
+    }
     reportError(error, { componentStack: info?.componentStack });
   }
 
