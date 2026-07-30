@@ -228,7 +228,7 @@ function PlanCard({ plan, picking, onPick }) {
         </span>
       </div>
       <p className={clsx("text-[11px] mt-1", isPro ? "text-white/45" : "text-ink-400")}>
-        ≈ Rs {plan.monthlyPrice?.toLocaleString()} · billed monthly
+        Billed monthly · 3-day free trial
       </p>
 
       <div className={clsx("my-5 h-px", isPro ? "bg-white/10" : "bg-ink-100")} />

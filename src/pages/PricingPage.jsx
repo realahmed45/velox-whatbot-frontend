@@ -309,9 +309,6 @@ function PlanCard({
   const isYearly = cycle === "yearly";
   // Annual = 10× monthly (2 months free), matching the backend catalog.
   const usd = isYearly ? plan.usd * 10 : plan.usd;
-  const pkr = isYearly
-    ? (plan.monthlyPrice || 0) * 10
-    : plan.monthlyPrice || 0;
   const per = isYearly ? "/yr" : "/mo";
 
   return (
@@ -354,8 +351,7 @@ function PlanCard({
           <span className="text-sm text-ink-400">{per}</span>
         </div>
         <p className="text-[11px] mt-0.5 text-ink-400">
-          ≈ Rs {pkr.toLocaleString()} {per}
-          {isYearly ? " · 2 months free" : " · 3-day free trial"}
+          {isYearly ? "2 months free" : "3-day free trial"}
         </p>
       </div>
 

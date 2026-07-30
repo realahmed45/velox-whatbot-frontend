@@ -1161,7 +1161,7 @@ function MockAiBot() {
           </div>
           <div className="flex justify-start">
             <span className="bg-white border border-ink-100 text-ink-800 text-[10px] rounded-lg rounded-bl-sm px-2.5 py-1.5">
-              Our Glow Serum is Rs 2,500 😊 Want the link?
+              Our Glow Serum is $25 😊 Want the link?
               <span className="block mt-1 text-[8px] font-bold uppercase text-brand-500">
                 intent: pricing · #interested
               </span>
@@ -1204,7 +1204,7 @@ function MockInbox() {
           </div>
           <div className="flex justify-end">
             <span className="bg-brand-500 text-white text-[10px] rounded-lg px-2.5 py-1.5">
-              Yes! 3–5 days, Rs 200 🚚
+              Yes! 3–5 days, $2 shipping 🚚
               <span className="block text-[7px] opacity-70">
                 ⚡ AI replied
               </span>
@@ -1520,7 +1520,6 @@ function PricingTeaser() {
     {
       name: "Basic",
       usd: 9,
-      pkr: 2520,
       desc: "For solo creators & small brands.",
       features: [
         "1 Instagram account",
@@ -1536,7 +1535,6 @@ function PricingTeaser() {
     {
       name: "Pro",
       usd: 19,
-      pkr: 5499,
       desc: "For growing brands that never sleep.",
       features: [
         "Unlimited conversations",
@@ -1593,7 +1591,6 @@ function PricingTeaser() {
         <div className="mt-10 grid md:grid-cols-2 gap-5 max-w-2xl mx-auto">
           {tiers.map((t, i) => {
             const usd = isYearly ? t.usd * 10 : t.usd;
-            const pkr = isYearly ? t.pkr * 10 : t.pkr;
             const sub = isYearly ? "/ year" : "/ month";
             return (
               <div
@@ -1614,10 +1611,9 @@ function PricingTeaser() {
                 </p>
                 <div className="mt-3 flex items-baseline gap-2">
                   <span className="text-3xl font-black tracking-tighter">
-                    Rs {pkr.toLocaleString()}
+                    ${usd}
                   </span>
                   <span className={`text-sm ${t.highlight ? "text-white/60" : "text-ink-500"}`}>{sub}</span>
-                  <span className={`text-sm font-bold ${t.highlight ? "text-white/50" : "text-ink-400"}`}>· ${usd}</span>
                 </div>
                 <p className={`mt-1 text-sm ${t.highlight ? "text-white/70" : "text-ink-500"}`}>
                   {isYearly ? "Billed yearly — 2 months free" : t.desc}

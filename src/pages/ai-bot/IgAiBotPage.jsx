@@ -7,8 +7,8 @@
  *   🔗  pasting their website link.
  *
  * Plus an FAQ list for exact-answer questions. No personality picker, no
- * Shopify, no preview tester, no temperature/token knobs — the bot runs on
- * GPT-4o-mini and "just works". Knowledge persists to workspace.aiKnowledge
+ * Shopify, no preview tester, no temperature/token knobs — the bot
+ * it "just works". Knowledge persists to workspace.aiKnowledge
  * (content + sources[]); enable flag + FAQs persist to workspace.aiSettings.
  */
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -178,7 +178,13 @@ export default function IgAiBotPage() {
       );
       setSources((s) => [...s, data.source]);
       set({ enabled: true });
-      toast.success("Document added — your bot just learned it 🎓");
+      if (data.processing) {
+        toast.success(
+          "Reading your file… scanned/large PDFs can take a minute 📄",
+        );
+      } else {
+        toast.success("Document added — your bot just learned it 🎓");
+      }
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't read that file");
     } finally {
@@ -856,7 +862,7 @@ export default function IgAiBotPage() {
                       onChange={(e) =>
                         updateProduct(i, { price: e.target.value })
                       }
-                      placeholder="Rs 2,500"
+                      placeholder="$25.00"
                     />
                     <button
                       onClick={() => removeProduct(i)}
@@ -1230,7 +1236,8 @@ function SourceCard({ s, busy, onResync, onRemove }) {
               </>
             ) : (
               <>
-                <Loader2 className="w-3 h-3 animate-spin" /> Reading your site…
+                <Loader2 className="w-3 h-3 animate-spin" />{" "}
+                {s.type === "website" ? "Reading your site…" : "Reading…"}
               </>
             )}
           </p>
@@ -1451,23 +1458,6 @@ function Playground({ workspaceId, enabled }) {
                 </span>
               )}
               {m.content}
-              {m.role === "assistant" && (m.intent || m.tags?.length) ? (
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {m.intent && (
-                    <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-ink-100 text-ink-500">
-                      intent: {m.intent}
-                    </span>
-                  )}
-                  {(m.tags || []).map((t) => (
-                    <span
-                      key={t}
-                      className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-brand-100 text-brand-600"
-                    >
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </div>
           </div>
         ))}

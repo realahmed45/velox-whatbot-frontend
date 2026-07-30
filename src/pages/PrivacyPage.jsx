@@ -44,7 +44,7 @@ const SECTIONS = [
     p: "We rely on a small set of vetted providers to run Botlify. Each processes only the data needed for its function:",
     ul: [
       "Instagram messaging provider (Zernio) — connects your Instagram account and delivers messages/webhooks",
-      "AI providers (Groq, OpenAI) — generate AI replies from message text and your knowledge base",
+      "AI provider (Google Gemini) — generates AI replies from message text and your knowledge base",
       "Email (Brevo) — sends verification codes, password resets, and account notifications",
       "Media storage (Cloudinary) — hosts images you upload for posts and messages",
       "Infrastructure (MongoDB Atlas, Render, Vercel, Upstash) — database and hosting",

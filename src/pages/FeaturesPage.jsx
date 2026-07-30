@@ -21,7 +21,7 @@ export default function FeaturesPage() {
       color: "violet",
       title: "AI-Powered Bot",
       description:
-        "Let AI handle customer conversations 24/7 with contextual, intelligent replies powered by Groq.",
+        "Let AI handle customer conversations 24/7 with contextual, intelligent replies.",
     },
     {
       icon: Zap,
