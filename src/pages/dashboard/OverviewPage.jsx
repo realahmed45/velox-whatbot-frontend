@@ -337,6 +337,12 @@ export default function OverviewPage() {
             />
           </div>
         </Section>
+
+        {/* AI attribution */}
+        <div className="mt-8 pt-6 border-t border-ink-100 flex items-center justify-center gap-2 text-xs font-medium text-ink-400">
+          <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+          AI replies powered by Google Gemini
+        </div>
       </div>
     </div>
   );

@@ -958,6 +958,10 @@ export default function IgAiBotPage() {
                 knowledge sources, then your business description — and only
                 replies about your business. It never makes up prices or
                 policies you haven't given it.
+                <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-400">
+                  <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+                  Powered by Google Gemini
+                </div>
               </div>
             </div>
           </div>
