@@ -44,6 +44,8 @@ export default function ScheduledPostsPage() {
 
   // Form state
   const [imageUrl, setImageUrl] = useState("");
+  // Carousel: all uploaded feed images (imageUrl mirrors images[0]).
+  const [images, setImages] = useState([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [caption, setCaption] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
@@ -105,39 +107,60 @@ export default function ScheduledPostsPage() {
     }
   };
 
-  const uploadImage = async (file) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
+  // Upload one or more images. For Feed posts, files accumulate into a carousel
+  // (up to 10); Story keeps a single image. imageUrl always mirrors the first.
+  const uploadImage = async (fileOrFiles) => {
+    const files = Array.from(
+      fileOrFiles?.length ? fileOrFiles : fileOrFiles ? [fileOrFiles] : [],
+    ).filter((f) => f && f.type?.startsWith("image/"));
+    if (!files.length) {
       toast.error("Please upload an image file");
       return;
     }
+    const isCarousel = postType === "image";
+    const room = isCarousel ? 10 - images.length : 1;
+    if (room <= 0) {
+      toast.error("A carousel can have up to 10 images");
+      return;
+    }
+    const toUpload = files.slice(0, room);
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const { data } = await api.post("/upload/image", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (!data.url) {
-        throw new Error("No URL returned from upload");
+      const uploaded = [];
+      for (const file of toUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const { data } = await api.post("/upload/image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (data?.url) uploaded.push(data.url);
       }
+      if (!uploaded.length) throw new Error("No URL returned from upload");
 
-      setImageUrl(data.url);
-      toast.success("Image uploaded!");
-
-      // Clear file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if (isCarousel) {
+        const next = [...images, ...uploaded].slice(0, 10);
+        setImages(next);
+        setImageUrl(next[0]);
+      } else {
+        setImages([uploaded[0]]);
+        setImageUrl(uploaded[0]);
       }
+      toast.success(uploaded.length > 1 ? `${uploaded.length} images added!` : "Image uploaded!");
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       console.error("[Upload] Error:", err);
       toast.error(err.response?.data?.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }
+  };
+
+  // Remove one image from the carousel.
+  const removeImage = (idx) => {
+    const next = images.filter((_, i) => i !== idx);
+    setImages(next);
+    setImageUrl(next[0] || "");
   };
 
   const uploadVideo = async (file) => {
@@ -246,6 +269,8 @@ export default function ScheduledPostsPage() {
     try {
       const payload = {
         imageUrl,
+        imageUrls:
+          postType === "image" && images.length > 1 ? images : undefined,
         videoUrl: postType === "reel" ? videoUrl : "",
         caption,
         postType,
@@ -273,6 +298,13 @@ export default function ScheduledPostsPage() {
   const editPost = (post) => {
     setEditingId(post._id);
     setImageUrl(post.imageUrl || "");
+    setImages(
+      post.imageUrls?.length
+        ? post.imageUrls
+        : post.imageUrl
+          ? [post.imageUrl]
+          : [],
+    );
     setVideoUrl(post.videoUrl || "");
     setCaption(post.caption || "");
     setPostType(post.postType || "image");
@@ -317,6 +349,7 @@ export default function ScheduledPostsPage() {
 
   const resetForm = () => {
     setImageUrl("");
+    setImages([]);
     setVideoUrl("");
     setCaption("");
     setScheduledTime("");
@@ -688,6 +721,11 @@ export default function ScheduledPostsPage() {
                   <label className="block text-sm font-semibold text-ink-700 mb-1.5">
                     {postType === "reel" ? "Video" : "Image"}{" "}
                     <span className="text-brand-500">*</span>
+                    {postType === "image" && (
+                      <span className="ml-2 text-xs font-normal text-ink-400">
+                        · add up to 10 for a carousel
+                      </span>
+                    )}
                   </label>
 
                   {postType === "reel" && videoUrl ? (
@@ -706,27 +744,54 @@ export default function ScheduledPostsPage() {
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                  ) : postType !== "reel" && imageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-ink-100">
-                      <img
-                        src={imageUrl}
-                        alt="Preview"
-                        className="w-full max-h-72 object-cover"
-                        onError={() => toast.error("Failed to load preview")}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition" />
-                      <button
-                        type="button"
-                        onClick={() => setImageUrl("")}
-                        className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md hover:bg-red-50 hover:text-red-600 text-ink-700 transition"
-                        aria-label="Remove image"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 text-xs font-semibold text-white bg-emerald-500 px-2 py-1 rounded-full shadow">
-                        <Check className="w-3 h-3" />
-                        Uploaded
-                      </span>
+                  ) : postType === "image" && images.length > 0 ? (
+                    /* Feed: thumbnail grid + add-more tile (carousel). */
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {images.map((url, i) => (
+                        <div
+                          key={url + i}
+                          className="relative group aspect-square rounded-xl overflow-hidden border border-ink-100"
+                        >
+                          <img
+                            src={url}
+                            alt={`Image ${i + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold grid place-items-center">
+                            {i + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(i)}
+                            className="absolute top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-red-50 hover:text-red-600 text-ink-700 transition opacity-0 group-hover:opacity-100"
+                            aria-label={`Remove image ${i + 1}`}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {images.length < 10 && (
+                        <label
+                          className={`aspect-square rounded-xl border-2 border-dashed border-ink-200 hover:border-brand-400 hover:bg-brand-50/40 grid place-items-center cursor-pointer transition ${uploading ? "pointer-events-none opacity-70" : ""}`}
+                        >
+                          {uploading ? (
+                            <Loader2 className="w-5 h-5 text-brand-500 animate-spin" />
+                          ) : (
+                            <Plus className="w-6 h-6 text-ink-400" />
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            disabled={uploading}
+                            onChange={(e) =>
+                              e.target.files?.length &&
+                              uploadImage(e.target.files)
+                            }
+                          />
+                        </label>
+                      )}
                     </div>
                   ) : (
                     <label
@@ -738,9 +803,11 @@ export default function ScheduledPostsPage() {
                       onDrop={(e) => {
                         e.preventDefault();
                         setDragging(false);
-                        const f = e.dataTransfer.files?.[0];
-                        if (f)
-                          postType === "reel" ? uploadVideo(f) : uploadImage(f);
+                        const fs = e.dataTransfer.files;
+                        if (fs?.length)
+                          postType === "reel"
+                            ? uploadVideo(fs[0])
+                            : uploadImage(fs);
                       }}
                       className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
                         dragging
@@ -773,13 +840,14 @@ export default function ScheduledPostsPage() {
                         ref={fileInputRef}
                         type="file"
                         accept={postType === "reel" ? "video/*" : "image/*"}
+                        multiple={postType === "image"}
                         className="hidden"
                         disabled={uploading}
                         onChange={(e) =>
-                          e.target.files[0] &&
+                          e.target.files?.length &&
                           (postType === "reel"
                             ? uploadVideo(e.target.files[0])
-                            : uploadImage(e.target.files[0]))
+                            : uploadImage(e.target.files))
                         }
                       />
                     </label>
@@ -790,6 +858,7 @@ export default function ScheduledPostsPage() {
                 <InstagramPreview
                   postType={postType}
                   imageUrl={imageUrl}
+                  images={images}
                   videoUrl={videoUrl}
                   caption={caption}
                   workspaceName={workspaceHandle}

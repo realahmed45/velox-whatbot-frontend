@@ -8,12 +8,15 @@ import { Heart, MessageCircle, Send, Bookmark, Music2 } from "lucide-react";
 export default function InstagramPreview({
   postType = "image",
   imageUrl,
+  images = [],
   videoUrl,
   caption = "",
   workspaceName = "your_handle",
 }) {
   const handle = String(workspaceName).replace(/^@/, "");
-  const hasMedia = postType === "reel" ? !!videoUrl : !!imageUrl;
+  const gallery = images.length ? images : imageUrl ? [imageUrl] : [];
+  const isCarousel = postType === "image" && gallery.length > 1;
+  const hasMedia = postType === "reel" ? !!videoUrl : gallery.length > 0;
 
   const Avatar = () => (
     <div className="w-7 h-7 rounded-full p-[2px] bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] shrink-0">
@@ -67,7 +70,33 @@ export default function InstagramPreview({
             </span>
             <span className="ml-auto text-ink-400 text-lg leading-none">⋯</span>
           </div>
-          <Media className="w-full aspect-square object-cover" />
+          {isCarousel ? (
+            <div className="relative">
+              <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
+                {gallery.map((url, i) => (
+                  <img
+                    key={url + i}
+                    src={url}
+                    alt=""
+                    className="w-full aspect-square object-cover shrink-0 snap-center"
+                  />
+                ))}
+              </div>
+              <span className="absolute top-2 right-2 text-[11px] font-semibold text-white bg-black/55 rounded-full px-2 py-0.5">
+                1/{gallery.length}
+              </span>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {gallery.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-white" : "bg-white/50"}`}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <Media className="w-full aspect-square object-cover" />
+          )}
           <div className="flex items-center gap-3 px-3 pt-2 text-ink-800">
             <Heart className="w-5 h-5" />
             <MessageCircle className="w-5 h-5" />
