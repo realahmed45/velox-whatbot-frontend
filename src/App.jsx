@@ -36,6 +36,7 @@ const BroadcastsPage = lazyWithRetry(() => import("@/pages/broadcasts/Broadcasts
 const AiBotPage = lazyWithRetry(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazyWithRetry(() => import("@/pages/PricingPage"));
 const GuidePage = lazyWithRetry(() => import("@/pages/GuidePage"));
+const DocsPage = lazyWithRetry(() => import("@/pages/docs/DocsPage"));
 const SettingsPage = lazyWithRetry(() => import("@/pages/settings/SettingsPage"));
 const FlowBuilderPage = lazyWithRetry(
   () => import("@/pages/flow-builder/FlowBuilderPage"),
@@ -125,6 +126,7 @@ export default function App() {
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
+                <Route path="/docs" element={<DocsPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
                 <Route path="/help" element={<HelpPage />} />
                 <Route path="/contact" element={<ContactPage />} />

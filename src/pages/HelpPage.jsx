@@ -85,34 +85,35 @@ export default function HelpPage() {
                     Detailed documentation covering every feature and API
                     endpoint.
                   </p>
-                  <a
-                    href="#"
+                  <Link
+                    to="/docs"
                     className="text-green-500 text-sm font-medium hover:underline"
                   >
                     Read Docs →
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
 
             <div className="p-8 bg-white rounded-xl border border-ink-200">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-red-500/10 rounded-lg">
-                  <Video className="w-6 h-6 text-red-500" />
+                <div className="p-3 bg-brand-500/10 rounded-lg">
+                  <Zap className="w-6 h-6 text-brand-500" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-ink-900 mb-2">
-                    Video Tutorials
+                    Setup Guide
                   </h3>
                   <p className="text-ink-600 text-sm mb-4">
-                    Watch step-by-step video guides to master Botlify features.
+                    A step-by-step walkthrough — from connecting Instagram to
+                    your first automated DM.
                   </p>
-                  <a
-                    href="#"
-                    className="text-red-500 text-sm font-medium hover:underline"
+                  <Link
+                    to="/guide"
+                    className="text-brand-500 text-sm font-medium hover:underline"
                   >
-                    Watch Videos →
-                  </a>
+                    Open the guide →
+                  </Link>
                 </div>
               </div>
             </div>

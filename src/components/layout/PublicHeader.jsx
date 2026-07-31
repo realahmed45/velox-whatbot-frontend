@@ -15,7 +15,7 @@ const FULL_NAV = [
   { label: "Features", href: "/#features", anchor: true },
   { label: "Results", href: "/#results", anchor: true },
   { label: "Pricing", to: "/pricing" },
-  { label: "Guide", to: "/guide" },
+  { label: "Docs", to: "/docs" },
 ];
 
 // On pages that AREN'T the landing page (pricing, guide), the home-anchor links
