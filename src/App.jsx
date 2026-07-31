@@ -23,6 +23,9 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 const VerifyEmailPage = lazyWithRetry(() => import("@/pages/auth/VerifyEmailPage"));
 const InvitePage = lazyWithRetry(() => import("@/pages/auth/InvitePage"));
+const AccountPickerPage = lazyWithRetry(
+  () => import("@/pages/auth/AccountPickerPage"),
+);
 
 // App Pages (lazy-loaded)
 const OverviewPage = lazyWithRetry(() => import("@/pages/dashboard/OverviewPage"));
@@ -348,6 +351,17 @@ export default function App() {
                   element={<Navigate to="/onboarding/instagram" replace />}
                 />
               </Route>
+
+              {/* Account picker — post-login "choose an account" screen. Logged
+                  in but NOT behind the onboarding gate (it's the chooser). */}
+              <Route
+                path="/accounts"
+                element={
+                  <ProtectedRoute>
+                    <AccountPickerPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Top-level full-screen onboarding (no sidebar) */}
               <Route

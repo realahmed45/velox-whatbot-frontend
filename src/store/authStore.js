@@ -40,6 +40,9 @@ export const useAuthStore = create(
           user,
           token,
           refreshToken,
+          // Don't auto-pick an active account here: with multi-account, the user
+          // chooses on the AccountPicker after login. We keep any previously
+          // active id only as a hint; the picker persists the real choice.
           activeWorkspace: ws?._id || ws || null,
         });
       },

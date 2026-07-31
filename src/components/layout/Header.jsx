@@ -16,21 +16,29 @@ import {
   ChevronDown,
   Check,
   Instagram,
-  MessageSquare,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
-import api from "@/services/api";
 import { connectInstagram } from "@/utils/connectInstagram";
+import {
+  fetchAccounts,
+  switchAccount,
+  addAccount,
+  planBadge,
+} from "@/services/accounts";
 
 export default function Header({ onMenuClick, onSearchClick }) {
   const { workspace } = useWorkspaceStore();
-  const { user, logout, activeWorkspace, setActiveWorkspace } = useAuthStore();
+  const { user, logout, activeWorkspace } = useAuthStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [wsOpen, setWsOpen] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [busy, setBusy] = useState(false);
   const menuRef = useRef(null);
   const wsRef = useRef(null);
 
@@ -44,21 +52,53 @@ export default function Header({ onMenuClick, onSearchClick }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const igConnected = workspace?.instagram?.status === "connected";
+  // Load the real, populated account list (handle + plan + status) once.
+  useEffect(() => {
+    let alive = true;
+    fetchAccounts()
+      .then(({ accounts }) => alive && setAccounts(accounts))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const workspaces = user?.workspaces || [];
+  const igConnected = workspace?.instagram?.status === "connected";
   const igPic = igConnected ? workspace?.instagram?.profilePicture : null;
   const initial = (user?.name?.[0] || user?.email?.[0] || "B").toUpperCase();
+
+  const activeAcc =
+    accounts.find((a) => String(a._id) === String(activeWorkspace)) || null;
+  const activeLabel =
+    activeAcc?.instagram?.username
+      ? `@${activeAcc.instagram.username}`
+      : activeAcc?.name || workspace?.name || "Account";
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const switchWorkspace = (wsId) => {
-    setActiveWorkspace(wsId);
-    setWsOpen(false);
-    window.location.reload();
+  const doSwitch = async (wsId) => {
+    if (String(wsId) === String(activeWorkspace)) {
+      setWsOpen(false);
+      return;
+    }
+    setBusy(true);
+    try {
+      await switchAccount(wsId); // persists + hard-reloads
+    } catch {
+      setBusy(false);
+    }
+  };
+
+  const doAddAccount = async () => {
+    setBusy(true);
+    try {
+      await addAccount(); // creates ws + routes into onboarding
+    } catch {
+      setBusy(false);
+    }
   };
 
   const startIgOAuth = async () => {
@@ -110,42 +150,101 @@ export default function Header({ onMenuClick, onSearchClick }) {
           </button>
         )}
 
-        {/* Workspace switcher (only when multiple) */}
-        {workspaces.length > 1 && (
-          <div className="relative hidden sm:block" ref={wsRef}>
-            <button
-              onClick={() => setWsOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-ink-200 hover:bg-ink-50 hover:border-brand-300 text-xs text-ink-700 transition max-w-[140px]"
-            >
-              <span className="truncate">{workspace?.name || "Workspace"}</span>
+        {/* Account switcher — one identity, many accounts. Always available so
+            "+ Add account" is reachable even with a single account. */}
+        <div className="relative hidden sm:block" ref={wsRef}>
+          <button
+            onClick={() => setWsOpen((v) => !v)}
+            disabled={busy}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 hover:border-brand-300 text-xs text-ink-700 transition max-w-[190px] disabled:opacity-60"
+          >
+            {activeAcc?.instagram?.profilePicture ? (
+              <img
+                src={activeAcc.instagram.profilePicture}
+                alt=""
+                className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <span className="w-5 h-5 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                {(activeAcc?.name?.[0] || initial).toUpperCase()}
+              </span>
+            )}
+            <span className="truncate font-medium">{activeLabel}</span>
+            {busy ? (
+              <Loader2 className="w-3 h-3 text-ink-400 animate-spin flex-shrink-0" />
+            ) : (
               <ChevronDown className="w-3 h-3 text-ink-400 flex-shrink-0" />
-            </button>
-            {wsOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white/90 backdrop-blur-xl border border-white/60 shadow-glass rounded-xl py-1.5 z-50">
-                <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-ink-400 font-semibold">
-                  Switch workspace
-                </p>
-                {workspaces.map((w) => {
-                  const id = w._id || w;
-                  const name = w.name || "Workspace";
-                  const isActive = id === activeWorkspace;
+            )}
+          </button>
+          {wsOpen && (
+            <div className="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-xl border border-white/60 shadow-glass rounded-xl py-1.5 z-50">
+              <p className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ink-400 font-semibold">
+                Your accounts
+              </p>
+              <div className="max-h-80 overflow-y-auto">
+                {accounts.map((a) => {
+                  const isActive = String(a._id) === String(activeWorkspace);
+                  const handle = a.instagram?.username
+                    ? `@${a.instagram.username}`
+                    : "No Instagram yet";
                   return (
                     <button
-                      key={id}
-                      onClick={() => switchWorkspace(id)}
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-brand-50 text-ink-700"
+                      key={a._id}
+                      onClick={() => doSwitch(a._id)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-brand-50 text-left"
                     >
-                      <span className="truncate">{name}</span>
+                      {a.instagram?.profilePicture ? (
+                        <img
+                          src={a.instagram.profilePicture}
+                          alt=""
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-ink-300 to-ink-400 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          {(a.name?.[0] || "A").toUpperCase()}
+                        </span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-ink-900 truncate">
+                          {a.name}
+                        </p>
+                        <p className="text-[11px] text-ink-400 truncate">
+                          {handle}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 ${
+                          a.lifetime
+                            ? "bg-amber-100 text-amber-700"
+                            : a.subscriptionStatus === "trialing"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        {planBadge(a)}
+                      </span>
                       {isActive && (
-                        <Check className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-brand-600 flex-shrink-0" />
                       )}
                     </button>
                   );
                 })}
               </div>
-            )}
-          </div>
-        )}
+              <div className="border-t border-ink-100 mt-1 pt-1">
+                <button
+                  onClick={doAddAccount}
+                  disabled={busy}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-brand-50 text-brand-600 font-semibold text-xs disabled:opacity-60"
+                >
+                  <span className="w-8 h-8 rounded-full border-2 border-dashed border-brand-300 flex items-center justify-center flex-shrink-0">
+                    <Plus className="w-4 h-4" />
+                  </span>
+                  Add another Instagram account
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* User avatar + dropdown */}
         <div className="relative" ref={menuRef}>

@@ -42,8 +42,10 @@ export default function LoginPage() {
         navigate(next, { replace: true });
         return;
       }
-      const ws = data.user?.activeWorkspace || data.user?.workspaces?.[0];
-      navigate(ws ? "/dashboard" : "/dashboard/onboarding/choose-channel");
+      // One identity, many accounts → always land on the account picker, which
+      // fetches the full list and lets them choose which account to enter (or
+      // routes straight through / to onboarding when there's only one / none).
+      navigate("/accounts", { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
