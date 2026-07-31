@@ -59,6 +59,9 @@ const AppsIntegrationsPage = lazyWithRetry(
   () => import("@/pages/integrations/AppsIntegrationsPage"),
 );
 const TeamPage = lazyWithRetry(() => import("@/pages/team/TeamPage"));
+const AppointmentsPage = lazyWithRetry(
+  () => import("@/pages/appointments/AppointmentsPage"),
+);
 
 // Onboarding
 const ChooseChannelPage = lazyWithRetry(
@@ -69,6 +72,9 @@ const OnboardingPricingPage = lazyWithRetry(
 );
 const InstagramOnboardingPage = lazyWithRetry(
   () => import("@/pages/onboarding/InstagramOnboardingPage"),
+);
+const BusinessTypePage = lazyWithRetry(
+  () => import("@/pages/onboarding/BusinessTypePage"),
 );
 const ReactivatePage = lazyWithRetry(() => import("@/pages/onboarding/ReactivatePage"));
 
@@ -291,6 +297,14 @@ export default function App() {
                     </RequirePermission>
                   }
                 />
+                <Route
+                  path="appointments"
+                  element={
+                    <RequirePermission perm="automations">
+                      <AppointmentsPage />
+                    </RequirePermission>
+                  }
+                />
 
                 {/* Channel-gated pages */}
                 <Route
@@ -358,6 +372,10 @@ export default function App() {
                 <Route
                   path="/onboarding/instagram"
                   element={<InstagramOnboardingPage />}
+                />
+                <Route
+                  path="/onboarding/business-type"
+                  element={<BusinessTypePage />}
                 />
                 <Route
                   path="/onboarding/reactivate"

@@ -120,5 +120,20 @@ export default function RequireOnboarding({ children }) {
     );
   }
 
+  // Channel is connected but the owner hasn't picked their business category
+  // yet — run the one-time vertical setup so the whole app is tailored to them.
+  // (Legacy workspaces created before this feature have verticalConfigured
+  // undefined; we only force NEW owners through it — those whose workspace has
+  // the flag explicitly false. Undefined is treated as "already set" so we
+  // never trap existing users behind a new gate.)
+  if (
+    isOwner &&
+    workspace.verticalConfigured === false &&
+    !isExempt &&
+    location.pathname !== "/onboarding/business-type"
+  ) {
+    return <Navigate to="/onboarding/business-type" replace />;
+  }
+
   return children;
 }

@@ -55,6 +55,7 @@ import {
 import * as THREE from "three";
 import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
+import BookDemoModal from "@/components/BookDemoModal";
 
 // vanta.net reads `window.THREE` at module-evaluation time, so it MUST exist
 // before the vanta module is imported. We set it here, then dynamically import
@@ -89,6 +90,7 @@ function TopNav() {
   const token = useAuthStore((s) => s.token);
   const isAuthed = !!token;
   const [open, setOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const NavItem = ({ link, onClick, className = "" }) =>
     link.to ? (
@@ -130,6 +132,12 @@ function TopNav() {
               </Link>
             ) : (
               <>
+                <button
+                  onClick={() => setDemoOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-600 hover:text-brand-700 border border-brand-200 hover:border-brand-300 bg-brand-50/60 rounded-lg px-4 py-2.5 transition"
+                >
+                  <CalendarClock className="w-4 h-4" /> Book a demo
+                </button>
                 <Link
                   to="/login"
                   className="text-[15px] font-semibold text-ink-700 hover:text-ink-900 transition px-2"
@@ -182,6 +190,15 @@ function TopNav() {
               </Link>
             ) : (
               <>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setDemoOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-brand-200 text-brand-600 font-bold hover:border-brand-300 transition"
+                >
+                  <CalendarClock className="w-4 h-4" /> Book a demo
+                </button>
                 <Link
                   to="/login"
                   onClick={() => setOpen(false)}
@@ -201,6 +218,8 @@ function TopNav() {
           </div>
         </div>
       )}
+
+      <BookDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} source="landing" />
     </header>
   );
 }

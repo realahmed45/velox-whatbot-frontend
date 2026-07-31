@@ -95,12 +95,17 @@ export default function InstagramOnboardingPage() {
 
   const igConnected = workspace?.instagram?.status === "connected";
 
-  // Once Instagram is connected, onboarding is done — go straight to the
-  // dashboard. No intermediate "teach your bot / add your site" step; users
-  // add their site + knowledge later from the AI Bot page.
+  // Once Instagram is connected, move to the one-time business-type step (which
+  // tailors the whole app), UNLESS the workspace has already been configured
+  // (e.g. a reconnect) — then go straight to the dashboard.
   useEffect(() => {
-    if (igConnected) navigate("/dashboard", { replace: true });
-  }, [igConnected, navigate]);
+    if (!igConnected) return;
+    if (workspace?.verticalConfigured === false) {
+      navigate("/onboarding/business-type", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [igConnected, workspace?.verticalConfigured, navigate]);
 
   if (ensuring) {
     return (

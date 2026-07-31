@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { ChevronDown, LayoutDashboard } from "lucide-react";
+import { ChevronDown, LayoutDashboard, CalendarClock } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import Logo from "@/components/Logo";
+import BookDemoModal from "@/components/BookDemoModal";
 
 /**
  * Shared public marketing header — used on the landing page, pricing, guide,
@@ -30,6 +31,7 @@ export default function PublicHeader() {
   const token = useAuthStore((s) => s.token);
   const isAuthed = !!token;
   const [open, setOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
   const { pathname } = useLocation();
 
   // Simplified nav on the standalone marketing pages.
@@ -58,6 +60,12 @@ export default function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDemoOpen(true)}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 border border-brand-200 hover:border-brand-300 bg-brand-50/50 rounded-lg px-3 py-2 transition"
+          >
+            <CalendarClock className="w-4 h-4" /> Book a demo
+          </button>
           {isAuthed ? (
             <Link to="/dashboard" className="btn-primary text-sm shadow-glow">
               <LayoutDashboard className="w-4 h-4" /> Dashboard
@@ -110,8 +118,19 @@ export default function PublicHeader() {
               </Link>
             ),
           )}
+          <button
+            onClick={() => {
+              setOpen(false);
+              setDemoOpen(true);
+            }}
+            className="flex items-center gap-1.5 py-1.5 text-brand-600 font-semibold"
+          >
+            <CalendarClock className="w-4 h-4" /> Book a demo
+          </button>
         </div>
       )}
+
+      <BookDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
     </header>
   );
 }

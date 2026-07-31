@@ -184,6 +184,39 @@ export const DOC_GROUPS = [
         ],
       },
       {
+        id: "appointments",
+        title: "Appointments",
+        summary: "Let the bot book real, open time slots — with dual confirmations.",
+        blocks: [
+          {
+            p: "If your business takes appointments (clinics, salons, coaches, services), Botlify turns your bot into a booking assistant. It only ever offers **real open slots** based on your working hours, service durations and existing bookings — it never double-books or invents a time.",
+          },
+          {
+            h: "How a booking happens",
+          },
+          {
+            steps: [
+              "A customer asks to book in a DM.",
+              "The bot offers the nearest open slots and collects their service, time, name and phone.",
+              "It saves the appointment and sends the customer a confirmation.",
+              "You get notified instantly — email, dashboard and webhook — and the booking appears under **Appointments**.",
+            ],
+          },
+          {
+            list: [
+              "Set your **services** (name, duration, price), slot length, buffer, and how far ahead people can book — all under Appointments → Settings.",
+              "Turn on **require approval** so bookings wait for your OK before they're confirmed (recommended for medical practices — it's on by default there).",
+              "Add a **Google Maps link** and location so it's included in every confirmation.",
+              "Bookings fire an `appointment.created` webhook and tag the contact **appointment**.",
+            ],
+          },
+          {
+            note: "Appointment scheduling switches on automatically for booking-type businesses when you pick your business category during setup. You can toggle it anytime under Appointments → Settings.",
+            tone: "tip",
+          },
+        ],
+      },
+      {
         id: "test-bot",
         title: "Test your bot",
         summary: "Try messages safely before going live.",

@@ -26,6 +26,7 @@ import {
   Sparkles,
   Hash,
   CalendarClock,
+  CalendarCheck,
   Droplet,
   Plug,
   ArrowUpRight,
@@ -75,6 +76,13 @@ const NAV = [
     section: "Management",
     items: [
       { to: "/dashboard/inbox", icon: Inbox, label: "Inbox", perm: "inbox" },
+      {
+        to: "/dashboard/appointments",
+        icon: CalendarCheck,
+        label: "Appointments",
+        perm: "automations",
+        feature: "appointments",
+      },
       { to: "/dashboard/contacts", icon: Users, label: "Contacts", perm: "contacts" },
       { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts", perm: "broadcasts" },
       { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics", perm: "analytics" },
@@ -134,10 +142,15 @@ export default function Sidebar({ onNavigate }) {
   // Shared with the route guard (RequirePermission) via usePermissions so the
   // sidebar and the actual access checks can never disagree.
   const { canItem } = usePermissions();
+  // Some nav items only appear when the workspace's vertical enables that
+  // feature (e.g. Appointments for booking businesses). Items with no `feature`
+  // key are always shown (subject to permissions).
+  const features = workspace?.features || {};
+  const hasFeature = (item) => !item.feature || features[item.feature] === true;
   // Filter nav to what this user can access; drop now-empty sections.
   const NAV_VISIBLE = NAV.map((g) => ({
     ...g,
-    items: g.items.filter(canItem),
+    items: g.items.filter((i) => canItem(i) && hasFeature(i)),
   })).filter((g) => g.items.length > 0);
 
   const [collapsed, setCollapsed] = useState(() => {
