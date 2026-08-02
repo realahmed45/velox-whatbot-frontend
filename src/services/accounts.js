@@ -42,6 +42,20 @@ export async function addAccount() {
   return ws;
 }
 
+/**
+ * Permanently delete an account (workspace) the user owns. Backend guards
+ * owner-only + "can't delete your last account". Returns the new activeWorkspace
+ * (the backend re-points it if we deleted the active one).
+ */
+export async function deleteAccount(workspaceId) {
+  const { data } = await api.delete(`/workspaces/${workspaceId}/account`);
+  const active = useAuthStore.getState().activeWorkspace;
+  if (String(active) === String(workspaceId)) {
+    useAuthStore.getState().setActiveWorkspace(data.activeWorkspace || null);
+  }
+  return data;
+}
+
 /** A short human plan label for badges. */
 export function planBadge(acc) {
   if (acc?.lifetime) return "Lifetime";

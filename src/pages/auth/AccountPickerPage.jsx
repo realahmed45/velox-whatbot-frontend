@@ -9,16 +9,26 @@
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Plus, Check, Instagram, LogOut } from "lucide-react";
+import { Loader2, Plus, Check, Instagram, LogOut, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
-import { fetchAccounts, switchAccount, addAccount, planBadge } from "@/services/accounts";
+import {
+  fetchAccounts,
+  switchAccount,
+  addAccount,
+  deleteAccount,
+  planBadge,
+} from "@/services/accounts";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import BotlifyMark from "@/components/BotlifyMark";
 
 export default function AccountPickerPage() {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { user, logout, setActiveWorkspace } = useAuthStore();
   const [accounts, setAccounts] = useState(null);
   const [entering, setEntering] = useState(null); // id being switched into
+  const [removing, setRemoving] = useState(null); // id being deleted
 
   useEffect(() => {
     let alive = true;
@@ -61,6 +71,32 @@ export default function AccountPickerPage() {
       await addAccount();
     } catch {
       setEntering(null);
+    }
+  };
+
+  const remove = async (acc, e) => {
+    e.stopPropagation();
+    if (accounts.length <= 1) {
+      toast.error("This is your only account — you can't delete it.");
+      return;
+    }
+    const ok = await confirm({
+      title: `Delete ${acc.name}?`,
+      description:
+        "This permanently deletes this account's bot, contacts, appointments and settings. If it has a paid subscription, cancel that separately in its Billing page — deleting here does not cancel Creem billing.",
+      confirmLabel: "Delete account",
+      danger: true,
+    });
+    if (!ok) return;
+    setRemoving(acc._id);
+    try {
+      await deleteAccount(acc._id);
+      setAccounts((list) => list.filter((a) => a._id !== acc._id));
+      toast.success("Account deleted");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Couldn't delete account");
+    } finally {
+      setRemoving(null);
     }
   };
 
@@ -136,6 +172,22 @@ export default function AccountPickerPage() {
                   <Loader2 className="w-5 h-5 text-brand-500 animate-spin flex-shrink-0" />
                 ) : (
                   <Check className="w-5 h-5 text-ink-300 flex-shrink-0" />
+                )}
+                {accounts.length > 1 && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => remove(a, e)}
+                    onKeyDown={(e) => e.key === "Enter" && remove(a, e)}
+                    title="Delete account"
+                    className="flex-shrink-0 p-1.5 rounded-lg text-ink-300 hover:text-rose-500 hover:bg-rose-50 transition"
+                  >
+                    {removing === a._id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </span>
                 )}
               </button>
             );
