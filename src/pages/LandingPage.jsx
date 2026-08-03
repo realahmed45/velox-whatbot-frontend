@@ -136,7 +136,7 @@ function TopNav() {
                   onClick={() => setDemoOpen(true)}
                   className="inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-600 hover:text-brand-700 border border-brand-200 hover:border-brand-300 bg-brand-50/60 rounded-lg px-4 py-2.5 transition"
                 >
-                  <CalendarClock className="w-4 h-4" /> Book a demo
+                  <Rocket className="w-4 h-4" /> Get free setup help
                 </button>
                 <Link
                   to="/login"
@@ -197,7 +197,7 @@ function TopNav() {
                   }}
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-brand-200 text-brand-600 font-bold hover:border-brand-300 transition"
                 >
-                  <CalendarClock className="w-4 h-4" /> Book a demo
+                  <Rocket className="w-4 h-4" /> Get free setup help
                 </button>
                 <Link
                   to="/login"
@@ -571,7 +571,7 @@ function IgChatMockup() {
         </div>
         <div>
           <p className="text-[10px] uppercase font-bold text-ink-500 tracking-wider">
-            DM conv. rate
+            DM conv. rate <span className="text-[8px] text-ink-300 normal-case">(demo)</span>
           </p>
           <p className="text-sm font-black text-ink-900">
             34% <span className="text-[10px] font-bold text-brand-600">+3×</span>
@@ -788,6 +788,9 @@ function Results() {
           <p className="mt-4 text-base sm:text-lg text-ink-600">
             Track every reply, click and sale from your Instagram — without opening five tabs.
           </p>
+          <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400 bg-ink-50 border border-ink-100 rounded-full px-3 py-1">
+            <Info className="w-3 h-3" /> Example dashboard · illustrative data
+          </p>
         </div>
 
         <div className="mt-12 grid lg:grid-cols-2 gap-5">
@@ -795,8 +798,9 @@ function Results() {
           <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500">
+                <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500 flex items-center gap-1.5">
                   Replies this week
+                  <span className="text-[9px] text-ink-400 bg-ink-100 rounded px-1.5 py-0.5 normal-case tracking-normal">Example</span>
                 </p>
                 <p className="text-2xl font-black text-ink-950 mt-1">
                   3,820 <span className="text-brand-600 text-sm">+38%</span>
@@ -840,8 +844,9 @@ function Results() {
           <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500">
+                <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500 flex items-center gap-1.5">
                   Conversion rate (before vs. after Botlify)
+                  <span className="text-[9px] text-ink-400 bg-ink-100 rounded px-1.5 py-0.5 normal-case tracking-normal">Example</span>
                 </p>
                 <p className="text-2xl font-black text-ink-950 mt-1">
                   +2.9× <span className="text-brand-500 text-sm">avg lift</span>

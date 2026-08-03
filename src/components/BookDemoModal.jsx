@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, CalendarClock, Loader2, CheckCircle2 } from "lucide-react";
+import { X, Rocket, Loader2, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 
@@ -68,12 +68,12 @@ export default function BookDemoModal({ open, onClose, source = "header" }) {
           </button>
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <CalendarClock className="w-5 h-5" />
+              <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black leading-tight">Book a free demo</h2>
+              <h2 className="text-lg font-black leading-tight">Free setup help</h2>
               <p className="text-xs text-white/80">
-                See Botlify automate your Instagram in 15 minutes.
+                We'll help you get Botlify live on your Instagram in 5 minutes.
               </p>
             </div>
           </div>
@@ -82,9 +82,10 @@ export default function BookDemoModal({ open, onClose, source = "header" }) {
         {done ? (
           <div className="px-6 py-10 text-center">
             <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-            <p className="font-bold text-ink-900 text-lg">You're booked! 🎉</p>
+            <p className="font-bold text-ink-900 text-lg">All set! 🎉</p>
             <p className="text-sm text-ink-500 mt-1">
-              We'll email you shortly to lock in a time. Talk soon!
+              We'll email you shortly to help you get set up. In the meantime, you can
+              start your free trial anytime!
             </p>
             <button
               onClick={close}
@@ -124,7 +125,7 @@ export default function BookDemoModal({ open, onClose, source = "header" }) {
             <input
               value={form.preferredTime}
               onChange={set("preferredTime")}
-              placeholder="Preferred time (e.g. weekday afternoons)"
+              placeholder="Your Instagram handle (optional)"
               className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
             />
             <button
@@ -134,14 +135,14 @@ export default function BookDemoModal({ open, onClose, source = "header" }) {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Booking…
+                  <Loader2 className="w-4 h-4 animate-spin" /> Sending…
                 </>
               ) : (
-                "Book my demo"
+                "Get my free setup help"
               )}
             </button>
             <p className="text-[11px] text-center text-ink-400">
-              No spam. We'll only use this to set up your demo.
+              No spam. We'll only use this to help you get set up.
             </p>
           </form>
         )}
