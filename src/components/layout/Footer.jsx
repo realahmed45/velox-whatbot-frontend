@@ -16,8 +16,8 @@ export default function Footer() {
           <div className="space-y-4">
             <Logo size="sm" dark />
             <p className="text-sm text-ink-500 leading-relaxed">
-              The Instagram automation platform for creators and brands. Set up
-              once. Sells while you sleep.
+              The AI receptionist for hotels. Bookings from WhatsApp, Instagram
+              &amp; TikTok — synced with Booking.com and Airbnb.
             </p>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">

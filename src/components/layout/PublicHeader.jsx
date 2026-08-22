@@ -16,6 +16,7 @@ const FULL_NAV = [
   { label: "Features", href: "/#features", anchor: true },
   { label: "Results", href: "/#results", anchor: true },
   { label: "Pricing", to: "/pricing" },
+  { label: "Consultants", to: "/consultants" },
   { label: "Docs", to: "/docs" },
 ];
 

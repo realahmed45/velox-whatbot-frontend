@@ -398,6 +398,8 @@ function UsageBar({ label, used, limit }) {
 function formatPlan(id) {
   const map = {
     free: "Free trial",
+    hotel_free: "Launch (Free)",
+    hotel_pro: "Botlify for Hotels",
     ig_starter: "Basic — Instagram",
     ig_pro: "Instagram Pro",
     starter: "Starter (legacy)",

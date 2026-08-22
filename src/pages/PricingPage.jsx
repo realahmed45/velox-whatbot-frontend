@@ -1,5 +1,7 @@
 /**
- * Public + embedded pricing page — Instagram-only, two plans.
+ * Public + embedded pricing page — hotel product, two plans:
+ *   hotel_free  "Launch (Free)"      $0 — activates instantly, no checkout.
+ *   hotel_pro   "Botlify for Hotels" $49/mo · $490/yr — 3-day trial via Creem.
  * Always renders plans (local fallback) so it works without login even
  * if the live /billing/plans endpoint is unavailable.
  */
@@ -7,10 +9,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
-  Instagram,
+  Hotel,
   ArrowRight,
   ShieldCheck,
   Loader2,
+  Sparkles,
   Zap,
 } from "lucide-react";
 import api from "@/services/api";
@@ -21,44 +24,42 @@ import { clsx } from "clsx";
 /* Local fallback — mirrors backend plan catalog so pricing always shows. */
 const FALLBACK_PLANS = [
   {
-    key: "ig_starter",
-    id: "ig_starter",
-    name: "Basic — Instagram",
-    tagline: "Instagram only · automate DMs and comments",
-    usd: 9,
-    monthlyPrice: 2520,
-    trialDays: 3,
+    key: "hotel_free",
+    id: "hotel_free",
+    name: "Launch (Free)",
+    tagline: "Get synced and take bookings — free forever",
+    usd: 0,
     highlights: [
-      "1 Instagram account",
-      "1,000 conversations/month",
-      "Comment → DM, story replies, ice breakers",
-      "AI smart replies (200/day)",
-      "Basic analytics",
+      "Booking.com & Airbnb sync — free, 0% commission",
+      "1 property, unlimited rooms",
+      "Bookings dashboard & calendar",
+      "Manual & direct bookings — unlimited",
+      "AI concierge on WhatsApp",
+      "10% only on bookings the bot closes",
     ],
   },
   {
-    key: "ig_pro",
-    id: "ig_pro",
-    name: "Instagram Pro",
-    tagline: "Unlimited convos + premium AI",
-    usd: 19,
-    monthlyPrice: 5499,
+    key: "hotel_pro",
+    id: "hotel_pro",
+    name: "Botlify for Hotels",
+    tagline: "The full AI receptionist for your hotel",
+    usd: 49,
     trialDays: 3,
     recommended: true,
     highlights: [
-      "Unlimited conversations",
-      "Unlimited contacts",
-      "Premium AI · context-aware",
-      "Broadcasts + drip campaigns",
-      "Advanced analytics",
-      "Team inbox (3 seats)",
-      "Remove Botlify branding",
+      "Everything in Launch",
+      "AI concierge on WhatsApp, Instagram & TikTok",
+      "Books rooms, quotes prices & answers guests 24/7",
+      "Airport transfers for your guests",
+      "Unified inbox across every channel",
+      "Broadcasts & pre-arrival messages",
+      "Team access & priority support",
     ],
   },
 ];
 
 // Tier rank for plans (higher = more features).
-const TIER = { ig_starter: 1, ig_pro: 2 };
+const TIER = { hotel_free: 1, hotel_pro: 2 };
 // Normalise a stored billing cycle to our toggle values.
 const normCycle = (c) => (c === "annual" || c === "yearly" ? "yearly" : "monthly");
 
@@ -74,8 +75,6 @@ export default function PricingPage({
   // Start with the fallback so the page is never blank / never redirects.
   const [plans, setPlans] = useState(FALLBACK_PLANS);
   const [selecting, setSelecting] = useState(null);
-  // Default the toggle to the user's current cycle so the "obvious" upgrade
-  // (same plan, other cycle) is easy to see.
   const [cycle, setCycle] = useState(
     currentCycle ? normCycle(currentCycle) : "monthly",
   );
@@ -83,15 +82,14 @@ export default function PricingPage({
   const curCycle = currentCycle ? normCycle(currentCycle) : null;
   const curTier = currentPlan ? TIER[currentPlan] || 0 : 0;
 
-  // Decide how a given plan card should behave relative to the current plan.
-  // Returns "current" (their active plan+cycle — disabled), "downgrade" (hide),
-  // or "offer" (a valid upgrade they can pick).
+  // "current" (their active plan+cycle — disabled), "downgrade" (hide), or
+  // "offer" (a valid move they can pick).
   const cardState = (planKey) => {
-    if (!currentPlan) return "offer"; // trial / no plan → everything is pickable
+    if (!currentPlan) return "offer";
     const tier = TIER[planKey] || 0;
-    if (planKey === currentPlan && cycle === curCycle) return "current";
-    if (tier < curTier) return "downgrade"; // lower tier → not shown
-    // Same tier: only the OTHER cycle is a meaningful move (monthly → yearly).
+    if (planKey === currentPlan && (planKey === "hotel_free" || cycle === curCycle))
+      return "current";
+    if (tier < curTier) return "downgrade";
     if (tier === curTier && cycle === curCycle) return "current";
     return "offer";
   };
@@ -111,23 +109,20 @@ export default function PricingPage({
     };
   }, []);
 
-  const starter = plans.find((p) => p.key === "ig_starter") || plans[0];
+  const free = plans.find((p) => p.key === "hotel_free") || plans[0];
   const pro =
-    plans.find((p) => p.key === "ig_pro") ||
+    plans.find((p) => p.key === "hotel_pro") ||
     plans.find((p) => p.recommended) ||
     plans[1];
 
   const handlePick = async (plan) => {
     if (!plan) return;
-    // Not logged in → register first, carrying the chosen plan so we can send
-    // them to checkout right after signup.
+    // Not logged in → register first, carrying the chosen plan.
     if (!isAuthenticated) {
-      navigate(`/register?plan=${plan.key}&channel=instagram`);
+      navigate(`/register?plan=${plan.key}`);
       return;
     }
 
-    // Logged in → start the Creem hosted checkout (3-day trial, card upfront)
-    // and redirect the browser to it.
     setSelecting(plan.key);
     try {
       const billingCycle = cycle === "yearly" ? "annual" : "monthly";
@@ -135,6 +130,13 @@ export default function PricingPage({
         plan: plan.key,
         billingCycle,
       });
+      // Free plan activates instantly — no external checkout, just follow the
+      // returned url into the app.
+      if (data?.activated) {
+        toast.success("Free plan activated!");
+        window.location.href = data.url || "/dashboard";
+        return;
+      }
       if (data?.url) {
         window.location.href = data.url;
         return;
@@ -155,15 +157,14 @@ export default function PricingPage({
         {!embedded && (
           <div className="text-center mb-10">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100">
-              <Instagram className="w-3 h-3" /> Instagram automation · 3-day free
-              trial
+              <Hotel className="w-3 h-3" /> Your hotel's AI receptionist
             </span>
             <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
               Simple, honest <span className="text-brand-500">pricing</span>
             </h1>
             <p className="mt-3 text-base text-ink-500 max-w-lg mx-auto">
-              One platform, all your Instagram automations. Start free for 3 days
-              — no credit card needed.
+              OTA sync is free with 0% commission. We only earn 10% on bookings
+              the AI closes for you — start free, upgrade when you're ready.
             </p>
           </div>
         )}
@@ -172,21 +173,20 @@ export default function PricingPage({
 
         {(() => {
           const cards = [
-            starter && { plan: starter, highlight: false },
+            free && { plan: free, highlight: false },
             pro && { plan: pro, highlight: true },
           ].filter(Boolean);
           const visible = cards.filter(
             (c) => cardState(c.plan.key) !== "downgrade",
           );
           if (visible.length === 0) {
-            // Already on the top plan + cycle — nothing to upgrade to.
             return (
               <div className="max-w-md mx-auto text-center rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6">
                 <p className="font-bold text-ink-900">
                   You're on our top plan 🎉
                 </p>
                 <p className="text-sm text-ink-500 mt-1">
-                  Instagram Pro ({curCycle === "yearly" ? "yearly" : "monthly"})
+                  Botlify for Hotels ({curCycle === "yearly" ? "yearly" : "monthly"})
                   — you already have every feature. Nothing to upgrade.
                 </p>
               </div>
@@ -210,7 +210,6 @@ export default function PricingPage({
                     selecting={selecting === plan.key}
                     highlight={highlight}
                     isCurrent={state === "current"}
-                    ctaVerb={currentPlan ? "Switch to" : "Start"}
                   />
                 );
               })}
@@ -226,18 +225,18 @@ export default function PricingPage({
                 <Zap className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-bold text-ink-900">
-                    All plans include
+                    Every plan includes
                   </p>
                   <div className="mt-2 grid grid-cols-2 gap-1.5">
                     {[
-                      "Comment → DM automation",
-                      "Story reply triggers",
-                      "DM keyword auto-reply",
-                      "AI chatbot",
-                      "Visual flow builder",
-                      "3-day free trial",
-                      "Story mention alerts",
-                      "Real-time inbox",
+                      "Booking.com & Airbnb sync",
+                      "0% commission on OTA bookings",
+                      "Bookings dashboard",
+                      "Availability calendar",
+                      "AI concierge on WhatsApp",
+                      "10% only on bot-closed bookings",
+                      "Direct & manual bookings",
+                      "No setup fees",
                     ].map((f) => (
                       <div
                         key={f}
@@ -254,7 +253,7 @@ export default function PricingPage({
 
             <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-brand-500" />
-              Secure card checkout · 3-day free trial · Cancel anytime
+              Start free · Pro has a 3-day free trial · Cancel anytime
             </div>
           </>
         )}
@@ -297,19 +296,12 @@ function BillingToggle({ cycle, setCycle }) {
   );
 }
 
-function PlanCard({
-  plan,
-  cycle,
-  onPick,
-  selecting,
-  highlight,
-  isCurrent,
-  ctaVerb = "Start",
-}) {
+function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
+  const isFree = plan.key === "hotel_free" || plan.usd === 0;
   const isYearly = cycle === "yearly";
   // Annual = 10× monthly (2 months free), matching the backend catalog.
-  const usd = isYearly ? plan.usd * 10 : plan.usd;
-  const per = isYearly ? "/yr" : "/mo";
+  const usd = isFree ? 0 : isYearly ? (plan.yearlyUsd ?? plan.usd * 10) : plan.usd;
+  const per = isFree ? "" : isYearly ? "/yr" : "/mo";
 
   return (
     <div
@@ -323,7 +315,7 @@ function PlanCard({
       {highlight && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="px-3 py-1 rounded-full bg-brand-500 text-white text-[11px] font-bold shadow-glow">
-            Most popular
+            Recommended
           </span>
         </div>
       )}
@@ -335,9 +327,11 @@ function PlanCard({
           highlight ? "bg-brand-500" : "bg-brand-50",
         )}
       >
-        <Instagram
-          className={clsx("w-5 h-5", highlight ? "text-white" : "text-brand-500")}
-        />
+        {highlight ? (
+          <Sparkles className="w-5 h-5 text-white" />
+        ) : (
+          <Hotel className="w-5 h-5 text-brand-500" />
+        )}
       </div>
 
       <h3 className="text-xl font-black tracking-tight text-ink-900">
@@ -348,10 +342,14 @@ function PlanCard({
       <div className="mt-4">
         <div className="flex items-baseline gap-1">
           <span className="text-4xl font-black text-ink-900">${usd}</span>
-          <span className="text-sm text-ink-400">{per}</span>
+          {per && <span className="text-sm text-ink-400">{per}</span>}
         </div>
         <p className="text-[11px] mt-0.5 text-ink-400">
-          {isYearly ? "2 months free" : "3-day free trial"}
+          {isFree
+            ? "No card required"
+            : isYearly
+              ? "2 months free"
+              : "3-day free trial"}
         </p>
       </div>
 
@@ -385,7 +383,8 @@ function PlanCard({
             </>
           ) : (
             <>
-              {ctaVerb} {plan.name} <ArrowRight className="w-4 h-4" />
+              {isFree ? "Start free" : "Start 3-day trial"}
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>

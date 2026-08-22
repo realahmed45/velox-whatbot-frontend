@@ -24,6 +24,11 @@ import {
   UserPlus,
   Sparkles,
   Crown,
+  HandCoins,
+  ChevronDown,
+  ChevronRight,
+  Banknote,
+  Ban,
 } from "lucide-react";
 
 const API_BASE =
@@ -330,6 +335,7 @@ function AdminDashboard({ onLogout }) {
                 { id: "activity", label: `Users (${rows.length})` },
                 { id: "timeline", label: `Timeline (${events.length})` },
                 { id: "subs", label: `Subs (${subs.length})` },
+                { id: "consultants", label: "Consultants" },
               ].map((t) => (
                 <button
                   key={t.id}
@@ -515,6 +521,9 @@ function AdminDashboard({ onLogout }) {
               </div>
             )}
 
+            {/* ── CONSULTANTS ── */}
+            {tab === "consultants" && <ConsultantsAdmin />}
+
             {/* ── SUBS ── */}
             {tab === "subs" && (
               <div className="bg-white rounded-2xl border border-ink-100 overflow-x-auto">
@@ -568,6 +577,392 @@ function AdminDashboard({ onLogout }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Consultants admin ──────────────────────────────────────────────── */
+const CONSULTANT_STATUS = {
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  suspended: "bg-red-100 text-red-700",
+};
+const COMMISSION_STATUS = {
+  accrued: "bg-amber-100 text-amber-700",
+  verified: "bg-blue-100 text-blue-700",
+  paid: "bg-emerald-100 text-emerald-700",
+  reversed: "bg-red-100 text-red-700",
+};
+
+const cMoney = (a, c) =>
+  `${c || "USD"} ${Number(a || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+
+// Render a consultant's totals defensively — the API may report totals as
+// {accrued, paid} numbers or as per-currency arrays.
+function totalsLabel(c, key) {
+  const t = c.totals || c.stats || {};
+  const v = t[key];
+  if (Array.isArray(v))
+    return v.map((x) => cMoney(x.amount ?? x[key], x.currency)).join(" · ");
+  if (Array.isArray(t.byCurrency))
+    return t.byCurrency.map((x) => cMoney(x[key], x.currency)).join(" · ") || "0";
+  if (typeof v === "number") return v.toLocaleString();
+  return "0";
+}
+
+function ConsultantsAdmin() {
+  const [loading, setLoading] = useState(true);
+  const [consultants, setConsultants] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+  const [busy, setBusy] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await adminApi.get("/admin/consultants");
+      setConsultants(data.consultants || data.rows || []);
+    } catch {
+      /* keep old list */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const approve = async (c) => {
+    setBusy(c._id);
+    try {
+      await adminApi.post(`/admin/consultants/${c._id}/approve`);
+      load();
+    } catch {
+      alert("Approve failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const suspend = async (c) => {
+    const reason = window.prompt(`Suspend ${c.fullName || c.name}? Reason:`);
+    if (reason === null) return;
+    setBusy(c._id);
+    try {
+      await adminApi.post(`/admin/consultants/${c._id}/suspend`, { reason });
+      load();
+    } catch {
+      alert("Suspend failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="py-16 text-center text-ink-400">
+        <Loader2 className="w-6 h-6 animate-spin inline" />
+      </div>
+    );
+
+  return (
+    <div className="bg-white rounded-2xl border border-ink-100 overflow-hidden">
+      <div className="px-4 py-3 border-b border-ink-100 flex items-center gap-2">
+        <HandCoins className="w-4 h-4 text-brand-500" />
+        <span className="font-bold text-ink-900 text-sm">
+          Consultants ({consultants.length})
+        </span>
+      </div>
+      {consultants.length === 0 ? (
+        <p className="px-4 py-10 text-center text-ink-400 text-sm">
+          No consultant applications yet.
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                <th className="px-3 py-2.5 w-8" />
+                <th className="px-3 py-2.5">Name</th>
+                <th className="px-3 py-2.5">Code</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">Hotels</th>
+                <th className="px-3 py-2.5">Accrued</th>
+                <th className="px-3 py-2.5">Paid</th>
+                <th className="px-3 py-2.5" />
+              </tr>
+            </thead>
+            <tbody>
+              {consultants.map((c) => (
+                <ConsultantRow
+                  key={c._id}
+                  c={c}
+                  busy={busy === c._id}
+                  expanded={expanded === c._id}
+                  onToggle={() =>
+                    setExpanded(expanded === c._id ? null : c._id)
+                  }
+                  onApprove={() => approve(c)}
+                  onSuspend={() => suspend(c)}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConsultantRow({ c, busy, expanded, onToggle, onApprove, onSuspend }) {
+  return (
+    <>
+      <tr className="border-b border-ink-50 hover:bg-ink-50/60">
+        <td className="px-3 py-2.5">
+          <button onClick={onToggle} className="text-ink-400 hover:text-ink-700">
+            {expanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </button>
+        </td>
+        <td className="px-3 py-2.5">
+          <div className="font-semibold text-ink-900">
+            {c.fullName || c.name || "—"}
+          </div>
+          <div className="text-xs text-ink-400">
+            {[c.phone, c.city, c.country].filter(Boolean).join(" · ")}
+          </div>
+        </td>
+        <td className="px-3 py-2.5 font-mono text-xs font-bold text-ink-800">
+          {c.code || "—"}
+        </td>
+        <td className="px-3 py-2.5">
+          <span
+            className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${CONSULTANT_STATUS[c.status] || CONSULTANT_STATUS.pending}`}
+          >
+            {c.status}
+          </span>
+        </td>
+        <td className="px-3 py-2.5 text-ink-700">
+          {c.hotelsSigned ?? c.stats?.hotelsSigned ?? c.totals?.hotelsSigned ?? 0}
+        </td>
+        <td className="px-3 py-2.5 text-ink-700 text-xs">
+          {totalsLabel(c, "accrued")}
+        </td>
+        <td className="px-3 py-2.5 text-ink-700 text-xs">
+          {totalsLabel(c, "paid")}
+        </td>
+        <td className="px-3 py-2.5">
+          <div className="flex items-center justify-end gap-1.5">
+            {c.status !== "approved" && (
+              <button
+                onClick={onApprove}
+                disabled={busy}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1.5 transition disabled:opacity-60"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+              </button>
+            )}
+            {c.status !== "suspended" && (
+              <button
+                onClick={onSuspend}
+                disabled={busy}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg px-2.5 py-1.5 transition disabled:opacity-60"
+              >
+                <Ban className="w-3.5 h-3.5" /> Suspend
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="border-b border-ink-50">
+          <td colSpan={8} className="px-3 py-3 bg-ink-50/50">
+            <ConsultantLedger consultantId={c._id} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+function ConsultantLedger({ consultantId }) {
+  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState([]);
+  const [status, setStatus] = useState("");
+  const [period, setPeriod] = useState("");
+  const [busy, setBusy] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await adminApi.get("/admin/commissions", {
+        params: {
+          consultantId,
+          status: status || undefined,
+          period: period || undefined,
+        },
+      });
+      setEntries(data.commissions || data.entries || data.rows || []);
+    } catch {
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [consultantId, status, period]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const verify = async (e) => {
+    setBusy(e._id);
+    try {
+      await adminApi.post(`/admin/commissions/${e._id}/verify`);
+      load();
+    } catch {
+      alert("Verify failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const markPaid = async (e) => {
+    const ref = window.prompt("Payout reference (bank transfer id):");
+    if (ref === null) return;
+    setBusy(e._id);
+    try {
+      await adminApi.post(`/admin/commissions/${e._id}/mark-paid`, {
+        payoutReference: ref,
+      });
+      load();
+    } catch {
+      alert("Mark-paid failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const markPeriodPaid = async () => {
+    if (!period) {
+      alert("Set a period filter first (e.g. 2026-08)");
+      return;
+    }
+    const ref = window.prompt(
+      `Mark ALL of ${period} paid for this consultant. Payout reference:`,
+    );
+    if (ref === null) return;
+    try {
+      await adminApi.post("/admin/commissions/mark-paid-bulk", {
+        consultantId,
+        period,
+        payoutReference: ref,
+      });
+      load();
+    } catch {
+      alert("Bulk mark-paid failed");
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-ink-100 bg-white p-3">
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-ink-400">
+          Commission ledger
+        </span>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs outline-none focus:border-brand-400"
+        >
+          <option value="">All statuses</option>
+          <option value="accrued">Accrued</option>
+          <option value="verified">Verified</option>
+          <option value="paid">Paid</option>
+          <option value="reversed">Reversed</option>
+        </select>
+        <input
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+          placeholder="Period (YYYY-MM)"
+          className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs outline-none focus:border-brand-400 w-32 font-mono"
+        />
+        <button
+          onClick={markPeriodPaid}
+          className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg px-2.5 py-1.5 transition"
+        >
+          <Banknote className="w-3.5 h-3.5" /> Mark period paid
+        </button>
+      </div>
+      {loading ? (
+        <div className="py-6 text-center text-ink-400">
+          <Loader2 className="w-4 h-4 animate-spin inline" />
+        </div>
+      ) : entries.length === 0 ? (
+        <p className="py-4 text-center text-xs text-ink-400">
+          No commission entries match.
+        </p>
+      ) : (
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+              <th className="px-2 py-1.5">Period</th>
+              <th className="px-2 py-1.5">Hotel</th>
+              <th className="px-2 py-1.5">Type</th>
+              <th className="px-2 py-1.5">Amount</th>
+              <th className="px-2 py-1.5">Status</th>
+              <th className="px-2 py-1.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e) => (
+              <tr key={e._id} className="border-b border-ink-50">
+                <td className="px-2 py-1.5 font-mono">{e.period || "—"}</td>
+                <td className="px-2 py-1.5 text-ink-700">
+                  {e.workspaceName || e.workspace?.name || e.workspaceId?.name || "—"}
+                </td>
+                <td className="px-2 py-1.5 text-ink-500 capitalize">
+                  {(e.revenueType || e.kind || "").replace("_", " ")}
+                </td>
+                <td className="px-2 py-1.5 font-semibold text-ink-900">
+                  {cMoney(e.amount, e.currency)}
+                </td>
+                <td className="px-2 py-1.5">
+                  <span
+                    className={`inline-block text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${COMMISSION_STATUS[e.status] || COMMISSION_STATUS.accrued}`}
+                  >
+                    {e.status}
+                  </span>
+                </td>
+                <td className="px-2 py-1.5">
+                  <div className="flex items-center justify-end gap-1">
+                    {e.status === "accrued" && (
+                      <button
+                        onClick={() => verify(e)}
+                        disabled={busy === e._id}
+                        className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-2 py-1 transition disabled:opacity-60"
+                      >
+                        Verify
+                      </button>
+                    )}
+                    {["accrued", "verified"].includes(e.status) && (
+                      <button
+                        onClick={() => markPaid(e)}
+                        disabled={busy === e._id}
+                        className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-2 py-1 transition disabled:opacity-60"
+                      >
+                        Mark paid
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

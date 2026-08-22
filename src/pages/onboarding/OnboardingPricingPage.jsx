@@ -1,6 +1,7 @@
 /**
- * Onboarding pricing — the paywall shown BEFORE the dashboard. A plan (card,
- * 3-day trial) is required to use Botlify; there is no free tier.
+ * Onboarding pricing — the plan-picker shown BEFORE the dashboard.
+ * Two hotel plans: Launch (Free) activates instantly with no checkout;
+ * Botlify for Hotels starts a Creem checkout (3-day trial, card upfront).
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -31,8 +32,6 @@ export default function OnboardingPricingPage() {
   const [picking, setPicking] = useState(null);
   const [autoApplied, setAutoApplied] = useState(false);
 
-  // Pricing comes BEFORE connecting Instagram — a plan (card, 3-day trial) is
-  // required first, so we do NOT redirect to the Instagram step from here.
   // A brand-new owner has no workspace yet (we don't auto-create at signup), so
   // ensure one exists — the checkout endpoint is workspace-scoped.
   useEffect(() => {
@@ -76,12 +75,18 @@ export default function OnboardingPricingPage() {
     };
   }, []);
 
-  // Start the Creem hosted checkout (3-day trial, card upfront) and redirect.
+  // Start checkout. hotel_free returns {activated:true, url} — no external
+  // checkout, just follow the url. Paid plans redirect to Creem.
   const startCheckout = async (planKey, billingCycle = "monthly") => {
     const { data } = await api.post("/billing/creem/checkout", {
       plan: planKey,
       billingCycle,
     });
+    if (data?.activated) {
+      toast.success("You're on the free plan — welcome!");
+      window.location.href = data.url || "/dashboard";
+      return true;
+    }
     if (data?.url) {
       window.location.href = data.url;
       return true;
@@ -89,14 +94,13 @@ export default function OnboardingPricingPage() {
     throw new Error("No checkout URL");
   };
 
-  // If they arrived with a chosen plan (?plan=), send them straight to checkout.
+  // If they arrived with a chosen plan (?plan=), send them straight through.
   useEffect(() => {
     if (autoApplied || !planHint || plans.length === 0) return;
     const plan = plans.find((p) => p.key === planHint);
     if (!plan) return;
     setAutoApplied(true);
     startCheckout(plan.key).catch(() => {
-      /* fall through to the plan picker below if checkout can't start */
       setAutoApplied(false);
     });
   }, [planHint, plans, autoApplied]);
@@ -132,13 +136,14 @@ export default function OnboardingPricingPage() {
             <Sparkles className="w-3.5 h-3.5" /> Choose your plan
           </span>
           <h1 className="mt-4 text-3xl sm:text-5xl font-black tracking-tighter text-ink-950">
-            Start your <span className="text-brand-500">3-day free trial</span>
+            Start <span className="text-brand-500">free</span> — upgrade when
+            you're ready
           </h1>
           <p className="mt-3 text-ink-600 max-w-lg mx-auto text-[15px]">
-            Pick a plan to unlock every Botlify feature. You won't be charged
-            until your trial ends — cancel anytime before then.
+            OTA sync is free with 0% commission on every plan. The Pro plan adds
+            the full AI concierge on WhatsApp, Instagram &amp; TikTok — with a
+            3-day free trial.
           </p>
-
         </div>
 
         {loading && !errored && (
@@ -182,7 +187,8 @@ export default function OnboardingPricingPage() {
           <div className="mt-10 flex flex-col items-center gap-3">
             <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-400">
               <ShieldCheck className="w-3 h-3" />
-              3-day free trial · card required · cancel anytime before it ends
+              Free plan needs no card · Pro has a 3-day free trial · cancel
+              anytime
             </p>
           </div>
         )}
@@ -192,8 +198,9 @@ export default function OnboardingPricingPage() {
 }
 
 function PlanCard({ plan, picking, onPick }) {
-  // Pro is the elevated / recommended tier (dark, "Most popular").
-  const isPro = plan.key === "ig_pro" || plan.premium || plan.recommended;
+  const isFree = plan.key === "hotel_free" || plan.usd === 0;
+  // Pro is the elevated / recommended tier (dark, "Recommended").
+  const isPro = plan.key === "hotel_pro" || plan.premium || plan.recommended;
 
   return (
     <div
@@ -207,7 +214,7 @@ function PlanCard({ plan, picking, onPick }) {
       {isPro && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-500 text-white text-[11px] font-bold shadow-glow">
-            <Sparkles className="w-3 h-3" /> Most popular
+            <Sparkles className="w-3 h-3" /> Recommended
           </span>
         </div>
       )}
@@ -221,14 +228,16 @@ function PlanCard({ plan, picking, onPick }) {
       {/* price */}
       <div className="mt-5 flex items-end gap-1.5">
         <span className="text-[2.6rem] leading-none font-black tracking-tighter">
-          ${plan.usd}
+          ${plan.usd ?? 0}
         </span>
         <span className={clsx("text-sm mb-1", isPro ? "text-white/50" : "text-ink-400")}>
           /month
         </span>
       </div>
       <p className={clsx("text-[11px] mt-1", isPro ? "text-white/45" : "text-ink-400")}>
-        Billed monthly · 3-day free trial
+        {isFree
+          ? "Free forever · no card required"
+          : "Billed monthly · 3-day free trial · $490/yr (2 months free)"}
       </p>
 
       <div className={clsx("my-5 h-px", isPro ? "bg-white/10" : "bg-ink-100")} />
@@ -267,13 +276,13 @@ function PlanCard({ plan, picking, onPick }) {
           </>
         ) : (
           <>
-            Start free trial
+            {isFree ? "Start free" : "Start 3-day trial"}
             <ArrowRight className="w-4 h-4" />
           </>
         )}
       </button>
       <p className={clsx("mt-2.5 text-center text-[11px]", isPro ? "text-white/40" : "text-ink-400")}>
-        3 days free, then ${plan.usd}/mo
+        {isFree ? "Upgrade anytime" : `3 days free, then $${plan.usd}/mo`}
       </p>
     </div>
   );

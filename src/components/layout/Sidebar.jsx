@@ -26,7 +26,6 @@ import {
   Sparkles,
   Hash,
   CalendarClock,
-  CalendarCheck,
   Droplet,
   Plug,
   ArrowUpRight,
@@ -34,6 +33,11 @@ import {
   Webhook,
   Globe,
   MessageSquare,
+  BedDouble,
+  Hotel,
+  Car,
+  Share2,
+  HandCoins,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -59,6 +63,15 @@ const NAV = [
     ],
   },
   {
+    section: "Hotel",
+    items: [
+      { to: "/dashboard/bookings", icon: BedDouble, label: "Bookings" },
+      { to: "/dashboard/property", icon: Hotel, label: "Property & Rooms" },
+      { to: "/dashboard/transfers", icon: Car, label: "Transfers" },
+      { to: "/dashboard/channels", icon: Share2, label: "Channels" },
+    ],
+  },
+  {
     section: "Automation",
     items: [
       { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot", perm: "automations" },
@@ -76,13 +89,8 @@ const NAV = [
     section: "Management",
     items: [
       { to: "/dashboard/inbox", icon: Inbox, label: "Inbox", perm: "inbox" },
-      {
-        to: "/dashboard/appointments",
-        icon: CalendarCheck,
-        label: "Appointments",
-        perm: "automations",
-        feature: "appointments",
-      },
+      // NOTE: the legacy "Appointments" nav item is hidden for the hotel
+      // product (route + page remain intact for existing deep links).
       { to: "/dashboard/contacts", icon: Users, label: "Contacts", perm: "contacts" },
       { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts", perm: "broadcasts" },
       { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics", perm: "analytics" },
@@ -99,6 +107,11 @@ const NAV = [
       },
       { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns", perm: "broadcasts" },
       { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags", perm: "content" },
+      {
+        to: "/dashboard/consultant",
+        icon: HandCoins,
+        label: "Consultant Program",
+      },
     ],
   },
   {
@@ -121,9 +134,10 @@ const NAV = [
 
 function planLabel(id) {
   const map = {
-    // No free tier — an account without an active paid plan is on trial.
     free: "Trial",
     trial: "Trial",
+    hotel_free: "Launch (Free)",
+    hotel_pro: "Botlify for Hotels",
     ig_starter: "Basic Plan",
     ig_pro: "Pro Plan",
     starter: "Basic Plan",
@@ -188,7 +202,7 @@ export default function Sidebar({ onNavigate }) {
     return { used, limit, pct, unlimited };
   }, [workspace, isLifetime]);
 
-  const isPremium = isLifetime || ["ig_pro", "scale"].includes(plan);
+  const isPremium = isLifetime || ["ig_pro", "scale", "hotel_pro"].includes(plan);
 
   const initial = (
     workspace?.name?.[0] ||
@@ -226,7 +240,7 @@ export default function Sidebar({ onNavigate }) {
                 Botlify
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-400/80 mt-1 truncate">
-                Instagram Automation
+                AI Hotel Booking
               </span>
             </div>
           )}

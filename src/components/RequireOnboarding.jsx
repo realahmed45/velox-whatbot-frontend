@@ -19,6 +19,9 @@ const EXEMPT_PATHS = [
   "/dashboard/settings",
   "/dashboard/pricing",
   "/dashboard/guide",
+  // Consultants aren't hotels — their program dashboard must stay reachable
+  // without connecting a channel or starting a plan.
+  "/dashboard/consultant",
 ];
 
 export default function RequireOnboarding({ children }) {
@@ -64,7 +67,10 @@ export default function RequireOnboarding({ children }) {
   // A brand-new owner has NO workspace yet (we no longer create one at signup).
   // Send them to onboarding, which creates their workspace and connects
   // Instagram. Verified users with no active workspace land here.
+  // Exception: the consultant dashboard — consultants aren't hotels and don't
+  // need a workspace to apply / see their referral code.
   if (!activeWorkspace) {
+    if (location.pathname.startsWith("/dashboard/consultant")) return children;
     return <Navigate to="/onboarding/instagram" replace />;
   }
 

@@ -66,6 +66,20 @@ const AppointmentsPage = lazyWithRetry(
   () => import("@/pages/appointments/AppointmentsPage"),
 );
 
+// Hotel product (lazy-loaded)
+const BookingsPage = lazyWithRetry(() => import("@/pages/hotel/BookingsPage"));
+const PropertyPage = lazyWithRetry(() => import("@/pages/hotel/PropertyPage"));
+const TransfersPage = lazyWithRetry(() => import("@/pages/hotel/TransfersPage"));
+const ChannelsPage = lazyWithRetry(() => import("@/pages/hotel/ChannelsPage"));
+
+// Consultant program
+const ConsultantsLandingPage = lazyWithRetry(
+  () => import("@/pages/consultants/ConsultantsLandingPage"),
+);
+const ConsultantDashboardPage = lazyWithRetry(
+  () => import("@/pages/consultants/ConsultantDashboardPage"),
+);
+
 // Onboarding
 const ChooseChannelPage = lazyWithRetry(
   () => import("@/pages/onboarding/ChooseChannelPage"),
@@ -134,6 +148,7 @@ export default function App() {
               <Route path="/invite" element={<InvitePage />} />
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/consultants" element={<ConsultantsLandingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route path="/docs" element={<DocsPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
@@ -188,6 +203,15 @@ export default function App() {
                 }
               >
                 <Route index element={<OverviewPage />} />
+
+                {/* Hotel product */}
+                <Route path="bookings" element={<BookingsPage />} />
+                <Route path="property" element={<PropertyPage />} />
+                <Route path="transfers" element={<TransfersPage />} />
+                <Route path="channels" element={<ChannelsPage />} />
+
+                {/* Consultant program */}
+                <Route path="consultant" element={<ConsultantDashboardPage />} />
                 <Route
                   path="automation"
                   element={

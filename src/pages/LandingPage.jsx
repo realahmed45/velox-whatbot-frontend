@@ -83,6 +83,7 @@ const NAV_LINKS = [
   { label: "Features", href: "#features" },
   { label: "Results", href: "#results" },
   { label: "Pricing", to: "/pricing" },
+  { label: "Consultants", to: "/consultants" },
   { label: "Guide", to: "/guide" },
 ];
 
@@ -297,16 +298,16 @@ function Hero() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
               </span>
-              Instagram automation, on autopilot
+              AI booking for hotels
               <span className="text-ink-300">·</span>
               <InstagramMark className="w-3.5 h-3.5 text-brand-500" />
             </span>
 
             <h1 className="mt-5 text-[2.7rem] leading-[1.02] sm:text-6xl lg:text-[4.6rem] font-black tracking-tighter text-ink-950">
-              Turn every Instagram{" "}
+              Your hotel's{" "}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
-                  chat into a customer
+                  AI receptionist
                 </span>
                 <svg
                   className="absolute -bottom-1 left-0 w-full"
@@ -329,9 +330,9 @@ function Hero() {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
-              Getting more DMs than you can answer? Botlify replies to your DMs,
-              comments and story mentions instantly — 24/7, in your voice. Never
-              leave a follower on read again.
+              Bookings from WhatsApp, Instagram &amp; TikTok — synced with
+              Booking.com and Airbnb. The AI answers every guest, quotes rooms
+              and books them instantly, 24/7.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -339,23 +340,23 @@ function Hero() {
                 to="/register"
                 className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition-all shadow-glow hover:shadow-glow-lg hover:-translate-y-0.5"
               >
-                Start your 3-day free trial
+                Start free — sync your OTAs
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <a
                 href="#features"
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white border border-ink-200 text-ink-800 font-bold text-[15px] hover:border-brand-300 hover:text-brand-600 transition"
               >
-                <PlayCircle className="w-4 h-4" /> See what it automates
+                <PlayCircle className="w-4 h-4" /> See how it books guests
               </a>
             </div>
 
             {/* Punchy proof stats */}
             <div className="mt-9 grid grid-cols-3 gap-3 max-w-lg">
               {[
-                { n: "24/7", l: "Always replying" },
+                { n: "0%", l: "OTA sync commission" },
+                { n: "24/7", l: "AI concierge" },
                 { n: "<5s", l: "Avg. reply time" },
-                { n: "5 min", l: "To set up" },
               ].map((s) => (
                 <div
                   key={s.l}
@@ -373,10 +374,10 @@ function Hero() {
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-500">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-500" /> 3-day free trial
+                <Check className="w-3.5 h-3.5 text-brand-500" /> Free plan — no card
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-500" /> Cancel anytime
+                <Check className="w-3.5 h-3.5 text-brand-500" /> 10% only on bookings the bot closes
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-brand-500" /> No code needed
@@ -395,20 +396,28 @@ function Hero() {
           className="mt-16 sm:mt-20 rounded-2xl border border-ink-100 bg-white/70 backdrop-blur p-5 sm:p-6 shadow-card"
         >
           <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-ink-500 text-center">
-            Supported platform
+            Guests message you on
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
             <div className="flex items-center gap-2.5 text-ink-800">
+              <MessageCircle className="w-7 h-7 text-emerald-500" />
+              <span className="font-bold text-lg">WhatsApp</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-ink-800">
               <InstagramMark className="w-7 h-7 text-brand-500" />
               <span className="font-bold text-lg">Instagram</span>
-              <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
-                <Check className="w-3 h-3" /> Official API
-              </span>
+            </div>
+            <div className="flex items-center gap-2.5 text-ink-800">
+              <Video className="w-7 h-7 text-ink-900" />
+              <span className="font-bold text-lg">TikTok</span>
             </div>
             <div className="h-8 w-px bg-ink-100 hidden sm:block" />
-            <div className="flex items-center gap-2 text-ink-400 text-sm">
-              <Sparkles className="w-4 h-4" />
-              <span className="italic">More channels coming soon</span>
+            <div className="flex items-center gap-2 text-ink-500 text-sm">
+              <Sparkles className="w-4 h-4 text-brand-500" />
+              <span>
+                Synced with <b className="text-ink-800">Booking.com</b> &amp;{" "}
+                <b className="text-ink-800">Airbnb</b> — free, 0% commission
+              </span>
             </div>
           </div>
         </div>
@@ -423,24 +432,24 @@ const IG_SENT_GRADIENT =
 const IG_RECEIVED_BG = "#efefef";
 const IG_RECEIVED_TEXT = "#262626";
 
-/* Instagram DM conversation data */
+/* Guest booking conversation data */
 const IG_MESSAGES = [
-  { from: "them", text: 'commented "PRICE" on your reel' },
+  { from: "them", text: "hi! do you have a room free this weekend?" },
   {
     from: "me",
     text: (
       <>
-        Hey 👋 thanks for the comment! Here's the link &amp; today's 15% off
-        code: <b>BOT15</b>
+        Hi 👋 Yes! Our Deluxe Double (sea view) is free Fri–Sun — <b>$79/night</b>,
+        breakfast included.
       </>
     ),
   },
-  { from: "them", text: "do you have it in red?" },
-  { from: "me", text: "Yes 🔴 — small / medium / large all in stock. Reserve one?" },
-  { from: "them", text: "yes!" },
-  { from: "me", text: "Reserved ✅ I'll DM the checkout link in 1 min." },
-  { from: "them", text: "wow that was fast 🤯" },
-  { from: "me", text: "That's Botlify — always on, never sleeping." },
+  { from: "them", text: "can you do 2 nights for 2 adults?" },
+  { from: "me", text: "Of course — 2 nights × $79 = $158 total. Shall I book it? 🛎️" },
+  { from: "them", text: "yes please!" },
+  { from: "me", text: "Booked ✅ Confirmation #BK-2417. Need an airport pickup too?" },
+  { from: "them", text: "wow that was fast 🤯 yes!" },
+  { from: "me", text: "Pickup arranged ✈️ See you Friday — that's Botlify, 24/7." },
 ];
 
 /* Instagram DM phone mockup */
@@ -472,7 +481,7 @@ function IgChatMockup() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-ink-900 truncate leading-tight">
-                yourbrand
+                yourhotel
               </p>
               <p className="text-[11px] text-ink-400 leading-tight">Active now</p>
             </div>
@@ -488,9 +497,9 @@ function IgChatMockup() {
               <div className="w-12 h-12 rounded-full bg-white ring-1 ring-ink-100 flex items-center justify-center">
                 <BotlifyMark size={38} />
               </div>
-              <p className="text-xs font-bold text-ink-800">yourbrand</p>
+              <p className="text-xs font-bold text-ink-800">yourhotel</p>
               <p className="text-[10px] text-ink-400">
-                Instagram · Automated by Botlify
+                Concierge · Automated by Botlify
               </p>
             </div>
 
@@ -571,10 +580,10 @@ function IgChatMockup() {
         </div>
         <div>
           <p className="text-[10px] uppercase font-bold text-ink-500 tracking-wider">
-            DM conv. rate <span className="text-[8px] text-ink-300 normal-case">(demo)</span>
+            Direct bookings <span className="text-[8px] text-ink-300 normal-case">(demo)</span>
           </p>
           <p className="text-sm font-black text-ink-900">
-            34% <span className="text-[10px] font-bold text-brand-600">+3×</span>
+            +34% <span className="text-[10px] font-bold text-brand-600">this month</span>
           </p>
         </div>
       </div>
@@ -599,9 +608,9 @@ function Eyebrow({ children }) {
 function TrustBar() {
   // Capability statements (true for every user) — no unverifiable metrics.
   const stats = [
-    { value: "24/7", label: "Always-on replies" },
-    { value: "<5s", label: "Instant response" },
-    { value: "5 min", label: "To set up" },
+    { value: "0%", label: "OTA sync commission" },
+    { value: "24/7", label: "AI concierge" },
+    { value: "10%", label: "Only on bot bookings" },
     { value: "No code", label: "Point & click" },
   ];
   return (
@@ -627,84 +636,83 @@ function TrustBar() {
 /* ────────────────────────────────────────────────────────────
  * Instagram features section
  * ──────────────────────────────────────────────────────────── */
-// Mirrors the real product: the Smart Automations types + every major
-// dashboard component (AI Bot, Custom Flows, Inbox, Contacts, Broadcasts,
-// Drips, Scheduled Posts, Hashtags, Analytics, Team).
+// Mirrors the real hotel product: OTA sync, AI concierge, bookings,
+// transfers, inbox, broadcasts, analytics, team.
 const IG_FEATURES = [
   {
-    icon: Bot,
-    title: "AI Bot",
-    desc: "An AI trained on your business answers DMs, comments & stories 24/7.",
-  },
-  {
     icon: Zap,
-    title: "Smart Automations",
-    desc: "Comment-to-DM, keyword replies, story triggers, welcome messages.",
+    title: "OTA sync — free, 0% commission",
+    desc: "Booking.com & Airbnb rooms, rates and availability, always in sync.",
   },
   {
-    icon: Workflow,
-    title: "Custom Flows",
-    desc: "Drag-and-drop, multi-step conversation builder — no code.",
+    icon: Bot,
+    title: "AI concierge",
+    desc: "Answers guests on WhatsApp, Instagram & TikTok in your hotel's voice, 24/7.",
   },
   {
-    icon: MessageCircle,
-    title: "Comment → DM",
-    desc: "Auto-DM anyone who comments your keyword on a post or reel.",
-  },
-  {
-    icon: Reply,
-    title: "DM keyword replies",
-    desc: "Instant answers for 'price', 'sizes', 'shipping' and more.",
-  },
-  {
-    icon: Heart,
-    title: "Story replies & mentions",
-    desc: "Auto-respond when someone replies to or mentions your story.",
+    icon: CalendarClock,
+    title: "Books rooms itself",
+    desc: "Checks live availability, quotes prices, and confirms the reservation.",
   },
   {
     icon: Send,
-    title: "Welcome & default replies",
-    desc: "Greet first-time DMs and never leave a message unanswered.",
+    title: "Direct bookings",
+    desc: "Guests book in chat — no OTA fees. We take 10% only when the bot closes it.",
+  },
+  {
+    icon: Rocket,
+    title: "Airport transfers",
+    desc: "The AI arranges pickups & drop-offs — your car or a vetted partner.",
   },
   {
     icon: Inbox,
-    title: "Shared Inbox",
-    desc: "One place for every conversation — take over from the bot anytime.",
+    title: "Unified inbox",
+    desc: "Every channel in one place — take over from the AI anytime.",
   },
   {
-    icon: Users,
-    title: "Contacts & tagging",
-    desc: "Auto-saved audience you can segment with tags and notes.",
+    icon: MessageCircle,
+    title: "Instant answers",
+    desc: "Check-in times, breakfast, parking, directions — answered in seconds.",
+  },
+  {
+    icon: Heart,
+    title: "Guest profiles",
+    desc: "Every guest saved automatically with their stays and preferences.",
   },
   {
     icon: Megaphone,
     title: "Broadcasts",
-    desc: "Send a promo or update to a whole segment in one click.",
+    desc: "Fill low-season gaps with offers to past guests in one click.",
   },
   {
     icon: Droplet,
-    title: "Drip campaigns",
-    desc: "Automated DM sequences that nurture leads over days.",
+    title: "Pre-arrival messages",
+    desc: "Automatic confirmations, directions and upsells before check-in.",
   },
   {
-    icon: CalendarClock,
-    title: "Scheduled posts",
-    desc: "Plan and auto-publish your Instagram content.",
+    icon: Workflow,
+    title: "Availability calendar",
+    desc: "A 30-day view per room type — see free and full nights at a glance.",
+  },
+  {
+    icon: Reply,
+    title: "Booking management",
+    desc: "Confirm, complete or cancel any reservation from one dashboard.",
   },
   {
     icon: Hash,
-    title: "Hashtag research",
-    desc: "AI-picked hashtags grouped by reach to grow your posts.",
+    title: "Multi-property",
+    desc: "Run several properties from a single Botlify workspace.",
   },
   {
     icon: BarChart3,
     title: "Analytics",
-    desc: "Track replies, reply rate and engagement in real time.",
+    desc: "Bookings, revenue and channel mix — tracked in real time.",
   },
   {
     icon: Users2,
     title: "Team & permissions",
-    desc: "Invite teammates with granular, per-area access.",
+    desc: "Front desk, managers, owners — each with the right access.",
   },
 ];
 
@@ -715,11 +723,12 @@ function Features() {
         <div className="text-center max-w-3xl mx-auto">
           <Eyebrow>Everything in one platform</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            Every Instagram touchpoint,{" "}
-            <span className="text-brand-500">automated.</span>
+            Every guest conversation,{" "}
+            <span className="text-brand-500">handled.</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-ink-600">
-            Comments, DMs, stories, broadcasts — Botlify handles every interaction so you never miss a lead.
+            OTA sync, AI concierge, direct bookings, transfers — Botlify runs
+            your front desk so you never miss a guest.
           </p>
         </div>
 
@@ -748,7 +757,7 @@ function Features() {
             to="/register"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition shadow-glow"
           >
-            <Rocket className="w-4 h-4" /> Get started free
+            <Rocket className="w-4 h-4" /> Start free
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -786,7 +795,8 @@ function Results() {
             Numbers that matter, in real time.
           </h2>
           <p className="mt-4 text-base sm:text-lg text-ink-600">
-            Track every reply, click and sale from your Instagram — without opening five tabs.
+            Every booking, every channel, every guest — tracked in one
+            dashboard, not five OTA extranets.
           </p>
           <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400 bg-ink-50 border border-ink-100 rounded-full px-3 py-1">
             <Info className="w-3 h-3" /> Example dashboard · illustrative data
@@ -799,7 +809,7 @@ function Results() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500 flex items-center gap-1.5">
-                  Replies this week
+                  Guest messages answered this week
                   <span className="text-[9px] text-ink-400 bg-ink-100 rounded px-1.5 py-0.5 normal-case tracking-normal">Example</span>
                 </p>
                 <p className="text-2xl font-black text-ink-950 mt-1">
@@ -809,11 +819,11 @@ function Results() {
               <div className="flex items-center gap-3 text-[11px] text-ink-500">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-brand-500" />
-                  Auto-replies
+                  AI concierge
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-ink-300" />
-                  Manual
+                  Front desk
                 </span>
               </div>
             </div>
@@ -845,7 +855,7 @@ function Results() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[11px] uppercase font-bold tracking-wider text-ink-500 flex items-center gap-1.5">
-                  Conversion rate (before vs. after Botlify)
+                  Direct bookings (before vs. after Botlify)
                   <span className="text-[9px] text-ink-400 bg-ink-100 rounded px-1.5 py-0.5 normal-case tracking-normal">Example</span>
                 </p>
                 <p className="text-2xl font-black text-ink-950 mt-1">
@@ -884,20 +894,20 @@ function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Connect Instagram",
-      desc: "Link your Instagram business account securely in under a minute.",
-      icon: Instagram,
-    },
-    {
-      n: "02",
-      title: "Build automations",
-      desc: "AI chatbot, comment → DM, broadcasts — drag, drop, done.",
+      title: "Sync your OTAs",
+      desc: "Import your property from Booking.com or Airbnb — or set up rooms manually in minutes.",
       icon: Workflow,
     },
     {
+      n: "02",
+      title: "Connect your channels",
+      desc: "WhatsApp, Instagram and TikTok — the AI learns your hotel automatically.",
+      icon: Instagram,
+    },
+    {
       n: "03",
-      title: "Go live & grow",
-      desc: "Botlify replies 24/7. You watch the leads (and money) roll in.",
+      title: "The AI books guests",
+      desc: "It answers 24/7, quotes rooms, confirms bookings and arranges airport pickups.",
       icon: Rocket,
     },
   ];
@@ -916,7 +926,8 @@ function HowItWorks() {
             </span>
           </h2>
           <p className="mt-4 text-ink-600">
-            No code, no complicated setup. You can be live before your coffee gets cold.
+            No code, no channel manager headaches. Your AI receptionist is live
+            before checkout time.
           </p>
         </div>
 
@@ -1003,19 +1014,20 @@ function MockSidebar({ active = "AI Bot" }) {
   const groups = [
     { title: null, items: [["Dashboard", LayoutDashboard]] },
     {
-      title: "Automation",
+      title: "Hotel",
       items: [
-        ["AI Bot", Bot],
-        ["Smart Automations", Zap],
-        ["Custom Flows", Workflow],
+        ["Bookings", CalendarClock],
+        ["Property & Rooms", LayoutDashboard],
+        ["Transfers", Send],
+        ["Channels", Zap],
       ],
     },
     {
       title: "Management",
       items: [
+        ["AI Bot", Bot],
         ["Inbox", Inbox],
         ["Contacts", Users],
-        ["Broadcasts", Send],
         ["Analytics", BarChart3],
       ],
     },
@@ -1027,7 +1039,7 @@ function MockSidebar({ active = "AI Bot" }) {
         <div className="leading-none">
           <div className="text-white font-black text-[13px]">Botlify</div>
           <div className="text-[7px] uppercase tracking-wider text-white/40">
-            Instagram Automation
+            AI Hotel Booking
           </div>
         </div>
       </div>
@@ -1093,8 +1105,8 @@ function ProductShowcase() {
             </span>
           </h2>
           <p className="mt-4 text-white/60">
-            Everything in one clean place — teach your AI, automate replies, and
-            watch the conversations roll in.
+            Everything in one clean place — rooms, rates, bookings and an AI
+            concierge that never sleeps.
           </p>
         </div>
 
@@ -1142,7 +1154,7 @@ function MockAiBot() {
             </span>
           </div>
           <div className="text-[10px] text-white/60">
-            Answers DMs, comments & stories 24/7 — in your voice.
+            Answers guests & books rooms 24/7 — in your hotel's voice.
           </div>
         </div>
         <div className="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-emerald-300">
@@ -1163,12 +1175,12 @@ function MockAiBot() {
         </div>
         <div className="space-y-1.5">
           <div className="rounded-lg border border-ink-200 px-2.5 py-1.5 text-[10px] text-ink-600">
-            <b className="text-ink-800">AI Role:</b> You are the assistant for
-            Glow Skincare, a Karachi shop…
+            <b className="text-ink-800">AI Role:</b> You are the concierge for
+            Seaview Hotel, a beachfront stay…
           </div>
           <div className="rounded-lg border border-rose-200 px-2.5 py-1.5 text-[10px] text-ink-600">
-            <b className="text-rose-600">Guardrails:</b> never quote a price you
-            weren't given; hand off complaints…
+            <b className="text-rose-600">Guardrails:</b> never overbook; confirm
+            dates before booking; hand off complaints…
           </div>
         </div>
       </div>
@@ -1180,14 +1192,14 @@ function MockAiBot() {
         <div className="p-2.5 space-y-1.5 bg-ink-50/40">
           <div className="flex justify-end">
             <span className="bg-brand-500 text-white text-[10px] rounded-lg rounded-br-sm px-2.5 py-1.5">
-              How much is your serum?
+              Do you have a double room for Friday?
             </span>
           </div>
           <div className="flex justify-start">
             <span className="bg-white border border-ink-100 text-ink-800 text-[10px] rounded-lg rounded-bl-sm px-2.5 py-1.5">
-              Our Glow Serum is $25 😊 Want the link?
+              Yes! Deluxe Double, $79/night 😊 Book it?
               <span className="block mt-1 text-[8px] font-bold uppercase text-brand-500">
-                intent: pricing · #interested
+                intent: booking · 2 units free
               </span>
             </span>
           </div>
@@ -1199,9 +1211,9 @@ function MockAiBot() {
 
 function MockInbox() {
   const chats = [
-    ["ayesha.k", "Do you deliver to Lahore?", true],
-    ["fitwithsam", "Loved the reel 🔥 price?", false],
-    ["glow.store", "COD available?", false],
+    ["sara.travels", "Is breakfast included?", true],
+    ["mike_backpacks", "Room for 2 this weekend?", false],
+    ["famtrip.pk", "Do you do airport pickup?", false],
   ];
   return (
     <div className="flex h-full text-left">
@@ -1223,12 +1235,12 @@ function MockInbox() {
         <div className="p-2.5 space-y-1.5 flex-1">
           <div className="flex justify-start">
             <span className="bg-white border border-ink-100 text-[10px] rounded-lg px-2.5 py-1.5">
-              Do you deliver to Lahore?
+              Is breakfast included?
             </span>
           </div>
           <div className="flex justify-end">
             <span className="bg-brand-500 text-white text-[10px] rounded-lg px-2.5 py-1.5">
-              Yes! 3–5 days, $2 shipping 🚚
+              Yes! Free breakfast 7–10am 🥐
               <span className="block text-[7px] opacity-70">
                 ⚡ AI replied
               </span>
@@ -1247,8 +1259,8 @@ function MockAnalytics() {
       <div className="text-xs font-black text-ink-900 mb-2">Analytics</div>
       <div className="grid grid-cols-3 gap-2 mb-3">
         {[
-          ["DMs handled", "1,204"],
-          ["AI reply rate", "92%"],
+          ["Bookings", "128"],
+          ["AI-closed", "84%"],
           ["Avg. reply", "4s"],
         ].map(([l, v]) => (
           <div key={l} className="rounded-lg border border-ink-100 p-2">
@@ -1275,14 +1287,14 @@ function MockAnalytics() {
 // Smart Automations mock — trigger cards.
 function MockAutomations() {
   const rows = [
-    ["Comment → DM", "Keyword: PRICE", MessageCircle, true],
-    ["Welcome DM", "First-time messagers", Sparkles, true],
-    ["Story reply", "Auto-reply to mentions", Heart, false],
+    ["Booking.com sync", "Rooms & rates · live", MessageCircle, true],
+    ["Airbnb sync", "Availability · two-way", Sparkles, true],
+    ["Airport transfers", "Own car + partner", Heart, true],
   ];
   return (
     <div className="p-3 text-left h-full">
       <div className="text-xs font-black text-ink-900 mb-2">
-        Smart Automations
+        OTA sync & add-ons
       </div>
       <div className="space-y-2">
         {rows.map(([t, s, Icon, on], i) => (
@@ -1318,18 +1330,18 @@ function MockBroadcasts() {
       <div className="text-xs font-black text-ink-900 mb-2">Broadcast</div>
       <div className="rounded-lg border border-ink-100 p-2.5 flex-1">
         <div className="text-[9px] text-ink-400 uppercase font-bold mb-1">
-          To: taggedContacts · 842 people
+          To: pastGuests · 842 people
         </div>
         <div className="rounded-md bg-ink-50 p-2 text-[10px] text-ink-700 leading-snug">
-          Hey {"{name}"}! 🎉 New drop is live — 20% off this weekend only. Tap to
-          shop 👇
+          Hey {"{name}"}! 🌊 Low-season special — 25% off sea-view rooms this
+          month. Reply to book 👇
         </div>
         <div className="mt-2 flex items-center gap-1.5">
           <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-brand-100 text-brand-600">
-            #vip
+            #repeat-guest
           </span>
           <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-ink-100 text-ink-500">
-            #interested
+            #summer-2026
           </span>
         </div>
       </div>
@@ -1347,50 +1359,50 @@ function WhatWeProvide() {
   const features = [
     {
       icon: Bot,
-      tag: "AI Bot",
-      title: "An AI that talks like you — 24/7",
-      desc: "Teach it once with your persona, guardrails, FAQs and catalog. It reads DMs, comments and stories and replies instantly, in your voice — and hands off to you when it matters.",
-      points: ["Auto-draft from your Instagram", "Reads photos & PDFs", "Captures leads automatically"],
+      tag: "AI Concierge",
+      title: "A receptionist that never sleeps",
+      desc: "It knows your rooms, rates and policies. Guests message on WhatsApp, Instagram or TikTok and it answers instantly, quotes prices, checks availability and books the room — handing off to you when it matters.",
+      points: ["Books rooms 24/7", "Knows your hotel by heart", "Human takeover anytime"],
       Mock: MockAiBot,
       url: "botlify.site/dashboard/ai-bot",
       nav: "AI Bot",
     },
     {
       icon: Zap,
-      tag: "Smart Automations",
-      title: "Turn comments into conversations",
-      desc: "Comment-to-DM, welcome messages, story-reply triggers and keyword rules — set up in a couple of clicks, no code. Every automation is one toggle away.",
-      points: ["Comment → DM keywords", "Welcome & away replies", "Story mentions & replies"],
+      tag: "OTA Sync",
+      title: "Booking.com & Airbnb, in sync — free",
+      desc: "Import your property in one click. Rooms, rates and availability stay synced both ways, with 0% commission from us on OTA bookings. Airport transfers come built in.",
+      points: ["Free two-way sync, 0% commission", "No double bookings", "Airport pickups & drop-offs"],
       Mock: MockAutomations,
-      url: "botlify.site/dashboard/automation",
-      nav: "Smart Automations",
+      url: "botlify.site/dashboard/property",
+      nav: "Property & Rooms",
     },
     {
       icon: Inbox,
-      tag: "Shared Inbox",
-      title: "Your whole team, one inbox",
-      desc: "See every conversation in real time, jump in whenever you want, and let the bot handle the rest. AI-handled messages are clearly marked so nothing slips.",
-      points: ["Live conversations", "Human takeover anytime", "Contacts & tags built in"],
+      tag: "Unified Inbox",
+      title: "Every channel, one inbox",
+      desc: "WhatsApp, Instagram and TikTok conversations side by side, in real time. AI-handled messages are clearly marked, and your front desk can jump in whenever they want.",
+      points: ["Live conversations", "Human takeover anytime", "Guest profiles built in"],
       Mock: MockInbox,
       url: "botlify.site/dashboard/inbox",
       nav: "Inbox",
     },
     {
       icon: Megaphone,
-      tag: "Broadcasts & Drips",
-      title: "Reach everyone, personally",
-      desc: "Broadcast to segments by tag, or nurture leads with multi-step drip campaigns — right inside Instagram, with personalised {name} fields.",
-      points: ["Target by tags", "Drip sequences", "Scheduled posts"],
+      tag: "Broadcasts",
+      title: "Fill your low season",
+      desc: "Message past guests with offers and pre-arrival upsells — personalised {name} fields, targeted by tags, sent in one click.",
+      points: ["Target past guests by tag", "Pre-arrival messages", "Personalised offers"],
       Mock: MockBroadcasts,
       url: "botlify.site/dashboard/broadcasts",
-      nav: "Broadcasts",
+      nav: "Inbox",
     },
     {
       icon: BarChart3,
       tag: "Analytics",
       title: "See what's actually working",
-      desc: "DM volume, AI reply rate, response time and audience growth — a clean dashboard that tells you exactly how your automations are performing.",
-      points: ["DMs handled", "AI reply rate", "Peak hours & growth"],
+      desc: "Bookings by channel, AI-closed revenue, reply times and occupancy trends — a clean dashboard that shows exactly how your AI receptionist is performing.",
+      points: ["Bookings & revenue", "Channel breakdown", "AI reply rate"],
       Mock: MockAnalytics,
       url: "botlify.site/dashboard/analytics",
       nav: "Analytics",
@@ -1403,7 +1415,7 @@ function WhatWeProvide() {
         <div className="text-center max-w-2xl mx-auto mb-14">
           <Eyebrow>What we provide</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            Everything you need to run Instagram{" "}
+            Everything you need to run your hotel{" "}
             <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
               on autopilot.
             </span>
@@ -1486,21 +1498,21 @@ function Testimonials() {
   const items = [
     {
       icon: Bot,
-      role: "Creators & influencers",
+      role: "Boutique hotels",
       quote:
-        "Getting more DMs than you can answer? Botlify replies to every one instantly, in your voice — so no fan or follower is left on read.",
+        "Guests message at midnight asking about rooms. Botlify answers instantly, quotes the rate and books them — before they message the hotel next door.",
     },
     {
       icon: Megaphone,
-      role: "Businesses & stores",
+      role: "Guesthouses & B&Bs",
       quote:
-        "Answer product questions, share prices and links, and turn comments into conversations — automatically, around the clock.",
+        "No front desk? No problem. The AI is your receptionist — it answers questions, takes bookings and arranges airport pickups around the clock.",
     },
     {
       icon: Users,
-      role: "Agencies & teams",
+      role: "Hotel groups",
       quote:
-        "Manage every conversation from a shared inbox with granular team permissions and analytics across accounts.",
+        "Run every property from one dashboard — synced with your OTAs, with team permissions and booking analytics across locations.",
     },
   ];
   return (
@@ -1509,11 +1521,11 @@ function Testimonials() {
         <div className="text-center max-w-2xl mx-auto">
           <Eyebrow>Who it's for</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            Built for anyone who can't reply to everyone.
+            Built for every kind of stay.
           </h2>
           <p className="mt-3 text-ink-600 text-base sm:text-lg">
-            If your Instagram gets more DMs and comments than you can keep up
-            with, Botlify handles them for you — 24/7.
+            If guests message you more than you can answer — Botlify answers and
+            books them for you, 24/7.
           </p>
         </div>
         <div className="mt-12 grid md:grid-cols-3 gap-5">
@@ -1542,35 +1554,35 @@ function PricingTeaser() {
   const isYearly = cycle === "yearly";
   const tiers = [
     {
-      name: "Basic",
-      usd: 9,
-      desc: "For solo creators & small brands.",
+      name: "Launch (Free)",
+      usd: 0,
+      desc: "Get synced and take bookings — free.",
       features: [
-        "1 Instagram account",
-        "1,000 conversations/month",
-        "Comment → DM, story replies",
-        "AI smart replies (200/day)",
-        "Basic analytics",
-        "3-day free trial",
+        "Booking.com & Airbnb sync — 0% commission",
+        "1 property, unlimited rooms",
+        "Bookings dashboard & calendar",
+        "Manual & direct bookings",
+        "AI concierge on WhatsApp",
+        "10% only on bookings the bot closes",
       ],
-      cta: "Start Basic",
+      cta: "Start free",
       highlight: false,
     },
     {
-      name: "Pro",
-      usd: 19,
-      desc: "For growing brands that never sleep.",
+      name: "Botlify for Hotels",
+      usd: 49,
+      desc: "The full AI receptionist for your hotel.",
       features: [
-        "Unlimited conversations",
-        "Unlimited contacts",
-        "Premium AI · context-aware",
-        "Broadcasts + drip campaigns",
-        "Advanced analytics",
-        "Team inbox (3 seats)",
-        "Remove Botlify branding",
+        "Everything in Launch",
+        "AI concierge on WhatsApp, Instagram & TikTok",
+        "Books rooms & answers guests 24/7",
+        "Airport transfers for your guests",
+        "Unified inbox across channels",
+        "Broadcasts & pre-arrival messages",
+        "Team access & priority support",
         "3-day free trial",
       ],
-      cta: "Start Pro",
+      cta: "Start 3-day trial",
       highlight: true,
     },
   ];
@@ -1580,10 +1592,11 @@ function PricingTeaser() {
         <div className="text-center max-w-2xl mx-auto">
           <Eyebrow>Simple pricing</Eyebrow>
           <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-ink-950">
-            One price. All of Instagram.
+            Start free. Pay when the AI earns it.
           </h2>
           <p className="mt-3 text-ink-600">
-            No per-message fees. No hidden charges. Cancel anytime.
+            OTA sync is free with 0% commission — we take 10% only on bookings
+            the bot closes. Cancel anytime.
           </p>
         </div>
 
@@ -1640,7 +1653,7 @@ function PricingTeaser() {
                   <span className={`text-sm ${t.highlight ? "text-white/60" : "text-ink-500"}`}>{sub}</span>
                 </div>
                 <p className={`mt-1 text-sm ${t.highlight ? "text-white/70" : "text-ink-500"}`}>
-                  {isYearly ? "Billed yearly — 2 months free" : t.desc}
+                  {isYearly && t.usd ? "Billed yearly — 2 months free" : t.desc}
                 </p>
                 <ul className="mt-5 space-y-2.5">
                   {t.features.map((f, k) => (
@@ -1665,7 +1678,8 @@ function PricingTeaser() {
           })}
         </div>
         <p className="mt-6 text-center text-xs text-ink-500">
-          Both plans include a 3-day free trial · Cancel anytime before it ends
+          Free plan needs no card · Pro includes a 3-day free trial · Cancel
+          anytime
         </p>
       </div>
     </section>
@@ -1678,31 +1692,31 @@ function PricingTeaser() {
 const FAQS = [
   {
     q: "What exactly does Botlify do?",
-    a: "Botlify automates your Instagram DMs and comments. It auto-replies to messages, turns comments into DMs, responds to story replies and mentions, runs broadcasts and drip campaigns, schedules posts, and uses an AI bot trained on your business to answer questions 24/7 — all from one dashboard.",
+    a: "Botlify is an AI receptionist for hotels. It syncs your rooms and availability with Booking.com and Airbnb, answers guests on WhatsApp, Instagram and TikTok, quotes prices, books rooms, and even arranges airport transfers — all from one dashboard, 24/7.",
   },
   {
-    q: "How does the free trial and billing work?",
-    a: "Both plans start with a 3-day free trial. You add a card when you start the trial, and you're only charged when the 3 days end — cancel anytime before then and you pay nothing. After that it renews automatically each cycle until you cancel.",
+    q: "How much does the OTA sync cost?",
+    a: "Nothing. Syncing your Booking.com and Airbnb rooms, rates and availability is free on every plan, and we take 0% commission on bookings that come through your OTAs.",
   },
   {
-    q: "Is it safe for my Instagram account?",
-    a: "Yes. Botlify connects through an approved Instagram messaging provider and only sends replies within Instagram's allowed rules (including its 24-hour messaging window). You connect once by authorizing access — no password sharing.",
+    q: "When do you take a commission?",
+    a: "Only when our AI closes a booking for you in chat — then we take 10% of that booking. Bookings from your OTAs, walk-ins, and manual bookings are always commission-free.",
   },
   {
-    q: "Do I need a Business or Creator account?",
-    a: "Yes. Instagram only allows messaging automation on Business or Creator accounts. Switching is free and takes a minute in the Instagram app.",
+    q: "How does the free plan and the trial work?",
+    a: "The Launch plan is free forever, no card required — OTA sync, the bookings dashboard, and the AI concierge on WhatsApp. Botlify for Hotels ($49/mo) adds Instagram & TikTok, transfers and the full toolkit, with a 3-day free trial before you're charged.",
+  },
+  {
+    q: "Will it double-book my rooms?",
+    a: "No. Availability is synced two-way with your OTAs, and the AI checks live availability before it confirms any reservation.",
+  },
+  {
+    q: "How do airport transfers work?",
+    a: "If you run your own pickup service, the AI offers it at your price. If you don't (or your car is busy), it can book a vetted partner ride for your guest instead.",
   },
   {
     q: "How long does setup take?",
-    a: "About 5 minutes. Connect Instagram, turn on an automation or two, add your business info so the AI sounds like you, and you're live.",
-  },
-  {
-    q: "Do I need any technical or coding skills?",
-    a: "No. Everything is point-and-click — automations, the visual flow builder, and the AI bot all work without code.",
-  },
-  {
-    q: "Can I add my team?",
-    a: "Yes, on the Pro plan. Invite teammates and give each one access only to the areas you choose — inbox, contacts, automations, and more.",
+    a: "About 10 minutes. Import your property from Booking.com or Airbnb (or add rooms manually), connect WhatsApp, and your AI receptionist is live.",
   },
   {
     q: "Can I cancel anytime?",
@@ -1763,10 +1777,11 @@ function FinalCTA() {
               <BotlifyMark size={104} />
             </div>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white max-w-3xl mx-auto">
-              Stop replying. Start automating.
+              Your next guest is already messaging.
             </h2>
             <p className="mt-4 text-white/70 text-base sm:text-lg max-w-xl mx-auto">
-              Connect Instagram. Build your first automation. Watch DMs turn into customers — on autopilot.
+              Sync your OTAs, connect WhatsApp, and let the AI answer, book and
+              upsell — while you run the hotel.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
@@ -1800,8 +1815,8 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo size="md" dark />
             <p className="mt-3 text-sm max-w-xs">
-              The Instagram automation platform for creators and brands. Reply to
-              every DM, comment and story — automatically, 24/7.
+              The AI receptionist for hotels. Bookings from WhatsApp, Instagram
+              &amp; TikTok — synced with Booking.com and Airbnb, 24/7.
             </p>
             <div className="mt-4 flex items-center gap-3 text-ink-500">
               <InstagramMark className="w-5 h-5" />
@@ -1811,6 +1826,7 @@ function Footer() {
             <p className="text-white text-sm font-bold mb-3">Product</p>
             <ul className="space-y-2 text-sm">
               <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
+              <li><Link to="/consultants" className="hover:text-white">Consultant Program</Link></li>
               <li><Link to="/guide" className="hover:text-white">Guide</Link></li>
               <li><a href="#features" className="hover:text-white">Features</a></li>
             </ul>

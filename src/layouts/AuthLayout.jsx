@@ -4,10 +4,10 @@ import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
 
 const POINTS = [
-  "AI chatbot that handles every DM",
-  "Comment-to-DM, story replies & mentions",
-  "Broadcasts, drips, scheduled posts",
-  "Live in under 6 minutes — no code",
+  "AI concierge answers guests & books rooms 24/7",
+  "WhatsApp, Instagram & TikTok in one inbox",
+  "Booking.com & Airbnb sync — 0% commission",
+  "Airport transfers for your guests",
 ];
 
 export default function AuthLayout() {
@@ -40,11 +40,11 @@ export default function AuthLayout() {
         {/* copy */}
         <div className="relative mt-9 max-w-sm">
           <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-semibold text-brand-200">
-            <Sparkles className="w-3 h-3" /> All-in-one Instagram automation
+            <Sparkles className="w-3 h-3" /> AI booking for hotels
           </span>
           <h1 className="mt-5 text-3xl xl:text-4xl font-black tracking-tighter leading-[1.08]">
-            One platform.{" "}
-            <span className="text-brand-500">Every DM, handled.</span>
+            Your hotel's{" "}
+            <span className="text-brand-500">AI receptionist.</span>
           </h1>
           <ul className="mt-7 space-y-3 text-left inline-block mx-auto">
             {POINTS.map((p) => (
