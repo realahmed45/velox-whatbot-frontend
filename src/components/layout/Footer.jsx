@@ -16,8 +16,8 @@ export default function Footer() {
           <div className="space-y-4">
             <Logo size="sm" dark />
             <p className="text-sm text-ink-500 leading-relaxed">
-              The AI receptionist for hotels. Bookings from WhatsApp, Instagram
-              &amp; TikTok — synced with Booking.com and Airbnb.
+              The AI receptionist for hotels. Bookings from WhatsApp &amp;
+              Instagram — synced with Booking.com and Airbnb.
             </p>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">

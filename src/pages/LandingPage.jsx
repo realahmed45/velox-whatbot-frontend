@@ -330,7 +330,7 @@ function Hero() {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
-              Bookings from WhatsApp, Instagram &amp; TikTok — synced with
+              Bookings from WhatsApp &amp; Instagram — synced with
               Booking.com and Airbnb. The AI answers every guest, quotes rooms
               and books them instantly, 24/7.
             </p>
@@ -406,10 +406,6 @@ function Hero() {
             <div className="flex items-center gap-2.5 text-ink-800">
               <InstagramMark className="w-7 h-7 text-brand-500" />
               <span className="font-bold text-lg">Instagram</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-ink-800">
-              <Video className="w-7 h-7 text-ink-900" />
-              <span className="font-bold text-lg">TikTok</span>
             </div>
             <div className="h-8 w-px bg-ink-100 hidden sm:block" />
             <div className="flex items-center gap-2 text-ink-500 text-sm">
@@ -647,7 +643,7 @@ const IG_FEATURES = [
   {
     icon: Bot,
     title: "AI concierge",
-    desc: "Answers guests on WhatsApp, Instagram & TikTok in your hotel's voice, 24/7.",
+    desc: "Answers guests on WhatsApp & Instagram in your hotel's voice, 24/7.",
   },
   {
     icon: CalendarClock,
@@ -901,7 +897,7 @@ function HowItWorks() {
     {
       n: "02",
       title: "Connect your channels",
-      desc: "WhatsApp, Instagram and TikTok — the AI learns your hotel automatically.",
+      desc: "WhatsApp and Instagram — the AI learns your hotel automatically.",
       icon: Instagram,
     },
     {
@@ -1361,7 +1357,7 @@ function WhatWeProvide() {
       icon: Bot,
       tag: "AI Concierge",
       title: "A receptionist that never sleeps",
-      desc: "It knows your rooms, rates and policies. Guests message on WhatsApp, Instagram or TikTok and it answers instantly, quotes prices, checks availability and books the room — handing off to you when it matters.",
+      desc: "It knows your rooms, rates and policies. Guests message on WhatsApp or Instagram and it answers instantly, quotes prices, checks availability and books the room — handing off to you when it matters.",
       points: ["Books rooms 24/7", "Knows your hotel by heart", "Human takeover anytime"],
       Mock: MockAiBot,
       url: "botlify.site/dashboard/ai-bot",
@@ -1381,7 +1377,7 @@ function WhatWeProvide() {
       icon: Inbox,
       tag: "Unified Inbox",
       title: "Every channel, one inbox",
-      desc: "WhatsApp, Instagram and TikTok conversations side by side, in real time. AI-handled messages are clearly marked, and your front desk can jump in whenever they want.",
+      desc: "WhatsApp and Instagram conversations side by side, in real time. AI-handled messages are clearly marked, and your front desk can jump in whenever they want.",
       points: ["Live conversations", "Human takeover anytime", "Guest profiles built in"],
       Mock: MockInbox,
       url: "botlify.site/dashboard/inbox",
@@ -1574,7 +1570,7 @@ function PricingTeaser() {
       desc: "The full AI receptionist for your hotel.",
       features: [
         "Everything in Launch",
-        "AI concierge on WhatsApp, Instagram & TikTok",
+        "AI concierge on WhatsApp & Instagram",
         "Books rooms & answers guests 24/7",
         "Airport transfers for your guests",
         "Unified inbox across channels",
@@ -1692,7 +1688,7 @@ function PricingTeaser() {
 const FAQS = [
   {
     q: "What exactly does Botlify do?",
-    a: "Botlify is an AI receptionist for hotels. It syncs your rooms and availability with Booking.com and Airbnb, answers guests on WhatsApp, Instagram and TikTok, quotes prices, books rooms, and even arranges airport transfers — all from one dashboard, 24/7.",
+    a: "Botlify is an AI receptionist for hotels. It syncs your rooms and availability with Booking.com and Airbnb, answers guests on WhatsApp and Instagram, quotes prices, books rooms, and even arranges airport transfers — all from one dashboard, 24/7.",
   },
   {
     q: "How much does the OTA sync cost?",
@@ -1704,7 +1700,7 @@ const FAQS = [
   },
   {
     q: "How does the free plan and the trial work?",
-    a: "The Launch plan is free forever, no card required — OTA sync, the bookings dashboard, and the AI concierge on WhatsApp. Botlify for Hotels ($49/mo) adds Instagram & TikTok, transfers and the full toolkit, with a 3-day free trial before you're charged.",
+    a: "The Launch plan is free forever, no card required — OTA sync, the bookings dashboard, and the AI concierge on WhatsApp. Botlify for Hotels ($49/mo) adds Instagram, transfers and the full toolkit, with a 3-day free trial before you're charged.",
   },
   {
     q: "Will it double-book my rooms?",
@@ -1815,8 +1811,8 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo size="md" dark />
             <p className="mt-3 text-sm max-w-xs">
-              The AI receptionist for hotels. Bookings from WhatsApp, Instagram
-              &amp; TikTok — synced with Booking.com and Airbnb, 24/7.
+              The AI receptionist for hotels. Bookings from WhatsApp &amp;
+              Instagram — synced with Booking.com and Airbnb, 24/7.
             </p>
             <div className="mt-4 flex items-center gap-3 text-ink-500">
               <InstagramMark className="w-5 h-5" />

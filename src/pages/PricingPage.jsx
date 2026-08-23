@@ -48,7 +48,7 @@ const FALLBACK_PLANS = [
     recommended: true,
     highlights: [
       "Everything in Launch",
-      "AI concierge on WhatsApp, Instagram & TikTok",
+      "AI concierge on WhatsApp & Instagram",
       "Books rooms, quotes prices & answers guests 24/7",
       "Airport transfers for your guests",
       "Unified inbox across every channel",

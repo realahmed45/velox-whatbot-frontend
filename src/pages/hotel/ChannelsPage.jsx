@@ -1,7 +1,7 @@
 /**
  * Channels — connect the messaging channels your AI concierge answers on:
- * WhatsApp, Instagram and TikTok. WhatsApp/TikTok use the /channels connect
- * flow; Instagram keeps its existing OAuth connect flow.
+ * WhatsApp and Instagram. WhatsApp uses the /channels connect flow;
+ * Instagram keeps its existing OAuth connect flow.
  */
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,16 +31,6 @@ function InstagramMark({ className = "w-6 h-6" }) {
     </svg>
   );
 }
-function TikTokMark({ className = "w-6 h-6" }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64a2.9 2.9 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"
-      />
-    </svg>
-  );
-}
 
 const CHANNELS = [
   {
@@ -58,14 +48,6 @@ const CHANNELS = [
     tint: "bg-purple-50 text-purple-600",
     ring: "hover:border-purple-300",
     desc: "Turn profile visitors into guests — the AI replies to DMs, story replies and comments.",
-  },
-  {
-    key: "tiktok",
-    name: "TikTok",
-    Mark: TikTokMark,
-    tint: "bg-ink-900 text-white",
-    ring: "hover:border-ink-400",
-    desc: "Your viral videos bring viewers; the AI turns their messages into bookings.",
   },
 ];
 
@@ -154,7 +136,7 @@ export default function ChannelsPage() {
           <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           {CHANNELS.map((ch) => {
             const st = statusMap[ch.key] || {};
             const connected = st.status === "connected";

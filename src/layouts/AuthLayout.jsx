@@ -5,7 +5,7 @@ import BotlifyMark from "@/components/BotlifyMark";
 
 const POINTS = [
   "AI concierge answers guests & books rooms 24/7",
-  "WhatsApp, Instagram & TikTok in one inbox",
+  "WhatsApp & Instagram in one inbox",
   "Booking.com & Airbnb sync — 0% commission",
   "Airport transfers for your guests",
 ];

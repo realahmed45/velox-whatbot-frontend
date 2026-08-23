@@ -141,8 +141,8 @@ export default function OnboardingPricingPage() {
           </h1>
           <p className="mt-3 text-ink-600 max-w-lg mx-auto text-[15px]">
             OTA sync is free with 0% commission on every plan. The Pro plan adds
-            the full AI concierge on WhatsApp, Instagram &amp; TikTok — with a
-            3-day free trial.
+            the full AI concierge on WhatsApp &amp; Instagram — with a 3-day
+            free trial.
           </p>
         </div>
 
