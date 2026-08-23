@@ -3,7 +3,7 @@
  *
  * Brand: #FF6B2C accent on a #111827 surface, #1F2937 cards.
  * Design language: Linear / Stripe / Vercel / Notion / Intercom.
- * - Sectioned nav (Automation / Management / Grow / Settings)
+ * - Five destinations: Today, Bookings, Calendar, Guests, Settings
  * - Active item: 4px orange left bar + soft orange tint + orange icon
  * - Usage card + profile card pinned to the bottom
  * - Collapsible with smooth micro-interactions
@@ -11,32 +11,16 @@
 import { NavLink, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  Inbox,
   Users,
-  BarChart2,
   LogOut,
-  CreditCard,
-  Send,
   Settings as SettingsIcon,
-  Bot,
   ChevronsLeft,
   ChevronsRight,
   Crown,
-  Workflow,
-  Sparkles,
-  Hash,
-  CalendarClock,
-  Droplet,
-  Plug,
   ArrowUpRight,
-  Zap,
-  Webhook,
   Globe,
-  MessageSquare,
   BedDouble,
-  Hotel,
-  Car,
-  Share2,
+  CalendarDays,
   HandCoins,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -44,93 +28,36 @@ import BotlifyMark from "@/components/BotlifyMark";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { usePermissions } from "@/hooks/usePermissions";
+import api from "@/services/api";
 import { clsx } from "clsx";
 
 const COLLAPSE_KEY = "botlify-sidebar-collapsed";
 const ACCENT = "#ff5722";
 
 // ─── Navigation model ────────────────────────────────────────────────────────
+// Five destinations, nothing more. Everything else that used to live here is
+// now a tab inside Settings (Property & Rooms, Channels, Transfers, AI
+// Assistant, Team, Billing) or reachable by URL only — the routes all still
+// work, they just aren't nav entries any more.
 const NAV = [
   {
     section: null,
     items: [
-      {
-        to: "/dashboard",
-        icon: LayoutDashboard,
-        label: "Dashboard",
-        end: true,
-      },
-    ],
-  },
-  {
-    section: "Hotel",
-    items: [
+      { to: "/dashboard", icon: LayoutDashboard, label: "Today", end: true },
       { to: "/dashboard/bookings", icon: BedDouble, label: "Bookings" },
-      { to: "/dashboard/property", icon: Hotel, label: "Property & Rooms" },
-      { to: "/dashboard/transfers", icon: Car, label: "Transfers" },
-      { to: "/dashboard/channels", icon: Share2, label: "Channels" },
-    ],
-  },
-  {
-    section: "Automation",
-    items: [
-      { to: "/dashboard/ai-bot", icon: Bot, label: "AI Bot", perm: "automations" },
-      {
-        to: "/dashboard/ai-bot?tab=test",
-        icon: MessageSquare,
-        label: "Test your bot",
-        perm: "automations",
-      },
-      { to: "/dashboard/automation", icon: Zap, label: "Smart Automations", perm: "automations" },
-      { to: "/dashboard/flows", icon: Workflow, label: "Custom Flows", perm: "automations" },
-    ],
-  },
-  {
-    section: "Management",
-    items: [
-      { to: "/dashboard/inbox", icon: Inbox, label: "Inbox", perm: "inbox" },
-      // NOTE: the legacy "Appointments" nav item is hidden for the hotel
-      // product (route + page remain intact for existing deep links).
-      { to: "/dashboard/contacts", icon: Users, label: "Contacts", perm: "contacts" },
-      { to: "/dashboard/broadcasts", icon: Send, label: "Broadcasts", perm: "broadcasts" },
-      { to: "/dashboard/analytics", icon: BarChart2, label: "Analytics", perm: "analytics" },
-    ],
-  },
-  {
-    section: "Grow",
-    items: [
-      {
-        to: "/dashboard/scheduled-posts",
-        icon: CalendarClock,
-        label: "Scheduled Posts",
-        perm: "content",
-      },
-      { to: "/dashboard/drip", icon: Droplet, label: "Drip Campaigns", perm: "broadcasts" },
-      { to: "/dashboard/hashtags", icon: Hash, label: "Hashtags", perm: "content" },
-      {
-        to: "/dashboard/consultant",
-        icon: HandCoins,
-        label: "Consultant Program",
-      },
-    ],
-  },
-  {
-    section: "Integrations",
-    items: [
-      { to: "/dashboard/apps", icon: Plug, label: "Apps", perm: "integrations" },
-      { to: "/dashboard/integrations", icon: Webhook, label: "Webhooks", perm: "integrations" },
-    ],
-  },
-  {
-    section: "Settings",
-    items: [
-      // Team + Billing are owner-only; Settings needs the settings permission.
-      { to: "/dashboard/team", icon: Users, label: "Team", ownerOnly: true },
-      { to: "/dashboard/billing", icon: CreditCard, label: "Plan & Billing", ownerOnly: true },
+      { to: "/dashboard/calendar", icon: CalendarDays, label: "Calendar" },
+      { to: "/dashboard/guests", icon: Users, label: "Guests" },
       { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },
     ],
   },
 ];
+
+// Shown only to users who actually have a consultant profile.
+const CONSULTANT_ITEM = {
+  to: "/dashboard/consultant",
+  icon: HandCoins,
+  label: "Consultant",
+};
 
 function planLabel(id) {
   const map = {
@@ -161,11 +88,32 @@ export default function Sidebar({ onNavigate }) {
   // key are always shown (subject to permissions).
   const features = workspace?.features || {};
   const hasFeature = (item) => !item.feature || features[item.feature] === true;
+
+  // The Consultant link is a 6th entry shown ONLY to users who actually have a
+  // consultant profile. /consultants/me 404s for everyone else.
+  const [isConsultant, setIsConsultant] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    api
+      .get("/consultants/me")
+      .then(() => alive && setIsConsultant(true))
+      .catch(() => alive && setIsConsultant(false));
+    return () => {
+      alive = false;
+    };
+  }, [user?._id, user?.id]);
+
   // Filter nav to what this user can access; drop now-empty sections.
   const NAV_VISIBLE = NAV.map((g) => ({
     ...g,
     items: g.items.filter((i) => canItem(i) && hasFeature(i)),
-  })).filter((g) => g.items.length > 0);
+  }))
+    .map((g, i) =>
+      i === 0 && isConsultant
+        ? { ...g, items: [...g.items, CONSULTANT_ITEM] }
+        : g,
+    )
+    .filter((g) => g.items.length > 0);
 
   const [collapsed, setCollapsed] = useState(() => {
     try {

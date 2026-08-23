@@ -1,12 +1,19 @@
 ﻿import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Zap, Inbox, BarChart2, Menu } from "lucide-react";
+import {
+  LayoutDashboard,
+  BedDouble,
+  CalendarDays,
+  Users,
+  Menu,
+} from "lucide-react";
 import { clsx } from "clsx";
 
+// Mirrors the sidebar's five destinations; Settings sits behind "More".
 const TABS = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Home", end: true },
-  { to: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
-  { to: "/dashboard/automation", icon: Zap, label: "Automate" },
-  { to: "/dashboard/analytics", icon: BarChart2, label: "Insights" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Today", end: true },
+  { to: "/dashboard/bookings", icon: BedDouble, label: "Bookings" },
+  { to: "/dashboard/calendar", icon: CalendarDays, label: "Calendar" },
+  { to: "/dashboard/guests", icon: Users, label: "Guests" },
 ];
 
 export default function MobileBottomNav({ onMore }) {

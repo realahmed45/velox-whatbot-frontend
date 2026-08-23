@@ -1,4 +1,11 @@
-import { useEffect, useState } from "react";
+/**
+ * Settings — one screen, every knob, behind tabs.
+ *
+ * Folds in what used to be separate sidebar destinations: Property & Rooms,
+ * Channels, Transfers, the AI Assistant config, Team and Billing — plus the
+ * hotel Extras catalog and smart-pricing guard rails.
+ */
+import { useEffect, useState, lazy, Suspense } from "react";
 import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -25,55 +32,113 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
 import { connectInstagram } from "@/utils/connectInstagram";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { usePermissions } from "@/hooks/usePermissions";
+import ExtrasSettings from "@/pages/settings/ExtrasSettings";
+import PricingSettings from "@/pages/settings/PricingSettings";
+
+// Heavy, self-contained screens that used to own a sidebar entry. Lazy so the
+// Settings bundle doesn't pull all of them in at once.
+const PropertyPage = lazy(() => import("@/pages/hotel/PropertyPage"));
+const ChannelsPage = lazy(() => import("@/pages/hotel/ChannelsPage"));
+const TransfersPage = lazy(() => import("@/pages/hotel/TransfersPage"));
+const IgAiBotPage = lazy(() => import("@/pages/ai-bot/IgAiBotPage"));
+const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
+const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 
 const SUPPORT_EMAIL = "contactus@botlify.site";
+
+// Tabs whose content is a whole page lifted in from a former route.
+const EMBEDDED = [
+  "property",
+  "channels",
+  "assistant",
+  "transfers",
+  "team",
+  "billing",
+];
+
+function TabFallback() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
   const { activeWorkspace } = useAuthStore();
-  const [tab, setTab] = useState("general");
+  const { isOwner } = usePermissions();
+  // ?tab= keeps a tab shareable/deep-linkable now that these are no longer
+  // routes of their own.
+  const [params, setParams] = useSearchParams();
 
   const TABS = [
+    { id: "property", label: "Property & Rooms" },
+    { id: "channels", label: "Channels" },
+    { id: "assistant", label: "AI Assistant" },
+    { id: "extras", label: "Extras" },
+    { id: "pricing", label: "Pricing" },
+    { id: "transfers", label: "Transfers" },
+    ...(isOwner ? [{ id: "team", label: "Team" }] : []),
+    ...(isOwner ? [{ id: "billing", label: "Plan & Billing" }] : []),
     { id: "general", label: "General" },
-    { id: "instagram", label: "Instagram" },
-    { id: "automation", label: "Automations" },
     { id: "security", label: "Security" },
   ];
 
+  const urlTab = params.get("tab");
+  const tab = TABS.some((t) => t.id === urlTab) ? urlTab : "property";
+  const setTab = (id) => setParams(id === "property" ? {} : { tab: id }, { replace: true });
+
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
       <StatHero
         icon={SettingsIcon}
         title="Settings"
-        subtitle="Workspace, Instagram, and automation defaults"
+        subtitle="Your property, channels, assistant and account — all in one place"
       />
-      <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-5 sm:mb-6 max-w-md">
+
+      {/* Horizontal, scrollable on phones so every tab stays reachable. */}
+      <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-5 sm:mb-6 overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${tab === t.id ? "bg-white text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-700"}`}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap flex-shrink-0 ${tab === t.id ? "bg-white text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-700"}`}
           >
             {t.label}
           </button>
         ))}
       </div>
 
+      {/* Embedded pages bring their own max-width + padding (they used to be
+          routes). Pull that back in so a tab doesn't look double-inset. */}
+      <Suspense fallback={<TabFallback />}>
+        {EMBEDDED.includes(tab) && (
+          <div className="-mx-4 sm:-mx-8 [&>div]:max-w-none">
+            {tab === "property" && <PropertyPage />}
+            {tab === "channels" && <ChannelsPage />}
+            {tab === "assistant" && <IgAiBotPage />}
+            {tab === "transfers" && <TransfersPage />}
+            {tab === "team" && isOwner && <TeamPage />}
+            {tab === "billing" && isOwner && <BillingPage />}
+          </div>
+        )}
+        {tab === "extras" && <ExtrasSettings />}
+        {tab === "pricing" && <PricingSettings />}
+      </Suspense>
+
       {tab === "general" && (
-        <GeneralSettings
-          workspace={workspace}
-          onSave={() => fetchWorkspace(activeWorkspace)}
-        />
-      )}
-      {tab === "instagram" && (
-        <InstagramSettings
-          workspace={workspace}
-          onSave={() => fetchWorkspace(activeWorkspace)}
-        />
-      )}
-      {tab === "automation" && (
         <>
+          <GeneralSettings
+            workspace={workspace}
+            onSave={() => fetchWorkspace(activeWorkspace)}
+          />
+          <InstagramSettings
+            workspace={workspace}
+            onSave={() => fetchWorkspace(activeWorkspace)}
+          />
           <HolidayModeCard
             workspace={workspace}
             onSave={() => fetchWorkspace(activeWorkspace)}

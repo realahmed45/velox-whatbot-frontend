@@ -2,15 +2,15 @@ import { Command } from "cmdk";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  Zap,
-  Workflow,
-  Inbox,
+  BedDouble,
+  CalendarDays,
   Users,
-  Send,
-  Sparkles,
-  BarChart2,
   Settings as SettingsIcon,
   CreditCard,
+  Hotel,
+  Share2,
+  Sparkles,
+  TrendingUp,
   Plus,
   X,
 } from "lucide-react";
@@ -18,70 +18,71 @@ import {
 /**
  * Global command palette (⌘K / Ctrl+K).
  */
+// The five screens, plus deep links into the Settings tabs that used to be
+// destinations of their own.
 const ENTRIES = [
+  { label: "Today", icon: LayoutDashboard, to: "/dashboard", group: "Go to" },
   {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    to: "/dashboard",
-    group: "Go to",
-  },
-  { label: "Inbox", icon: Inbox, to: "/dashboard/inbox", group: "Go to" },
-  { label: "Contacts", icon: Users, to: "/dashboard/contacts", group: "Go to" },
-  {
-    label: "Automation",
-    icon: Zap,
-    to: "/dashboard/automation",
+    label: "Bookings",
+    icon: BedDouble,
+    to: "/dashboard/bookings",
     group: "Go to",
   },
   {
-    label: "Automations",
-    icon: Workflow,
-    to: "/dashboard/automation",
+    label: "Calendar",
+    icon: CalendarDays,
+    to: "/dashboard/calendar",
     group: "Go to",
   },
-  {
-    label: "Broadcasts",
-    icon: Send,
-    to: "/dashboard/broadcasts",
-    group: "Go to",
-  },
-  { label: "AI Bot", icon: Sparkles, to: "/dashboard/ai-bot", group: "Go to" },
-  {
-    label: "Analytics",
-    icon: BarChart2,
-    to: "/dashboard/analytics",
-    group: "Go to",
-  },
+  { label: "Guests", icon: Users, to: "/dashboard/guests", group: "Go to" },
   {
     label: "Settings",
     icon: SettingsIcon,
     to: "/dashboard/settings",
     group: "Go to",
   },
+
+  {
+    label: "Property & Rooms",
+    icon: Hotel,
+    to: "/dashboard/settings?tab=property",
+    group: "Settings",
+  },
+  {
+    label: "Channels",
+    icon: Share2,
+    to: "/dashboard/settings?tab=channels",
+    group: "Settings",
+  },
+  {
+    label: "AI Assistant",
+    icon: Sparkles,
+    to: "/dashboard/settings?tab=assistant",
+    group: "Settings",
+  },
+  {
+    label: "Extras",
+    icon: Plus,
+    to: "/dashboard/settings?tab=extras",
+    group: "Settings",
+  },
+  {
+    label: "Pricing",
+    icon: TrendingUp,
+    to: "/dashboard/settings?tab=pricing",
+    group: "Settings",
+  },
   {
     label: "Plan & Billing",
     icon: CreditCard,
-    to: "/dashboard/billing",
-    group: "Go to",
-  },
-
-  {
-    label: "New broadcast",
-    icon: Plus,
-    to: "/dashboard/broadcasts?new=1",
-    group: "Quick actions",
+    to: "/dashboard/settings?tab=billing",
+    group: "Settings",
   },
   {
-    label: "Create flow",
-    icon: Plus,
-    to: "/dashboard/automation",
-    group: "Quick actions",
-  },
-  {
-    label: "Connect Instagram",
-    icon: Plus,
-    to: "/dashboard/onboarding/instagram",
-    group: "Quick actions",
+    label: "Team",
+    icon: Users,
+    to: "/dashboard/settings?tab=team",
+    group: "Settings",
   },
 ];
 

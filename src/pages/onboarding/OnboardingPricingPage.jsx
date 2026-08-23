@@ -124,7 +124,7 @@ export default function OnboardingPricingPage() {
     <div className="px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-5xl mx-auto">
         <button
-          onClick={() => navigate("/onboarding/instagram")}
+          onClick={() => navigate("/onboarding/hotel")}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 hover:text-ink-800 mb-6 transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />

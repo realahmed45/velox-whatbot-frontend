@@ -1,9 +1,13 @@
 /**
- * Bookings — every reservation across OTAs, chat channels and manual entry.
+ * Bookings — every reservation across OTAs, chat channels and manual entry,
+ * plus the guest message inbox behind a tab switch so conversations and
+ * reservations live on one screen.
+ *
  * Stats row, filterable table with source badges, New Booking modal and
  * cancel-with-confirm. Matches the Appointments/Billing page patterns.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
+import IgInboxPage from "@/pages/inbox/IgInboxPage";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
@@ -12,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  MessageSquare,
   Plus,
   TrendingUp,
   XCircle,
@@ -65,7 +70,7 @@ const money = (amount, currency) =>
     maximumFractionDigits: 2,
   })}`;
 
-export default function BookingsPage() {
+function BookingsTable() {
   const confirm = useConfirm();
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
@@ -172,7 +177,7 @@ export default function BookingsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
@@ -678,5 +683,61 @@ function NewBookingModal({ open, onClose, onCreated }) {
         </div>
       </div>
     </Modal>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Screen shell — Bookings | Messages                                         */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Reservations and guest conversations share one screen. The inbox is the
+ * existing IgInboxPage, embedded as-is — it lays itself out with `h-full`, so
+ * it gets a fixed-height viewport box to fill.
+ */
+export default function BookingsPage() {
+  const [tab, setTab] = useState("bookings");
+
+  const TABS = [
+    { id: "bookings", label: "Bookings", icon: CalendarCheck },
+    { id: "messages", label: "Messages", icon: MessageSquare },
+  ];
+
+  return (
+    <div className="flex flex-col">
+      <div className="px-4 sm:px-6 pt-5 flex-shrink-0">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex gap-1 bg-ink-100 rounded-xl p-1 max-w-xs">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
+                  tab === t.id
+                    ? "bg-white text-ink-900 shadow-sm"
+                    : "text-ink-500 hover:text-ink-700"
+                }`}
+              >
+                <t.icon className="w-4 h-4" />
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {tab === "bookings" ? (
+        <BookingsTable />
+      ) : (
+        // The inbox pins itself with `h-full`, so it needs an ancestor with a
+        // real height. The dashboard's animated <main> wrapper doesn't provide
+        // one, so size this box off the viewport instead: full height minus the
+        // header (68px), these tabs (~68px) and the mobile bottom nav (62px).
+        <div className="mt-4 border-t border-ink-100 h-[calc(100vh-198px)] lg:h-[calc(100vh-136px)]">
+          <IgInboxPage />
+        </div>
+      )}
+    </div>
   );
 }

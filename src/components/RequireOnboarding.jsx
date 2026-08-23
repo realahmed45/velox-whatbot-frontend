@@ -1,10 +1,14 @@
 /**
- * RequireOnboarding — mandatory channel-connection gate.
+ * RequireOnboarding — the minimum gate before the dashboard.
  *
- * If the active workspace has neither WhatsApp nor Instagram connected,
- * this redirects the user to the FULL-SCREEN top-level onboarding flow
- * (/onboarding/choose-channel) — NO sidebar, NO dashboard chrome until
- * one platform is connected. ManyChat-style.
+ * What is still mandatory:
+ *   1. a verified email
+ *   2. a workspace
+ *   3. an active/trialing plan (Botlify has no free tier)
+ *
+ * What is NOT: connecting a messaging channel, and picking a business type —
+ * both were Instagram-era steps. A hotel owner goes straight from signup to
+ * naming their hotel to the dashboard.
  *
  * Billing/settings remain accessible so users can pay or sign out.
  */
@@ -71,7 +75,7 @@ export default function RequireOnboarding({ children }) {
   // need a workspace to apply / see their referral code.
   if (!activeWorkspace) {
     if (location.pathname.startsWith("/dashboard/consultant")) return children;
-    return <Navigate to="/onboarding/instagram" replace />;
+    return <Navigate to="/onboarding/hotel" replace />;
   }
 
   // While the workspace is still loading we don't yet know if Instagram is
@@ -113,33 +117,12 @@ export default function RequireOnboarding({ children }) {
     );
   }
 
-  const igConnected = workspace.instagram?.status === "connected";
-  const hasChannel = igConnected;
-
-  if (!hasChannel && !isExempt) {
-    return (
-      <Navigate
-        to="/onboarding/instagram"
-        replace
-        state={{ from: location.pathname }}
-      />
-    );
-  }
-
-  // Channel is connected but the owner hasn't picked their business category
-  // yet — run the one-time vertical setup so the whole app is tailored to them.
-  // (Legacy workspaces created before this feature have verticalConfigured
-  // undefined; we only force NEW owners through it — those whose workspace has
-  // the flag explicitly false. Undefined is treated as "already set" so we
-  // never trap existing users behind a new gate.)
-  if (
-    isOwner &&
-    workspace.verticalConfigured === false &&
-    !isExempt &&
-    location.pathname !== "/onboarding/business-type"
-  ) {
-    return <Navigate to="/onboarding/business-type" replace />;
-  }
+  // Hotels are not gated on connecting a messaging channel — an owner can run
+  // the whole product (bookings, calendar, guests) without Instagram. Channels
+  // are opt-in from Settings → Channels whenever they want them.
+  //
+  // The business-type / vertical picker is gone too: the backend defaults every
+  // workspace to "hospitality", so `verticalConfigured` is no longer a gate.
 
   return children;
 }

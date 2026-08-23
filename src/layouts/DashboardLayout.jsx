@@ -14,7 +14,11 @@ import ShortcutsHelp from "@/components/layout/ShortcutsHelp";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ROUTE_TITLES = {
-  "/dashboard": "Dashboard",
+  "/dashboard": "Today",
+  "/dashboard/bookings": "Bookings",
+  "/dashboard/calendar": "Calendar",
+  "/dashboard/guests": "Guests",
+  "/dashboard/overview": "Overview",
   "/dashboard/inbox": "Inbox",
   "/dashboard/contacts": "Contacts",
   "/dashboard/automation": "Automations",
@@ -89,11 +93,11 @@ export default function DashboardLayout() {
       if (pendingG) {
         pendingG = false;
         const map = {
-          i: "/dashboard/inbox",
+          t: "/dashboard",
           d: "/dashboard",
-          a: "/dashboard/analytics",
-          f: "/dashboard/automation",
-          c: "/dashboard/contacts",
+          b: "/dashboard/bookings",
+          c: "/dashboard/calendar",
+          g: "/dashboard/guests",
           s: "/dashboard/settings",
         };
         const dest = map[e.key.toLowerCase()];

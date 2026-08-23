@@ -67,6 +67,9 @@ const AppointmentsPage = lazyWithRetry(
 );
 
 // Hotel product (lazy-loaded)
+const TodayPage = lazyWithRetry(() => import("@/pages/hotel/TodayPage"));
+const CalendarPage = lazyWithRetry(() => import("@/pages/hotel/CalendarPage"));
+const GuestsPage = lazyWithRetry(() => import("@/pages/hotel/GuestsPage"));
 const BookingsPage = lazyWithRetry(() => import("@/pages/hotel/BookingsPage"));
 const PropertyPage = lazyWithRetry(() => import("@/pages/hotel/PropertyPage"));
 const TransfersPage = lazyWithRetry(() => import("@/pages/hotel/TransfersPage"));
@@ -92,6 +95,9 @@ const InstagramOnboardingPage = lazyWithRetry(
 );
 const BusinessTypePage = lazyWithRetry(
   () => import("@/pages/onboarding/BusinessTypePage"),
+);
+const HotelSetupPage = lazyWithRetry(
+  () => import("@/pages/onboarding/HotelSetupPage"),
 );
 const ReactivatePage = lazyWithRetry(() => import("@/pages/onboarding/ReactivatePage"));
 
@@ -202,10 +208,15 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<OverviewPage />} />
+                {/* Today — the home screen (agent chat + pricing + glance) */}
+                <Route index element={<TodayPage />} />
+                {/* The old Instagram-era overview stays reachable by URL. */}
+                <Route path="overview" element={<OverviewPage />} />
 
                 {/* Hotel product */}
                 <Route path="bookings" element={<BookingsPage />} />
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="guests" element={<GuestsPage />} />
                 <Route path="property" element={<PropertyPage />} />
                 <Route path="transfers" element={<TransfersPage />} />
                 <Route path="channels" element={<ChannelsPage />} />
@@ -397,8 +408,10 @@ export default function App() {
               >
                 <Route
                   path="/onboarding"
-                  element={<Navigate to="/onboarding/instagram" replace />}
+                  element={<Navigate to="/onboarding/hotel" replace />}
                 />
+                {/* Name your hotel — the only mandatory step. */}
+                <Route path="/onboarding/hotel" element={<HotelSetupPage />} />
                 <Route
                   path="/onboarding/choose-channel"
                   element={<ChooseChannelPage />}
