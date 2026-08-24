@@ -17,7 +17,8 @@ export default function Footer() {
             <Logo size="sm" dark />
             <p className="text-sm text-ink-500 leading-relaxed">
               The AI receptionist for hotels. Bookings from WhatsApp &amp;
-              Instagram — synced with Booking.com and Airbnb.
+              Instagram — synced with Booking.com, Airbnb, Agoda, Expedia,
+              Traveloka and 55 more booking channels.
             </p>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">

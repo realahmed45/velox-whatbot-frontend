@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
+import ChannelWall from "@/components/ChannelWall";
+import { CHANNEL_TOTAL_LABEL } from "@/data/otaChannels";
 import {
   ArrowRight,
   Check,
@@ -295,7 +297,7 @@ function Hero() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
               </span>
-              Channel manager · Booking engine · AI
+              60+ channels · Booking engine · AI
             </span>
 
             <h1 className="mt-5 text-[2.7rem] leading-[1.02] sm:text-6xl lg:text-[4.6rem] font-black tracking-tighter text-ink-950">
@@ -327,8 +329,10 @@ function Hero() {
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
               Botlify replaces your channel manager, booking engine, revenue
               manager and front desk — and runs them with AI. Booking.com,
-              Airbnb, WhatsApp, Instagram and your own direct page in one
-              calendar, one inbox, one guest list.
+              Airbnb, Agoda, Expedia, Traveloka and{" "}
+              <b className="text-ink-800">55 more booking channels</b> — plus
+              WhatsApp, Instagram and your own direct page — in one calendar,
+              one inbox, one guest list.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -351,7 +355,7 @@ function Hero() {
             <div className="mt-9 grid grid-cols-3 gap-3 max-w-lg">
               {[
                 { n: "0%", l: "Commission on OTA bookings" },
-                { n: "6-in-1", l: "Tools it replaces" },
+                { n: "60+", l: "Booking channels synced" },
                 { n: "24/7", l: "Selling and answering" },
               ].map((s) => (
                 <div
@@ -392,7 +396,7 @@ function Hero() {
           className="mt-16 sm:mt-20 rounded-2xl border border-ink-100 bg-white/70 backdrop-blur p-5 sm:p-6 shadow-card"
         >
           <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-ink-500 text-center">
-            Every booking lands in one calendar
+            60+ booking channels · Every booking lands in one calendar
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
             <div className="flex items-center gap-2.5 text-ink-800">
@@ -416,10 +420,21 @@ function Hero() {
               <span className="font-bold text-lg">Your direct page</span>
             </div>
           </div>
-          <p className="mt-4 text-center text-sm text-ink-500">
-            OTA sync is <b className="text-ink-800">free — 0% commission</b>.
-            Sell a room anywhere and every channel updates instantly.
-          </p>
+          <ChannelWall
+            variant="bare"
+            size="compact"
+            align="center"
+            className="mt-6 pt-6 border-t border-ink-100"
+            subtitle={
+              <>
+                Booking.com, Airbnb, Agoda, Expedia, Traveloka, Tiket.com and{" "}
+                <b className="text-ink-800">50 more</b> through our connectivity
+                partner. OTA sync is{" "}
+                <b className="text-ink-800">free — 0% commission</b>: sell a
+                room anywhere and every channel updates instantly.
+              </>
+            }
+          />
         </div>
       </div>
     </section>
@@ -608,7 +623,7 @@ function Eyebrow({ children }) {
 function TrustBar() {
   // Capability statements (true for every user) — no unverifiable metrics.
   const stats = [
-    { value: "1", label: "Calendar for every channel" },
+    { value: "60+", label: "Booking channels synced" },
     { value: "0%", label: "Commission on OTA bookings" },
     { value: "$49", label: "Flat, per month" },
     { value: "10%", label: "Only on AI-closed bookings" },
@@ -617,8 +632,8 @@ function TrustBar() {
     <section className="border-y border-ink-100 bg-brand-50/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <p className="text-center text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] text-ink-500">
-          Channel manager · Booking engine · Revenue manager · Front desk ·
-          Guest CRM · AI
+          Channel manager (60+ OTAs) · Booking engine · Revenue manager ·
+          Front desk · Guest CRM · AI
         </p>
         <div className="mt-7 grid grid-cols-2 sm:grid-cols-4 gap-6 divide-x divide-brand-100">
           {stats.map((s, i) => (
@@ -645,7 +660,7 @@ const PLATFORM_PILLARS = [
   {
     icon: RefreshCw,
     title: "Channel manager",
-    desc: "Booking.com and Airbnb on one calendar. A room sells anywhere, availability drops everywhere — instantly.",
+    desc: "Booking.com, Airbnb, Agoda, Expedia, Traveloka and 55 more on one calendar. A room sells anywhere, availability drops everywhere — instantly.",
   },
   {
     icon: Globe,
@@ -693,12 +708,12 @@ const IG_FEATURES = [
   {
     icon: Zap,
     title: "Instant availability push",
-    desc: "Sell a room anywhere and every other channel updates in seconds.",
+    desc: "Sell a room on any of 60+ channels and all the others update in seconds.",
   },
   {
     icon: BadgePercent,
     title: "0% on OTA bookings",
-    desc: "We never take a cut of a Booking.com or Airbnb reservation.",
+    desc: "We never take a cut of an OTA reservation — on any of the 60+ channels.",
   },
   {
     icon: Send,
@@ -966,7 +981,7 @@ function WhatItReplaces() {
               </p>
               <ul className="mt-5 space-y-2.5 text-sm">
                 {[
-                  "0% commission on Booking.com & Airbnb bookings",
+                  "0% commission on all OTA bookings — 60+ channels",
                   "10% only on bookings the AI closes for you",
                   "No per-room or per-channel pricing",
                   "Free plan available — start without a card",
@@ -997,12 +1012,90 @@ function WhatItReplaces() {
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Every channel you sell on — the full channel wall
+ * ──────────────────────────────────────────────────────────── */
+function ChannelCoverage() {
+  return (
+    <section id="channels" className="py-16 sm:py-24 bg-ink-950 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-300">
+            <Globe className="w-3.5 h-3.5" />
+            Channel coverage
+          </span>
+          <h2 className="mt-4 text-3xl sm:text-5xl font-black tracking-tight">
+            Every channel you sell on.{" "}
+            <span className="text-brand-400">
+              {CHANNEL_TOTAL_LABEL} of them.
+            </span>
+          </h2>
+          <p className="mt-4 text-base sm:text-lg text-white/60">
+            Botlify connects to the world's booking channels through our
+            connectivity partner — one connection, two-way sync, and{" "}
+            <b className="text-white">0% commission</b> from us on every one of
+            them.
+          </p>
+        </div>
+
+        <div className="mt-10">
+          <ChannelWall
+            variant="bare"
+            align="center"
+            dark
+            subtitle="Plus 50 more — including regional channels across Asia, Europe and the Americas."
+          />
+        </div>
+
+        <div className="mt-10 grid sm:grid-cols-3 gap-4">
+          {[
+            {
+              icon: RefreshCw,
+              title: "Two-way, all of them",
+              desc: "Rooms, rates and availability push out; reservations pull in. A sale anywhere drops availability everywhere.",
+            },
+            {
+              icon: Globe,
+              title: "Built for Indonesia too",
+              desc: "Traveloka and Tiket.com sit alongside the global OTAs, so domestic travellers find you where they already book.",
+            },
+            {
+              icon: BadgePercent,
+              title: "0% commission, always",
+              desc: "One flat monthly fee — never a cut of an OTA reservation, and never a per-channel charge.",
+            },
+          ].map((c) => (
+            <div
+              key={c.title}
+              className="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6"
+            >
+              <span className="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-300 flex items-center justify-center">
+                <c.icon className="w-5 h-5" />
+              </span>
+              <p className="mt-3 font-black text-[15px]">{c.title}</p>
+              <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+                {c.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-xs text-white/40">
+          Channels are connected through our connectivity partner. Availability
+          of an individual channel depends on your property being eligible to
+          list on it. Brand names are used to identify the channel only.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
  * The Botlify Agent — tell your hotel what to do
  * ──────────────────────────────────────────────────────────── */
 const AGENT_TURNS = [
   {
     you: "Change Deluxe Double to $95 for next weekend",
-    bot: "Deluxe Double, Fri 29 – Sun 31 Aug: $79 → $95. This pushes to Booking.com, Airbnb and your direct page. Confirm?",
+    bot: "Deluxe Double, Fri 29 – Sun 31 Aug: $79 → $95. This pushes to all 60+ connected channels and your direct page. Confirm?",
     tag: "Needs confirmation",
   },
   {
@@ -1047,7 +1140,7 @@ function BotlifyAgent() {
               {[
                 ["Plain language", "\"Drop the Twin to $60 midweek\" is a valid instruction."],
                 ["Confirms before it acts", "Anything that changes money or availability asks you first."],
-                ["Reaches every channel", "One instruction updates Booking.com, Airbnb and your direct page."],
+                ["Reaches every channel", "One instruction updates all 60+ connected channels and your direct page."],
               ].map(([t, d]) => (
                 <li key={t} className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center shrink-0 mt-0.5">
@@ -1266,7 +1359,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "Connect your channels",
-      desc: "Link Booking.com and Airbnb (more via our connectivity partner), plus WhatsApp and Instagram. One calendar starts filling up.",
+      desc: "Link Booking.com, Airbnb, Agoda, Expedia, Traveloka and 55 more through our connectivity partner — plus WhatsApp and Instagram. One calendar starts filling up.",
       icon: PlugZap,
     },
     {
@@ -1468,7 +1561,7 @@ function ProductShowcase() {
             </span>
           </h2>
           <p className="mt-4 text-white/60">
-            Booking.com, Airbnb, your direct page and the AI all write to the
+            All 60+ channels, your direct page and the AI all write to the
             same grid — so the availability you see is the availability that
             exists.
           </p>
@@ -1977,7 +2070,8 @@ function MockAutomations() {
     ["Booking.com", "Rates & availability · two-way", RefreshCw, true],
     ["Airbnb", "Rates & availability · two-way", RefreshCw, true],
     ["Direct booking page", "/book/seaview-hotel · live", Globe, true],
-    ["More OTAs", "Via our connectivity partner", PlugZap, false],
+    ["Agoda", "Rates & availability · two-way", RefreshCw, true],
+    ["+ 57 more channels", "Expedia, Traveloka, Tiket.com…", PlugZap, false],
   ];
   return (
     <div className="p-3 text-left h-full">
@@ -2020,9 +2114,9 @@ function WhatWeProvide() {
       icon: RefreshCw,
       tag: "Channel manager",
       title: "Sell the same room everywhere, safely",
-      desc: "Booking.com and Airbnb connect to one calendar — more OTAs through our connectivity partner. The moment a room sells on any channel, availability drops on all of them, so the double-booking phone call stops happening. Rates and restrictions push out the same way.",
+      desc: "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50 more through our connectivity partner, 60+ channels on one calendar. The moment a room sells on any channel, availability drops on all of them, so the double-booking phone call stops happening. Rates and restrictions push out the same way.",
       points: [
-        "Two-way sync — rooms, rates, availability",
+        "60+ channels, two-way sync — rooms, rates, availability",
         "0% commission from us on OTA bookings",
         "No per-channel or per-room fees",
       ],
@@ -2194,7 +2288,7 @@ function Testimonials() {
       icon: Building2,
       role: "Boutique hotels",
       quote:
-        "One calendar behind Booking.com, Airbnb and the direct page — so the double-booking panic stops, and the revenue manager nudges the rate up on the nights you'd have undersold.",
+        "One calendar behind all 60+ channels and your direct page — so the double-booking panic stops, and the revenue manager nudges the rate up on the nights you'd have undersold.",
     },
     {
       icon: BedDouble,
@@ -2254,9 +2348,9 @@ function PricingTeaser() {
     {
       name: "Launch (Free)",
       usd: 0,
-      desc: "Get your channels synced and start taking bookings.",
+      desc: "Get all 60+ channels synced and start taking bookings.",
       features: [
-        "Channel manager — Booking.com & Airbnb",
+        "Channel manager — 60+ OTA channels",
         "0% commission on OTA bookings",
         "Your direct booking page",
         "One calendar, 1 property, unlimited rooms",
@@ -2296,7 +2390,7 @@ function PricingTeaser() {
           </h2>
           <p className="mt-3 text-ink-600">
             Flat monthly price — not per room, not per channel. We take{" "}
-            <b className="text-ink-900">0%</b> on your Booking.com and Airbnb
+            <b className="text-ink-900">0%</b> on your OTA
             bookings, and <b className="text-ink-900">10%</b> only on bookings
             the AI closes for you — well under the 15–18% an OTA charges for
             the same reservation. Cancel anytime.
@@ -2397,7 +2491,7 @@ function PricingTeaser() {
               {[
                 {
                   icon: Check,
-                  source: "Booking.com & Airbnb",
+                  source: "OTA bookings — all 60+ channels",
                   rate: "0%",
                   cls: "bg-emerald-50 border-emerald-100 text-emerald-700",
                   why: "OTA sync is completely free. We never take a cut of a reservation that arrived through an OTA.",
@@ -2486,7 +2580,7 @@ function PricingTeaser() {
 const FAQS = [
   {
     q: "What exactly is Botlify?",
-    a: "A complete operating platform for a hotel. It is your channel manager (Booking.com and Airbnb on one calendar), your booking engine (your own direct-booking page), your revenue manager (AI rate suggestions you approve), your front desk (check-in, check-out, housekeeping, folio), your guest CRM and your reputation inbox — plus an AI concierge on WhatsApp and Instagram and an agent you can simply give instructions to. One login, one calendar, one bill.",
+    a: "A complete operating platform for a hotel. It is your channel manager (60+ booking channels on one calendar), your booking engine (your own direct-booking page), your revenue manager (AI rate suggestions you approve), your front desk (check-in, check-out, housekeeping, folio), your guest CRM and your reputation inbox — plus an AI concierge on WhatsApp and Instagram and an agent you can simply give instructions to. One login, one calendar, one bill.",
   },
   {
     q: "Do I still need a channel manager?",
@@ -2498,11 +2592,11 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "$49 a month, flat — not per room and not per channel. We take 0% commission on bookings that come through Booking.com or Airbnb, and 10% only on bookings the AI closes for you in chat, which is well below the 15–18% an OTA takes for the same reservation. There is a free plan you can start on today with no card, and the paid plan has a 3-day free trial.",
+    a: "$49 a month, flat — not per room and not per channel. We take 0% commission on bookings that come through any of the 60+ OTA channels, and 10% only on bookings the AI closes for you in chat, which is well below the 15–18% an OTA takes for the same reservation. There is a free plan you can start on today with no card, and the paid plan has a 3-day free trial.",
   },
   {
     q: "Which OTAs do you connect to?",
-    a: "Booking.com and Airbnb today, with more channels available through our connectivity partner. Your rooms, rates and availability stay in sync in both directions on every connected channel.",
+    a: "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50+ more, so 60+ booking channels in total, all through one connection with our connectivity partner. Traveloka and Tiket.com matter especially for Indonesian domestic travellers. Your rooms, rates and availability stay in sync in both directions on every connected channel, and OTA sync costs 0% commission.",
   },
   {
     q: "Does it replace my PMS?",
@@ -2681,6 +2775,7 @@ export default function LandingPage() {
       <TrustBar />
       <Features />
       <WhatItReplaces />
+      <ChannelCoverage />
       <ProductShowcase />
       <WhatWeProvide />
       <BotlifyAgent />

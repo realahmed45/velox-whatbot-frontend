@@ -10,6 +10,7 @@
  * keeps its own max-width and never assumes a surrounding shell.
  */
 import { useState, useEffect } from "react";
+import ChannelWall from "@/components/ChannelWall";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -23,7 +24,6 @@ import {
   ConciergeBell,
   DoorOpen,
   Globe,
-  Home,
   Info,
   KeyRound,
   Layers,
@@ -249,7 +249,7 @@ const ONBOARD_STEPS = [
     icon: BedDouble,
     eyebrow: "≈ 5 minutes",
     title: "Add your rooms",
-    body: "Type your room types in by hand, or import them from an existing Booking.com or Airbnb listing — types, rates and photos come across together.",
+    body: "Type your room types in by hand, or import them from an existing OTA listing — types, rates and photos come across together.",
     bullets: [
       "Importing is faster and gets your photos in without re-uploading anything.",
       "The moment rooms exist, your calendar and your direct booking page are live.",
@@ -288,7 +288,7 @@ const MESSAGING = [
 const AGENT_EXAMPLES = [
   {
     you: "Change Deluxe Double to $95 for next weekend",
-    bot: "Deluxe Double, Fri–Sun: $79 → $95. This pushes to Booking.com, Airbnb and your direct page. Confirm?",
+    bot: "Deluxe Double, Fri–Sun: $79 → $95. This pushes to all 60+ connected channels and your direct page. Confirm?",
     kind: "Needs confirmation",
   },
   {
@@ -419,7 +419,7 @@ export default function GuidePage() {
                   {
                     icon: RefreshCw,
                     t: "Channel manager",
-                    d: "Booking.com and Airbnb on one calendar, synced two ways.",
+                    d: "60+ OTA channels — Booking.com, Airbnb, Agoda, Expedia, Traveloka and more — on one calendar, synced two ways.",
                   },
                   {
                     icon: Globe,
@@ -539,8 +539,8 @@ export default function GuidePage() {
               </div>
 
               <Note icon={Check} title="That's the required part">
-                Connecting Booking.com, Airbnb and your messaging channels comes
-                next — but none of it blocks you. With rooms in the system, your
+                Connecting your 60+ booking channels and your messaging
+                channels comes next — but none of it blocks you. With rooms in the system, your
                 calendar, your direct booking page and manual bookings already
                 work.
               </Note>
@@ -554,31 +554,18 @@ export default function GuidePage() {
               title="Connecting your booking channels"
             >
               <p>
-                Botlify connects to Booking.com and Airbnb through our
-                connectivity partner — the same kind of certified pipe a
-                traditional channel manager uses. You start it from{" "}
+                Botlify connects to <b className="text-ink-900">60+ booking
+                channels</b> through our connectivity partner — the same kind of
+                certified pipe a traditional channel manager uses. You start it
+                from{" "}
                 <b className="text-ink-900">Channels</b> in the dashboard.
               </p>
 
-              <div className="grid sm:grid-cols-2 gap-3 not-prose">
-                {[
-                  { icon: Globe, name: "Booking.com", color: "#003b95" },
-                  { icon: Home, name: "Airbnb", color: "#ff5a5f" },
-                ].map((c) => {
-                  const Icon = c.icon;
-                  return (
-                    <div
-                      key={c.name}
-                      className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3.5 shadow-card"
-                    >
-                      <Icon className="w-6 h-6 shrink-0" style={{ color: c.color }} />
-                      <span className="font-bold text-ink-900">{c.name}</span>
-                      <span className="ml-auto text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
-                        0% commission
-                      </span>
-                    </div>
-                  );
-                })}
+              <div className="not-prose">
+                <ChannelWall
+                  title="The channels you can connect"
+                  subtitle="Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50 more through the same connection. Traveloka and Tiket.com cover Indonesian domestic travellers. Every one of them is 0% commission from us."
+                />
               </div>
 
               <p className="font-semibold text-ink-800">How the connection works</p>
@@ -592,8 +579,8 @@ export default function GuidePage() {
               />
 
               <Note icon={BadgePercent} title="What “0% commission” means">
-                We take <b>nothing</b> from a booking that arrives through
-                Booking.com or Airbnb. Not a percentage, not a per-reservation
+                We take <b>nothing</b> from a booking that arrives through any
+                of the 60+ OTA channels. Not a percentage, not a per-reservation
                 fee. Your OTA still charges you their own commission — that's
                 between you and them and always has been — but Botlify adds
                 nothing on top. OTA sync is included in the flat subscription.
@@ -722,7 +709,7 @@ export default function GuidePage() {
 
               <Bullets
                 items={[
-                  "Add rooms by hand, or import types, rates and photos from a Booking.com or Airbnb listing.",
+                  "Add rooms by hand, or import types, rates and photos from an existing OTA listing.",
                   "Override the rate for specific dates when you need to — a weekend, a local event, a slow midweek stretch.",
                   "There is no per-room pricing from us: add as many types and units as you actually have.",
                   "Photos and descriptions carry through to your direct booking page automatically.",
@@ -874,7 +861,7 @@ export default function GuidePage() {
                 Read-only questions are answered straight away. Anything that
                 changes a rate, availability or a booking shows you exactly what
                 will change and waits for your confirmation. One confirmed
-                instruction then updates Booking.com, Airbnb and your direct page
+                instruction then updates every connected channel and your direct page
                 together.
               </Note>
             </Section>
@@ -1066,7 +1053,7 @@ export default function GuidePage() {
                   <tbody className="divide-y divide-ink-100 bg-white">
                     <tr>
                       <td className="px-4 py-3.5 text-ink-800 font-semibold align-top">
-                        Booking.com / Airbnb
+                        OTA channels
                       </td>
                       <td className="px-4 py-3.5 align-top">
                         <span className="inline-block rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 font-black px-2.5 py-1 text-xs">

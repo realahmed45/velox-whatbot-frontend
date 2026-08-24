@@ -23,6 +23,7 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { clsx } from "clsx";
+import ChannelWall from "@/components/ChannelWall";
 
 /* Local fallback — mirrors backend plan catalog so pricing always shows. */
 const FALLBACK_PLANS = [
@@ -33,7 +34,7 @@ const FALLBACK_PLANS = [
     tagline: "Get synced and take bookings — free forever",
     usd: 0,
     highlights: [
-      "Booking.com & Airbnb sync — free, 0% commission",
+      "60+ OTA channels synced — free, 0% commission",
       "1 property, unlimited rooms",
       "Bookings dashboard & calendar",
       "Manual & direct bookings — unlimited",
@@ -232,7 +233,7 @@ export default function PricingPage({
                   </p>
                   <div className="mt-2 grid grid-cols-2 gap-1.5">
                     {[
-                      "Booking.com & Airbnb sync",
+                      "60+ OTA channels synced",
                       "0% commission on OTA bookings",
                       "Bookings dashboard",
                       "Availability calendar",
@@ -254,6 +255,14 @@ export default function PricingPage({
               </div>
             </div>
 
+            <ChannelWall
+              className="mt-10 max-w-3xl mx-auto"
+              size="compact"
+              align="center"
+              title="0% commission on all 60+ booking channels"
+              subtitle="Two-way sync on every one of them, through our connectivity partner — with no per-channel fee."
+            />
+
             <CommissionPanel />
 
             <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
@@ -274,7 +283,8 @@ export default function PricingPage({
 const COMMISSION_ROWS = [
   {
     icon: Check,
-    source: "Booking.com & Airbnb",
+    source: "OTA bookings — all 60+ channels",
+    sub: "Booking.com · Airbnb · Agoda · Expedia · Traveloka · Tiket.com · and 50 more",
     rate: "0%",
     tone: "emerald",
     why: "OTA sync is completely free. We never take a cut of a reservation that arrived through an OTA.",

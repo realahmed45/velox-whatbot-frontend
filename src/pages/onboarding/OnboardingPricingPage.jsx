@@ -212,10 +212,11 @@ function CommissionSummary() {
   const rows = [
     {
       icon: Check,
-      source: "Booking.com & Airbnb bookings",
+      source: "OTA bookings — all 60+ channels",
+      sub: "Booking.com · Airbnb · Agoda · Expedia · Traveloka · Tiket.com · and 50 more",
       rate: "0%",
       cls: "bg-emerald-50 border-emerald-100 text-emerald-700",
-      why: "OTA sync is completely free — we never take a cut.",
+      why: "OTA sync is completely free on every one of the 60+ channels — we never take a cut.",
     },
     {
       icon: BadgePercent,

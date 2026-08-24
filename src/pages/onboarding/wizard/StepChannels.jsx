@@ -11,57 +11,14 @@ import { useEffect, useState } from "react";
 import {
   Check,
   CloudDownload,
-  Globe2,
   Loader2,
   RefreshCw,
   Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
+import ChannelWall from "@/components/ChannelWall";
 import WizardShell from "./WizardShell";
-
-/* Simple, honest chips — initials on a tint. We don't ship OTA brand marks. */
-const OTAS = [
-  { name: "Booking.com", short: "B", tint: "bg-blue-50 text-blue-700 border-blue-100" },
-  { name: "Airbnb", short: "A", tint: "bg-rose-50 text-rose-700 border-rose-100" },
-  { name: "Agoda", short: "Ag", tint: "bg-indigo-50 text-indigo-700 border-indigo-100" },
-  { name: "Expedia", short: "E", tint: "bg-amber-50 text-amber-700 border-amber-100" },
-  { name: "Vrbo", short: "V", tint: "bg-sky-50 text-sky-700 border-sky-100" },
-  { name: "Traveloka", short: "Tr", tint: "bg-cyan-50 text-cyan-700 border-cyan-100" },
-  { name: "Tiket.com", short: "Ti", tint: "bg-teal-50 text-teal-700 border-teal-100" },
-  { name: "Trip.com", short: "Tc", tint: "bg-violet-50 text-violet-700 border-violet-100" },
-  { name: "Hostelworld", short: "Hw", tint: "bg-orange-50 text-orange-700 border-orange-100" },
-  { name: "Google Hotel Ads", short: "G", tint: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-];
-
-function ChannelWall() {
-  return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-card">
-      <div className="flex items-center gap-2 mb-4">
-        <Globe2 className="w-4 h-4 text-brand-500" />
-        <p className="text-sm font-black text-ink-900">
-          Where your rooms can sell
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {OTAS.map((o) => (
-          <span
-            key={o.name}
-            className={`inline-flex items-center gap-2 rounded-full border pl-1.5 pr-3 py-1.5 text-xs font-semibold ${o.tint}`}
-          >
-            <span className="w-6 h-6 rounded-full bg-white/70 flex items-center justify-center text-[10px] font-black">
-              {o.short}
-            </span>
-            {o.name}
-          </span>
-        ))}
-        <span className="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 text-xs font-semibold text-ink-500">
-          and 50 more
-        </span>
-      </div>
-    </div>
-  );
-}
 
 function ValueStrip() {
   return (
@@ -152,7 +109,7 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
       icon={CloudDownload}
       eyebrow="Step 3 of 5"
       title="Connect your booking channels"
-      subtitle="Already listed on Booking.com, Airbnb or Agoda? Import your property and Botlify keeps every channel in sync from one calendar."
+      subtitle="Already listed on Booking.com, Airbnb, Agoda, Expedia or Traveloka? Import your property and Botlify keeps all 60+ channels in sync from one calendar."
       onBack={goBack}
       onSkip={skip}
       skipLabel="Skip — I'll connect channels later"
@@ -261,7 +218,7 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
           )}
         </div>
 
-        <ChannelWall />
+        <ChannelWall subtitle="60+ booking channels through one connection, via our connectivity partner." />
       </div>
     </WizardShell>
   );

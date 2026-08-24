@@ -19,6 +19,10 @@ import {
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import {
+  PERMISSION_LIST as FALLBACK_PERMISSIONS,
+  permissionLabel,
+} from "@/data/permissions";
 
 /**
  * Shared permission checkbox grid used by both the invite and edit modals.
@@ -30,7 +34,7 @@ function PermissionGrid({ catalogue, selected, onToggle, onToggleAll }) {
     <div>
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-ink-700">
-          What can they access?
+          Which parts of the hotel can they open?
         </label>
         <button
           type="button"
@@ -87,7 +91,9 @@ export default function TeamPage() {
   const [form, setForm] = useState({ email: "", role: "agent", permissions: [] });
   const [saving, setSaving] = useState(false);
   const [invites, setInvites] = useState([]);
-  const [permCatalogue, setPermCatalogue] = useState([]);
+  // Seeded from the local mirror so the invite modal is never empty; the
+  // backend catalogue replaces it as soon as it lands.
+  const [permCatalogue, setPermCatalogue] = useState(FALLBACK_PERMISSIONS);
   // Member whose permissions are being edited (null = closed), plus a working copy.
   const [editMember, setEditMember] = useState(null);
   const [editPerms, setEditPerms] = useState([]);
@@ -96,8 +102,12 @@ export default function TeamPage() {
   useEffect(() => {
     api
       .get("/workspaces/permissions")
-      .then(({ data }) => setPermCatalogue(data.permissions || []))
-      .catch(() => {});
+      .then(({ data }) => {
+        if (data.permissions?.length) setPermCatalogue(data.permissions);
+      })
+      .catch(() => {
+        /* keep the local mirror — invite still works */
+      });
   }, []);
 
   const togglePerm = (key) =>
@@ -236,19 +246,19 @@ export default function TeamPage() {
       <StatHero
         icon={Users}
         title="Team"
-        subtitle="Invite teammates to help manage your inbox and automations"
+        subtitle="Add your front desk, managers and housekeeping — and choose what each one can open"
         help={{
           title: "Team",
           tips: [
-            "Invite teammates by email; they get a link to join that expires in 7 days.",
-            "Tick exactly which areas each agent can access when you invite them.",
-            "Agents only see the areas you grant, and can't touch billing or delete the workspace.",
-            "Edit any agent's permissions later with the sliders icon; changes apply immediately.",
-            "Only the owner controls billing and workspace settings.",
+            "Invite staff by email; they get a link to join that expires in 7 days.",
+            "Tick exactly which parts of the hotel each person can open when you invite them.",
+            "Staff only see the areas you grant, and can't touch billing or delete the property.",
+            "Edit anyone's access later with the sliders icon; changes apply immediately.",
+            "You're the owner — you always have everything, including billing.",
           ],
         }}
         stats={[
-          { label: "Members", value: members.length + (owner ? 1 : 0), accent: true },
+          { label: "Staff", value: members.length + (owner ? 1 : 0), accent: true },
           { label: "Pending", value: invites.length },
         ]}
       >
@@ -256,7 +266,7 @@ export default function TeamPage() {
           onClick={() => setShowModal(true)}
           className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition"
         >
-          <UserPlus className="w-4 h-4" /> Invite
+          <UserPlus className="w-4 h-4" /> Invite staff
         </button>
       </StatHero>
 

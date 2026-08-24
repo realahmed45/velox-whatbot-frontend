@@ -32,7 +32,7 @@ export const BOTLIFY_FAQ = [
       "overview of botlify",
     ],
     answer:
-      "Botlify is a complete operating platform for a hotel — not just a chatbot.\n\nIt gives you:\n• A channel manager — Booking.com and Airbnb on one calendar\n• Your own direct-booking page, commission-free\n• An AI revenue manager that suggests nightly rates you approve\n• An AI concierge on WhatsApp, Instagram, Messenger and Telegram\n• A front desk — check-in, check-out, housekeeping and folio\n• A unified guest CRM and a reviews inbox\n• The Botlify Agent — type an instruction in plain language and it does it\n\nOne login, one calendar, one bill.",
+      "Botlify is a complete operating platform for a hotel — not just a chatbot.\n\nIt gives you:\n• A channel manager — 60+ booking channels (Booking.com, Airbnb, Agoda, Expedia, Traveloka, Tiket.com and more) on one calendar\n• Your own direct-booking page, commission-free\n• An AI revenue manager that suggests nightly rates you approve\n• An AI concierge on WhatsApp, Instagram, Messenger and Telegram\n• A front desk — check-in, check-out, housekeeping and folio\n• A unified guest CRM and a reviews inbox\n• The Botlify Agent — type an instruction in plain language and it does it\n\nOne login, one calendar, one bill.",
   },
   {
     id: "pricing",
@@ -81,7 +81,7 @@ export const BOTLIFY_FAQ = [
       "do you charge per booking",
     ],
     answer:
-      "Two numbers, and that's the whole model:\n\n• 0% on Booking.com and Airbnb bookings. OTA sync is completely free — we never take a cut of a reservation that came through an OTA.\n• 10% only on bookings the AI closes for you — through WhatsApp, Instagram, Messenger, Telegram or your direct booking page.\n\nWhy 10% is the good deal: OTAs charge 15–18% for the same reservation. Our 10% is cheaper, and it only applies to revenue you would not otherwise have had — the AI closed it, at 3am, in a chat you never had to answer.\n\nThere is also a small partner margin (roughly 5–10%) when we arrange an airport transfer through our partner network. If you use your own driver, you keep 100%.",
+      "Two numbers, and that's the whole model:\n\n• 0% on OTA bookings — all 60+ channels. OTA sync is completely free — we never take a cut of a reservation that came through an OTA.\n• 10% only on bookings the AI closes for you — through WhatsApp, Instagram, Messenger, Telegram or your direct booking page.\n\nWhy 10% is the good deal: OTAs charge 15–18% for the same reservation. Our 10% is cheaper, and it only applies to revenue you would not otherwise have had — the AI closed it, at 3am, in a chat you never had to answer.\n\nThere is also a small partner margin (roughly 5–10%) when we arrange an airport transfer through our partner network. If you use your own driver, you keep 100%.",
   },
   {
     id: "commission-settlement",
@@ -151,7 +151,7 @@ export const BOTLIFY_FAQ = [
       "two-way sync",
     ],
     answer:
-      "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50+ more, all through one connection.\n\nIf your hotel is listed anywhere, chances are we can sync it.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd it costs you nothing extra: OTA sync is 0% commission.",
+      "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50+ more, so 60+ booking channels in total, all through one connection with our connectivity partner.\n\nTraveloka and Tiket.com matter especially if you want Indonesian domestic travellers. If your hotel is listed anywhere, chances are we can sync it.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd it costs you nothing extra: OTA sync is 0% commission.",
   },
   {
     id: "messaging-channels",
@@ -209,7 +209,7 @@ export const BOTLIFY_FAQ = [
       "try it",
     ],
     answer:
-      "Three steps, and you can do them right now:\n\n1. Create your account — email and password, no card needed for the free Launch plan.\n2. Name your hotel — property name, city, timezone and currency.\n3. Add your rooms — type them in manually, or import your room types, rates and photos straight from your Booking.com or Airbnb listing.\n\nThe moment rooms exist, your calendar and your direct booking page are live. Connecting channels and messaging comes after, whenever you're ready.\n\nThe full walkthrough is on our Guide page.",
+      "Three steps, and you can do them right now:\n\n1. Create your account — email and password, no card needed for the free Launch plan.\n2. Name your hotel — property name, city, timezone and currency.\n3. Add your rooms — type them in manually, or import your room types, rates and photos straight from an existing OTA listing.\n\nThe moment rooms exist, your calendar and your direct booking page are live. Connecting channels and messaging comes after, whenever you're ready.\n\nThe full walkthrough is on our Guide page.",
   },
   {
     id: "setup-time",
@@ -228,7 +228,7 @@ export const BOTLIFY_FAQ = [
       "minutes",
     ],
     answer:
-      "About 10 minutes to be up and taking bookings.\n\nAccount, hotel name and rooms take a few minutes — faster if you import from an OTA listing. Connecting Booking.com and Airbnb through our connectivity partner is the slowest part, and it's mostly waiting on the channel to acknowledge the mapping.\n\nThere's no migration project, no implementation fee and no code to install anywhere.",
+      "About 10 minutes to be up and taking bookings.\n\nAccount, hotel name and rooms take a few minutes — faster if you import from an OTA listing. Connecting your OTA channels through our connectivity partner is the slowest part, and it's mostly waiting on the channel to acknowledge the mapping.\n\nThere's no migration project, no implementation fee and no code to install anywhere.",
   },
   {
     id: "need-channel-manager",
@@ -245,7 +245,7 @@ export const BOTLIFY_FAQ = [
       "already have a channel manager",
     ],
     answer:
-      "No — Botlify is the channel manager.\n\nYour rooms, rates and availability sync two-way with Booking.com and Airbnb, and a sale on any channel drops availability everywhere else instantly. There's nothing extra to subscribe to and nothing to wire two products together.\n\nIf you already pay for one, Botlify is meant to replace that line item, not sit next to it.",
+      "No — Botlify is the channel manager.\n\nYour rooms, rates and availability sync two-way with all 60+ channels — Booking.com, Airbnb, Agoda, Expedia, Traveloka, Tiket.com and the rest — and a sale on any channel drops availability everywhere else instantly. There's nothing extra to subscribe to and nothing to wire two products together.\n\nIf you already pay for one, Botlify is meant to replace that line item, not sit next to it.",
   },
   {
     id: "replace-pms",
@@ -302,7 +302,7 @@ export const BOTLIFY_FAQ = [
       "agent",
     ],
     answer:
-      "It's your hotel's command line, in plain English.\n\nType it the way you'd say it to a manager:\n• \"Change Deluxe Double to $95 next weekend\"\n• \"Who checks in today?\"\n• \"Block room 3 tomorrow — the AC is out\"\n• \"How did we do last month?\"\n\nRead-only questions are answered immediately. Anything that changes a rate, availability or a booking shows you exactly what will change and asks you to confirm first — it never acts on money or inventory without your say-so.\n\nOne confirmed instruction updates Booking.com, Airbnb and your direct page together.",
+      "It's your hotel's command line, in plain English.\n\nType it the way you'd say it to a manager:\n• \"Change Deluxe Double to $95 next weekend\"\n• \"Who checks in today?\"\n• \"Block room 3 tomorrow — the AC is out\"\n• \"How did we do last month?\"\n\nRead-only questions are answered immediately. Anything that changes a rate, availability or a booking shows you exactly what will change and asks you to confirm first — it never acts on money or inventory without your say-so.\n\nOne confirmed instruction updates every connected channel and your direct page together.",
   },
   {
     id: "revenue-manager",
@@ -382,7 +382,7 @@ export const BOTLIFY_FAQ = [
       "how many rooms",
     ],
     answer:
-      "A room type in Botlify is a name, a number of units, an occupancy and a nightly rate — for example \"Deluxe Double, 4 units, sleeps 2, $79\".\n\n• Add them manually, or import your types, rates and photos from your Booking.com or Airbnb listing.\n• Units is how many physical rooms of that type you have. That number is your availability.\n• The nightly rate matters more than anywhere else in the product: it is the number the AI quotes to guests, the number your direct booking page shows, and the baseline the revenue manager suggests moving up or down.\n\nThere is no per-room pricing from us — put in as many as you have.",
+      "A room type in Botlify is a name, a number of units, an occupancy and a nightly rate — for example \"Deluxe Double, 4 units, sleeps 2, $79\".\n\n• Add them manually, or import your types, rates and photos from an existing OTA listing.\n• Units is how many physical rooms of that type you have. That number is your availability.\n• The nightly rate matters more than anywhere else in the product: it is the number the AI quotes to guests, the number your direct booking page shows, and the baseline the revenue manager suggests moving up or down.\n\nThere is no per-room pricing from us — put in as many as you have.",
   },
   {
     id: "double-booking",
@@ -398,7 +398,7 @@ export const BOTLIFY_FAQ = [
       "conflict",
     ],
     answer:
-      "No. Everything writes to a single calendar.\n\n• Every channel — OTAs, direct page, chat, manual bookings — reads and writes the same availability.\n• OTA sync is two-way, so a Booking.com reservation removes that night everywhere else.\n• Both the booking page and the AI re-check live availability in the moment before confirming, not just when the conversation started.\n\nThat last check is the one that matters — it's what stops a room being promised twice in two simultaneous chats.",
+      "No. Everything writes to a single calendar.\n\n• Every channel — OTAs, direct page, chat, manual bookings — reads and writes the same availability.\n• OTA sync is two-way across all 60+ channels, so a Booking.com or Traveloka reservation removes that night everywhere else.\n• Both the booking page and the AI re-check live availability in the moment before confirming, not just when the conversation started.\n\nThat last check is the one that matters — it's what stops a room being promised twice in two simultaneous chats.",
   },
   {
     id: "guest-crm",
