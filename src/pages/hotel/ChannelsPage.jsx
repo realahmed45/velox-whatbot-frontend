@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 import { Check, Loader2, MessageCircle, Plug, Unplug } from "lucide-react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import ChannelWall from "@/components/ChannelWall";
+import FacebookPagePicker from "@/components/FacebookPagePicker";
+import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import { CHANNEL_COUNT_PHRASE } from "@/data/otaChannels";
 
 /* Brand marks */
@@ -118,6 +120,12 @@ export default function ChannelsPage() {
     load();
   }, [load]);
 
+  // The provider callback returns here (?from=channels) with either the
+  // headless Messenger page-pick handoff or a connected/error result.
+  const { picker, closePicker, handlePicked } = useChannelCallbackParams({
+    onConnected: load,
+  });
+
   // ── Telegram pairing ───────────────────────────────────────────────────────
   // Generate a code, show the hotel what to do, then poll until Zernio reports
   // the channel linked. Polling stops on success, expiry, or when they close.
@@ -182,7 +190,9 @@ export default function ChannelsPage() {
     }
     setBusy(key);
     try {
-      const { data } = await api.get(`/channels/${key}/connect`);
+      const { data } = await api.get(`/channels/${key}/connect`, {
+        params: { from: "channels" },
+      });
       if (data?.url) {
         window.location.href = data.url;
         return;
@@ -319,6 +329,16 @@ export default function ChannelsPage() {
           subtitle={`Your availability and rates sync to ${CHANNEL_COUNT_PHRASE} through one connection. Set these up under Property & Rooms.`}
         />
       </div>
+
+      {/* Facebook Page picker — headless Messenger connect */}
+      {picker && (
+        <FacebookPagePicker
+          tempToken={picker.tempToken}
+          userProfile={picker.userProfile}
+          onDone={handlePicked}
+          onCancel={closePicker}
+        />
+      )}
 
       {/* Telegram pairing modal */}
       {tg && (

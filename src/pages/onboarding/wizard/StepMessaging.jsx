@@ -10,6 +10,8 @@ import { Check, Loader2, MessageCircle, Plug } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { connectInstagram } from "@/utils/connectInstagram";
+import FacebookPagePicker from "@/components/FacebookPagePicker";
+import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import WizardShell from "./WizardShell";
 
 /* Brand marks — same paths as the Channels page. */
@@ -112,6 +114,16 @@ export default function StepMessaging({ patch, goNext, goBack }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Messenger/WhatsApp connect leaves the app and the callback brings the user
+  // back to this step (?from=onboarding). Handle the page-pick handoff and the
+  // connected/error results here so they never leave the wizard.
+  const { picker, closePicker, handlePicked } = useChannelCallbackParams({
+    onConnected: load,
+    // ?step=messaging is what lands the wizard on this step — cleaning it away
+    // would drop a refresh back at step 1.
+    keep: ["step"],
+  });
 
   // ── Telegram pairing ───────────────────────────────────────────────────────
   const startTelegramPairing = async () => {
@@ -274,6 +286,16 @@ export default function StepMessaging({ patch, goNext, goBack }) {
       <p className="text-xs text-ink-400 mt-5 text-center">
         Entirely optional — you can connect these later from Settings → Channels.
       </p>
+
+      {/* Facebook Page picker — headless Messenger connect */}
+      {picker && (
+        <FacebookPagePicker
+          tempToken={picker.tempToken}
+          userProfile={picker.userProfile}
+          onDone={handlePicked}
+          onCancel={closePicker}
+        />
+      )}
 
       {/* Telegram pairing modal */}
       {tg && (
