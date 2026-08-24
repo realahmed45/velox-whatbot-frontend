@@ -114,7 +114,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTabState] = useState(() => {
-    const t = searchParams.get("tab");
+    const t = searchParams.get(paramKey);
     return TABS.some((x) => x.id === t) ? t : "knows";
   });
 
@@ -438,7 +438,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                         Amenities
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {property.amenities.map((a) => (
+                        {(property.amenities || []).map((a) => (
                           <span
                             key={a}
                             className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-ink-100 text-ink-600"
@@ -692,7 +692,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
           {(cfg.faqs?.length || 0) > 0 && (
             <div className="space-y-2 mb-3">
-              {cfg.faqs.map((f, i) => (
+              {(cfg.faqs || []).map((f, i) => (
                 <div
                   key={i}
                   className="rounded-xl border border-ink-100 bg-white p-3.5"
