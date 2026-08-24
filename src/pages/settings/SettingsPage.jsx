@@ -303,12 +303,12 @@ function SecuritySettings({ onGoToTeam }) {
   return (
     <div className="space-y-5">
       {/* Account identity */}
-      <div className="card p-5 flex items-center gap-3">
+      <div className="card p-4 flex items-center gap-3">
         <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
           <Shield className="w-5 h-5 text-brand-500" />
         </div>
         <div className="min-w-0">
-          <p className="font-bold text-ink-900 truncate">{user?.name}</p>
+          <p className="font-semibold text-ink-900 truncate">{user?.name}</p>
           <p className="text-xs text-ink-500 truncate">{user?.email}</p>
         </div>
         <div className="ml-auto flex flex-wrap gap-1.5 justify-end">
@@ -326,10 +326,10 @@ function SecuritySettings({ onGoToTeam }) {
       </div>
 
       {/* Password */}
-      <div className="card p-5 sm:p-6 space-y-4">
+      <div className="card p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2">
           <KeyRound className="w-4 h-4 text-ink-500" />
-          <h3 className="text-sm font-bold text-ink-900">
+          <h3 className="text-sm font-semibold text-ink-900">
             {hasPassword ? "Change password" : "Set a password"}
           </h3>
         </div>
@@ -438,10 +438,10 @@ function SecuritySettings({ onGoToTeam }) {
       </div>
 
       {/* Session */}
-      <div className="card p-5 sm:p-6 space-y-3">
+      <div className="card p-4 sm:p-5 space-y-3">
         <div className="flex items-center gap-2">
           <LogOut className="w-4 h-4 text-ink-500" />
-          <h3 className="text-sm font-bold text-ink-900">Session</h3>
+          <h3 className="text-sm font-semibold text-ink-900">Session</h3>
         </div>
         <p className="text-xs text-ink-500">
           Sign out of your hotel account on this device. Bookings, guest
@@ -457,10 +457,10 @@ function SecuritySettings({ onGoToTeam }) {
 
       {/* Who else can sign in — owners only; staff can't manage the team. */}
       {onGoToTeam && (
-      <div className="card p-5 sm:p-6">
+      <div className="card p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1.5">
           <Shield className="w-4 h-4 text-ink-500" />
-          <h3 className="text-sm font-bold text-ink-900">
+          <h3 className="text-sm font-semibold text-ink-900">
             Who else can get in
           </h3>
         </div>
@@ -480,10 +480,10 @@ function SecuritySettings({ onGoToTeam }) {
       )}
 
       {/* Support */}
-      <div className="card p-5 sm:p-6">
+      <div className="card p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1.5">
           <LifeBuoy className="w-4 h-4 text-ink-500" />
-          <h3 className="text-sm font-bold text-ink-900">Need help?</h3>
+          <h3 className="text-sm font-semibold text-ink-900">Need help?</h3>
         </div>
         <p className="text-xs text-ink-500">
           Questions about your hotel account, billing or security — email us at{" "}
@@ -541,7 +541,7 @@ function GeneralSettings({ workspace, onSave }) {
   };
 
   return (
-    <div className="card p-4 sm:p-6 space-y-4">
+    <div className="card p-4 sm:p-5 space-y-4">
       <div>
         <label className="label">Property name</label>
         <input
@@ -649,14 +649,14 @@ function ChannelHealth({ workspace, onSave }) {
   if (ig?.status !== "connected") return null;
 
   return (
-    <div className="card p-5 sm:p-6 space-y-4">
+    <div className="card p-4 sm:p-5 space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <Instagram className="w-4.5 h-4.5" />
           </span>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-ink-900">
+            <h3 className="text-sm font-semibold text-ink-900">
               Instagram message delivery
             </h3>
             <p className="text-xs text-ink-500">
@@ -782,9 +782,9 @@ function AutomationSettings({ workspace, onSave }) {
   };
 
   return (
-    <div className="card p-4 sm:p-6 space-y-5">
+    <div className="card p-4 sm:p-5 space-y-5">
       <div>
-        <h3 className="text-sm font-bold text-ink-900">Reply behaviour</h3>
+        <h3 className="text-sm font-semibold text-ink-900">Reply behaviour</h3>
         <p className="text-xs text-ink-500 mt-0.5">
           Applies to your AI concierge on every connected channel — WhatsApp,
           Instagram, Messenger and Telegram.

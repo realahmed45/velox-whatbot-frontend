@@ -199,7 +199,7 @@ function BookingsTable() {
             <CalendarCheck className="w-6 h-6 text-brand-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-ink-900">Bookings</h1>
+            <h1 className="text-2xl font-semibold text-ink-900">Bookings</h1>
             <p className="text-sm text-ink-500">
               Every reservation — from your OTAs, your AI concierge, and manual
               entries.
@@ -217,15 +217,15 @@ function BookingsTable() {
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-2xl font-black text-ink-900">{stats.upcoming}</p>
+          <p className="text-2xl font-semibold text-ink-900">{stats.upcoming}</p>
           <p className="text-xs text-ink-500">Upcoming check-ins</p>
         </div>
         <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-2xl font-black text-ink-900">{stats.monthCount}</p>
+          <p className="text-2xl font-semibold text-ink-900">{stats.monthCount}</p>
           <p className="text-xs text-ink-500">Bookings this month</p>
         </div>
         <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <p className="text-lg font-black text-ink-900 truncate flex items-center gap-1.5">
+          <p className="text-lg font-semibold text-ink-900 truncate flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0" />
             {stats.revenueLabel}
           </p>
@@ -234,7 +234,7 @@ function BookingsTable() {
         <div className="rounded-xl border border-ink-100 bg-white p-4">
           <div className="flex flex-wrap gap-1">
             {Object.keys(stats.bySource).length === 0 ? (
-              <p className="text-lg font-black text-ink-300">—</p>
+              <p className="text-lg font-semibold text-ink-300">—</p>
             ) : (
               Object.entries(stats.bySource).map(([s, n]) => (
                 <span key={s} className="inline-flex items-center gap-1">
@@ -691,7 +691,7 @@ function NewBookingModal({ open, onClose, onCreated }) {
                 }`
               : "Pick dates to see the total"}
           </span>
-          <span className="font-black text-ink-900">
+          <span className="font-semibold text-ink-900">
             {room?.currency || ""} {totalPreview.toLocaleString()}
           </span>
         </div>

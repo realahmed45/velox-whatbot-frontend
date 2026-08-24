@@ -279,62 +279,60 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
   return (
     <div className="relative min-h-full bg-ink-50/60">
-      <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-5">
-        {/* ── Hero ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-5 py-5 sm:px-6">
-          <div className="pointer-events-none absolute -top-24 right-12 w-64 h-64 rounded-full bg-brand-500/15 blur-[90px]" />
+      <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-6">
+        {/* ── Hero — slim strip, not a slab ──────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-4 py-3.5 sm:px-5">
+          <div className="pointer-events-none absolute -top-24 right-12 w-56 h-56 rounded-full bg-brand-500/10 blur-[90px]" />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-              <Bot className="w-6 h-6 text-brand-400" />
+          <div className="relative flex flex-wrap items-center gap-x-4 gap-y-3">
+            <div className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0">
+              <Bot className="w-4.5 h-4.5 text-brand-400" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight">AI Assistant</h1>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-white/60">
-                  <Sparkles className="w-3 h-3" /> AI-powered
+                <h1 className="text-base font-semibold tracking-tight">
+                  AI Assistant
+                </h1>
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-md bg-white/[0.07] text-white/55">
+                  <Sparkles className="w-2.5 h-2.5" /> AI
                 </span>
                 <AiBotHelp />
               </div>
-              <p className="text-sm text-white/60 mt-1 max-w-md">
-                It already knows your property, rooms and policies. It answers
-                guests on WhatsApp, Instagram, Messenger &amp; Telegram 24/7 and
-                books them in — in your voice.
+              <p className="text-xs text-white/50 mt-0.5 truncate">
+                Knows your property, rooms and policies. Answers guests 24/7 — in
+                your voice.
               </p>
             </div>
 
-            {/* Readiness + master toggle */}
-            <div className="shrink-0 flex items-center gap-5">
-              <div className="hidden sm:flex flex-col items-end">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-white/50">Readiness</span>
-                  <span className="text-sm font-black text-white">
-                    {readiness}%
-                  </span>
-                </div>
-                <div className="mt-1 h-1.5 w-28 rounded-full bg-white/10 overflow-hidden">
+            {/* Readiness + master toggle — compact */}
+            <div className="shrink-0 flex items-center gap-4 ml-auto">
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="h-1 w-20 rounded-full bg-white/10 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-400 transition-all duration-500"
                     style={{ width: `${readiness}%` }}
                   />
                 </div>
+                <span className="text-[11px] font-semibold text-white/70 tabular-nums">
+                  {readiness}%
+                </span>
               </div>
-              <div className="flex flex-col items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => set({ enabled: !cfg.enabled })}
-                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
                     cfg.enabled ? "bg-emerald-500" : "bg-white/20"
                   }`}
                   aria-label="Toggle AI assistant"
                 >
                   <span
-                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
-                      cfg.enabled ? "translate-x-7" : "translate-x-1"
+                    className={`inline-block h-4.5 w-4.5 transform rounded-full bg-white transition ${
+                      cfg.enabled ? "translate-x-[1.375rem]" : "translate-x-1"
                     }`}
                   />
                 </button>
                 <span
-                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
                     cfg.enabled ? "text-emerald-300" : "text-white/50"
                   }`}
                 >
@@ -351,8 +349,8 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         </div>
 
         {/* ── Tab bar (no endless scroll — jump to any section) ───── */}
-        <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-ink-50/80 backdrop-blur-xl border-b border-ink-100">
-          <div className="flex gap-1 overflow-x-auto no-scrollbar">
+        <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-1.5 bg-ink-50/80 backdrop-blur-xl border-b border-ink-100/80">
+          <div className="flex gap-0.5 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const TabIcon = t.icon;
               const done = t.ready?.(cfg);
@@ -360,17 +358,17 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition ${
                     tab === t.id
-                      ? "bg-ink-900 text-white shadow-sm"
+                      ? "bg-ink-900 text-white"
                       : "text-ink-500 hover:text-ink-900 hover:bg-ink-100"
                   }`}
                 >
-                  <TabIcon className="w-4 h-4" />
+                  <TabIcon className="w-3.5 h-3.5" />
                   {t.label}
                   {done && (
                     <Check
-                      className={`w-3.5 h-3.5 ${tab === t.id ? "text-emerald-300" : "text-emerald-500"}`}
+                      className={`w-3 h-3 ${tab === t.id ? "text-emerald-300" : "text-emerald-500"}`}
                     />
                   )}
                 </button>
@@ -381,7 +379,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
         {/* ── What it knows tab ──────────────────────────────────── */}
         {tab === "knows" && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <Section
             icon={BookOpen}
             title="What your assistant knows"
@@ -410,7 +408,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                 </a>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {/* Identity + location */}
                 <KnowsCard icon={Hotel} title="Property">
                   <KnowsRow label="Name" value={property.name} />
@@ -441,7 +439,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                         {(property.amenities || []).map((a) => (
                           <span
                             key={a}
-                            className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-ink-100 text-ink-600"
+                            className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-ink-50 border border-ink-100 text-ink-600"
                           >
                             {a}
                           </span>
@@ -476,10 +474,10 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                       {rooms.map((r) => (
                         <div
                           key={r._id}
-                          className="flex items-start justify-between gap-3 rounded-lg bg-ink-50/70 px-3 py-2"
+                          className="flex items-start justify-between gap-3 rounded-lg border border-ink-100 px-3 py-2"
                         >
                           <div className="min-w-0">
-                            <p className="text-[13px] font-semibold text-ink-900 truncate">
+                            <p className="text-[13px] font-medium text-ink-900 truncate">
                               {r.name}
                             </p>
                             <p className="text-[11px] text-ink-500">
@@ -504,7 +502,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                             </p>
                           </div>
                           {r.baseRate > 0 && (
-                            <span className="text-[13px] font-bold text-ink-900 shrink-0">
+                            <span className="text-[13px] font-semibold text-ink-900 shrink-0">
                               {r.currency || property.currency} {r.baseRate}
                               <span className="text-[10px] font-medium text-ink-400">
                                 /night
@@ -540,7 +538,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                           {on.map((k) => (
                             <span
                               key={k}
-                              className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700"
+                              className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700"
                             >
                               {labels[k]}
                             </span>
@@ -608,7 +606,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
         {/* ── Tone & rules tab ───────────────────────────────────── */}
         {tab === "voice" && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <Section
             icon={Bot}
             title="Tone of voice"
@@ -621,7 +619,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                   <button
                     key={v.id}
                     onClick={() => set({ brandVoice: on ? "" : v.text })}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold border transition ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition ${
                       on
                         ? "bg-brand-50 border-brand-300 text-brand-700"
                         : "bg-white border-ink-200 text-ink-600 hover:border-brand-300"
@@ -673,13 +671,13 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           {/* Browse the template library */}
           <button
             onClick={() => setShowTemplates(true)}
-            className="w-full mb-3 rounded-xl border border-brand-200 bg-gradient-to-br from-brand-50 to-accent-50/40 p-3.5 flex items-center gap-3 text-left hover:border-brand-300 hover:shadow-card transition group"
+            className="w-full mb-3 rounded-xl border border-ink-100 bg-white p-3 flex items-center gap-3 text-left hover:border-brand-300 hover:bg-brand-50/30 transition group"
           >
-            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shrink-0 shadow-glow">
-              <Sparkle className="w-5 h-5 text-white" />
+            <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-bold text-ink-900">
+              <span className="block text-[13px] font-semibold text-ink-900">
                 Browse {FAQ_TEMPLATE_COUNT}+ ready-made FAQs
               </span>
               <span className="block text-xs text-ink-500">
@@ -695,10 +693,10 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
               {(cfg.faqs || []).map((f, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-ink-100 bg-white p-3.5"
+                  className="rounded-xl border border-ink-100 p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-bold text-ink-900">
+                    <p className="text-[13px] font-semibold text-ink-900">
                       {f.question}
                     </p>
                     <button
@@ -708,13 +706,13 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-sm text-ink-600 mt-1">{f.answer}</p>
+                  <p className="text-[13px] text-ink-500 mt-1 leading-relaxed">{f.answer}</p>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="rounded-xl border border-dashed border-ink-200 bg-ink-50/50 p-3.5 space-y-2.5">
+          <div className="rounded-xl border border-dashed border-ink-200 p-3 space-y-2.5">
             <input
               className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
               value={newFaq.question}
@@ -752,7 +750,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
             {(cfg.handoffKeywords || []).map((k, i) => (
               <span
                 key={`${k}-${i}`}
-                className="inline-flex items-center gap-1.5 text-[13px] font-medium px-2.5 py-1 rounded-lg bg-ink-100 text-ink-700"
+                className="inline-flex items-center gap-1.5 text-[13px] font-normal px-2.5 py-1 rounded-lg bg-ink-50 border border-ink-100 text-ink-700"
               >
                 {k}
                 <button
@@ -801,14 +799,14 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
         {/* ── Test bot tab ───────────────────────────────────────── */}
         {tab === "test" && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
-            <div className="rounded-2xl border border-ink-100 bg-white p-5 flex items-start gap-3">
-              <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="rounded-2xl border border-ink-100 bg-white p-4 flex items-start gap-2.5">
+              <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
               </span>
-              <div className="text-sm text-ink-600 leading-relaxed">
-                <span className="font-bold text-ink-900">How replies work: </span>
+              <div className="text-[13px] text-ink-500 leading-relaxed">
+                <span className="font-semibold text-ink-900">How replies work: </span>
                 the bot first checks your custom FAQs for an exact match, then
                 your live property and room data — rates, availability,
                 policies. It never makes up prices or policies you haven't
@@ -825,7 +823,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
       {/* ── Sticky save bar (stays inside the content column) ──── */}
       <div className="sticky bottom-0 z-20 border-t border-ink-100 bg-white/90 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
           <p className="text-xs text-ink-500 hidden sm:block">
             {cfg.enabled
               ? "Bot is live — it replies automatically to new messages."
@@ -879,11 +877,11 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
         {/* header */}
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shrink-0">
-              <Sparkle className="w-5 h-5 text-white" />
+            <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
             </span>
             <div className="min-w-0">
-              <h3 className="font-black text-ink-900 leading-tight">
+              <h3 className="font-semibold text-ink-900 leading-snug">
                 FAQ template library
               </h3>
               <p className="text-xs text-ink-500">
@@ -957,7 +955,7 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
                       <Check className="w-3.5 h-3.5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-bold text-ink-900">
+                      <span className="block text-[13px] font-semibold text-ink-900">
                         {tpl.question}
                       </span>
                       <span className="block text-xs text-ink-500 mt-0.5">
@@ -985,32 +983,37 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
   );
 }
 
-/** One titled card in the read-only "what it knows" summary. */
+/**
+ * One group in the read-only "what it knows" spec sheet.
+ *
+ * Deliberately not a card: a hairline rule and a quiet label read as a
+ * reference sheet, which is what this is — nothing here is editable.
+ */
 function KnowsCard({ icon: Icon, title, children }) {
   return (
-    <div className="rounded-xl border border-ink-100 bg-white p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4" />
-        </span>
-        <h4 className="text-[13px] font-bold text-ink-900">{title}</h4>
+    <section className="border-t border-ink-100 pt-4 first:border-t-0 first:pt-0">
+      <div className="flex items-center gap-2 mb-2.5">
+        <Icon className="w-3.5 h-3.5 text-ink-400 shrink-0" />
+        <h4 className="text-[11px] uppercase tracking-wider font-semibold text-ink-400">
+          {title}
+        </h4>
       </div>
-      <div className="space-y-1.5">{children}</div>
-    </div>
+      <dl className="space-y-1.5">{children}</dl>
+    </section>
   );
 }
 
-/** A label/value line. Renders nothing when we don't hold the value. */
+/**
+ * A label/value line in the spec sheet — a two-column definition row on
+ * anything wider than a phone, stacked below that. Renders nothing when we
+ * don't hold the value.
+ */
 function KnowsRow({ label, value }) {
   if (value === null || value === undefined || value === "") return null;
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[11px] font-semibold text-ink-400 shrink-0">
-        {label}
-      </span>
-      <span className="text-[13px] text-ink-800 text-right min-w-0 truncate">
-        {value}
-      </span>
+    <div className="sm:grid sm:grid-cols-[10rem_1fr] sm:gap-4 sm:items-baseline">
+      <dt className="text-[12px] text-ink-400 sm:text-right">{label}</dt>
+      <dd className="text-[13px] text-ink-800 min-w-0 truncate">{value}</dd>
     </div>
   );
 }
@@ -1021,7 +1024,7 @@ function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, dan
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-1">
-        <label className="text-sm font-bold text-ink-800">{label}</label>
+        <label className="text-[13px] font-semibold text-ink-800">{label}</label>
         <span
           className={`text-[11px] ${danger ? "text-rose-500" : "text-ink-400"}`}
         >
@@ -1095,14 +1098,14 @@ function Playground({ workspaceId, enabled }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100 bg-ink-50/60">
-        <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-ink-900 text-white flex items-center justify-center shrink-0">
-            <MessageSquare className="w-5 h-5" />
+    <div className="rounded-2xl border border-ink-100 bg-white overflow-hidden">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-100">
+        <div className="flex items-center gap-2.5">
+          <span className="w-7 h-7 rounded-lg bg-ink-900 text-white flex items-center justify-center shrink-0">
+            <MessageSquare className="w-4 h-4" />
           </span>
           <div>
-            <h2 className="font-black text-ink-900 text-[15px] leading-tight">
+            <h2 className="font-semibold text-ink-900 text-[14px] leading-snug">
               Test your bot
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
@@ -1205,17 +1208,17 @@ function Playground({ workspaceId, enabled }) {
 
 function Section({ title, subtitle, icon: Icon, children }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-sm">
-      <div className="flex items-start gap-3 mb-4">
-        <span className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-          <Icon className="w-5 h-5" />
+    <div className="rounded-2xl border border-ink-100 bg-white p-4 sm:p-5">
+      <div className="flex items-start gap-2.5 mb-4">
+        <span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4" />
         </span>
-        <div>
-          <h2 className="font-black text-ink-900 text-[15px] leading-tight">
+        <div className="min-w-0">
+          <h2 className="font-semibold text-ink-900 text-[14px] leading-snug">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs text-ink-500 mt-0.5 leading-relaxed">
+            <p className="text-xs text-ink-500 mt-1 leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -1263,7 +1266,7 @@ function AiBotHelp() {
       </button>
       {open && (
         <div className="absolute left-0 top-full z-50 mt-2 w-72 sm:w-80 rounded-xl border border-ink-100 bg-white shadow-card-lg p-4 text-left">
-          <p className="text-sm font-black text-ink-900 mb-2">AI Assistant</p>
+          <p className="text-[13px] font-semibold text-ink-900 mb-2">AI Assistant</p>
           <ul className="space-y-2">
             {tips.map((t, i) => (
               <li

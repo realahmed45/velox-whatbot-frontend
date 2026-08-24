@@ -46,6 +46,12 @@ export default {
           950: "#020617",
         },
       },
+      // Half-step sizes used by the lean UI pass (w-4.5, h-4.5, translate-x-4.5).
+      // Tailwind's default scale jumps 4 → 5, which is a visible 4px step on
+      // small icons.
+      spacing: {
+        4.5: "1.125rem",
+      },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Inter", "system-ui", "sans-serif"],

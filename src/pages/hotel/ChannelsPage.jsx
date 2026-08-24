@@ -15,6 +15,8 @@ import { Check, Loader2, MessageCircle, Plug, Unplug } from "lucide-react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import ChannelWall from "@/components/ChannelWall";
 import FacebookPagePicker from "@/components/FacebookPagePicker";
+import WhatsAppConnectModal from "@/components/WhatsAppConnectModal";
+import WhatsAppHealthStrip from "@/components/WhatsAppHealthStrip";
 import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import { CHANNEL_COUNT_PHRASE } from "@/data/otaChannels";
 import {
@@ -67,6 +69,9 @@ export default function ChannelsPage() {
   const [loading, setLoading] = useState(true);
   const [statusMap, setStatusMap] = useState({});
   const [busy, setBusy] = useState(null);
+  // WhatsApp has two very different starting points — existing number vs no
+  // number at all — so it opens a chooser instead of firing a blind redirect.
+  const [waOpen, setWaOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -152,6 +157,11 @@ export default function ChannelsPage() {
       startTelegramPairing();
       return;
     }
+    if (key === "whatsapp") {
+      // Two paths: connect their existing WhatsApp number, or get a new one.
+      setWaOpen(true);
+      return;
+    }
     setBusy(key);
     try {
       const { data } = await api.get(`/channels/${key}/connect`, {
@@ -193,12 +203,14 @@ export default function ChannelsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
-          <MessageCircle className="w-6 h-6 text-brand-500" />
+      <div className="flex items-center gap-3 mb-7">
+        <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center">
+          <MessageCircle className="w-4.5 h-4.5 text-brand-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-ink-900">Channels</h1>
+          <h1 className="text-[19px] font-semibold tracking-tight text-ink-900">
+            Channels
+          </h1>
           <p className="text-sm text-ink-500">
             Connect the channels your AI concierge answers guests on.
           </p>
@@ -210,7 +222,7 @@ export default function ChannelsPage() {
           <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-5">
           {CHANNELS.map((ch) => {
             const st = statusMap[ch.key] || {};
             const connected = st.status === "connected";
@@ -218,32 +230,39 @@ export default function ChannelsPage() {
             return (
               <div
                 key={ch.key}
-                className={`rounded-2xl border border-ink-100 bg-white p-5 flex flex-col transition ${ch.ring}`}
+                className={`rounded-2xl border border-ink-100 bg-white p-4 sm:p-5 flex flex-col transition ${ch.ring}`}
               >
                 <div className="flex items-center justify-between">
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center ${ch.tint}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${ch.tint}`}
                   >
                     <Mark className="w-6 h-6" />
                   </div>
                   {connected ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
                       <Check className="w-3 h-3" /> Connected
                     </span>
                   ) : (
-                    <span className="text-[11px] font-bold text-ink-400 bg-ink-50 border border-ink-100 rounded-full px-2 py-0.5">
+                    <span className="text-[11px] font-medium text-ink-400 bg-ink-50 border border-ink-100 rounded-full px-2 py-0.5">
                       Not connected
                     </span>
                   )}
                 </div>
-                <p className="font-black text-ink-900 mt-3">{ch.name}</p>
-                <p className="text-sm text-ink-500 mt-1 flex-1">{ch.desc}</p>
+                <p className="text-[14px] font-semibold text-ink-900 mt-3">{ch.name}</p>
+                <p className="text-[13px] text-ink-500 mt-1 leading-relaxed flex-1">
+                  {ch.desc}
+                </p>
                 {connected && (st.username || st.phoneNumber) && (
                   <p className="text-xs font-semibold text-ink-700 mt-3 truncate">
                     {ch.key === "whatsapp" && st.phoneNumber
                       ? st.phoneNumber
                       : `@${st.username}`}
                   </p>
+                )}
+                {/* WhatsApp can read "connected" while every send fails
+                    (Meta 133005) — surface the real state and the PIN fix. */}
+                {connected && ch.key === "whatsapp" && (
+                  <WhatsAppHealthStrip webhookError={!!st.webhookError} />
                 )}
                 <div className="mt-4">
                   {connected ? (
@@ -294,6 +313,31 @@ export default function ChannelsPage() {
         />
       </div>
 
+      {/* WhatsApp chooser — existing number, or a new one from us */}
+      {waOpen && (
+        <WhatsAppConnectModal
+          from="channels"
+          onClose={(result) => {
+            setWaOpen(false);
+            if (result?.connected) {
+              if (result.webhookError) {
+                toast(
+                  "WhatsApp number is ready, but we couldn't switch on live messages yet. Try disconnecting and connecting again.",
+                  { icon: "⚠️", duration: 7000 },
+                );
+              } else {
+                toast.success(
+                  result.phoneNumber
+                    ? `WhatsApp connected — ${result.phoneNumber}`
+                    : "WhatsApp connected",
+                );
+              }
+              load();
+            }
+          }}
+        />
+      )}
+
       {/* Facebook Page picker — headless Messenger connect */}
       {picker && (
         <FacebookPagePicker
@@ -318,7 +362,7 @@ export default function ChannelsPage() {
               <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
                 <TelegramMark className="w-6 h-6" />
               </div>
-              <h2 id="tg-title" className="text-lg font-black text-ink-900">
+              <h2 id="tg-title" className="text-lg font-semibold text-ink-900">
                 Connect Telegram
               </h2>
             </div>
@@ -369,7 +413,7 @@ export default function ChannelsPage() {
                   <p className="text-[11px] uppercase tracking-wider font-bold text-ink-500 mb-1">
                     Your code
                   </p>
-                  <p className="text-2xl font-black tracking-widest text-ink-900 font-mono">
+                  <p className="text-2xl font-semibold tracking-widest text-ink-900 font-mono">
                     {tg.code}
                   </p>
                   <button

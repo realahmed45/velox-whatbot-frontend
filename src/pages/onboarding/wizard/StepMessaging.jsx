@@ -11,6 +11,8 @@ import toast from "react-hot-toast";
 import api from "@/services/api";
 import { connectInstagram } from "@/utils/connectInstagram";
 import FacebookPagePicker from "@/components/FacebookPagePicker";
+import WhatsAppConnectModal from "@/components/WhatsAppConnectModal";
+import WhatsAppHealthStrip from "@/components/WhatsAppHealthStrip";
 import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import WizardShell from "./WizardShell";
 
@@ -92,6 +94,8 @@ export default function StepMessaging({ patch, goNext, goBack }) {
   const [statusMap, setStatusMap] = useState({});
   const [busy, setBusy] = useState(null);
   const [tg, setTg] = useState(null);
+  // WhatsApp opens the two-path chooser rather than a blind OAuth redirect.
+  const [waOpen, setWaOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -177,6 +181,10 @@ export default function StepMessaging({ patch, goNext, goBack }) {
       startTelegramPairing();
       return;
     }
+    if (key === "whatsapp") {
+      setWaOpen(true);
+      return;
+    }
     if (key === "instagram") {
       // Popup OAuth so the owner never leaves the wizard.
       setBusy("instagram");
@@ -255,6 +263,9 @@ export default function StepMessaging({ patch, goNext, goBack }) {
                 </div>
                 <p className="font-black text-ink-900 mt-3">{ch.name}</p>
                 <p className="text-sm text-ink-500 mt-1 flex-1">{ch.desc}</p>
+                {connected && ch.key === "whatsapp" && (
+                  <WhatsAppHealthStrip webhookError={!!st.webhookError} />
+                )}
                 <div className="mt-4">
                   {connected ? (
                     <div className="w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5">
@@ -286,6 +297,31 @@ export default function StepMessaging({ patch, goNext, goBack }) {
       <p className="text-xs text-ink-400 mt-5 text-center">
         Entirely optional — you can connect these later from Settings → Channels.
       </p>
+
+      {/* WhatsApp chooser — existing number, or a new one from us */}
+      {waOpen && (
+        <WhatsAppConnectModal
+          from="onboarding"
+          onClose={(result) => {
+            setWaOpen(false);
+            if (result?.connected) {
+              if (result.webhookError) {
+                toast(
+                  "WhatsApp number is ready, but we couldn't switch on live messages yet. You can reconnect from Settings → Channels.",
+                  { icon: "⚠️", duration: 7000 },
+                );
+              } else {
+                toast.success(
+                  result.phoneNumber
+                    ? `WhatsApp connected — ${result.phoneNumber}`
+                    : "WhatsApp connected",
+                );
+              }
+              load();
+            }
+          }}
+        />
+      )}
 
       {/* Facebook Page picker — headless Messenger connect */}
       {picker && (

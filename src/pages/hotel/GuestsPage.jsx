@@ -307,7 +307,7 @@ export default function GuestsPage() {
             <Users className="w-6 h-6 text-brand-500" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-black text-ink-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-ink-900 tracking-tight">
               Guests
             </h1>
             <p className="text-sm text-ink-500 mt-0.5">

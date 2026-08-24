@@ -504,7 +504,7 @@ export default function TodayPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div className="mb-5 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-black text-ink-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-ink-900 tracking-tight">
           Today
         </h1>
         <p className="text-sm text-ink-500 mt-1">
