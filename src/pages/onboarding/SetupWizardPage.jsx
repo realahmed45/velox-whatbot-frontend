@@ -1,9 +1,11 @@
 /**
- * SetupWizardPage — the hotel onboarding wizard.
+ * SetupWizardPage — the hotel onboarding wizard, in three steps.
  *
- * Property → Rooms → Booking channels → Guest messaging → Done. Property-first,
- * the way a channel manager onboards a hotel; the Instagram-first flow this
- * replaced belonged to the old chatbot product.
+ *   1. Your hotel      — a fork at the very start: connect a booking channel
+ *                        (import everything) or enter details yourself. Both
+ *                        paths finish inside this step, ending at rooms.
+ *   2. Guest channels  — WhatsApp / Instagram / Messenger / Telegram. Optional.
+ *   3. Done            — the receipt, the direct-booking link, the dashboard.
  *
  * Plan selection still happens BEFORE this (RequireOnboarding redirects an
  * unentitled owner to /onboarding/pricing), so the wizard never has to think
@@ -17,12 +19,36 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
-import StepProperty from "./wizard/StepProperty";
-import StepRooms from "./wizard/StepRooms";
-import StepChannels from "./wizard/StepChannels";
+import StepSetup from "./wizard/StepSetup";
 import StepMessaging from "./wizard/StepMessaging";
 import StepDone from "./wizard/StepDone";
-import { loadWizard, saveWizard, TOTAL_STEPS } from "./wizard/wizardState";
+import {
+  loadWizard,
+  saveWizard,
+  SETUP_PANES,
+  STEP_BY_NAME,
+  TOTAL_STEPS,
+} from "./wizard/wizardState";
+
+/** ?step=<name> → index, or null when absent/unrecognised. */
+function requestedStepIndex() {
+  try {
+    const wanted = new URLSearchParams(window.location.search).get("step");
+    if (wanted && STEP_BY_NAME[wanted] !== undefined) return STEP_BY_NAME[wanted];
+  } catch {
+    /* no window/search — caller falls back to the saved step */
+  }
+  return null;
+}
+
+/** Whether a ?step= was present at all, recognised or not. */
+function hasRequestedStep() {
+  try {
+    return !!new URLSearchParams(window.location.search).get("step");
+  } catch {
+    return false;
+  }
+}
 
 export default function SetupWizardPage() {
   const navigate = useNavigate();
@@ -30,17 +56,11 @@ export default function SetupWizardPage() {
   const [state, setState] = useState(() => {
     const saved = loadWizard();
     // A provider OAuth round trip (WhatsApp/Messenger) returns here with
-    // ?step=messaging. Honour it so the user lands back where they left rather
-    // than at step 1 — or worse, out of the wizard entirely.
-    try {
-      const wanted = new URLSearchParams(window.location.search).get("step");
-      const byName = { property: 0, rooms: 1, channels: 2, messaging: 3, done: 4 };
-      if (wanted && byName[wanted] !== undefined) {
-        return { ...saved, step: byName[wanted] };
-      }
-    } catch {
-      /* no window/search — keep the saved step */
-    }
+    // ?step=messaging — the target the backend hardcodes in
+    // channelController.js. Honour it so the user lands back where they left
+    // rather than at step 1, or worse, out of the wizard entirely.
+    const wanted = requestedStepIndex();
+    if (wanted !== null) return { ...saved, step: wanted };
     return saved;
   });
   const [checking, setChecking] = useState(true);
@@ -65,7 +85,7 @@ export default function SetupWizardPage() {
   /**
    * An owner who already has a property has done step 1 — either on a previous
    * visit or in another tab. Don't make them create a second one: drop them at
-   * the rooms step with the existing property, or straight into the dashboard
+   * the rooms pane with the existing property, or straight into the dashboard
    * if they'd already finished the wizard once.
    */
   useEffect(() => {
@@ -80,7 +100,7 @@ export default function SetupWizardPage() {
         if (!alive) return;
         const props = data.properties || [];
         if (props.length === 0) {
-          // No property → the wizard starts (or resumes) at step 1.
+          // No property → the wizard starts (or resumes) at the fork.
           setState((s) => {
             const next = { ...s, step: 0, propertyId: null };
             saveWizard(next);
@@ -92,20 +112,26 @@ export default function SetupWizardPage() {
         const resumed = loadWizard();
         // An explicit ?step= means we just came back from a provider OAuth
         // round trip — always treat that as a resume, never as "setup done".
-        let requestedStep = null;
-        try {
-          requestedStep = new URLSearchParams(window.location.search).get("step");
-        } catch {
-          /* ignore */
-        }
-        if (requestedStep || (resumed.propertyId === p._id && resumed.step > 0)) {
-          // Mid-wizard refresh — carry on where they left off.
-          setState((s) => ({
-            ...s,
-            propertyName: p.name,
-            currency: p.currency || s.currency,
-            bookingSlug: p.directBooking?.slug || s.bookingSlug,
-          }));
+        const requested = hasRequestedStep();
+        const midWizard =
+          resumed.step > 0 ||
+          (resumed.propertyId === p._id &&
+            resumed.setupPane &&
+            resumed.setupPane !== SETUP_PANES.CHOOSE);
+        if (requested || midWizard) {
+          // Mid-wizard refresh — carry on where they left off, with the
+          // property details refreshed from the server.
+          setState((s) => {
+            const next = {
+              ...s,
+              propertyId: s.propertyId || p._id,
+              propertyName: p.name,
+              currency: p.currency || s.currency,
+              bookingSlug: p.directBooking?.slug || s.bookingSlug,
+            };
+            saveWizard(next);
+            return next;
+          });
           return;
         }
         // A property exists but this isn't a resume — setup is already done.
@@ -134,15 +160,11 @@ export default function SetupWizardPage() {
 
   switch (state.step) {
     case 1:
-      return <StepRooms {...shared} />;
-    case 2:
-      return <StepChannels {...shared} />;
-    case 3:
       return <StepMessaging {...shared} />;
-    case 4:
+    case 2:
       return <StepDone {...shared} />;
     case 0:
     default:
-      return <StepProperty {...shared} />;
+      return <StepSetup {...shared} />;
   }
 }

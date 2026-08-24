@@ -1,5 +1,5 @@
 /**
- * Step 5 — Done. A short receipt of what got set up, the public direct-booking
+ * Step 3 — Done. A short receipt of what got set up, the public direct-booking
  * link if one exists, and the way into the dashboard.
  */
 import { useState } from "react";
@@ -69,7 +69,7 @@ export default function StepDone({ state, goBack }) {
     ? `${window.location.origin}/book/${state.bookingSlug}`
     : null;
 
-  // The OTAs they told us they're on — intent recorded at step 3.
+  // The OTAs they told us they're on — intent recorded in step 1.
   const picked = OTA_CHANNELS.filter((c) =>
     (state.channelsSelected || []).includes(c.key),
   );
@@ -97,9 +97,9 @@ export default function StepDone({ state, goBack }) {
 
   return (
     <WizardShell
-      step={4}
+      step={2}
       icon={PartyPopper}
-      eyebrow="Step 5 of 5"
+      eyebrow="Step 3 of 3"
       title={`${state.propertyName || "Your property"} is live on Botlify`}
       subtitle="Here's what's set up. Everything you skipped is one click away in the dashboard."
       onBack={goBack}
@@ -161,7 +161,7 @@ export default function StepDone({ state, goBack }) {
           </ul>
         </div>
 
-        {/* What they told us at step 3 — shown back so the promise is explicit. */}
+        {/* What they told us in step 1 — shown back so the promise is explicit. */}
         {picked.length > 0 && !state.channelsImported && (
           <div className="rounded-2xl border border-ink-100 bg-white shadow-card p-5 sm:p-6">
             <p className="font-black text-ink-900">

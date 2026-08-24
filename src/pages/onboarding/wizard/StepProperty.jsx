@@ -1,14 +1,15 @@
 /**
- * Step 1 — Your property. The only mandatory step.
+ * The manual property form — the "enter details myself" pane of step 1.
+ * The only mandatory content in the whole wizard.
  *
  * Modelled on Booking.com's "List your property" and Airbnb's "Become a host":
  * one question per section, generous spacing, big friendly targets, and
  * everything non-essential folded behind a single "Add more details" toggle.
  * A hotelier on a phone can finish this with a name and a tap.
  *
- * Creates the workspace (if the owner doesn't have one yet), then the property
- * via POST /hotel/properties. Keeps the consultant-referral validate/attribute
- * logic that used to live in HotelSetupPage.
+ * Creates the property via POST /hotel/properties. The workspace is already
+ * ensured by the fork screen (StepSetup), which also owns the consultant
+ * referral field — the ensure below is a defensive no-op when one exists.
  *
  * Two calls, not one: POST /hotel/properties doesn't accept `amenities` or
  * `starRating` (see hotelController.createProperty's explicit field list), so
@@ -19,7 +20,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Check,
-  CheckCircle2,
   ChevronDown,
   Clock,
   Hotel,
@@ -29,7 +29,6 @@ import {
   Building,
   Palmtree,
   BedDouble,
-  Ticket,
   Star,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -172,7 +171,7 @@ function Chip({ active, onClick, children }) {
   );
 }
 
-export default function StepProperty({ state, patch, goNext }) {
+export default function StepProperty({ state, patch, goNext, shell = {} }) {
   const { activeWorkspace, setActiveWorkspace, user } = useAuthStore();
   const { fetchWorkspace } = useWorkspaceStore();
 
@@ -205,11 +204,6 @@ export default function StepProperty({ state, patch, goNext }) {
     setAmenities((list) =>
       list.includes(a) ? list.filter((x) => x !== a) : [...list, a],
     );
-
-  // Optional consultant referral — validated live, credited on save.
-  const [refCode, setRefCode] = useState("");
-  const [refState, setRefState] = useState(null); // null|checking|valid|invalid
-  const [refName, setRefName] = useState("");
 
   const nameError = useMemo(
     () => (touched && !form.name.trim() ? "Your property needs a name." : ""),
@@ -246,33 +240,6 @@ export default function StepProperty({ state, patch, goNext }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeWorkspace]);
 
-  useEffect(() => {
-    const code = refCode.trim();
-    if (!code) {
-      setRefState(null);
-      setRefName("");
-      return undefined;
-    }
-    setRefState("checking");
-    const t = setTimeout(async () => {
-      try {
-        const { data } = await api.get(
-          `/consultants/validate/${encodeURIComponent(code)}`,
-        );
-        if (data?.valid) {
-          setRefState("valid");
-          setRefName(data.consultantName || "");
-        } else {
-          setRefState("invalid");
-          setRefName("");
-        }
-      } catch {
-        setRefState("invalid");
-        setRefName("");
-      }
-    }, 450);
-    return () => clearTimeout(t);
-  }, [refCode]);
 
   const submit = async () => {
     const name = form.name.trim();
@@ -285,21 +252,46 @@ export default function StepProperty({ state, patch, goNext }) {
     if (saving) return;
     setSaving(true);
     try {
-      const { data } = await api.post("/hotel/properties", {
-        name,
-        propertyType: form.propertyType,
-        description: form.description.trim(),
-        address: form.address.trim(),
-        city: form.city.trim(),
-        country: form.country.trim(),
-        currency: form.currency,
-        timezone: form.timezone,
-        checkInTime: form.checkInTime,
-        checkOutTime: form.checkOutTime,
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-        photos,
-      });
+      /**
+       * Backing up from the rooms pane and continuing again must not create a
+       * SECOND property. When one already exists in wizard state we edit it
+       * instead — updateProperty accepts the same fields plus amenities and
+       * starRating, so the follow-up call below becomes a no-op.
+       */
+      const existingId = state.propertyId;
+      const { data } = await (existingId
+        ? api.put(`/hotel/properties/${existingId}`, {
+            name,
+            propertyType: form.propertyType,
+            description: form.description.trim(),
+            address: form.address.trim(),
+            city: form.city.trim(),
+            country: form.country.trim(),
+            currency: form.currency,
+            timezone: form.timezone,
+            checkInTime: form.checkInTime,
+            checkOutTime: form.checkOutTime,
+            phone: form.phone.trim(),
+            email: form.email.trim(),
+            ...(photos.length ? { photos } : {}),
+            ...(amenities.length ? { amenities } : {}),
+            ...(form.starRating > 0 ? { starRating: form.starRating } : {}),
+          })
+        : api.post("/hotel/properties", {
+            name,
+            propertyType: form.propertyType,
+            description: form.description.trim(),
+            address: form.address.trim(),
+            city: form.city.trim(),
+            country: form.country.trim(),
+            currency: form.currency,
+            timezone: form.timezone,
+            checkInTime: form.checkInTime,
+            checkOutTime: form.checkOutTime,
+            phone: form.phone.trim(),
+            email: form.email.trim(),
+            photos,
+          }));
 
       let property = data?.property || {};
 
@@ -308,7 +300,11 @@ export default function StepProperty({ state, patch, goNext }) {
        * list, only in updateProperty's. Follow up when there's something to
        * save — best-effort, since neither is worth failing setup over.
        */
-      if (property._id && (amenities.length || form.starRating > 0)) {
+      if (
+        !existingId &&
+        property._id &&
+        (amenities.length || form.starRating > 0)
+      ) {
         try {
           const { data: updated } = await api.put(
             `/hotel/properties/${property._id}`,
@@ -323,16 +319,6 @@ export default function StepProperty({ state, patch, goNext }) {
         }
       }
 
-      // Best-effort — a referral problem must never block setup.
-      if (refCode.trim() && refState === "valid") {
-        try {
-          await api.post("/consultants/attribute", { code: refCode.trim() });
-          toast.success(`Referral credited to ${refName || "your consultant"}`);
-        } catch {
-          /* ignore */
-        }
-      }
-
       patch({
         propertyId: property._id || null,
         propertyName: property.name || name,
@@ -342,7 +328,7 @@ export default function StepProperty({ state, patch, goNext }) {
       if (activeWorkspace) {
         await fetchWorkspace(activeWorkspace, { force: true });
       }
-      toast.success("Property created");
+      toast.success(existingId ? "Property updated" : "Property created");
       goNext();
     } catch (err) {
       toast.error(
@@ -365,13 +351,14 @@ export default function StepProperty({ state, patch, goNext }) {
     <WizardShell
       step={0}
       icon={Hotel}
-      eyebrow="Step 1 of 5"
-      title="Let's start with your property"
+      eyebrow="Step 1 of 3"
+      title="Tell us about your property"
       subtitle="Just the basics for now — a name is genuinely enough to continue. Everything here stays editable."
       onNext={submit}
       nextLabel="Continue"
       busy={saving}
       wide
+      {...shell}
     >
       <form
         onSubmit={(e) => {
@@ -741,37 +728,6 @@ export default function StepProperty({ state, patch, goNext }) {
                 Shown to guests on booking confirmations.
               </p>
 
-              <div className="pt-4 border-t border-ink-100">
-                <label className="label" htmlFor="refCode">
-                  Referral code
-                </label>
-                <div className="relative">
-                  <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" />
-                  <input
-                    id="refCode"
-                    value={refCode}
-                    onChange={(e) => setRefCode(e.target.value)}
-                    placeholder="Have a consultant's code?"
-                    className="input pl-9"
-                  />
-                  {refState === "checking" && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 animate-spin" />
-                  )}
-                  {refState === "valid" && (
-                    <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
-                  )}
-                </div>
-                {refState === "valid" && (
-                  <p className="text-xs text-emerald-600 mt-1">
-                    Referred by {refName || "a Botlify consultant"}
-                  </p>
-                )}
-                {refState === "invalid" && (
-                  <p className="text-xs text-ink-400 mt-1">
-                    We don't recognise that code — you can leave it blank.
-                  </p>
-                )}
-              </div>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 /**
- * Step 4 — Guest messaging (optional). The four channels the AI concierge
+ * Step 2 — Guest messaging (optional). The four channels the AI concierge
  * answers on. Connect patterns match Settings → Channels:
  *   WhatsApp / Messenger → GET /channels/:platform/connect, then redirect
  *   Instagram            → popup OAuth via connectInstagram() (stays in-wizard)
@@ -210,9 +210,9 @@ export default function StepMessaging({ patch, goNext, goBack }) {
 
   return (
     <WizardShell
-      step={3}
+      step={1}
       icon={MessageCircle}
-      eyebrow="Step 4 of 5 · Optional"
+      eyebrow="Step 2 of 3 · Optional"
       title="Let the AI answer your guests"
       subtitle="Connect the apps your guests message you on. Your AI concierge replies 24/7 — answers questions, quotes rooms and books them, in any language."
       onBack={goBack}

@@ -1,5 +1,7 @@
 /**
- * Step 2 — Your rooms, room type by room type.
+ * Rooms, room type by room type — the final pane of step 1, reached from
+ * both forks (manual entry and OTA import, since an import may still need a
+ * rate set).
  *
  * Booking.com's room setup is the model: you don't fill a table, you add ONE
  * room, see it appear as a card, and decide whether to add another. The editor
@@ -237,7 +239,7 @@ function RoomCard({ room, currency, onEdit, onRemove, removing }) {
 
 /* ── Step ────────────────────────────────────────────────────────────────── */
 
-export default function StepRooms({ state, patch, goNext, goBack }) {
+export default function StepRooms({ state, patch, goNext, goBack, shell = {} }) {
   const propertyId = state.propertyId;
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -406,9 +408,9 @@ export default function StepRooms({ state, patch, goNext, goBack }) {
 
   return (
     <WizardShell
-      step={1}
+      step={0}
       icon={BedDouble}
-      eyebrow="Step 2 of 5"
+      eyebrow="Step 1 of 3"
       title="Now, what do you rent out?"
       subtitle="Add one room type at a time — a category, not every physical room. Ten identical doubles are one room type with ten of them."
       onBack={goBack}
@@ -417,6 +419,7 @@ export default function StepRooms({ state, patch, goNext, goBack }) {
       onNext={editing ? undefined : goNext}
       nextLabel={rooms.length ? "Continue" : "Continue without rooms"}
       wide
+      {...shell}
     >
       {loading ? (
         <div className="flex items-center justify-center py-16">

@@ -1,7 +1,7 @@
 /**
- * Step 3 — Connect your booking channels. The headline step: this is the
- * channel-manager promise, so it leads with "where are you already listed?"
- * and only then offers the one-click import.
+ * Booking-channel import — the "connect a booking channel" pane of step 1.
+ * The headline path: this is the channel-manager promise, so it leads with
+ * "where are you already listed?" and then offers the one-click import.
  *
  * Two different things happen on this screen, and they're deliberately kept
  * apart:
@@ -103,7 +103,7 @@ function ChannelTile({ channel, selected, onToggle }) {
   );
 }
 
-export default function StepChannels({ state, patch, goNext, goBack }) {
+export default function StepChannels({ state, patch, goNext, goBack, shell = {} }) {
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(null); // 503 message
   const [failed, setFailed] = useState(false);
@@ -200,9 +200,9 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
 
   return (
     <WizardShell
-      step={2}
+      step={0}
       icon={CloudDownload}
-      eyebrow="Step 3 of 5"
+      eyebrow="Step 1 of 3"
       title="Where are you already listed?"
       subtitle={`Pick every channel you sell on — we'll set them up so one calendar drives all of them. ${CHANNEL_TOTAL_LABEL} channels are supported, ${MORE_CHANNELS_PHRASE}.`}
       onBack={goBack}
@@ -211,6 +211,7 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
       onNext={saveAndNext}
       nextLabel="Continue"
       wide
+      {...shell}
     >
       <div className="space-y-4">
         <ValueStrip />
