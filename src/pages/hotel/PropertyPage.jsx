@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
+import ConnectionStatus from "@/components/ConnectionStatus";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -150,7 +151,15 @@ export default function PropertyPage() {
           onCancel={property ? closeNew : undefined}
         />
       ) : (
-        <PropertyEditor property={property} onChanged={load} />
+        <>
+          {/* The honest state of the OTA connection, right where rates and
+              rooms are edited — so a blocker ("set a nightly rate for Deluxe
+              Double") is one scroll from the field that fixes it. */}
+          <div className="mb-6">
+            <ConnectionStatus propertyId={property._id} />
+          </div>
+          <PropertyEditor property={property} onChanged={load} />
+        </>
       )}
     </div>
   );

@@ -40,11 +40,18 @@ export const STEP_BY_NAME = {
   channels: 0,
 };
 
-/** Sub-panes of step 1. Persisted so a refresh mid-fork doesn't restart it. */
+/**
+ * Sub-panes of step 1. Persisted so a refresh mid-fork doesn't restart it.
+ *
+ * CHOOSE is now the import-first screen ("bring your hotel across"), not a
+ * 50/50 fork — REVIEW is the "is this right?" moment straight after an import
+ * lands, where a missing rate is fixed inline before anything is confirmed.
+ */
 export const SETUP_PANES = {
   CHOOSE: "choose",
   MANUAL_PROPERTY: "manual-property",
   IMPORT: "import",
+  REVIEW: "review",
   ROOMS: "rooms",
 };
 

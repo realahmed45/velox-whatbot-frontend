@@ -17,6 +17,7 @@ import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import OtaLogo from "@/components/OtaLogo";
+import ConnectionStatus from "@/components/ConnectionStatus";
 import { OTA_CHANNELS } from "@/data/otaChannels";
 import WizardShell from "./WizardShell";
 import { clearWizard } from "./wizardState";
@@ -100,14 +101,49 @@ export default function StepDone({ state, goBack }) {
       step={2}
       icon={PartyPopper}
       eyebrow="Step 3 of 3"
-      title={`${state.propertyName || "Your property"} is live on Botlify`}
-      subtitle="Here's what's set up. Everything you skipped is one click away in the dashboard."
+      title={
+        messaging.length > 0
+          ? "Your AI is live"
+          : "Your hotel is set up on Botlify"
+      }
+      subtitle={
+        messaging.length > 0
+          ? `${state.propertyName || "Your property"} is answering guests and taking bookings right now.`
+          : `${state.propertyName || "Your property"} is ready. Connect a guest channel and your AI starts answering.`
+      }
       onBack={goBack}
       onNext={finish}
       nextLabel="Go to my dashboard"
       busy={going}
     >
       <div className="space-y-4">
+        {/* The headline: what is working RIGHT NOW. The OTA sync is a
+            background item further down, never a prerequisite for this. */}
+        {messaging.length > 0 && (
+          <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </span>
+              <div>
+                <p className="font-black text-ink-900">
+                  Your AI concierge is answering guests
+                </p>
+                <p className="text-sm text-ink-600 mt-1">
+                  It quotes your rates, checks your calendar and takes bookings
+                  on {messaging.length} channel
+                  {messaging.length === 1 ? "" : "s"} — 24 hours a day, starting
+                  now.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* The real, honest state of the channel connection. Narrates the
+            approval wait rather than hiding it — and never blocks finishing. */}
+        <ConnectionStatus compact hideWhenIdle />
+
         <div className="rounded-2xl border border-ink-100 bg-white shadow-lg p-5 sm:p-6">
           <ul className="divide-y divide-ink-100">
             <Row
@@ -128,18 +164,21 @@ export default function StepDone({ state, goBack }) {
                   : "Add rooms in Property → Rooms so the AI can quote and sell them."
               }
             />
+            {/* Deliberately says "imported", not "connected" — the import is
+                done, the OTA approval is not, and the card above tells that
+                part of the story truthfully. */}
             <Row
               done={!!state.channelsImported}
               title={
                 state.channelsImported
-                  ? "Booking channels connected"
+                  ? "Hotel imported from your channel"
                   : picked.length > 0
                     ? `${picked.length} booking channel${picked.length === 1 ? "" : "s"} queued to connect`
                     : "Booking channels not connected yet"
               }
               detail={
                 state.channelsImported
-                  ? "Availability and rates sync across every connected OTA."
+                  ? "The sync switches itself on once your channel approves it — we'll email you."
                   : picked.length > 0
                     ? `We'll connect ${joinNames(picked.map((c) => c.name))} for you.`
                     : "Connect Booking.com, Airbnb, Agoda and 60+ more from Property → Channels."

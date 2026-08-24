@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
+import ConnectionStatus from "@/components/ConnectionStatus";
 
 const money = (amount, currency) =>
   `${currency || "USD"} ${Number(amount || 0).toLocaleString(undefined, {
@@ -519,6 +520,15 @@ export default function TodayPage() {
       {/* ── 1. The agent (always available, even if today's data failed) ── */}
       <div className="mb-6">
         <AgentChat onActionDone={refresh} />
+      </div>
+
+      {/* ── 1b. Where the OTA connection really is ───────────────────────
+          Hidden entirely when nothing is connected and nothing needs fixing,
+          so a direct-only hotel isn't nagged about a channel they never
+          asked for. When the approval wait IS running, this is where they
+          see it narrated honestly instead of wondering. */}
+      <div className="mb-6">
+        <ConnectionStatus compact hideWhenIdle />
       </div>
 
       {loading ? (
