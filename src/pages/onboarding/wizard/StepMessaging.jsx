@@ -180,7 +180,11 @@ export default function StepMessaging({ patch, goNext, goBack }) {
     }
     setBusy(key);
     try {
-      const { data } = await api.get(`/channels/${key}/connect`);
+      // from=onboarding so the provider callback returns to this wizard step
+      // rather than dropping the user into Settings mid-setup.
+      const { data } = await api.get(`/channels/${key}/connect`, {
+        params: { from: "onboarding" },
+      });
       if (data?.url) {
         window.location.href = data.url;
         return;

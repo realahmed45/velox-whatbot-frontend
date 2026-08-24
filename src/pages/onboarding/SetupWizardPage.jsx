@@ -27,7 +27,22 @@ import { loadWizard, saveWizard, TOTAL_STEPS } from "./wizard/wizardState";
 export default function SetupWizardPage() {
   const navigate = useNavigate();
   const { activeWorkspace } = useAuthStore();
-  const [state, setState] = useState(() => loadWizard());
+  const [state, setState] = useState(() => {
+    const saved = loadWizard();
+    // A provider OAuth round trip (WhatsApp/Messenger) returns here with
+    // ?step=messaging. Honour it so the user lands back where they left rather
+    // than at step 1 — or worse, out of the wizard entirely.
+    try {
+      const wanted = new URLSearchParams(window.location.search).get("step");
+      const byName = { property: 0, rooms: 1, channels: 2, messaging: 3, done: 4 };
+      if (wanted && byName[wanted] !== undefined) {
+        return { ...saved, step: byName[wanted] };
+      }
+    } catch {
+      /* no window/search — keep the saved step */
+    }
+    return saved;
+  });
   const [checking, setChecking] = useState(true);
 
   const patch = (fields) =>
@@ -75,7 +90,15 @@ export default function SetupWizardPage() {
         }
         const p = props[0];
         const resumed = loadWizard();
-        if (resumed.propertyId === p._id && resumed.step > 0) {
+        // An explicit ?step= means we just came back from a provider OAuth
+        // round trip — always treat that as a resume, never as "setup done".
+        let requestedStep = null;
+        try {
+          requestedStep = new URLSearchParams(window.location.search).get("step");
+        } catch {
+          /* ignore */
+        }
+        if (requestedStep || (resumed.propertyId === p._id && resumed.step > 0)) {
           // Mid-wizard refresh — carry on where they left off.
           setState((s) => ({
             ...s,

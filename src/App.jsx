@@ -81,9 +81,6 @@ const ChooseChannelPage = lazyWithRetry(
 const OnboardingPricingPage = lazyWithRetry(
   () => import("@/pages/onboarding/OnboardingPricingPage"),
 );
-const InstagramOnboardingPage = lazyWithRetry(
-  () => import("@/pages/onboarding/InstagramOnboardingPage"),
-);
 const BusinessTypePage = lazyWithRetry(
   () => import("@/pages/onboarding/BusinessTypePage"),
 );
@@ -407,9 +404,12 @@ export default function App() {
                   path="/onboarding/pricing"
                   element={<OnboardingPricingPage />}
                 />
+                {/* The old Instagram-first onboarding screen. Dead — a hotel
+                    sets up its property first, and Instagram is one of four
+                    messaging channels in Settings. */}
                 <Route
                   path="/onboarding/instagram"
-                  element={<InstagramOnboardingPage />}
+                  element={<Navigate to="/onboarding/hotel" replace />}
                 />
                 <Route
                   path="/onboarding/business-type"
