@@ -16,9 +16,10 @@ export default function Footer() {
           <div className="space-y-4">
             <Logo size="sm" dark />
             <p className="text-sm text-ink-500 leading-relaxed">
-              The AI receptionist for hotels. Bookings from WhatsApp &amp;
-              Instagram — synced with Booking.com, Airbnb, Agoda, Expedia,
-              Traveloka and 55 more booking channels.
+              One place for every booking channel. Botlify connects Booking.com,
+              Airbnb, Agoda, Expedia, Traveloka and 55 more, syncs every booking
+              into one calendar, books guests automatically and talks to them
+              like a human would.
             </p>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">

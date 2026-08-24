@@ -1,11 +1,14 @@
 /**
  * Botlify App Header
- * - Workspace (account) switcher — ManyChat-style multi-account UX.
- * - Setup Instagram + Setup WhatsApp buttons when not connected
+ * - Account (workspace) switcher — each account is a separate hotel business
+ *   with its own channels, billing and data. Accounts are named by the
+ *   property/business name, never by a social handle.
  * - User avatar dropdown
  * - Search shortcut
  *
- * Design: rectangular, no rounded corners — clean enterprise look.
+ * NOTE: properties live INSIDE an account and are switched in the sidebar
+ * (see PropertySwitcher). Don't conflate the two — "+ Add account" here
+ * creates a whole new business, not another property.
  */
 import {
   Menu,
@@ -15,7 +18,6 @@ import {
   CreditCard,
   ChevronDown,
   Check,
-  Instagram,
   Plus,
   Loader2,
 } from "lucide-react";
@@ -23,7 +25,6 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
-import { connectInstagram } from "@/utils/connectInstagram";
 import {
   fetchAccounts,
   switchAccount,
@@ -52,7 +53,7 @@ export default function Header({ onMenuClick, onSearchClick }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Load the real, populated account list (handle + plan + status) once.
+  // Load the real, populated account list (name + plan + status) once.
   useEffect(() => {
     let alive = true;
     fetchAccounts()
@@ -63,16 +64,11 @@ export default function Header({ onMenuClick, onSearchClick }) {
     };
   }, []);
 
-  const igConnected = workspace?.instagram?.status === "connected";
-  const igPic = igConnected ? workspace?.instagram?.profilePicture : null;
   const initial = (user?.name?.[0] || user?.email?.[0] || "B").toUpperCase();
 
   const activeAcc =
     accounts.find((a) => String(a._id) === String(activeWorkspace)) || null;
-  const activeLabel =
-    activeAcc?.instagram?.username
-      ? `@${activeAcc.instagram.username}`
-      : activeAcc?.name || workspace?.name || "Account";
+  const activeLabel = activeAcc?.name || workspace?.name || "Account";
 
   const handleLogout = () => {
     logout();
@@ -98,14 +94,6 @@ export default function Header({ onMenuClick, onSearchClick }) {
       await addAccount(); // creates ws + routes into onboarding
     } catch {
       setBusy(false);
-    }
-  };
-
-  const startIgOAuth = async () => {
-    const { connected, reason } = await connectInstagram();
-    if (connected) window.location.reload();
-    else if (reason && reason !== "redirected" && reason !== "cancelled") {
-      /* api interceptor / util shows error toast */
     }
   };
 
@@ -139,17 +127,6 @@ export default function Header({ onMenuClick, onSearchClick }) {
 
       {/* Right: setup pills + user menu */}
       <div className="flex items-center gap-2">
-        {/* Setup Instagram — shown when not yet connected */}
-        {!igConnected && (
-          <button
-            onClick={startIgOAuth}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-xs font-bold text-white shadow-glow transition"
-          >
-            <Instagram className="w-3.5 h-3.5" />
-            Setup Instagram
-          </button>
-        )}
-
         {/* Account switcher — one identity, many accounts. Always available so
             "+ Add account" is reachable even with a single account. */}
         <div className="relative hidden sm:block" ref={wsRef}>
@@ -158,17 +135,9 @@ export default function Header({ onMenuClick, onSearchClick }) {
             disabled={busy}
             className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 hover:border-brand-300 text-xs text-ink-700 transition max-w-[190px] disabled:opacity-60"
           >
-            {activeAcc?.instagram?.profilePicture ? (
-              <img
-                src={activeAcc.instagram.profilePicture}
-                alt=""
-                className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-              />
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                {(activeAcc?.name?.[0] || initial).toUpperCase()}
-              </span>
-            )}
+            <span className="w-5 h-5 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+              {(activeAcc?.name?.[0] || initial).toUpperCase()}
+            </span>
             <span className="truncate font-medium">{activeLabel}</span>
             {busy ? (
               <Loader2 className="w-3 h-3 text-ink-400 animate-spin flex-shrink-0" />
@@ -184,32 +153,25 @@ export default function Header({ onMenuClick, onSearchClick }) {
               <div className="max-h-80 overflow-y-auto">
                 {accounts.map((a) => {
                   const isActive = String(a._id) === String(activeWorkspace);
-                  const handle = a.instagram?.username
-                    ? `@${a.instagram.username}`
-                    : "No Instagram yet";
+                  // Secondary line describes the business, never a social
+                  // handle. /workspaces/accounts only carries `industry`
+                  // alongside the name, so that (or a neutral fallback) it is.
+                  const sub = a.industry || "Hotel account";
                   return (
                     <button
                       key={a._id}
                       onClick={() => doSwitch(a._id)}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-brand-50 text-left"
                     >
-                      {a.instagram?.profilePicture ? (
-                        <img
-                          src={a.instagram.profilePicture}
-                          alt=""
-                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-ink-300 to-ink-400 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                          {(a.name?.[0] || "A").toUpperCase()}
-                        </span>
-                      )}
+                      <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {(a.name?.[0] || "A").toUpperCase()}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-ink-900 truncate">
                           {a.name}
                         </p>
                         <p className="text-[11px] text-ink-400 truncate">
-                          {handle}
+                          {sub}
                         </p>
                       </div>
                       <span
@@ -234,12 +196,20 @@ export default function Header({ onMenuClick, onSearchClick }) {
                 <button
                   onClick={doAddAccount}
                   disabled={busy}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-brand-50 text-brand-600 font-semibold text-xs disabled:opacity-60"
+                  className="w-full flex items-start gap-2.5 px-3 py-2.5 hover:bg-brand-50 text-left disabled:opacity-60"
                 >
-                  <span className="w-8 h-8 rounded-full border-2 border-dashed border-brand-300 flex items-center justify-center flex-shrink-0">
+                  <span className="w-8 h-8 rounded-lg border-2 border-dashed border-brand-300 text-brand-500 flex items-center justify-center flex-shrink-0">
                     <Plus className="w-4 h-4" />
                   </span>
-                  Add another Instagram account
+                  <span className="min-w-0">
+                    <span className="block text-xs font-semibold text-brand-600">
+                      Add another account
+                    </span>
+                    <span className="block text-[11px] text-ink-400 leading-snug">
+                      A separate business with its own billing. To add a
+                      property to this account, use Property &amp; Rooms.
+                    </span>
+                  </span>
                 </button>
               </div>
             </div>
@@ -253,13 +223,9 @@ export default function Header({ onMenuClick, onSearchClick }) {
             className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-transparent hover:ring-brand-200 transition"
             aria-label="Account menu"
           >
-            {igPic ? (
-              <img src={igPic} alt="" className="w-9 h-9 rounded-full object-cover" />
-            ) : (
-              <span className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xs shadow-glow">
-                {initial}
-              </span>
-            )}
+            <span className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xs shadow-glow">
+              {initial}
+            </span>
           </button>
 
           {menuOpen && (

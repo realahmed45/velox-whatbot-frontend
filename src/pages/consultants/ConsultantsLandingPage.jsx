@@ -38,7 +38,7 @@ export default function ConsultantsLandingPage() {
           </h1>
           <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto">
             For 12 full months, on everything — subscriptions and booking
-            commissions. Walk into hotels, show them their new AI receptionist,
+            commissions. Walk into hotels, show them every booking channel in one place,
             and get paid monthly for every one that signs up with your code.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -95,7 +95,7 @@ export default function ConsultantsLandingPage() {
               {
                 icon: Building2,
                 title: "3 · Sign hotels",
-                desc: "Visit hotels, demo the AI receptionist, and have them enter your code at sign-up.",
+                desc: "Visit hotels, demo the one-place channel sync, and have them enter your code at sign-up.",
               },
               {
                 icon: Banknote,

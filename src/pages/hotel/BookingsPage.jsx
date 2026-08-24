@@ -7,7 +7,7 @@
  * cancel-with-confirm. Matches the Appointments/Billing page patterns.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
-import IgInboxPage from "@/pages/inbox/IgInboxPage";
+import GuestInboxPage from "@/pages/inbox/GuestInboxPage";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { usePropertyScope } from "@/store/propertyStore";
@@ -706,7 +706,7 @@ function NewBookingModal({ open, onClose, onCreated }) {
 
 /**
  * Reservations and guest conversations share one screen. The inbox is the
- * existing IgInboxPage, embedded as-is — it lays itself out with `h-full`, so
+ * guest inbox, embedded as-is — it lays itself out with `h-full`, so
  * it gets a fixed-height viewport box to fill.
  */
 export default function BookingsPage() {
@@ -749,7 +749,7 @@ export default function BookingsPage() {
         // one, so size this box off the viewport instead: full height minus the
         // header (68px), these tabs (~68px) and the mobile bottom nav (62px).
         <div className="mt-4 border-t border-ink-100 h-[calc(100vh-198px)] lg:h-[calc(100vh-136px)]">
-          <IgInboxPage />
+          <GuestInboxPage />
         </div>
       )}
     </div>

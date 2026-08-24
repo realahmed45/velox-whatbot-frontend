@@ -189,7 +189,7 @@ export default function Sidebar({ onNavigate }) {
                 Botlify
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-400/80 mt-1 truncate">
-                AI Hotel Booking
+                All your bookings, one place
               </span>
             </div>
           )}

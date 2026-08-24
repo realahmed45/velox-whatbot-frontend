@@ -1,18 +1,24 @@
 /**
  * AI Assistant — your concierge's brain.
  *
- * Answers guests on every connected channel (WhatsApp, Instagram, Messenger and
- * Telegram) about rooms, rates, availability, amenities and check-in times.
+ * The hotelier already told us everything about the property: rooms, rates,
+ * policies, amenities — either by hand in Property & Rooms or synced from the
+ * OTAs they connected. So this screen does NOT ask for it again. It SHOWS what
+ * the assistant already knows (read-only, sourced from
+ * GET /hotel/properties and /hotel/properties/:id/rooms) and only asks for the
+ * handful of things that genuinely cannot be derived from that data:
  *
- * The hotel teaches it by:
- *   ✍️  writing a short description, and/or
- *   📄  uploading a PDF / menu / price list, and/or
- *   🔗  pasting their website link.
+ *   🗣  tone / brand voice        — a preference, not a fact
+ *   🚫  guardrails                — what it must never do
+ *   ❓  custom FAQs               — answers not implied by the property data
+ *   🙋  handoff keywords          — when to fetch a human
  *
- * Plus an FAQ list for exact-answer questions (check-in times, parking,
- * cancellation policy). No temperature/token knobs — it "just works".
- * Knowledge persists to workspace.aiKnowledge
- * (content + sources[]); enable flag + FAQs persist to workspace.aiSettings.
+ * Removed on purpose: product catalog, free-text "business context", the
+ * Instagram-era persona fields and the knowledge-source uploader — every one
+ * of those is either answered by the property/room record or belongs to the
+ * old chatbot product. Their stored values are preserved verbatim on save so
+ * nothing is destroyed server-side (workspace.aiSettings is replaced wholesale
+ * by PUT /workspaces/:id, so we must send the untouched keys back).
  */
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -22,17 +28,21 @@ import {
   Plus,
   Trash2,
   Loader2,
-  FileText,
-  Globe,
-  Upload,
-  RefreshCw,
   HelpCircle,
-  Image as ImageIcon,
   Check,
   Bot,
   BookOpen,
-  Zap,
   ShieldCheck,
+  X,
+  Send,
+  MessageSquare,
+  Hotel,
+  Clock,
+  BedDouble,
+  Wallet,
+  ScrollText,
+  UserCog,
+  ExternalLink,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -42,7 +52,7 @@ import {
   TEMPLATES_BY_CATEGORY,
   FAQ_TEMPLATE_COUNT,
 } from "@/data/faqTemplates";
-import { X, Sparkle, ShoppingBag, Send, MessageSquare } from "lucide-react";
+import { usePropertyStore } from "@/store/propertyStore";
 
 const DEFAULTS = {
   enabled: true,
@@ -50,83 +60,117 @@ const DEFAULTS = {
   faqs: [],
 };
 
-// Tabs — each maps to one section so nothing needs endless scrolling. `ready`
-// puts a green tick on tabs that are configured.
+// Tabs. "Knows" leads deliberately: the first thing a hotelier should see is
+// that Botlify already has their property, not another empty form.
 const TABS = [
+  { id: "knows", label: "What it knows", icon: BookOpen },
   {
-    id: "personality",
-    label: "Personality",
+    id: "voice",
+    label: "Tone & rules",
     icon: Bot,
-    ready: (cfg) => !!(cfg.aiRole || cfg.brandVoice || cfg.guardrails),
-  },
-  {
-    id: "knowledge",
-    label: "Knowledge",
-    icon: BookOpen,
-    ready: (cfg, bizText, sources) =>
-      (bizText || "").trim().length > 40 || (sources || []).length > 0,
+    ready: (cfg) => !!(cfg.brandVoice || cfg.guardrails),
   },
   {
     id: "faqs",
-    label: "FAQs",
+    label: "Custom FAQs",
     icon: HelpCircle,
     ready: (cfg) => (cfg.faqs?.length || 0) > 0,
   },
-  {
-    id: "catalog",
-    label: "Catalog",
-    icon: ShoppingBag,
-    ready: (cfg, _b, _s, catalog) => (catalog || []).length > 0,
-  },
-  { id: "actions", label: "Actions", icon: Zap },
+  { id: "handoff", label: "Handoff", icon: UserCog },
   { id: "test", label: "Test bot", icon: MessageSquare },
 ];
 
-const SOURCE_META = {
-  website: { Icon: Globe, tint: "text-ink-600 bg-ink-100" },
-  text: { Icon: FileText, tint: "text-brand-600 bg-brand-50" },
-  document: { Icon: FileText, tint: "text-brand-600 bg-brand-50" },
-  image: { Icon: ImageIcon, tint: "text-amber-600 bg-amber-50" },
-};
-
-const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp|heic)$/i;
+// Brand-voice presets. Tone is a preference we can't derive from data, but it
+// also doesn't deserve a blank textarea — one tap covers almost everyone.
+const VOICE_PRESETS = [
+  {
+    id: "warm",
+    label: "Warm",
+    text: "warm and welcoming; friendly but never gushing; concise 1-2 lines; at most 1 emoji; mirror the guest's language",
+  },
+  {
+    id: "professional",
+    label: "Professional",
+    text: "professional and precise; courteous, no emoji; concise 1-2 lines; mirror the guest's language",
+  },
+  {
+    id: "casual",
+    label: "Casual",
+    text: "relaxed and casual; short conversational lines; light emoji use is fine; mirror the guest's language",
+  },
+];
 
 export default function IgAiBotPage() {
   const { activeWorkspace } = useAuthStore();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
 
   const [cfg, setCfg] = useState(DEFAULTS);
+  // The legacy free-text knowledge blob. No longer editable here — the property
+  // record replaced it — but still round-tripped on save so an existing value
+  // isn't destroyed.
   const [bizText, setBizText] = useState("");
-  const [sources, setSources] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [busy, setBusy] = useState(null); // 'doc' | 'url' | sourceId
-  const [urlInput, setUrlInput] = useState("");
-  const [showUrl, setShowUrl] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [showTemplates, setShowTemplates] = useState(false);
-  const [drafting, setDrafting] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const importRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTabState] = useState(() => {
     const t = searchParams.get("tab");
-    return TABS.some((x) => x.id === t) ? t : "personality";
+    return TABS.some((x) => x.id === t) ? t : "knows";
   });
-  const fileRef = useRef(null);
+
+  // ── What the assistant already knows ────────────────────────────
+  // Sourced from the hotel record the user already filled in / imported from
+  // their OTAs. Read-only here by design.
+  const properties = usePropertyStore((st) => st.properties);
+  const fetchProperties = usePropertyStore((st) => st.fetchProperties);
+  const activePropertyId = usePropertyStore((st) => st.activeId)(activeWorkspace);
+  const property =
+    properties.find((x) => String(x._id) === String(activePropertyId)) ||
+    properties[0] ||
+    null;
+  const [rooms, setRooms] = useState([]);
+  const [loadingKnows, setLoadingKnows] = useState(true);
+
+  useEffect(() => {
+    if (activeWorkspace) fetchProperties(activeWorkspace);
+  }, [activeWorkspace, fetchProperties]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!property?._id) {
+      setRooms([]);
+      // Only stop the spinner once the property list itself has settled.
+      if (properties.length === 0) setLoadingKnows(false);
+      return () => {
+        alive = false;
+      };
+    }
+    setLoadingKnows(true);
+    api
+      .get(`/hotel/properties/${property._id}/rooms`)
+      .then(({ data }) => {
+        if (alive) setRooms(data.roomTypes || data.rooms || []);
+      })
+      .catch(() => alive && setRooms([]))
+      .finally(() => alive && setLoadingKnows(false));
+    return () => {
+      alive = false;
+    };
+  }, [property?._id, properties.length]);
 
   // Keep the tab and the ?tab= URL param in sync (so the sidebar "Test your
   // bot" deep-link and the in-page tabs stay consistent).
   const setTab = (id) => {
     setTabState(id);
     const next = new URLSearchParams(searchParams);
-    if (id === "personality") next.delete("tab");
+    if (id === "knows") next.delete("tab");
     else next.set("tab", id);
     setSearchParams(next, { replace: true });
   };
   useEffect(() => {
     const t = searchParams.get("tab");
     if (t && TABS.some((x) => x.id === t) && t !== tab) setTabState(t);
-    if (!t && tab !== "personality") setTabState("personality");
+    if (!t && tab !== "knows") setTabState("knows");
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -137,115 +181,21 @@ export default function IgAiBotPage() {
         : DEFAULTS,
     );
     setBizText(workspace?.aiKnowledge?.content || "");
-    setSources(workspace?.aiKnowledge?.sources || []);
   }, [workspace?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (patch) => setCfg((c) => ({ ...c, ...patch }));
-  const igHandle = workspace?.instagram?.username;
 
   // How "ready" is the bot? Drives the readiness meter.
+  // Readiness is now mostly earned by data we already hold: a property with
+  // rooms IS a ready assistant. Tone and guardrails are the only manual lifts.
   const readiness = useMemo(() => {
     let score = 0;
-    if (bizText.trim().length > 40) score += 40;
-    if (sources.length > 0) score += 30;
-    if ((cfg.faqs?.length || 0) > 0) score += 30;
+    if (property) score += 40;
+    if (rooms.length > 0) score += 30;
+    if (cfg.brandVoice) score += 15;
+    if (cfg.guardrails) score += 15;
     return Math.min(100, score);
-  }, [bizText, sources, cfg.faqs]);
-
-  /* ── Knowledge: imports ─────────────────────────────────────────── */
-  const refreshSources = async () => {
-    await fetchWorkspace(activeWorkspace);
-    const ws = useWorkspaceStore.getState().workspace;
-    setSources(ws?.aiKnowledge?.sources || []);
-  };
-
-  // While a source is still crawling in the background, poll until it's done.
-  useEffect(() => {
-    const anyProcessing = sources.some((s) => s.status === "processing");
-    if (!anyProcessing) return;
-    const t = setInterval(refreshSources, 4000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sources, activeWorkspace]);
-
-  const uploadDoc = async (file) => {
-    if (!file) return;
-    setBusy("doc");
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const { data } = await api.post(
-        `/workspaces/${activeWorkspace}/ai-knowledge/import-doc`,
-        fd,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
-      setSources((s) => [...s, data.source]);
-      set({ enabled: true });
-      if (data.processing) {
-        toast.success(
-          "Reading your file… scanned/large PDFs can take a minute 📄",
-        );
-      } else {
-        toast.success("Document added — your bot just learned it 🎓");
-      }
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Couldn't read that file");
-    } finally {
-      setBusy(null);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
-
-  const importUrl = async () => {
-    const url = urlInput.trim();
-    if (!url) return;
-    setBusy("url");
-    try {
-      const { data } = await api.post(
-        `/workspaces/${activeWorkspace}/ai-knowledge/import-url`,
-        { url },
-      );
-      setSources((s) => [...s, data.source]);
-      setUrlInput("");
-      setShowUrl(false);
-      set({ enabled: true });
-      if (data.processing) {
-        toast.success("Reading your whole site… this can take a minute 🌐");
-      } else {
-        toast.success("Website imported — bot updated 🌐");
-      }
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Couldn't import that website");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const resyncSource = async (id) => {
-    setBusy(id);
-    try {
-      await api.post(
-        `/workspaces/${activeWorkspace}/ai-knowledge/sources/${id}/resync`,
-      );
-      await refreshSources();
-      toast.success("Source refreshed");
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Couldn't refresh");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const removeSource = async (id) => {
-    setSources((s) => s.filter((x) => x._id !== id));
-    try {
-      await api.delete(
-        `/workspaces/${activeWorkspace}/ai-knowledge/sources/${id}`,
-      );
-    } catch {
-      refreshSources();
-    }
-  };
+  }, [property, rooms.length, cfg.brandVoice, cfg.guardrails]);
 
   /* ── FAQs ───────────────────────────────────────────────────────── */
   const addFaq = () => {
@@ -300,95 +250,15 @@ export default function IgAiBotPage() {
     toast.success(`Added ${toAdd.length} FAQ${toAdd.length > 1 ? "s" : ""} ✓`);
   };
 
-  /* ── Persona auto-draft (Phase 1) ───────────────────────────────── */
-  const draftPersona = async () => {
-    setDrafting(true);
-    try {
-      // Save any typed business context first so the draft can use it.
-      await api
-        .put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
-          content: bizText,
-          enabled: cfg.enabled,
-        })
-        .catch(() => {});
-      const { data } = await api.post(
-        `/workspaces/${activeWorkspace}/ai/draft-persona`,
-      );
-      if (data?.persona) {
-        set({
-          aiRole: data.persona.aiRole || cfg.aiRole || "",
-          brandVoice: data.persona.brandVoice || cfg.brandVoice || "",
-          guardrails: data.persona.guardrails || cfg.guardrails || "",
-        });
-        toast.success("Drafted from your property ✨ — tweak & save");
-      } else {
-        toast.error("Couldn't draft — fill the fields manually");
-      }
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Draft failed");
-    } finally {
-      setDrafting(false);
-    }
-  };
-
-  /* ── Product catalog (Phase 3) ──────────────────────────────────── */
-  const catalog = Array.isArray(cfg.productCatalog) ? cfg.productCatalog : [];
-  const addProduct = () =>
-    set({
-      productCatalog: [
-        ...catalog,
-        { name: "", price: "", description: "", inStock: true },
-      ],
-    });
-  const updateProduct = (i, patch) =>
-    set({
-      productCatalog: catalog.map((p, x) => (x === i ? { ...p, ...patch } : p)),
-    });
-  const removeProduct = (i) =>
-    set({ productCatalog: catalog.filter((_, x) => x !== i) });
-
-  // Bulk import: upload a CSV/PDF/image → AI extracts products → append.
-  const importProducts = async (file) => {
-    if (!file) return;
-    setImporting(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const { data } = await api.post(
-        `/workspaces/${activeWorkspace}/ai/import-products`,
-        form,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
-      const found = data?.products || [];
-      if (!found.length) {
-        toast.error("No products found in that file.");
-        return;
-      }
-      // Skip duplicates by name (case-insensitive).
-      const existing = new Set(
-        catalog.map((p) => (p.name || "").trim().toLowerCase()),
-      );
-      const toAdd = found.filter(
-        (p) => !existing.has((p.name || "").trim().toLowerCase()),
-      );
-      set({ productCatalog: [...catalog, ...toAdd] });
-      toast.success(
-        `Imported ${toAdd.length} product${toAdd.length === 1 ? "" : "s"} ✨ — review & save`,
-      );
-    } catch (e) {
-      toast.error(
-        e?.response?.data?.message || "Import failed — try a CSV or clearer file.",
-      );
-    } finally {
-      setImporting(false);
-      if (importRef.current) importRef.current.value = "";
-    }
-  };
-
   /* ── Save ───────────────────────────────────────────────────────── */
   const save = async () => {
     setSaving(true);
     try {
+      // PUT /workspaces/:id replaces `aiSettings` wholesale (findByIdAndUpdate
+      // with the object as-is), so anything we no longer render must still be
+      // sent back untouched or it would be wiped. `cfg` was seeded from the
+      // stored settings and we never mutate the retired keys, so spreading it
+      // preserves productCatalog, aiRole, goals, ctaLink & friends verbatim.
       await api.put(`/workspaces/${activeWorkspace}`, {
         aiSettings: { ...cfg },
       });
@@ -407,31 +277,6 @@ export default function IgAiBotPage() {
 
   return (
     <div className="relative min-h-full bg-ink-50/60">
-      {busy === "doc" && (
-        <AiWorkingOverlay
-          title="Reading your document…"
-          subtitle="AI is scanning every page and teaching your bot. This takes a few seconds."
-        />
-      )}
-      {busy === "url" && (
-        <AiWorkingOverlay
-          title="Importing your website…"
-          subtitle="Reading your pages and distilling them into knowledge for your bot."
-        />
-      )}
-      {importing && (
-        <AiWorkingOverlay
-          title="Extracting your products…"
-          subtitle="AI is reading your file and pulling out every item and price."
-        />
-      )}
-      {drafting && (
-        <AiWorkingOverlay
-          title="Crafting your assistant's personality…"
-          subtitle="Reading your property details to draft the perfect role, voice and guardrails."
-        />
-      )}
-
       <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-5">
         {/* ── Hero ───────────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-5 py-5 sm:px-6">
@@ -447,14 +292,12 @@ export default function IgAiBotPage() {
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-white/60">
                   <Sparkles className="w-3 h-3" /> AI-powered
                 </span>
-                {igHandle && (
-                  <span className="text-xs text-white/50">@{igHandle}</span>
-                )}
                 <AiBotHelp />
               </div>
               <p className="text-sm text-white/60 mt-1 max-w-md">
-                Teach it about your hotel once. It answers guests on WhatsApp,
-                Instagram, Messenger &amp; Telegram 24/7 — in your voice.
+                It already knows your property, rooms and policies. It answers
+                guests on WhatsApp, Instagram, Messenger &amp; Telegram 24/7 and
+                books them in — in your voice.
               </p>
             </div>
 
@@ -510,7 +353,7 @@ export default function IgAiBotPage() {
           <div className="flex gap-1 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const TabIcon = t.icon;
-              const done = t.ready?.(cfg, bizText, sources, catalog);
+              const done = t.ready?.(cfg);
               return (
                 <button
                   key={t.id}
@@ -534,170 +377,287 @@ export default function IgAiBotPage() {
           </div>
         </div>
 
-        {/* ── Personality tab ────────────────────────────────────── */}
-        {tab === "personality" && (
-        <Section
-          icon={Bot}
-          title="Assistant personality"
-          subtitle="Shape exactly how your assistant sounds to guests and what it must never do. Auto-draft it from your property, then fine-tune."
-        >
-          <div className="mb-4">
-            <button
-              onClick={draftPersona}
-              disabled={drafting}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-accent-500 text-white text-sm font-bold px-4 py-2.5 shadow-glow disabled:opacity-60 transition hover:brightness-105"
-            >
-              {drafting ? (
+        {/* ── What it knows tab ──────────────────────────────────── */}
+        {tab === "knows" && (
+        <div className="space-y-5">
+          <Section
+            icon={BookOpen}
+            title="What your assistant knows"
+            subtitle="Everything below is already in your property record — typed in Property & Rooms or synced from the OTAs you connected. Your assistant reads it live, so you never have to repeat it here."
+          >
+            {loadingKnows ? (
+              <div className="flex items-center gap-2 text-sm text-ink-400 py-6">
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Sparkle className="w-4 h-4" />
-              )}
-              {drafting ? "Reading your property…" : "Auto-draft from my property"}
-            </button>
-            <p className="text-[11px] text-ink-400 mt-1.5">
-              We read your property details and rooms to draft all three fields.
-              You stay in full control — edit anything.
-            </p>
-          </div>
+                Reading your property…
+              </div>
+            ) : !property ? (
+              <div className="rounded-xl border border-dashed border-ink-200 bg-ink-50/60 p-5 text-center">
+                <Hotel className="w-6 h-6 text-ink-300 mx-auto" />
+                <p className="text-sm font-semibold text-ink-800 mt-2">
+                  No property yet
+                </p>
+                <p className="text-xs text-ink-500 mt-1 max-w-sm mx-auto">
+                  Add your property and rooms once — your assistant picks it all
+                  up automatically from there.
+                </p>
+                <a
+                  href="/dashboard/settings?tab=property"
+                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-brand-600 hover:text-brand-700"
+                >
+                  Add your property <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Identity + location */}
+                <KnowsCard icon={Hotel} title="Property">
+                  <KnowsRow label="Name" value={property.name} />
+                  <KnowsRow
+                    label="Type"
+                    value={
+                      property.propertyType
+                        ? property.propertyType.charAt(0).toUpperCase() +
+                          property.propertyType.slice(1)
+                        : null
+                    }
+                  />
+                  <KnowsRow
+                    label="Location"
+                    value={
+                      [property.address, property.city, property.country]
+                        .filter(Boolean)
+                        .join(", ") || null
+                    }
+                  />
+                  <KnowsRow label="Timezone" value={property.timezone} />
+                  {property.amenities?.length > 0 && (
+                    <div className="pt-1">
+                      <p className="text-[11px] font-semibold text-ink-400 mb-1.5">
+                        Amenities
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {property.amenities.map((a) => (
+                          <span
+                            key={a}
+                            className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-ink-100 text-ink-600"
+                          >
+                            {a}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </KnowsCard>
 
-          <div className="space-y-4">
-            <PersonaField
-              label="AI Role"
-              hint="Who the bot is."
-              value={cfg.aiRole || ""}
-              onChange={(v) => set({ aiRole: v })}
-              rows={2}
-              placeholder="You are the front-desk assistant for [hotel name], a 24-room boutique hotel in Karachi. You help guests check rates, availability and amenities, and take bookings."
-            />
-            <PersonaField
-              label="Brand voice"
-              hint="Tone & formatting rules."
-              value={cfg.brandVoice || ""}
-              onChange={(v) => set({ brandVoice: v })}
-              rows={2}
-              placeholder="warm and professional; concise 1-2 lines; at most 1 emoji; mirror the guest's language; never pushy"
-            />
-            <PersonaField
-              label="Guardrails"
-              hint="Things the bot must NEVER do."
-              value={cfg.guardrails || ""}
-              onChange={(v) => set({ guardrails: v })}
-              rows={2}
-              danger
-              placeholder="never quote a rate you weren't given; never confirm a room you haven't checked availability for; never promise refunds or upgrades; never share another guest's details; hand complaints to the front desk"
-            />
-          </div>
-        </Section>
+                {/* Check-in / check-out */}
+                <KnowsCard icon={Clock} title="Check-in & check-out">
+                  <KnowsRow label="Check-in from" value={property.checkInTime} />
+                  <KnowsRow label="Check-out by" value={property.checkOutTime} />
+                  <KnowsRow
+                    label="Quiet hours"
+                    value={property.rules?.quietHours}
+                  />
+                </KnowsCard>
+
+                {/* Rooms + rates */}
+                <KnowsCard
+                  icon={BedDouble}
+                  title={`Room types (${rooms.length})`}
+                >
+                  {rooms.length === 0 ? (
+                    <p className="text-xs text-ink-400">
+                      No room types yet — add them in Property &amp; Rooms and
+                      your assistant can quote them instantly.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {rooms.map((r) => (
+                        <div
+                          key={r._id}
+                          className="flex items-start justify-between gap-3 rounded-lg bg-ink-50/70 px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-semibold text-ink-900 truncate">
+                              {r.name}
+                            </p>
+                            <p className="text-[11px] text-ink-500">
+                              {[
+                                r.maxOccupancy
+                                  ? `Sleeps ${r.maxOccupancy}`
+                                  : null,
+                                r.bedConfig || null,
+                                r.breakfast?.included
+                                  ? "Breakfast included"
+                                  : null,
+                                r.cancellation?.policy === "non_refundable"
+                                  ? "Non-refundable"
+                                  : r.cancellation?.policy === "flexible"
+                                    ? "Flexible cancellation"
+                                    : r.cancellation?.freeUntilDays
+                                      ? `Free cancellation until ${r.cancellation.freeUntilDays}d before`
+                                      : null,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          </div>
+                          {r.baseRate > 0 && (
+                            <span className="text-[13px] font-bold text-ink-900 shrink-0">
+                              {r.currency || property.currency} {r.baseRate}
+                              <span className="text-[10px] font-medium text-ink-400">
+                                /night
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </KnowsCard>
+
+                {/* Payment */}
+                <KnowsCard icon={Wallet} title="How guests can pay">
+                  {(() => {
+                    const pm = property.paymentMethods || {};
+                    const labels = {
+                      cash: "Cash",
+                      card: "Card",
+                      bankTransfer: "Bank transfer",
+                      qris: "QRIS",
+                      eWallet: "E-wallet",
+                      payAtProperty: "Pay at property",
+                    };
+                    const on = Object.keys(labels).filter((k) => pm[k]);
+                    return on.length === 0 ? (
+                      <p className="text-xs text-ink-400">
+                        Not set yet — add it in Property &amp; Rooms.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-1.5">
+                          {on.map((k) => (
+                            <span
+                              key={k}
+                              className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700"
+                            >
+                              {labels[k]}
+                            </span>
+                          ))}
+                        </div>
+                        {pm.depositRequired && (
+                          <p className="text-[11px] text-ink-500 mt-2">
+                            Deposit required
+                            {pm.depositPercent ? ` — ${pm.depositPercent}%` : ""}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </KnowsCard>
+
+                {/* House rules */}
+                <KnowsCard icon={ScrollText} title="House rules">
+                  {(() => {
+                    const r = property.rules || {};
+                    const bits = [
+                      r.childrenWelcome ? "Children welcome" : "No children",
+                      r.petsAllowed
+                        ? `Pets allowed${r.petFee ? ` (fee ${r.petFee})` : ""}`
+                        : "No pets",
+                      r.smokingAllowed ? "Smoking allowed" : "No smoking",
+                      r.partiesAllowed ? "Parties allowed" : "No parties",
+                      r.cotsAvailable ? "Cots available" : null,
+                      r.minAge ? `Minimum check-in age ${r.minAge}` : null,
+                    ].filter(Boolean);
+                    return (
+                      <>
+                        <div className="flex flex-wrap gap-1.5">
+                          {bits.map((b) => (
+                            <span
+                              key={b}
+                              className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-ink-100 text-ink-600"
+                            >
+                              {b}
+                            </span>
+                          ))}
+                        </div>
+                        {property.policies && (
+                          <p className="text-xs text-ink-600 mt-2.5 leading-relaxed whitespace-pre-line">
+                            {property.policies}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </KnowsCard>
+
+                <a
+                  href="/dashboard/settings?tab=property"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700"
+                >
+                  Edit in Property &amp; Rooms
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            )}
+          </Section>
+        </div>
         )}
 
-        {/* ── Knowledge tab ──────────────────────────────────────── */}
-        {tab === "knowledge" && (
+        {/* ── Tone & rules tab ───────────────────────────────────── */}
+        {tab === "voice" && (
         <div className="space-y-5">
-        <Section
-          icon={BookOpen}
-          title="Tell your assistant about the hotel"
-          subtitle="Location, style, amenities, check-in and check-out times, house rules — anything a guest might ask that isn't in a source or FAQ."
-        >
-          <textarea
-            className="w-full rounded-xl border border-ink-200 bg-white px-3.5 py-3 text-sm leading-relaxed focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none min-h-[120px]"
-            value={bizText}
-            onChange={(e) => setBizText(e.target.value)}
-            placeholder="e.g. We're a Karachi-based skincare brand. We sell natural face serums and moisturizers. Orders ship in 2–3 days across Pakistan. COD available. DM us for custom bundles!"
-          />
-          <p className="text-xs text-ink-400 mt-1.5">
-            {bizText.trim().length} characters · The more detail, the smarter
-            the replies.
-          </p>
-        </Section>
-
-        {/* ── Knowledge sources ──────────────────────────────────── */}
-        <Section
-          icon={Zap}
-          title="Add knowledge sources"
-          subtitle="Upload a menu/price list or import your website — the bot reads it and answers from it."
-        >
-          <div className="mb-4 rounded-xl border border-brand-100 bg-brand-50/50 p-3 flex items-start gap-2.5">
-            <ShoppingBag className="w-4 h-4 text-brand-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-ink-600 leading-relaxed">
-              <b className="text-ink-900">Selling products on your website?</b>{" "}
-              Add them in the{" "}
-              <button
-                onClick={() => setTab("catalog")}
-                className="font-bold text-brand-600 hover:underline"
-              >
-                Catalog
-              </button>{" "}
-              tab instead — you can bulk-import a CSV or price list and the bot
-              quotes exact prices.
-            </p>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            hidden
-            accept=".pdf,.doc,.docx,.txt,.csv,.png,.jpg,.jpeg"
-            onChange={(e) => uploadDoc(e.target.files?.[0])}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <SourceButton
-              Icon={Upload}
-              title="Upload a file"
-              hint="PDF, menu, price list, docs"
-              loading={busy === "doc"}
-              onClick={() => fileRef.current?.click()}
-            />
-            <SourceButton
-              Icon={Globe}
-              title="Import a website"
-              hint="Paste any page URL"
-              loading={busy === "url"}
-              onClick={() => setShowUrl((v) => !v)}
-              active={showUrl}
-            />
-          </div>
-
-          {showUrl && (
-            <div className="flex gap-2 mt-3">
-              <input
-                className="flex-1 rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && importUrl()}
-                placeholder="https://yourbrand.com/about"
-                autoFocus
+          <Section
+            icon={Bot}
+            title="Tone of voice"
+            subtitle="The one thing we can't read off your property record — how you want your assistant to sound."
+          >
+            <div className="flex flex-wrap gap-2">
+              {VOICE_PRESETS.map((v) => {
+                const on = cfg.brandVoice === v.text;
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => set({ brandVoice: on ? "" : v.text })}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold border transition ${
+                      on
+                        ? "bg-brand-50 border-brand-300 text-brand-700"
+                        : "bg-white border-ink-200 text-ink-600 hover:border-brand-300"
+                    }`}
+                  >
+                    {on && <Check className="w-3.5 h-3.5" />}
+                    {v.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4">
+              <PersonaField
+                label="Anything else about the voice (optional)"
+                hint="Only if a preset isn't quite right."
+                value={cfg.brandVoice || ""}
+                onChange={(v) => set({ brandVoice: v })}
+                rows={2}
+                placeholder="warm and professional; concise 1-2 lines; at most 1 emoji; mirror the guest's language"
               />
-              <button
-                onClick={importUrl}
-                disabled={busy === "url" || !urlInput.trim()}
-                className="btn-primary shrink-0"
-              >
-                {busy === "url" ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Import"
-                )}
-              </button>
             </div>
-          )}
+          </Section>
 
-          {/* Source list */}
-          {sources.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-semibold text-ink-500">
-                Your bot knows ({sources.length})
-              </p>
-              {sources.map((s) => (
-                <SourceCard
-                  key={s._id}
-                  s={s}
-                  busy={busy === s._id}
-                  onResync={() => resyncSource(s._id)}
-                  onRemove={() => removeSource(s._id)}
-                />
-              ))}
-            </div>
-          )}
-        </Section>
+          <Section
+            icon={ShieldCheck}
+            title="What it must never do"
+            subtitle="Hard limits. Your assistant already refuses to invent rates or policies — add anything specific to your hotel."
+          >
+            <PersonaField
+              label="Guardrails"
+              hint="Things the assistant must NEVER do."
+              value={cfg.guardrails || ""}
+              onChange={(v) => set({ guardrails: v })}
+              rows={3}
+              danger
+              placeholder="never promise refunds or upgrades; never share another guest's details; hand complaints to the front desk"
+            />
+          </Section>
         </div>
         )}
 
@@ -779,171 +739,61 @@ export default function IgAiBotPage() {
         </Section>
         )}
 
-        {/* ── Catalog tab ────────────────────────────────────────── */}
-        {tab === "catalog" && (
+        {/* ── Handoff tab ────────────────────────────────────────── */}
+        {tab === "handoff" && (
         <Section
-          icon={ShoppingBag}
-          title="Product catalog"
-          subtitle="Add products with exact prices so the bot can recommend and quote them — never guessing."
+          icon={UserCog}
+          title="When to fetch a human"
+          subtitle="If a guest's message contains any of these words, your assistant stops replying and flags the conversation for your team."
         >
-          {/* Website hint */}
-          <div className="mb-4 rounded-xl border border-ink-100 bg-ink-50/60 p-3 flex items-start gap-2.5">
-            <Globe className="w-4 h-4 text-ink-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-ink-500 leading-relaxed">
-              Already sell on a website? Add your products here so the bot quotes
-              exact prices. You can import them in seconds below — no manual
-              typing.
-            </p>
-          </div>
-
-          {/* Bulk AI import */}
-          <input
-            ref={importRef}
-            type="file"
-            hidden
-            accept=".csv,.pdf,.txt,.xlsx,.doc,.docx,.png,.jpg,.jpeg"
-            onChange={(e) => importProducts(e.target.files?.[0])}
-          />
-          <button
-            onClick={() => importRef.current?.click()}
-            disabled={importing}
-            className="w-full mb-4 rounded-xl border-2 border-dashed border-brand-200 bg-gradient-to-br from-brand-50/60 to-accent-50/30 p-4 flex items-center gap-3 text-left hover:border-brand-300 transition disabled:opacity-60 group"
-          >
-            <span className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-              {importing ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Upload className="w-5 h-5" />
-              )}
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-black text-ink-900">
-                {importing
-                  ? "Reading your file & extracting products…"
-                  : "Bulk import — upload a CSV, PDF or price list"}
-              </span>
-              <span className="block text-xs text-ink-500 mt-0.5">
-                Drop your product list and AI adds every item + price for you.
-                Review, then save.
-              </span>
-            </span>
-            <Sparkle className="w-4 h-4 text-brand-500 ml-auto shrink-0 group-hover:scale-110 transition" />
-          </button>
-
-          {catalog.length > 0 && (
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-ink-500">
-                {catalog.length} product{catalog.length === 1 ? "" : "s"}
-              </span>
-              {catalog.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {(cfg.handoffKeywords || []).map((k, i) => (
+              <span
+                key={`${k}-${i}`}
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium px-2.5 py-1 rounded-lg bg-ink-100 text-ink-700"
+              >
+                {k}
                 <button
-                  onClick={() => set({ productCatalog: [] })}
-                  className="text-xs font-semibold text-ink-400 hover:text-red-500 transition"
+                  onClick={() =>
+                    set({
+                      handoffKeywords: (cfg.handoffKeywords || []).filter(
+                        (_, x) => x !== i,
+                      ),
+                    })
+                  }
+                  className="text-ink-400 hover:text-rose-600 transition"
+                  aria-label={`Remove ${k}`}
                 >
-                  Clear all
+                  <X className="w-3.5 h-3.5" />
                 </button>
-              )}
-            </div>
-          )}
-          {catalog.length > 0 && (
-            <div className="space-y-2 mb-3">
-              {catalog.map((p, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-ink-100 bg-white p-3"
-                >
-                  <div className="flex gap-2">
-                    <input
-                      className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm font-semibold outline-none focus:border-brand-400"
-                      value={p.name}
-                      onChange={(e) => updateProduct(i, { name: e.target.value })}
-                      placeholder="Product name"
-                    />
-                    <input
-                      className="w-28 rounded-lg border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                      value={p.price}
-                      onChange={(e) =>
-                        updateProduct(i, { price: e.target.value })
-                      }
-                      placeholder="$25.00"
-                    />
-                    <button
-                      onClick={() => removeProduct(i)}
-                      className="text-ink-300 hover:text-red-500 transition px-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs outline-none focus:border-brand-400"
-                      value={p.description || ""}
-                      onChange={(e) =>
-                        updateProduct(i, { description: e.target.value })
-                      }
-                      placeholder="Short description (sizes, colours, details…)"
-                    />
-                    <button
-                      onClick={() =>
-                        updateProduct(i, { inStock: !(p.inStock !== false) })
-                      }
-                      className={`text-[11px] font-bold px-2.5 py-1.5 rounded-lg border transition ${
-                        p.inStock !== false
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-ink-100 text-ink-500 border-ink-200"
-                      }`}
-                    >
-                      {p.inStock !== false ? "In stock" : "Out of stock"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <button
-            onClick={addProduct}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-3 py-2 transition"
-          >
-            <Plus className="w-4 h-4" /> Add product
-          </button>
-        </Section>
-        )}
-
-        {/* ── Actions tab ────────────────────────────────────────── */}
-        {tab === "actions" && (
-        <Section
-          icon={Zap}
-          title="Smart actions"
-          subtitle="Let your bot quietly work behind the scenes while it chats — no extra effort from you."
-        >
-          <div className="space-y-2.5">
-            <ActionToggle
-              title="Auto-tag contacts"
-              desc="The bot tags people by what they want (interested, VIP, complaint…) so you can filter and follow up."
-              on={cfg.actions?.autoTag !== false}
-              onToggle={() =>
-                set({
-                  actions: {
-                    ...(cfg.actions || {}),
-                    autoTag: !(cfg.actions?.autoTag !== false),
-                  },
-                })
-              }
-            />
-            <ActionToggle
-              title="Capture leads"
-              desc="When someone shows real interest and shares their name + email/phone, the bot saves them as a lead automatically."
-              on={cfg.actions?.captureLead !== false}
-              onToggle={() =>
-                set({
-                  actions: {
-                    ...(cfg.actions || {}),
-                    captureLead: !(cfg.actions?.captureLead !== false),
-                  },
-                })
-              }
-            />
+              </span>
+            ))}
+            {(cfg.handoffKeywords || []).length === 0 && (
+              <p className="text-xs text-ink-400">
+                No keywords — your assistant will handle every message itself.
+              </p>
+            )}
           </div>
+          <input
+            type="text"
+            placeholder="Type a word and press Enter (e.g. manager, complaint, refund)"
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              e.preventDefault();
+              const v = e.target.value.trim().toLowerCase();
+              if (!v) return;
+              if ((cfg.handoffKeywords || []).includes(v)) {
+                e.target.value = "";
+                return;
+              }
+              set({ handoffKeywords: [...(cfg.handoffKeywords || []), v] });
+              e.target.value = "";
+            }}
+            className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
+          />
+          <p className="text-[11px] text-ink-400 mt-1.5">
+            Press Enter to add. Matching is case-insensitive.
+          </p>
         </Section>
         )}
 
@@ -957,10 +807,10 @@ export default function IgAiBotPage() {
               </span>
               <div className="text-sm text-ink-600 leading-relaxed">
                 <span className="font-bold text-ink-900">How replies work: </span>
-                the bot first checks your FAQs for an exact match, then your
-                knowledge sources, then your business description — and only
-                replies about your business. It never makes up prices or
-                policies you haven't given it.
+                the bot first checks your custom FAQs for an exact match, then
+                your live property and room data — rates, availability,
+                policies. It never makes up prices or policies you haven't
+                given it.
                 <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-400">
                   <Sparkles className="w-3.5 h-3.5 text-brand-500" />
                   Powered by Google Gemini
@@ -1133,195 +983,38 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
   );
 }
 
-function ReadyChip({ ok, label }) {
+/** One titled card in the read-only "what it knows" summary. */
+function KnowsCard({ icon: Icon, title, children }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1 ${
-        ok ? "text-emerald-300" : "text-white/40"
-      }`}
-    >
-      {ok ? (
-        <Check className="w-3 h-3" />
-      ) : (
-        <span className="w-3 h-3 rounded-full border border-white/30" />
-      )}
-      {label}
-    </span>
+    <div className="rounded-xl border border-ink-100 bg-white p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4" />
+        </span>
+        <h4 className="text-[13px] font-bold text-ink-900">{title}</h4>
+      </div>
+      <div className="space-y-1.5">{children}</div>
+    </div>
   );
 }
 
-function SourceButton({ Icon, title, hint, loading, onClick, active }) {
+/** A label/value line. Renders nothing when we don't hold the value. */
+function KnowsRow({ label, value }) {
+  if (value === null || value === undefined || value === "") return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left transition ${
-        active
-          ? "border-brand-400 bg-brand-50"
-          : "border-ink-200 bg-white hover:border-brand-300 hover:bg-brand-50/40"
-      }`}
-    >
-      <span className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors">
-        {loading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <Icon className="w-5 h-5" />
-        )}
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-[11px] font-semibold text-ink-400 shrink-0">
+        {label}
       </span>
-      <div className="min-w-0">
-        <p className="text-sm font-bold text-ink-900">{title}</p>
-        <p className="text-xs text-ink-500">{hint}</p>
-      </div>
-    </button>
+      <span className="text-[13px] text-ink-800 text-right min-w-0 truncate">
+        {value}
+      </span>
+    </div>
   );
 }
 
 // Full-screen "AI is working" overlay — blurs the page so the user knows
 // something is cooking while a document/import/draft is processing.
-function AiWorkingOverlay({ title, subtitle }) {
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink-950/40 backdrop-blur-md animate-[fadeIn_.15s_ease-out]">
-      <div className="relative flex flex-col items-center text-center px-6">
-        {/* pulsing rings */}
-        <div className="relative w-24 h-24 mb-6">
-          <span className="absolute inset-0 rounded-full bg-brand-500/30 animate-ping" />
-          <span
-            className="absolute inset-2 rounded-full bg-brand-500/20 animate-ping"
-            style={{ animationDelay: "0.3s" }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-glow">
-              <Sparkles className="w-8 h-8 text-white animate-pulse" />
-            </div>
-          </div>
-        </div>
-        <h3 className="text-lg font-black text-white">{title}</h3>
-        <p className="text-sm text-white/70 mt-1 max-w-xs">{subtitle}</p>
-        {/* shimmer bar */}
-        <div className="mt-5 w-52 h-1.5 rounded-full bg-white/15 overflow-hidden">
-          <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-brand-400 to-accent-400 animate-[shimmerMove_1.2s_ease-in-out_infinite]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SourceCard({ s, busy, onResync, onRemove }) {
-  const [open, setOpen] = useState(false);
-  const isImage = IMAGE_RE.test(s.title || s.url || "");
-  const meta = SOURCE_META[isImage ? "image" : s.type] || SOURCE_META.text;
-  const Icon = meta.Icon;
-  const ready = s.status ? s.status === "ready" : true;
-  const content = (s.content || "").trim();
-  const hasPreview = ready && content.length > 0;
-
-  return (
-    <div className="rounded-xl border border-ink-100 bg-white overflow-hidden">
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        <span
-          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${meta.tint}`}
-        >
-          <Icon className="w-4 h-4" />
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-ink-900 truncate">
-            {s.label || s.title || s.url || "Untitled source"}
-          </p>
-          <p className="text-[11px] text-ink-400 flex items-center gap-1">
-            {s.status === "error" ? (
-              <span className="text-red-500 truncate">
-                {s.error || "Import failed"}
-              </span>
-            ) : ready ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-500" /> Learned
-                {s.charCount
-                  ? ` · ${s.charCount.toLocaleString()} chars`
-                  : content
-                    ? ` · ${content.length.toLocaleString()} chars`
-                    : ""}
-              </>
-            ) : (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin" />{" "}
-                {s.type === "website" ? "Reading your site…" : "Reading…"}
-              </>
-            )}
-          </p>
-        </div>
-        {hasPreview && (
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="text-[11px] font-bold text-brand-600 hover:text-brand-700 px-2 py-1 rounded-lg hover:bg-brand-50 transition"
-          >
-            {open ? "Hide" : "View"}
-          </button>
-        )}
-        <button
-          onClick={onResync}
-          disabled={busy}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
-          title="Refresh"
-        >
-          {busy ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4" />
-          )}
-        </button>
-        <button
-          onClick={onRemove}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
-          title="Remove"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-      {open && hasPreview && (
-        <div className="px-3 pb-3">
-          <div className="rounded-lg bg-ink-50 border border-ink-100 p-3 max-h-52 overflow-y-auto">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
-              What your bot learned
-            </p>
-            <p className="text-xs text-ink-600 whitespace-pre-wrap leading-relaxed">
-              {content}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ActionToggle({ title, desc, on, onToggle }) {
-  return (
-    <div
-      className={`flex items-start justify-between gap-4 rounded-xl border p-3.5 transition ${
-        on ? "border-brand-200 bg-brand-50/40" : "border-ink-100 bg-white"
-      }`}
-    >
-      <div className="min-w-0">
-        <p className="text-sm font-bold text-ink-900">{title}</p>
-        <p className="text-xs text-ink-500 mt-0.5">{desc}</p>
-      </div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-          on ? "bg-brand-600" : "bg-ink-300"
-        }`}
-        aria-label={`Toggle ${title}`}
-      >
-        <span
-          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-            on ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
-
 function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, danger }) {
   return (
     <div>

@@ -4,9 +4,9 @@ import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
 
 const POINTS = [
-  "AI concierge answers guests & books rooms 24/7",
+  "60+ channels connected — every booking in one calendar",
   "WhatsApp & Instagram in one inbox",
-  "60+ OTA channels synced — 0% commission",
+  "Auto-books guests and answers them like a human",
   "Airport transfers for your guests",
 ];
 
@@ -40,11 +40,11 @@ export default function AuthLayout() {
         {/* copy */}
         <div className="relative mt-9 max-w-sm">
           <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-semibold text-brand-200">
-            <Sparkles className="w-3 h-3" /> AI booking for hotels
+            <Sparkles className="w-3 h-3" /> Every channel, one place
           </span>
           <h1 className="mt-5 text-3xl xl:text-4xl font-black tracking-tighter leading-[1.08]">
-            Your hotel's{" "}
-            <span className="text-brand-500">AI receptionist.</span>
+            One place.{" "}
+            <span className="text-brand-500">Every booking channel.</span>
           </h1>
           <ul className="mt-7 space-y-3 text-left inline-block mx-auto">
             {POINTS.map((p) => (

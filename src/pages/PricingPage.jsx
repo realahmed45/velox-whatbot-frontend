@@ -46,7 +46,7 @@ const FALLBACK_PLANS = [
     key: "hotel_pro",
     id: "hotel_pro",
     name: "Botlify for Hotels",
-    tagline: "The full AI receptionist for your hotel",
+    tagline: "Every channel synced, bookings handled automatically",
     usd: 49,
     trialDays: 3,
     recommended: true,
@@ -161,7 +161,7 @@ export default function PricingPage({
         {!embedded && (
           <div className="text-center mb-10">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100">
-              <Hotel className="w-3 h-3" /> Your hotel's AI receptionist
+              <Hotel className="w-3 h-3" /> One place. Every booking channel.
             </span>
             <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
               Simple, honest <span className="text-brand-500">pricing</span>

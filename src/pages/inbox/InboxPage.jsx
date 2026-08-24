@@ -1,5 +1,5 @@
-import IgInboxPage from "./IgInboxPage";
+import GuestInboxPage from "./GuestInboxPage";
 
 export default function InboxPage() {
-  return <IgInboxPage />;
+  return <GuestInboxPage />;
 }

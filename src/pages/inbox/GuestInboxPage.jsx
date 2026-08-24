@@ -1,10 +1,19 @@
 /**
- * Instagram Inbox — DM-style two-pane layout, Botlify orange/white theme.
- * Responsive: list-only on mobile, swaps to the chat when a DM is opened.
- * Calls /inbox?channel=instagram so WhatsApp conversations don't bleed in.
+ * Guest inbox — every channel Botlify answers on, in one two-pane screen.
+ *
+ * Conversations are split by platform first: a row of channel tabs (All ·
+ * WhatsApp · Instagram · Messenger · Telegram) sits above the list, each
+ * carrying its brand mark and a count/unread badge from the server's
+ * `byChannel` totals. Picking a tab refetches with `?channel=`; "All" omits it.
+ * Tabs only render for channels the workspace has actually connected, and are
+ * hidden entirely when fewer than two are live — a single-channel hotel gets
+ * the plain list it had before.
+ *
+ * Responsive: list-only on mobile, swaps to the chat when a conversation opens.
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
+import { CHANNEL_ORDER, channelMeta } from "@/components/ChannelMarks";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useInboxStore } from "@/store/inboxStore";
@@ -20,7 +29,7 @@ import {
   X,
   Plus,
   Sparkles,
-  Instagram,
+  MessagesSquare,
   Inbox as InboxIcon,
   ArrowLeft,
   Tag as TagIcon,
@@ -32,7 +41,7 @@ dayjs.extend(relativeTime);
 
 const STATUS = {
   bot_active: {
-    label: "Auto-DM",
+    label: "AI handled",
     cls: "bg-brand-100 text-brand-700 ring-1 ring-brand-200/60",
   },
   open: { label: "Open", cls: "bg-ink-100 text-ink-600 ring-1 ring-ink-200/60" },
@@ -45,7 +54,7 @@ const STATUS = {
     cls: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200/60",
   },
   resolved: {
-    label: "Done",
+    label: "Resolved",
     cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
   },
   closed: {
@@ -53,6 +62,20 @@ const STATUS = {
     cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
   },
 };
+
+/**
+ * Status filters. `query` is what goes to the server as `status=` — the
+ * Conversation enum is exact-match, so each filter maps to one value (or null
+ * for "All"). "human_active" chats surface under "Needs you" client-side too,
+ * since a hotelier thinks of both as "on my plate", but the server call stays
+ * a single exact value as the API requires.
+ */
+const FILTERS = [
+  { id: "all", label: "All", query: null },
+  { id: "awaiting_human", label: "Needs you", query: "awaiting_human" },
+  { id: "bot_active", label: "AI handled", query: "bot_active" },
+  { id: "resolved", label: "Resolved", query: "resolved" },
+];
 
 function Avatar({ initial, avatar, size = "w-10 h-10", text = "text-sm" }) {
   if (avatar) {
@@ -83,7 +106,39 @@ function Avatar({ initial, avatar, size = "w-10 h-10", text = "text-sm" }) {
   );
 }
 
-export default function IgInboxPage() {
+/**
+ * Avatar + the platform the guest wrote from, as a small brand mark pinned to
+ * the corner. This is what makes the channel obvious while browsing "All".
+ */
+function ChannelAvatar({
+  initial,
+  avatar,
+  channelType,
+  size = "w-10 h-10",
+  text = "text-sm",
+  badge = "w-4 h-4",
+  mark = "w-2.5 h-2.5",
+}) {
+  const meta = channelMeta(channelType);
+  const Mark = meta.Mark;
+  return (
+    <div className="relative flex-shrink-0">
+      <Avatar initial={initial} avatar={avatar} size={size} text={text} />
+      <span
+        title={meta.name}
+        className={clsx(
+          badge,
+          meta.tint,
+          "absolute -bottom-0.5 -right-0.5 rounded-full ring-2 ring-white flex items-center justify-center shadow-sm",
+        )}
+      >
+        <Mark className={mark} />
+      </span>
+    </div>
+  );
+}
+
+export default function GuestInboxPage() {
   const { activeWorkspace } = useAuthStore();
   const {
     conversations,
@@ -98,25 +153,88 @@ export default function IgInboxPage() {
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [channel, setChannel] = useState("all");
+  const [byChannel, setByChannel] = useState({});
+  const [connected, setConnected] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const endRef = useRef(null);
 
+  // Kept in refs so the socket handlers (bound once) always read the current
+  // channel/conversation instead of a stale closure value.
+  const channelRef = useRef(channel);
+  channelRef.current = channel;
+  const activeIdRef = useRef(activeConversationId);
+  activeIdRef.current = activeConversationId;
+
   const active = conversations.find((c) => c._id === activeConversationId);
   const activeMsgs = messages[activeConversationId] || [];
+  const activeMeta = channelMeta(active?.channelType);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (channelRef.current !== "all") params.set("channel", channelRef.current);
+      const statusQuery = FILTERS.find((f) => f.id === filter)?.query;
+      if (statusQuery) params.set("status", statusQuery);
+      if (search.trim()) params.set("search", search.trim());
+      const qs = params.toString();
+      const { data } = await api.get(`/inbox${qs ? `?${qs}` : ""}`);
+      setConversations(data.conversations || []);
+      setByChannel(data.byChannel || {});
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, search, setConversations]);
+
+  // Which channels this hotel has actually connected — tabs for anything else
+  // would just be dead ends.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get("/channels/status");
+        if (cancelled) return;
+        setConnected(
+          CHANNEL_ORDER.filter((k) => data?.[k]?.status === "connected"),
+        );
+      } catch {
+        // Non-fatal: without the status map we simply show no channel tabs.
+        if (!cancelled) setConnected([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeWorkspace]);
+
+  // Refetch whenever the channel tab, status filter or search text changes.
+  // Search is debounced so typing doesn't hammer the endpoint.
+  useEffect(() => {
+    const t = setTimeout(load, search ? 300 : 0);
+    return () => clearTimeout(t);
+  }, [load, channel, search]);
 
   useEffect(() => {
-    load();
     const sock = initSocket();
     sock.on("message:new", ({ conversation, message }) => {
-      if (conversation.channelType !== "instagram") return;
+      // Only fold in conversations that belong to the tab being viewed.
+      const ch = channelRef.current;
+      if (ch !== "all" && conversation.channelType !== ch) return;
       addOrUpdateConversation(conversation);
-      if (conversation._id === activeConversationId)
+      if (conversation._id === activeIdRef.current)
         appendMessage(conversation._id, message);
     });
     sock.on("conversation:updated", (c) => {
-      if (c.channelType === "instagram") addOrUpdateConversation(c);
+      const ch = channelRef.current;
+      if (ch !== "all" && c.channelType !== ch) return;
+      addOrUpdateConversation(c);
     });
     return () => {
       sock.off("message:new");
@@ -127,20 +245,14 @@ export default function IgInboxPage() {
 
   useEffect(() => {
     if (activeConversationId) loadMsgs(activeConversationId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConversationId]);
+
   useEffect(
     () => endRef.current?.scrollIntoView({ behavior: "smooth" }),
     [activeMsgs],
   );
 
-  const load = async () => {
-    try {
-      const { data } = await api.get("/inbox?channel=instagram");
-      setConversations(data.conversations || []);
-    } catch (e) {
-      console.error(e);
-    }
-  };
   const loadMsgs = async (id) => {
     try {
       const { data } = await api.get(`/inbox/${id}/messages`);
@@ -150,10 +262,18 @@ export default function IgInboxPage() {
     }
   };
 
+  // Switching channel closes whatever chat was open — it may not be in the new
+  // list at all.
+  const pickChannel = (key) => {
+    if (key === channel) return;
+    setActiveConversation(null);
+    setChannel(key);
+  };
+
   const takeover = async () => {
     try {
       await api.post(`/inbox/${activeConversationId}/takeover`);
-      toast.success("You're handling this DM now");
+      toast.success("You're handling this chat now");
       load();
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed");
@@ -162,7 +282,7 @@ export default function IgInboxPage() {
   const resolve = async () => {
     try {
       await api.post(`/inbox/${activeConversationId}/resolve`);
-      toast.success("Marked as done");
+      toast.success("Marked as resolved");
       load();
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed");
@@ -176,7 +296,7 @@ export default function IgInboxPage() {
         enabled: next,
       });
       addOrUpdateConversation(data.conversation);
-      toast.success(next ? "Auto-DM resumed" : "Auto-DM paused for this chat");
+      toast.success(next ? "AI replies resumed" : "AI paused for this chat");
     } catch (e) {
       toast.error("Failed");
     }
@@ -223,14 +343,54 @@ export default function IgInboxPage() {
     }
   };
 
-  const filtered = conversations.filter((c) => {
-    const okStatus = filter === "all" || c.status === filter;
-    const okText =
-      !search ||
-      c.contact?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact?.username?.toLowerCase().includes(search.toLowerCase());
-    return okStatus && okText;
-  });
+  // Server already applied channel + status + search; this is a safety net for
+  // rows that arrive over the socket between fetches.
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return conversations.filter((c) => {
+      if (channel !== "all" && c.channelType !== channel) return false;
+      if (filter === "awaiting_human") {
+        if (c.status !== "awaiting_human" && c.status !== "human_active")
+          return false;
+      } else if (filter !== "all" && c.status !== filter) return false;
+      if (!q) return true;
+      return (
+        c.contact?.name?.toLowerCase().includes(q) ||
+        c.contact?.username?.toLowerCase().includes(q) ||
+        c.contact?.phone?.toLowerCase().includes(q) ||
+        c.lastMessage?.text?.toLowerCase().includes(q)
+      );
+    });
+  }, [conversations, channel, filter, search]);
+
+  // Tabs only earn their space when there's more than one channel to switch
+  // between.
+  const showTabs = connected.length >= 2;
+  const tabs = useMemo(
+    () =>
+      showTabs
+        ? [
+            { key: "all", label: "All" },
+            ...connected.map((k) => ({ key: k, ...channelMeta(k) })),
+          ]
+        : [],
+    [showTabs, connected],
+  );
+
+  const allTotal = useMemo(
+    () =>
+      Object.values(byChannel).reduce((n, v) => n + (v?.total || 0), 0),
+    [byChannel],
+  );
+  const allUnread = useMemo(
+    () => Object.values(byChannel).reduce((n, v) => n + (v?.unread || 0), 0),
+    [byChannel],
+  );
+
+  const emptyLabel =
+    channel === "all"
+      ? "No guest messages yet"
+      : `No ${channelMeta(channel).shortName} messages yet`;
 
   return (
     // h-full + overflow-hidden pins the whole inbox to the viewport height so
@@ -249,11 +409,11 @@ export default function IgInboxPage() {
           <div className="pointer-events-none absolute -top-16 right-4 w-48 h-48 rounded-full bg-brand-500/20 blur-3xl" />
           <div className="relative flex items-center gap-2.5 mb-3.5">
             <span className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
-              <Instagram className="w-5 h-5 text-brand-300" />
+              <MessagesSquare className="w-5 h-5 text-brand-300" />
             </span>
             <div>
               <h2 className="font-black text-[17px] leading-none tracking-tight">
-                Inbox
+                Guest messages
               </h2>
               <p className="text-[11px] text-white/50 mt-1">
                 {conversations.length} conversation
@@ -269,42 +429,107 @@ export default function IgInboxPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input
               className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder-white/40 focus:bg-white/15 focus:border-white/30 outline-none transition"
-              placeholder="Search name or @username…"
+              placeholder="Search guests by name or phone"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Filter chips */}
+        {/* ── Channel tabs — the primary split ── */}
+        {showTabs && (
+          <div className="flex gap-1 px-2 pt-2 pb-1.5 border-b border-ink-100 overflow-x-auto no-scrollbar">
+            {tabs.map((t) => {
+              const isAll = t.key === "all";
+              const stats = isAll
+                ? { total: allTotal, unread: allUnread }
+                : byChannel[t.key] || { total: 0, unread: 0 };
+              const on = channel === t.key;
+              const Mark = t.Mark;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => pickChannel(t.key)}
+                  title={isAll ? "All channels" : t.name}
+                  className={clsx(
+                    "relative flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border",
+                    on
+                      ? "bg-ink-900 text-white border-ink-900 shadow-sm"
+                      : "bg-white border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
+                  )}
+                >
+                  {Mark ? (
+                    <Mark
+                      className={clsx(
+                        "w-3.5 h-3.5",
+                        on ? "text-white" : "text-ink-400",
+                      )}
+                    />
+                  ) : (
+                    <InboxIcon
+                      className={clsx(
+                        "w-3.5 h-3.5",
+                        on ? "text-white" : "text-ink-400",
+                      )}
+                    />
+                  )}
+                  <span>{isAll ? "All" : t.shortName}</span>
+                  {stats.total > 0 && (
+                    <span
+                      className={clsx(
+                        "min-w-[1.15rem] text-center px-1 py-px rounded-full text-[10px] font-bold",
+                        stats.unread > 0
+                          ? "bg-brand-500 text-white"
+                          : on
+                            ? "bg-white/15 text-white/80"
+                            : "bg-ink-100 text-ink-500",
+                      )}
+                    >
+                      {stats.unread > 0 ? stats.unread : stats.total}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Status filter chips */}
         <div className="flex gap-1.5 px-3 py-2.5 border-b border-ink-100 overflow-x-auto no-scrollbar">
-          {["all", "bot_active", "awaiting_human", "human_active", "resolved"].map(
-            (f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={clsx(
-                  "flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border",
-                  filter === f
-                    ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/25"
-                    : "border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
-                )}
-              >
-                {f === "all" ? "All" : STATUS[f]?.label || f}
-              </button>
-            ),
-          )}
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setFilter(f.id)}
+              className={clsx(
+                "flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border",
+                filter === f.id
+                  ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/25"
+                  : "border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto">
-          {filtered.length === 0 && (
+          {loading && filtered.length === 0 && (
+            <div className="flex justify-center py-12">
+              <span className="block w-5 h-5 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+            </div>
+          )}
+          {!loading && filtered.length === 0 && (
             <div className="text-center py-12 px-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-100 flex items-center justify-center mx-auto mb-3 shadow-sm">
                 <InboxIcon className="w-6 h-6 text-brand-500" />
               </div>
-              <p className="text-xs text-ink-700 font-bold">No DMs yet</p>
+              <p className="text-xs text-ink-700 font-bold">{emptyLabel}</p>
               <p className="text-[11px] text-ink-400 mt-1">
-                When guests message you, they'll appear here.
+                {search || filter !== "all"
+                  ? "Nothing matches that filter — try clearing it."
+                  : "When guests message you, they'll appear here."}
               </p>
             </div>
           )}
@@ -312,12 +537,8 @@ export default function IgInboxPage() {
             const meta = STATUS[conv.status] || STATUS.open;
             const c = conv.contact || {};
             const displayName =
-              c.name ||
-              c.username ||
-              conv.participantName ||
-              conv.participantUsername ||
-              "Instagram user";
-            const username = c.username || conv.participantUsername || "";
+              c.name || c.username || conv.participantName || "Guest";
+            const handle = c.username || c.phone || "";
             const initial = displayName[0]?.toUpperCase() || "?";
             const preview =
               conv.lastMessage?.text || conv.lastMessagePreview || "";
@@ -334,7 +555,11 @@ export default function IgInboxPage() {
                 )}
               >
                 <div className="flex items-start gap-3">
-                  <Avatar initial={initial} avatar={c.avatar} />
+                  <ChannelAvatar
+                    initial={initial}
+                    avatar={c.avatar}
+                    channelType={conv.channelType}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1.5">
                       <p className="text-[13px] font-bold text-ink-900 truncate">
@@ -346,9 +571,9 @@ export default function IgInboxPage() {
                         )}
                       </span>
                     </div>
-                    {username && (
+                    {handle && (
                       <p className="text-[11px] text-brand-600 font-semibold truncate leading-tight">
-                        @{username}
+                        {c.username ? `@${c.username}` : handle}
                       </p>
                     )}
                     <p className="text-[12px] text-ink-500 truncate mt-1">
@@ -366,7 +591,7 @@ export default function IgInboxPage() {
                       </span>
                       {conv.botEnabled === false && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/60 inline-flex items-center gap-0.5">
-                          <Pause className="w-2.5 h-2.5" /> bot off
+                          <Pause className="w-2.5 h-2.5" /> AI off
                         </span>
                       )}
                       {(c.tags || []).slice(0, 1).map((t) => (
@@ -396,38 +621,42 @@ export default function IgInboxPage() {
               onClick={() => setActiveConversation(null)}
               className="md:hidden mb-2 text-xs text-brand-300 font-bold inline-flex items-center gap-1"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> All DMs
+              <ArrowLeft className="w-3.5 h-3.5" /> All messages
             </button>
             <div className="relative flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
-                <Avatar
-                  initial={(active.contact?.name ||
+                <ChannelAvatar
+                  initial={(
+                    active.contact?.name ||
                     active.contact?.username ||
                     active.participantName ||
-                    active.participantUsername ||
-                    "I")[0]?.toUpperCase()}
+                    "G"
+                  )[0]?.toUpperCase()}
                   avatar={active.contact?.avatar}
+                  channelType={active.channelType}
                   size="w-11 h-11"
                   text="text-sm"
+                  badge="w-[18px] h-[18px]"
+                  mark="w-3 h-3"
                 />
                 <div className="min-w-0">
                   <p className="font-bold text-[15px] truncate">
                     {active.contact?.name ||
                       active.contact?.username ||
                       active.participantName ||
-                      active.participantUsername ||
-                      "Instagram user"}
+                      "Guest"}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {active.contact?.username && (
-                      <a
-                        href={`https://instagram.com/${active.contact.username}`}
-                        target="_blank"
-                        rel="noopener"
-                        className="text-[11px] text-white/50 font-medium hover:text-brand-300 truncate transition"
-                      >
-                        @{active.contact.username}
-                      </a>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/60">
+                      <activeMeta.Mark className="w-3 h-3" />
+                      {activeMeta.shortName}
+                    </span>
+                    {(active.contact?.username || active.contact?.phone) && (
+                      <span className="text-[11px] text-white/50 font-medium truncate">
+                        {active.contact.username
+                          ? `@${active.contact.username}`
+                          : active.contact.phone}
+                      </span>
                     )}
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/70">
                       <span
@@ -457,11 +686,11 @@ export default function IgInboxPage() {
                 >
                   {active.botEnabled === false ? (
                     <>
-                      <Play className="w-3 h-3" /> Resume bot
+                      <Play className="w-3 h-3" /> Resume AI
                     </>
                   ) : (
                     <>
-                      <Pause className="w-3 h-3" /> Pause bot
+                      <Pause className="w-3 h-3" /> Pause AI
                     </>
                   )}
                 </button>
@@ -478,7 +707,7 @@ export default function IgInboxPage() {
                     onClick={resolve}
                     className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-white/10 text-white/80 border border-white/15 hover:bg-white/20 flex items-center gap-1 transition-all"
                   >
-                    <CheckCheck className="w-3 h-3" /> Done
+                    <CheckCheck className="w-3 h-3" /> Resolve
                   </button>
                 )}
               </div>
@@ -529,14 +758,14 @@ export default function IgInboxPage() {
             {active.botEnabled === false && (
               <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5 mb-2 flex items-center gap-1.5">
                 <Pause className="w-3 h-3 flex-shrink-0" />
-                Auto-DM is paused — only your manual replies go out.
+                The AI is paused — only your manual replies go out.
               </div>
             )}
             <div className="flex items-end gap-2 rounded-2xl border border-ink-200 bg-ink-50/50 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition p-1.5">
               <textarea
                 className="resize-none flex-1 text-sm bg-transparent outline-none px-2.5 py-2 max-h-32"
                 rows={1}
-                placeholder="Type a reply…"
+                placeholder={`Reply on ${activeMeta.shortName}…`}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => {
@@ -576,14 +805,33 @@ export default function IgInboxPage() {
               </div>
             </div>
             <p className="text-ink-900 font-black text-xl tracking-tight">
-              Your conversations, one place
+              Every guest, every channel
             </p>
             <p className="text-ink-500 text-sm mt-2 leading-relaxed">
-              Pick a DM on the left to reply, take over from the bot, tag, and
-              resolve — new messages slide in live.
+              Pick a conversation on the left to reply, take over from the AI,
+              tag, and resolve — new messages slide in live.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
-              {["Auto-DM replies", "Live takeover", "Tags & resolve"].map(
+            {connected.length > 0 && (
+              <div className="mt-5 flex items-center justify-center gap-1.5 flex-wrap">
+                {connected.map((k) => {
+                  const m = channelMeta(k);
+                  return (
+                    <span
+                      key={k}
+                      className={clsx(
+                        "inline-flex items-center gap-1.5 text-[11px] font-bold rounded-full px-2.5 py-1 shadow-sm",
+                        m.tint,
+                      )}
+                    >
+                      <m.Mark className="w-3 h-3" />
+                      {m.shortName}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+              {["AI answers guests", "Take over any chat", "Booking context"].map(
                 (f) => (
                   <span
                     key={f}
@@ -641,7 +889,7 @@ function Bubble({ msg }) {
         >
           {isBot && out && (
             <span className="inline-flex items-center gap-0.5 font-semibold">
-              <Sparkles className="w-2.5 h-2.5" /> Bot ·
+              <Sparkles className="w-2.5 h-2.5" /> AI ·
             </span>
           )}
           <span>{dayjs(msg.createdAt).format("h:mm A")}</span>

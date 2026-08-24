@@ -28,6 +28,15 @@ import {
   LogOut,
   CheckCircle2,
   LifeBuoy,
+  Hotel,
+  Radio,
+  Bot,
+  PackagePlus,
+  Tag,
+  Car,
+  Users,
+  CreditCard,
+  SlidersHorizontal,
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 import HolidayModeCard from "@/components/HolidayModeCard";
@@ -75,49 +84,97 @@ export default function SettingsPage() {
   // routes of their own.
   const [params, setParams] = useSearchParams();
 
-  const TABS = [
-    { id: "property", label: "Property & Rooms" },
-    { id: "channels", label: "Channels" },
-    { id: "assistant", label: "AI Assistant" },
-    { id: "extras", label: "Extras" },
-    { id: "pricing", label: "Pricing" },
-    { id: "transfers", label: "Transfers" },
-    ...(isOwner ? [{ id: "team", label: "Team" }] : []),
-    ...(isOwner ? [{ id: "billing", label: "Plan & Billing" }] : []),
-    { id: "general", label: "General" },
-    { id: "security", label: "Security" },
-  ];
+  // Grouped so ten sections read as three short lists instead of one long
+  // strip that runs off the edge of the screen.
+  const GROUPS = [
+    {
+      heading: "Property",
+      items: [
+        { id: "property", label: "Property & Rooms", icon: Hotel },
+        { id: "extras", label: "Extras", icon: PackagePlus },
+        { id: "transfers", label: "Transfers", icon: Car },
+        { id: "pricing", label: "Pricing", icon: Tag },
+      ],
+    },
+    {
+      heading: "Channels & AI",
+      items: [
+        { id: "channels", label: "Channels", icon: Radio },
+        { id: "assistant", label: "AI Assistant", icon: Bot },
+      ],
+    },
+    {
+      heading: "Account",
+      items: [
+        ...(isOwner ? [{ id: "team", label: "Team", icon: Users }] : []),
+        ...(isOwner
+          ? [{ id: "billing", label: "Plan & Billing", icon: CreditCard }]
+          : []),
+        { id: "general", label: "General", icon: SlidersHorizontal },
+        { id: "security", label: "Security", icon: Shield },
+      ],
+    },
+  ].filter((g) => g.items.length > 0);
+
+  const TABS = GROUPS.flatMap((g) => g.items);
 
   const urlTab = params.get("tab");
   const tab = TABS.some((t) => t.id === urlTab) ? urlTab : "property";
   const setTab = (id) => setParams(id === "property" ? {} : { tab: id }, { replace: true });
 
   return (
-    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <StatHero
         icon={SettingsIcon}
         title="Settings"
         subtitle="Your property, channels, assistant and account — all in one place"
       />
 
-      {/* Horizontal, scrollable on phones so every tab stays reachable. */}
-      <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-5 sm:mb-6 overflow-x-auto no-scrollbar">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap flex-shrink-0 ${tab === t.id ? "bg-white text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-700"}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Vertical nav beside the content on desktop; a wrapped, fully visible
+          grid of chips above it on phones. Ten sections never scroll sideways
+          and nothing gets cut off. */}
+      <div className="mt-5 sm:mt-6 lg:flex lg:items-start lg:gap-8">
+        <nav className="lg:w-56 xl:w-60 lg:shrink-0 lg:sticky lg:top-6 mb-5 lg:mb-0">
+          {GROUPS.map((g) => (
+            <div key={g.heading} className="mb-4 lg:mb-5 last:mb-0">
+              <p className="px-1 lg:px-3 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400">
+                {g.heading}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 lg:flex lg:flex-col lg:gap-0.5">
+                {g.items.map((t) => {
+                  const Icon = t.icon;
+                  const active = tab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setTab(t.id)}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center gap-2 w-full text-left px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition ${
+                        active
+                          ? "bg-white text-ink-900 shadow-sm ring-1 ring-ink-100 lg:ring-0 lg:bg-brand-50 lg:text-brand-700"
+                          : "bg-ink-100 text-ink-500 hover:text-ink-700 lg:bg-transparent lg:hover:bg-ink-50"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 shrink-0 ${active ? "text-brand-600" : "text-ink-400"}`}
+                      />
+                      <span className="truncate">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
 
+        <div className="min-w-0 flex-1">
       {/* Embedded pages bring their own max-width + padding (they used to be
-          routes). Pull that back in so a tab doesn't look double-inset. */}
+          routes). Pull that back in so a tab doesn't look double-inset — only
+          out to the page edge on phones, where the nav sits above rather than
+          beside the content. */}
       <Suspense fallback={<TabFallback />}>
         {EMBEDDED.includes(tab) && (
-          <div className="-mx-4 sm:-mx-8 [&>div]:max-w-none">
+          <div className="-mx-4 sm:-mx-8 lg:mx-0 [&>div]:max-w-none">
             {tab === "property" && <PropertyPage />}
             {tab === "channels" && (
               <>
@@ -160,6 +217,8 @@ export default function SettingsPage() {
       {tab === "security" && (
         <SecuritySettings onGoToTeam={isOwner ? () => setTab("team") : undefined} />
       )}
+        </div>
+      </div>
     </div>
   );
 }

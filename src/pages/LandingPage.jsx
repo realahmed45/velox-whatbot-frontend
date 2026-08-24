@@ -301,10 +301,10 @@ function Hero() {
             </span>
 
             <h1 className="mt-5 text-[2.7rem] leading-[1.02] sm:text-6xl lg:text-[4.6rem] font-black tracking-tighter text-ink-950">
-              Every booking channel,{" "}
+              One place.{" "}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
-                  run by AI
+                  Every booking channel
                 </span>
                 <svg
                   className="absolute -bottom-1 left-0 w-full"
@@ -327,12 +327,12 @@ function Hero() {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-ink-600 max-w-2xl leading-relaxed">
-              Botlify replaces your channel manager, booking engine, revenue
-              manager and front desk — and runs them with AI. Booking.com,
-              Airbnb, Agoda, Expedia, Traveloka and{" "}
-              <b className="text-ink-800">55 more booking channels</b> — plus
-              WhatsApp, Instagram and your own direct page — in one calendar,
-              one inbox, one guest list.
+              Botlify connects all{" "}
+              <b className="text-ink-800">60+ channels</b>, syncs every booking
+              into one calendar, books guests automatically, and talks to them
+              like a human would. Booking.com, Airbnb, Agoda, Expedia,
+              Traveloka and 55 more — plus WhatsApp, Instagram and your own
+              direct page.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
