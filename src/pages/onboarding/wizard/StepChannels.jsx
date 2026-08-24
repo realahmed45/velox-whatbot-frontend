@@ -177,6 +177,22 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
     }
   };
 
+  // Persist which channels the hotel says they're on. Stored as INTENT
+  // (channel.requestedOtas), never as connection state — best-effort, so a
+  // failure here must not trap them on this step.
+  const saveAndNext = async () => {
+    if (selected.length && state.propertyId) {
+      try {
+        await api.put(`/hotel/properties/${state.propertyId}`, {
+          requestedOtas: selected,
+        });
+      } catch {
+        /* non-fatal — they can pick channels again in Settings */
+      }
+    }
+    goNext();
+  };
+
   const skip = () => {
     patch({ channelsSkipped: !state.channelsImported });
     goNext();
@@ -192,7 +208,7 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
       onBack={goBack}
       onSkip={skip}
       skipLabel="Skip — I'll connect channels later"
-      onNext={goNext}
+      onNext={saveAndNext}
       nextLabel="Continue"
       wide
     >

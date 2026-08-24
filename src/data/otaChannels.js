@@ -9,8 +9,12 @@
  * channels", never "every OTA in the world", and never imply a direct
  * partnership with an OTA we don't have one with.
  *
- * No brand marks — we don't have rights to OTA logos. Chips use coloured
- * initials on a tint instead (see ChannelWall.jsx).
+ * Brand marks live in `@/components/OtaLogo` — original inline-SVG
+ * recreations in each brand's colour, keyed by the `key` field below. We don't
+ * ship the OTAs' real trademarked logos and never hotlink them.
+ *
+ * `short` is the legacy initials fallback, kept so a consumer that predates
+ * OtaLogo still renders; `tint` is the chip background.
  */
 
 /** The 10 named channels, in the order we always show them. */

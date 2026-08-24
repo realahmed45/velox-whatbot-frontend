@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { Link, useSearchParams } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { usePropertyStore } from "@/store/propertyStore";
 
 const input =
   "w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none";
@@ -47,23 +50,55 @@ export default function PropertyPage() {
   const [properties, setProperties] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
+  // The sidebar's property switcher and this page share one choice, so
+  // switching hotels there lands you on the right one here.
+  const { activeWorkspace } = useAuthStore();
+  const selectedByWorkspace = usePropertyStore((s) => s.selectedByWorkspace);
+  const selectProperty = usePropertyStore((s) => s.select);
+  const fetchProperties = usePropertyStore((s) => s.fetchProperties);
+
+  // "+ Add another property" in the switcher routes here with ?new=1.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const wantsNew = searchParams.get("new") === "1";
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/hotel/properties");
       const props = data.properties || [];
       setProperties(props);
-      setActiveId((cur) => cur && props.some((p) => p._id === cur) ? cur : props[0]?._id || null);
+      const preferred = activeWorkspace
+        ? selectedByWorkspace[activeWorkspace]
+        : null;
+      setActiveId((cur) => {
+        if (cur && props.some((p) => p._id === cur)) return cur;
+        if (preferred && props.some((p) => String(p._id) === String(preferred)))
+          return preferred;
+        return props[0]?._id || null;
+      });
+      // Keep the switcher's list in step with what this page just fetched.
+      if (activeWorkspace) fetchProperties(activeWorkspace, { force: true });
     } catch {
       toast.error("Couldn't load your property");
     } finally {
       setLoading(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspace]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  const switchTo = (id) => {
+    setActiveId(id);
+    if (activeWorkspace) selectProperty(activeWorkspace, id);
+  };
+
+  const closeNew = () => {
+    searchParams.delete("new");
+    setSearchParams(searchParams, { replace: true });
+  };
 
   if (loading) {
     return (
@@ -94,7 +129,7 @@ export default function PropertyPage() {
         {properties.length > 1 && (
           <select
             value={activeId || ""}
-            onChange={(e) => setActiveId(e.target.value)}
+            onChange={(e) => switchTo(e.target.value)}
             className="rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400 bg-white"
           >
             {properties.map((p) => (
@@ -106,8 +141,14 @@ export default function PropertyPage() {
         )}
       </div>
 
-      {!property ? (
-        <SetupCards onDone={load} />
+      {!property || wantsNew ? (
+        <SetupCards
+          onDone={() => {
+            closeNew();
+            load();
+          }}
+          onCancel={property ? closeNew : undefined}
+        />
       ) : (
         <PropertyEditor property={property} onChanged={load} />
       )}
@@ -116,11 +157,26 @@ export default function PropertyPage() {
 }
 
 /* ── First-run setup: import from OTA or create manually ────────────── */
-function SetupCards({ onDone }) {
+function SetupCards({ onDone, onCancel }) {
   const [mode, setMode] = useState(null); // null | "import" | "manual"
 
   return (
     <div>
+      {/* Only shown when adding a FURTHER property — first-run has no
+          existing property to go back to. */}
+      {onCancel && (
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <p className="text-sm text-ink-500">
+            Adding another property to this account.
+          </p>
+          <button
+            onClick={onCancel}
+            className="text-xs font-semibold text-ink-500 hover:text-ink-800"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       {!mode && (
         <div className="grid md:grid-cols-2 gap-4">
           <button
@@ -293,6 +349,7 @@ function ImportFlow({ onBack, onDone, onManual }) {
 
 function ManualCreateForm({ onBack, onDone }) {
   const [saving, setSaving] = useState(false);
+  const [limitError, setLimitError] = useState("");
   const [form, setForm] = useState({
     name: "",
     propertyType: "hotel",
@@ -308,6 +365,7 @@ function ManualCreateForm({ onBack, onDone }) {
   const submit = async () => {
     if (!form.name.trim()) return toast.error("Give your property a name");
     setSaving(true);
+    setLimitError("");
     try {
       await api.post("/hotel/properties", {
         ...form,
@@ -316,7 +374,16 @@ function ManualCreateForm({ onBack, onDone }) {
       toast.success("Property created — now add your rooms!");
       onDone();
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Couldn't create property");
+      // 403 here is always the plan's property cap. Surface it inline with a
+      // way out rather than as a toast that vanishes.
+      if (e?.response?.status === 403) {
+        setLimitError(
+          e.response?.data?.message ||
+            "Your plan doesn't cover another property.",
+        );
+      } else {
+        toast.error(e?.response?.data?.message || "Couldn't create property");
+      }
       setSaving(false);
     }
   };
@@ -409,9 +476,25 @@ function ManualCreateForm({ onBack, onDone }) {
           />
         </div>
       </div>
+
+      {limitError && (
+        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="font-bold text-amber-900 text-sm">
+            You've reached your plan's property limit
+          </p>
+          <p className="text-sm text-amber-800 mt-1">{limitError}</p>
+          <Link
+            to="/dashboard/billing"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-lg px-3.5 py-2 mt-3 transition"
+          >
+            See upgrade options
+          </Link>
+        </div>
+      )}
+
       <button
         onClick={submit}
-        disabled={saving}
+        disabled={saving || !!limitError}
         className="mt-5 inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
       >
         {saving ? (

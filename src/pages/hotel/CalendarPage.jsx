@@ -95,7 +95,9 @@ function Housekeeping() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/pms/units");
+      const { data } = await api.get("/pms/units", {
+        params: propertyId ? { propertyId } : undefined,
+      });
       setRooms(data.rooms || []);
     } catch (e) {
       toast.error(errMsg(e, "Couldn't load housekeeping"));

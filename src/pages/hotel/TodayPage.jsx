@@ -10,6 +10,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import api from "@/services/api";
+import { usePropertyScope } from "@/store/propertyStore";
+import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 import {
   ArrowDownRight,
@@ -459,11 +461,17 @@ export default function TodayPage() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [data, setData] = useState(null);
+  const { activeWorkspace } = useAuthStore();
+  // Which property this screen is about (null = whole account, the normal
+  // single-hotel case).
+  const { propertyId } = usePropertyScope(activeWorkspace);
 
   const load = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data } = await api.get("/agent/today");
+      const { data } = await api.get("/agent/today", {
+        params: propertyId ? { propertyId } : undefined,
+      });
       setData(data);
       setFailed(false);
     } catch (e) {
@@ -472,7 +480,7 @@ export default function TodayPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [propertyId]);
 
   useEffect(() => {
     load();
