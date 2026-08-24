@@ -112,7 +112,6 @@ const PrivacyPage = lazyWithRetry(() => import("@/pages/PrivacyPage"));
 const TermsPage = lazyWithRetry(() => import("@/pages/TermsPage"));
 const ContactPage = lazyWithRetry(() => import("@/pages/ContactPage"));
 const HelpPage = lazyWithRetry(() => import("@/pages/HelpPage"));
-const FeaturesPage = lazyWithRetry(() => import("@/pages/FeaturesPage"));
 const NotFoundPage = lazyWithRetry(() => import("@/pages/NotFoundPage"));
 
 const ProtectedRoute = ({ children }) => {
@@ -161,7 +160,13 @@ export default function App() {
                 <Route path="/consultants" element={<ConsultantsLandingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route path="/docs" element={<DocsPage />} />
-                <Route path="/features" element={<FeaturesPage />} />
+                {/* Legacy Instagram-era features page — it still sells the pre-pivot
+                    product, so send visitors to the current platform section
+                    instead. The file is kept, just unreachable. */}
+                <Route
+                  path="/features"
+                  element={<Navigate to="/#platform" replace />}
+                />
                 <Route path="/help" element={<HelpPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />

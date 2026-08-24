@@ -152,11 +152,11 @@ export default function TeamPage() {
         `/workspaces/${workspace._id}/members/${userId}/permissions`,
         { permissions: editPerms },
       );
-      toast.success("Permissions updated");
+      toast.success("Access updated");
       setEditMember(null);
       refresh();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update permissions");
+      toast.error(err.response?.data?.message || "Failed to update access");
     } finally {
       setSavingPerms(false);
     }
@@ -211,8 +211,9 @@ export default function TeamPage() {
 
   const remove = async (userId) => {
     const ok = await confirm({
-      title: "Remove this team member?",
-      description: "They will lose access to this workspace immediately.",
+      title: "Remove this person from your team?",
+      description:
+        "They'll lose access to your property immediately. Bookings and guest messages they handled stay exactly as they are.",
       confirmLabel: "Remove",
       cancelLabel: "Cancel",
       danger: true,
@@ -220,7 +221,7 @@ export default function TeamPage() {
     if (!ok) return;
     try {
       await api.delete(`/workspaces/${workspace._id}/members/${userId}`);
-      toast.success("Member removed");
+      toast.success("Removed from your team");
       refresh();
     } catch {
       toast.error("Failed to remove");
@@ -273,7 +274,7 @@ export default function TeamPage() {
       {/* Members */}
       <section className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
         <div className="px-5 py-3 border-b border-ink-100">
-          <h2 className="text-sm font-bold text-ink-900">Members</h2>
+          <h2 className="text-sm font-bold text-ink-900">Staff</h2>
         </div>
 
         {owner && (
@@ -285,9 +286,14 @@ export default function TeamPage() {
               <p className="font-semibold text-ink-900 truncate">
                 {owner.name || owner.email}
               </p>
-              <p className="text-xs text-ink-500 truncate">{owner.email}</p>
+              <p className="text-xs text-ink-500 truncate">
+                {owner.email}
+                <span className="text-ink-400">
+                  {" · full access to everything"}
+                </span>
+              </p>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100 shrink-0">
               <Shield className="w-3 h-3" /> Owner
             </span>
           </div>
@@ -298,45 +304,50 @@ export default function TeamPage() {
           return (
             <div
               key={m.user?._id || m._id}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0 hover:bg-ink-50/50 transition"
+              className="flex items-start gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0 hover:bg-ink-50/50 transition"
             >
-              <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center font-bold text-ink-600">
+              <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center font-bold text-ink-600 shrink-0">
                 {seat(u.name, u.email)}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-ink-900 truncate">
                   {u.name || u.email}
                 </p>
-                <p className="text-xs text-ink-500 truncate">
-                  {u.email}
-                  {m.role === "agent" && (
-                    <span className="text-ink-400">
-                      {" · "}
-                      {(m.permissions?.length || 0) === 0
-                        ? "no access yet"
-                        : `${m.permissions.length} area${
-                            m.permissions.length === 1 ? "" : "s"
-                          }`}
-                    </span>
-                  )}
-                </p>
+                <p className="text-xs text-ink-500 truncate">{u.email}</p>
+                {m.role === "agent" &&
+                  ((m.permissions?.length || 0) === 0 ? (
+                    <p className="text-[11px] text-ink-400 mt-1">
+                      No areas granted yet
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {m.permissions.map((k) => (
+                        <span
+                          key={k}
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ink-50 text-ink-600 border border-ink-100"
+                        >
+                          {permissionLabel(k)}
+                        </span>
+                      ))}
+                    </div>
+                  ))}
               </div>
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-ink-100 text-ink-600 capitalize">
-                {m.role}
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-ink-100 text-ink-600 shrink-0">
+                {m.role === "agent" ? "Staff" : "Owner"}
               </span>
               {m.role === "agent" && (
                 <button
                   onClick={() => openEdit(m)}
-                  className="p-2 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
-                  title="Edit permissions"
+                  className="p-2 -mt-1 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition shrink-0"
+                  title="Edit access"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => remove(u._id || m.user)}
-                className="p-2 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
-                title="Remove member"
+                className="p-2 -mt-1 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition shrink-0"
+                title="Remove from team"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -346,7 +357,7 @@ export default function TeamPage() {
 
         {members.length === 0 && !owner && (
           <p className="text-center text-ink-400 text-sm py-10">
-            No team members yet.
+            No staff yet — invite your front desk to get started.
           </p>
         )}
       </section>
@@ -376,7 +387,7 @@ export default function TeamPage() {
                   ) : (
                     "Invite sent · awaiting acceptance"
                   )}{" "}
-                  · {i.role}
+                  · {i.role === "agent" ? "Staff" : i.role}
                 </p>
               </div>
               <button
@@ -394,11 +405,19 @@ export default function TeamPage() {
       <div className="rounded-2xl border border-ink-100 bg-white p-5 text-sm text-ink-600 leading-relaxed">
         <p className="font-bold text-ink-900 mb-1.5">Roles</p>
         <p>
-          <span className="font-semibold text-brand-700">Owner</span> — full
-          access: billing, settings, automations, and team.{" "}
-          <span className="font-semibold text-ink-800">Agent</span> — can view
-          and reply to the inbox and manage contacts, but can't change billing
-          or delete the workspace.
+          <span className="font-semibold text-brand-700">Owner</span> — that's
+          you. Everything, always: every booking, the calendar and rates, the
+          channel manager, the AI assistant, your team and billing. There's
+          nothing to tick.
+        </p>
+        <p className="mt-2">
+          <span className="font-semibold text-ink-800">Staff</span> — your front
+          desk, managers and housekeeping. They only see the areas you tick, and
+          can never reach billing or delete your property. Give the front desk{" "}
+          <span className="font-semibold">Bookings</span> and{" "}
+          <span className="font-semibold">Guest messages</span>; housekeeping
+          usually only needs <span className="font-semibold">Calendar &amp; rates</span>{" "}
+          for the housekeeping board.
         </p>
       </div>
 
@@ -417,7 +436,7 @@ export default function TeamPage() {
                   <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center">
                     <UserPlus className="w-4 h-4" />
                   </div>
-                  <h2 className="font-black text-ink-900">Invite a teammate</h2>
+                  <h2 className="font-black text-ink-900">Invite a staff member</h2>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
@@ -436,7 +455,7 @@ export default function TeamPage() {
                     <input
                       className="w-full rounded-xl border border-ink-200 pl-9 pr-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
                       type="email"
-                      placeholder="teammate@example.com"
+                      placeholder="frontdesk@yourhotel.com"
                       value={form.email}
                       onChange={(e) =>
                         setForm({ ...form, email: e.target.value })
@@ -453,7 +472,8 @@ export default function TeamPage() {
                   />
                   <p className="text-[11px] text-ink-400 mt-2">
                     They'll get an email link to join (expires in 7 days) and
-                    will only see the areas you tick.
+                    will only see the areas you tick. Leave everything unticked
+                    and they'll start with Bookings and Guest messages.
                   </p>
                 </div>
               </div>
@@ -502,7 +522,7 @@ export default function TeamPage() {
                   </div>
                   <div className="min-w-0">
                     <h2 className="font-black text-ink-900 truncate">
-                      Edit permissions
+                      Edit access
                     </h2>
                     <p className="text-xs text-ink-500 truncate">
                       {editMember.user?.name || editMember.user?.email}
@@ -525,7 +545,7 @@ export default function TeamPage() {
                 />
                 <p className="text-[11px] text-ink-400 mt-2">
                   Changes take effect immediately — they'll only see the areas
-                  you tick next time they load the app.
+                  you tick next time they load Botlify.
                 </p>
               </div>
               <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2 shrink-0">

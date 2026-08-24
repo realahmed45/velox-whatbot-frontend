@@ -400,6 +400,12 @@ function SecuritySettings() {
   );
 }
 
+/**
+ * General — the property-level basics: what the hotel is called inside Botlify,
+ * which timezone its nights roll over in, and which language the AI concierge
+ * answers guests in. Room types, photos and address live under Property &
+ * Rooms; this is deliberately the short tab.
+ */
 function GeneralSettings({ workspace, onSave }) {
   const [form, setForm] = useState({
     name: workspace?.name || "",
@@ -437,12 +443,16 @@ function GeneralSettings({ workspace, onSave }) {
   return (
     <div className="card p-4 sm:p-6 space-y-4">
       <div>
-        <label className="label">Workspace name</label>
+        <label className="label">Property name</label>
         <input
           className="input"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
+          placeholder="Seaview Boutique Hotel"
         />
+        <p className="text-xs text-ink-400 mt-1.5">
+          How your hotel appears across Botlify and on your direct-booking page.
+        </p>
       </div>
       <div>
         <label className="label">Timezone</label>
@@ -456,11 +466,17 @@ function GeneralSettings({ workspace, onSave }) {
           <option value="UTC">UTC</option>
           <option value="America/New_York">America/New_York (ET)</option>
         </select>
+        <p className="text-xs text-ink-400 mt-1.5">
+          Sets when a night rolls over — check-ins, check-outs and today's
+          arrivals all follow this.
+        </p>
       </div>
       <div>
         <label className="label">
           Default language{" "}
-          <span className="text-xs text-ink-400">(AI replies, captions)</span>
+          <span className="text-xs text-ink-400">
+            (how your AI answers guests)
+          </span>
         </label>
         <select
           className="input"
@@ -474,6 +490,10 @@ function GeneralSettings({ workspace, onSave }) {
           <option value="fr">French</option>
           <option value="hi">Hindi</option>
         </select>
+        <p className="text-xs text-ink-400 mt-1.5">
+          Your AI still mirrors a guest who writes in another language — this is
+          just the fallback.
+        </p>
       </div>
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
         <Save className="w-4 h-4" />
@@ -483,50 +503,21 @@ function GeneralSettings({ workspace, onSave }) {
   );
 }
 
-function InstagramSettings({ workspace, onSave }) {
-  const confirm = useConfirm();
+/**
+ * ChannelHealth — the Instagram-specific troubleshooting tools, kept because
+ * they're genuinely useful, but no longer presented as the main event.
+ *
+ * Instagram is one of four messaging channels now. Connecting and disconnecting
+ * every channel happens on the Channels board above (ChannelsPage); this panel
+ * sits underneath it and only appears once Instagram is actually connected,
+ * because the diagnose + webhook-resubscribe endpoints are Instagram-only. If a
+ * hotel never connects Instagram they never see it.
+ */
+function ChannelHealth({ workspace, onSave }) {
   const ig = workspace?.instagram;
-  const [oauthLoading, setOauthLoading] = useState(false);
   const [diagLoading, setDiagLoading] = useState(false);
   const [diag, setDiag] = useState(null);
   const [resubLoading, setResubLoading] = useState(false);
-
-  const startOAuth = async () => {
-    setOauthLoading(true);
-    const { connected, reason } = await connectInstagram();
-    if (connected) {
-      toast.success("Instagram connected!");
-      window.location.reload();
-    } else if (reason === "redirected") {
-      return; // full-page redirect in progress
-    } else if (reason === "cancelled") {
-      toast("Connection cancelled.");
-    } else if (reason === "timeout") {
-      toast.error("Timed out. If you finished, refresh the page.");
-    } else {
-      toast.error("Connection failed. Please try again.");
-    }
-    setOauthLoading(false);
-  };
-
-  const disconnect = async () => {
-    const ok = await confirm({
-      title: "Disconnect Instagram?",
-      description:
-        "Your automations will stop replying until you reconnect.",
-      confirmLabel: "Disconnect",
-      cancelLabel: "Cancel",
-      danger: true,
-    });
-    if (!ok) return;
-    try {
-      await api.delete("/instagram/connect");
-      toast.success("Disconnected");
-      onSave();
-    } catch {
-      toast.error("Failed to disconnect");
-    }
-  };
 
   const runDiagnose = async () => {
     setDiagLoading(true);
@@ -554,162 +545,108 @@ function InstagramSettings({ workspace, onSave }) {
     }
   };
 
+  // Instagram-only tools — nothing to show until Instagram is connected.
+  if (ig?.status !== "connected") return null;
+
   return (
-    <div className="card p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {ig?.profilePicture ? (
-            <img
-              src={ig.profilePicture}
-              className="w-10 h-10 rounded-full border border-pink-200 object-cover"
-              alt=""
-            />
-          ) : (
-            <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center">
-              <Instagram className="w-5 h-5 text-pink-500" />
-            </div>
-          )}
-          <div>
-            <p className="font-semibold text-sm text-ink-900">
-              {ig?.status === "connected" ? `@${ig.username}` : "Not connected"}
+    <div className="card p-5 sm:p-6 space-y-4">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <Instagram className="w-4.5 h-4.5" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-ink-900">
+              Instagram message delivery
+            </h3>
+            <p className="text-xs text-ink-500">
+              Not seeing guest DMs from{" "}
+              {ig?.username ? `@${ig.username}` : "Instagram"} in your inbox?
+              Check the connection here.
             </p>
-            <span
-              className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                ig?.status === "connected"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-ink-100 text-ink-500"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${ig?.status === "connected" ? "bg-green-500" : "bg-ink-400"}`}
-              />
-              {ig?.status === "connected" ? "Connected" : "Disconnected"}
-            </span>
           </div>
         </div>
-        {ig?.status === "connected" && (
-          <button
-            onClick={disconnect}
-            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition"
-          >
-            <Trash2 className="w-3 h-3" />
-            Disconnect
-          </button>
-        )}
+        <button
+          onClick={runDiagnose}
+          disabled={diagLoading}
+          className="flex items-center gap-1.5 text-xs font-semibold bg-ink-50 hover:bg-ink-100 border border-ink-200 px-3 py-1.5 rounded-lg transition disabled:opacity-60 shrink-0"
+        >
+          {diagLoading ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3 h-3" />
+          )}
+          Run check
+        </button>
       </div>
 
-      {ig?.status !== "connected" && (
-        <button
-          onClick={startOAuth}
-          disabled={oauthLoading}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 text-white font-semibold py-3 rounded-md hover:opacity-90 transition disabled:opacity-60"
-        >
-          {oauthLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Instagram className="w-4 h-4" />
-          )}
-          Connect Instagram
-        </button>
-      )}
-
-      {ig?.status === "connected" && (
-        <>
-          {ig?.connectedAt && (
-            <p className="text-xs text-ink-400">
-              Connected {new Date(ig.connectedAt).toLocaleDateString()}
-            </p>
-          )}
-
-          <div className="border border-ink-100 rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-ink-800">
-                  Automation Health
-                </p>
-                <p className="text-xs text-ink-500 mt-0.5">
-                  Check if Instagram is delivering DMs and events to Botlify
-                </p>
-              </div>
-              <button
-                onClick={runDiagnose}
-                disabled={diagLoading}
-                className="flex items-center gap-1.5 text-xs font-medium bg-ink-50 hover:bg-ink-100 border border-ink-200 px-3 py-1.5 rounded-lg transition disabled:opacity-60"
-              >
-                {diagLoading ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-3 h-3" />
-                )}
-                Run Diagnostics
-              </button>
-            </div>
-
-            {diag && (
-              <div className="space-y-2">
-                {diag.checks?.map((c, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
-                  >
-                    <span className="mt-0.5 shrink-0">
-                      {c.ok ? "✅" : "⚠️"}
-                    </span>
-                    <div>
-                      <p className="font-medium">{c.label}</p>
-                      {!c.ok && c.hint && (
-                        <p className="mt-0.5 text-amber-700">{c.hint}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {diag.checks?.some((c) => !c.ok) && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1.5">
-                    <p className="font-semibold">
-                      Some events aren't coming through. Try this:
-                    </p>
-                    <ol className="list-decimal list-inside space-y-1 pl-1">
-                      <li>
-                        Make sure your Instagram is a{" "}
-                        <strong>Business or Creator</strong> account.
-                      </li>
-                      <li>
-                        Click <strong>Re-subscribe Webhook</strong> below to
-                        refresh the connection.
-                      </li>
-                      <li>
-                        Send a test DM from another account — it should appear in
-                        your Inbox within a few seconds.
-                      </li>
-                      <li>
-                        Still stuck? Disconnect and reconnect Instagram from the
-                        top of this page.
-                      </li>
-                    </ol>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <button
-              onClick={resubscribe}
-              disabled={resubLoading}
-              className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold py-2.5 rounded-lg transition disabled:opacity-60"
+      {diag && (
+        <div className="space-y-2">
+          {diag.checks?.map((c, i) => (
+            <div
+              key={i}
+              className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
             >
-              {resubLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="w-3.5 h-3.5" />
-              )}
-              Re-subscribe Webhook
-            </button>
-          </div>
-        </>
+              <span className="mt-0.5 shrink-0">{c.ok ? "✅" : "⚠️"}</span>
+              <div>
+                <p className="font-medium">{c.label}</p>
+                {!c.ok && c.hint && (
+                  <p className="mt-0.5 text-amber-700">{c.hint}</p>
+                )}
+              </div>
+            </div>
+          ))}
+          {diag.checks?.some((c) => !c.ok) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1.5">
+              <p className="font-semibold">
+                Guest messages aren't coming through. Try this:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 pl-1">
+                <li>
+                  Make sure your hotel's Instagram is a{" "}
+                  <strong>Business account</strong>, not a personal one.
+                </li>
+                <li>
+                  Click <strong>Re-subscribe</strong> below to refresh the
+                  connection.
+                </li>
+                <li>
+                  Send a test DM from another account — it should land in your
+                  inbox within a few seconds.
+                </li>
+                <li>
+                  Still stuck? Disconnect and reconnect Instagram on the
+                  Channels board above.
+                </li>
+              </ol>
+            </div>
+          )}
+        </div>
       )}
+
+      <button
+        onClick={resubscribe}
+        disabled={resubLoading}
+        className="w-full flex items-center justify-center gap-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold py-2.5 rounded-lg transition disabled:opacity-60"
+      >
+        {resubLoading ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <RefreshCw className="w-3.5 h-3.5" />
+        )}
+        Re-subscribe to Instagram messages
+      </button>
     </div>
   );
 }
 
+/**
+ * Reply behaviour — the global guard rails on the AI concierge, applied on every
+ * connected channel (WhatsApp, Instagram, Messenger, Telegram).
+ *
+ * Persists to `PUT /instagram/settings` — the route name is historical; it
+ * writes workspace.settings, which every channel's reply pipeline reads.
+ */
 function AutomationSettings({ workspace, onSave }) {
   const [form, setForm] = useState({
     automationEnabled: workspace?.settings?.automationEnabled ?? true,
@@ -717,11 +654,6 @@ function AutomationSettings({ workspace, onSave }) {
     maxDelayMinutes: workspace?.settings?.maxDelayMinutes ?? 5,
     activeHourStart: workspace?.settings?.activeHourStart ?? 8,
     activeHourEnd: workspace?.settings?.activeHourEnd ?? 22,
-  });
-  const [vip, setVip] = useState({
-    enabled: workspace?.vipComments?.enabled ?? false,
-    usernamesText: (workspace?.vipComments?.usernames || []).join(", "),
-    autoDmTemplate: workspace?.vipComments?.autoDmTemplate || "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -734,30 +666,13 @@ function AutomationSettings({ workspace, onSave }) {
         activeHourStart: workspace.settings.activeHourStart ?? 8,
         activeHourEnd: workspace.settings.activeHourEnd ?? 22,
       });
-    if (workspace?.vipComments)
-      setVip({
-        enabled: workspace.vipComments.enabled ?? false,
-        usernamesText: (workspace.vipComments.usernames || []).join(", "),
-        autoDmTemplate: workspace.vipComments.autoDmTemplate || "",
-      });
   }, [workspace]);
 
   const save = async () => {
     setLoading(true);
     try {
-      const usernames = vip.usernamesText
-        .split(/[,\n]/)
-        .map((u) => u.trim())
-        .filter(Boolean);
-      await api.put("/instagram/settings", {
-        ...form,
-        vipComments: {
-          enabled: vip.enabled,
-          usernames,
-          autoDmTemplate: vip.autoDmTemplate,
-        },
-      });
-      toast.success("Automation settings saved");
+      await api.put("/instagram/settings", form);
+      toast.success("Reply settings saved");
       onSave();
     } catch (err) {
       toast.error("Failed to save");
@@ -767,22 +682,33 @@ function AutomationSettings({ workspace, onSave }) {
   };
 
   return (
-    <div className="card p-6 space-y-5">
+    <div className="card p-4 sm:p-6 space-y-5">
+      <div>
+        <h3 className="text-sm font-bold text-ink-900">Reply behaviour</h3>
+        <p className="text-xs text-ink-500 mt-0.5">
+          Applies to your AI concierge on every connected channel — WhatsApp,
+          Instagram, Messenger and Telegram.
+        </p>
+      </div>
+
       {/* Master toggle */}
-      <div className="flex items-center justify-between py-2">
-        <div>
-          <p className="font-medium text-ink-800 text-sm">Enable Automation</p>
+      <div className="flex items-center justify-between gap-4 py-2 border-t border-ink-100 pt-4">
+        <div className="min-w-0">
+          <p className="font-medium text-ink-800 text-sm">
+            Let the AI answer guests
+          </p>
           <p className="text-xs text-ink-500">
-            Turn all DM automations on or off globally
+            Turn this off and every message waits for a human in the inbox.
           </p>
         </div>
         <button
           onClick={() =>
             setForm((f) => ({ ...f, automationEnabled: !f.automationEnabled }))
           }
-          className={`relative w-11 h-6 rounded-full transition-colors ${
+          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
             form.automationEnabled ? "bg-brand-600" : "bg-ink-300"
           }`}
+          aria-label="Toggle AI replies"
         >
           <span
             className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -796,7 +722,8 @@ function AutomationSettings({ workspace, onSave }) {
       <div>
         <label className="label">Reply delay range (minutes)</label>
         <p className="text-xs text-ink-400 mb-3">
-          Random delay before sending automated DMs (avoids spam detection)
+          A short random pause before the AI replies, so answers feel like your
+          front desk rather than a machine.
         </p>
         <div className="flex items-center gap-3">
           <div className="flex-1">
@@ -833,7 +760,9 @@ function AutomationSettings({ workspace, onSave }) {
       <div>
         <label className="label">Active hours</label>
         <p className="text-xs text-ink-400 mb-3">
-          Only send automated DMs within this window
+          When the AI replies on its own. Outside this window guests get your
+          away message and the enquiry waits for the front desk. Running a 24/7
+          desk? Set 0 to 23.
         </p>
         <div className="flex items-center gap-3">
           <div className="flex-1">
@@ -864,52 +793,6 @@ function AutomationSettings({ workspace, onSave }) {
             />
           </div>
         </div>
-      </div>
-
-      {/* VIP Comment Prioritizer (B4) */}
-      <div className="border-t border-ink-100 pt-5">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="font-medium text-ink-800 text-sm">
-              VIP Comment Prioritizer
-            </p>
-            <p className="text-xs text-ink-500">
-              Flag comments from specific usernames as VIP (adds "vip" tag +
-              optional auto-DM).
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setVip((v) => ({ ...v, enabled: !v.enabled }))}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full ${vip.enabled ? "bg-brand-600" : "bg-ink-300"}`}
-          >
-            <span
-              className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${vip.enabled ? "translate-x-5" : "translate-x-0"}`}
-            />
-          </button>
-        </div>
-        <label className="label text-xs">
-          VIP Instagram usernames (comma-separated)
-        </label>
-        <textarea
-          rows={2}
-          className="input text-sm"
-          placeholder="@selenagomez, @cristiano, ..."
-          value={vip.usernamesText}
-          onChange={(e) => setVip({ ...vip, usernamesText: e.target.value })}
-          disabled={!vip.enabled}
-        />
-        <label className="label text-xs mt-3">
-          Auto-DM template (optional)
-        </label>
-        <input
-          className="input text-sm"
-          placeholder="Hey {name}! Thanks for commenting — huge fan. DM us anytime 💙"
-          value={vip.autoDmTemplate}
-          onChange={(e) => setVip({ ...vip, autoDmTemplate: e.target.value })}
-          disabled={!vip.enabled}
-          maxLength={500}
-        />
       </div>
 
       <button onClick={save} disabled={loading} className="btn-primary gap-2">
