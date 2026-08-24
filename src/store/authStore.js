@@ -57,9 +57,11 @@ export const useAuthStore = create(
         }),
 
       logout: () => {
-        // Clear the cached workspace too so nothing leaks to the next account.
+        // Clear the cached workspace and property choice too, so nothing leaks
+        // to the next account signing in on this browser.
         try {
           localStorage.removeItem("botlify-workspace");
+          localStorage.removeItem("botlify-property");
         } catch {
           /* ignore */
         }

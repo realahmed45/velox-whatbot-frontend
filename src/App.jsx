@@ -31,10 +31,7 @@ const AccountPickerPage = lazyWithRetry(
 const AutomationSetupPage = lazyWithRetry(
   () => import("@/pages/automation/AutomationSetupPage"),
 );
-const AnalyticsPage = lazyWithRetry(() => import("@/pages/analytics/AnalyticsPage"));
 const InboxPage = lazyWithRetry(() => import("@/pages/inbox/InboxPage"));
-const ContactsPage = lazyWithRetry(() => import("@/pages/contacts/ContactsPage"));
-const BroadcastsPage = lazyWithRetry(() => import("@/pages/broadcasts/BroadcastsPage"));
 const AiBotPage = lazyWithRetry(() => import("@/pages/ai-bot/AiBotPage"));
 const PricingPage = lazyWithRetry(() => import("@/pages/PricingPage"));
 const GuidePage = lazyWithRetry(() => import("@/pages/GuidePage"));
@@ -49,11 +46,6 @@ const CustomFlowsPage = lazyWithRetry(
 const BillingPage = lazyWithRetry(() => import("@/pages/billing/BillingPage"));
 
 // Growth tools (lazy-loaded)
-const ScheduledPostsPage = lazyWithRetry(
-  () => import("@/pages/content/ScheduledPostsPage"),
-);
-const DripCampaignsPage = lazyWithRetry(() => import("@/pages/drip/DripCampaignsPage"));
-const HashtagsPage = lazyWithRetry(() => import("@/pages/hashtags/HashtagsPage"));
 const IntegrationsPage = lazyWithRetry(
   () => import("@/pages/integrations/IntegrationsPage"),
 );
@@ -251,13 +243,12 @@ export default function App() {
                     </RequirePermission>
                   }
                 />
+                {/* Legacy screens from the Instagram era. The 5-screen app
+                    covers these now, so they redirect instead of showing
+                    follower/hashtag content. Files kept, routes retired. */}
                 <Route
                   path="contacts"
-                  element={
-                    <RequirePermission perm="contacts">
-                      <ContactsPage />
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard/guests" replace />}
                 />
                 <Route
                   path="ai-bot"
@@ -301,27 +292,15 @@ export default function App() {
                 {/* Growth tools */}
                 <Route
                   path="scheduled-posts"
-                  element={
-                    <RequirePermission perm="content">
-                      <ScheduledPostsPage />
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard" replace />}
                 />
                 <Route
                   path="drip"
-                  element={
-                    <RequirePermission perm="broadcasts">
-                      <DripCampaignsPage />
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard/bookings" replace />}
                 />
                 <Route
                   path="hashtags"
-                  element={
-                    <RequirePermission perm="content">
-                      <HashtagsPage />
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard" replace />}
                 />
                 <Route
                   path="integrations"
@@ -369,23 +348,11 @@ export default function App() {
                 />
                 <Route
                   path="broadcasts"
-                  element={
-                    <RequirePermission perm="broadcasts">
-                      <ConnectChannelGate feature="Broadcasts">
-                        <BroadcastsPage />
-                      </ConnectChannelGate>
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard/bookings" replace />}
                 />
                 <Route
                   path="analytics"
-                  element={
-                    <RequirePermission perm="analytics">
-                      <ConnectChannelGate feature="Analytics">
-                        <AnalyticsPage />
-                      </ConnectChannelGate>
-                    </RequirePermission>
-                  }
+                  element={<Navigate to="/dashboard" replace />}
                 />
 
                 {/* Onboarding inside dashboard shell — redirects for back-compat.

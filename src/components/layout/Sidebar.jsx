@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
+import PropertySwitcher from "@/components/layout/PropertySwitcher";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -215,6 +216,9 @@ export default function Sidebar({ onNavigate }) {
           <ChevronsRight className="w-4 h-4" />
         </button>
       )}
+
+      {/* ── Property switcher (multi-property accounts only) ─── */}
+      <PropertySwitcher collapsed={collapsed} onNavigate={onNavigate} />
 
       {/* ── Navigation ───────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto py-3 px-3 sidebar-scroll">

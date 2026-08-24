@@ -26,6 +26,13 @@ export const emptyState = {
   roomsAdded: 0,
   channelsImported: false,
   channelsSkipped: false,
+  /**
+   * Which OTAs the hotel says it's already listed on — keys from
+   * `@/data/otaChannels`. Intent, not a live connection: the actual sync runs
+   * through Channex, which may not be switched on for the account yet. Used to
+   * personalise the Done screen and to tell onboarding what to set up.
+   */
+  channelsSelected: [],
   messagingConnected: [],
 };
 

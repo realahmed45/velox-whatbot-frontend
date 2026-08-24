@@ -1,13 +1,26 @@
 /**
  * Step 3 — Connect your booking channels. The headline step: this is the
- * channel-manager promise, so it leads with the OTA import and shows the
- * breadth of what Botlify distributes to.
+ * channel-manager promise, so it leads with "where are you already listed?"
+ * and only then offers the one-click import.
  *
- * GET  /hotel/channex/properties  → the owner's properties on the connectivity
- *                                   partner (503 when not switched on yet)
- * POST /hotel/channex/import      → { channexPropertyId }
+ * Two different things happen on this screen, and they're deliberately kept
+ * apart:
+ *
+ *  1. SELECTION (always available) — the hotel taps the OTAs it's listed on.
+ *     This is recorded INTENT, not a connection. It personalises the Done
+ *     screen and gives onboarding a target list. Persisted into the property's
+ *     `description` is NOT appropriate and there's no dedicated field on the
+ *     Property model for it (`channel.connectedOtas` is written by the Channex
+ *     import from real connection state, so writing intent there would lie
+ *     about what's actually synced — and updateProperty doesn't accept it
+ *     anyway). It therefore lives in wizard state only.
+ *
+ *  2. IMPORT (when the connectivity partner is switched on) — the real thing.
+ *     GET  /hotel/channex/properties  → the owner's properties on the partner
+ *                                       (503 when not enabled yet)
+ *     POST /hotel/channex/import      → { channexPropertyId }
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check,
   CloudDownload,
@@ -16,8 +29,14 @@ import {
   Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { clsx } from "clsx";
 import api from "@/services/api";
-import ChannelWall from "@/components/ChannelWall";
+import OtaLogo from "@/components/OtaLogo";
+import {
+  OTA_CHANNELS,
+  MORE_CHANNELS_PHRASE,
+  CHANNEL_TOTAL_LABEL,
+} from "@/data/otaChannels";
 import WizardShell from "./WizardShell";
 
 function ValueStrip() {
@@ -41,6 +60,49 @@ function ValueStrip() {
   );
 }
 
+/**
+ * A selectable channel tile: brand mark, name, and an unmistakable selected
+ * state (brand ring + filled checkmark). Big enough to hit with a thumb.
+ */
+function ChannelTile({ channel, selected, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      role="checkbox"
+      aria-checked={selected}
+      className={clsx(
+        "relative flex items-center gap-3 rounded-2xl border-2 p-3 sm:p-3.5 text-left transition",
+        selected
+          ? "border-brand-500 bg-brand-50/70 shadow-ring"
+          : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50",
+      )}
+    >
+      <OtaLogo channelKey={channel.key} name={channel.name} size={38} />
+      <span className="min-w-0 flex-1">
+        <span
+          className={clsx(
+            "block font-bold text-sm truncate",
+            selected ? "text-brand-700" : "text-ink-900",
+          )}
+        >
+          {channel.name}
+        </span>
+      </span>
+      <span
+        className={clsx(
+          "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition",
+          selected
+            ? "border-brand-500 bg-brand-500 text-white"
+            : "border-ink-300 bg-white",
+        )}
+      >
+        {selected && <Check className="w-3 h-3" strokeWidth={4} />}
+      </span>
+    </button>
+  );
+}
+
 export default function StepChannels({ state, patch, goNext, goBack }) {
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(null); // 503 message
@@ -48,6 +110,23 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
   const [list, setList] = useState([]);
   const [importing, setImporting] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  const selected = useMemo(
+    () => state.channelsSelected || [],
+    [state.channelsSelected],
+  );
+  const allKeys = useMemo(() => OTA_CHANNELS.map((c) => c.key), []);
+  const allSelected = selected.length === allKeys.length;
+
+  const toggle = (key) =>
+    patch({
+      channelsSelected: selected.includes(key)
+        ? selected.filter((k) => k !== key)
+        : [...selected, key],
+    });
+
+  const toggleAll = () =>
+    patch({ channelsSelected: allSelected ? [] : [...allKeys] });
 
   useEffect(() => {
     let alive = true;
@@ -108,8 +187,8 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
       step={2}
       icon={CloudDownload}
       eyebrow="Step 3 of 5"
-      title="Connect your booking channels"
-      subtitle="Already listed on Booking.com, Airbnb, Agoda, Expedia or Traveloka? Import your property and Botlify keeps all 60+ channels in sync from one calendar."
+      title="Where are you already listed?"
+      subtitle={`Pick every channel you sell on — we'll set them up so one calendar drives all of them. ${CHANNEL_TOTAL_LABEL} channels are supported, ${MORE_CHANNELS_PHRASE}.`}
       onBack={goBack}
       onSkip={skip}
       skipLabel="Skip — I'll connect channels later"
@@ -120,6 +199,59 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
       <div className="space-y-4">
         <ValueStrip />
 
+        {/* ── Multi-select ─────────────────────────────────────────────── */}
+        <div className="rounded-2xl border border-ink-100 bg-white shadow-lg p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <p className="font-black text-ink-900">
+                Select your booking channels
+              </p>
+              <p className="text-sm text-ink-500 mt-0.5">
+                Choose as many as you like — most hotels are on three or four.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleAll}
+              className="text-xs font-bold text-brand-600 hover:text-brand-700 underline underline-offset-2 transition shrink-0"
+            >
+              {allSelected ? "Clear all" : "Select all"}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {OTA_CHANNELS.map((c) => (
+              <ChannelTile
+                key={c.key}
+                channel={c}
+                selected={selected.includes(c.key)}
+                onToggle={() => toggle(c.key)}
+              />
+            ))}
+          </div>
+
+          {/* Running count — the confirmation that taps registered. */}
+          <div className="mt-4 flex items-center gap-2 min-h-[1.5rem]">
+            {selected.length > 0 ? (
+              <>
+                <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Check className="w-3 h-3" strokeWidth={4} />
+                </span>
+                <p className="text-sm font-bold text-ink-800">
+                  {selected.length} channel{selected.length === 1 ? "" : "s"}{" "}
+                  selected
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-ink-400">
+                Not listed anywhere yet? That's fine — skip this and sell direct
+                from day one.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ── One-click import (real connection) ───────────────────────── */}
         <div className="rounded-2xl border border-ink-100 bg-white shadow-lg p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <p className="font-black text-ink-900">
@@ -150,9 +282,12 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
                 OTA sync isn't switched on for your account yet
               </p>
               <p className="text-sm text-amber-800 mt-1">
-                {unavailable} You can add rooms manually now and connect
-                channels later — bookings, the calendar and the AI concierge all
-                work exactly the same in the meantime.
+                {unavailable} We've noted{" "}
+                {selected.length > 0
+                  ? "the channels you picked"
+                  : "your setup"}{" "}
+                and our team will take it from here. Bookings, the calendar and
+                the AI concierge all work exactly the same in the meantime.
               </p>
             </div>
           ) : failed ? (
@@ -217,8 +352,6 @@ export default function StepChannels({ state, patch, goNext, goBack }) {
             </div>
           )}
         </div>
-
-        <ChannelWall subtitle="60+ booking channels through one connection, via our connectivity partner." />
       </div>
     </WizardShell>
   );

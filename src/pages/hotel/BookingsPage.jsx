@@ -9,6 +9,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import IgInboxPage from "@/pages/inbox/IgInboxPage";
 import api from "@/services/api";
+import { useAuthStore } from "@/store/authStore";
+import { usePropertyScope } from "@/store/propertyStore";
 import toast from "react-hot-toast";
 import {
   BedDouble,
@@ -72,6 +74,15 @@ const money = (amount, currency) =>
 
 function BookingsTable() {
   const confirm = useConfirm();
+  // Which hotel this list is about (multi-property accounts only).
+  const { activeWorkspace } = useAuthStore();
+  const { propertyId } = usePropertyScope(activeWorkspace);
+  // Memoised by id, not by object identity — an unstable params object here
+  // would re-run the loaders on every render.
+  const scopeParams = useMemo(
+    () => (propertyId ? { propertyId } : {}),
+    [propertyId],
+  );
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [page, setPage] = useState(1);
@@ -92,6 +103,9 @@ function BookingsTable() {
           source: source || undefined,
           page,
           limit: 20,
+          // Multi-property accounts scope to the sidebar's chosen hotel;
+          // single-property accounts send nothing and get the default.
+          ...scopeParams,
         },
       });
       setBookings(data.bookings || []);
@@ -102,18 +116,18 @@ function BookingsTable() {
     } finally {
       setLoading(false);
     }
-  }, [status, source, page]);
+  }, [status, source, page, scopeParams]);
 
   const loadStats = useCallback(async () => {
     try {
       const { data } = await api.get("/hotel/bookings", {
-        params: { page: 1, limit: 200 },
+        params: { page: 1, limit: 200, ...scopeParams },
       });
       setStatsRows(data.bookings || []);
     } catch {
       /* stats are non-blocking */
     }
-  }, []);
+  }, [scopeParams]);
 
   useEffect(() => {
     load();

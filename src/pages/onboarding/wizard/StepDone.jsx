@@ -16,8 +16,16 @@ import toast from "react-hot-toast";
 import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import OtaLogo from "@/components/OtaLogo";
+import { OTA_CHANNELS } from "@/data/otaChannels";
 import WizardShell from "./WizardShell";
 import { clearWizard } from "./wizardState";
+
+/** "Booking.com, Agoda and Traveloka" */
+function joinNames(names) {
+  if (names.length <= 1) return names[0] || "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
 
 function Row({ done, title, detail }) {
   return (
@@ -60,6 +68,11 @@ export default function StepDone({ state, goBack }) {
   const bookingUrl = state.bookingSlug
     ? `${window.location.origin}/book/${state.bookingSlug}`
     : null;
+
+  // The OTAs they told us they're on — intent recorded at step 3.
+  const picked = OTA_CHANNELS.filter((c) =>
+    (state.channelsSelected || []).includes(c.key),
+  );
 
   const finish = async () => {
     setGoing(true);
@@ -120,12 +133,16 @@ export default function StepDone({ state, goBack }) {
               title={
                 state.channelsImported
                   ? "Booking channels connected"
-                  : "Booking channels not connected yet"
+                  : picked.length > 0
+                    ? `${picked.length} booking channel${picked.length === 1 ? "" : "s"} queued to connect`
+                    : "Booking channels not connected yet"
               }
               detail={
                 state.channelsImported
                   ? "Availability and rates sync across every connected OTA."
-                  : "Connect Booking.com, Airbnb, Agoda and 60+ more from Property → Channels."
+                  : picked.length > 0
+                    ? `We'll connect ${joinNames(picked.map((c) => c.name))} for you.`
+                    : "Connect Booking.com, Airbnb, Agoda and 60+ more from Property → Channels."
               }
             />
             <Row
@@ -143,6 +160,30 @@ export default function StepDone({ state, goBack }) {
             />
           </ul>
         </div>
+
+        {/* What they told us at step 3 — shown back so the promise is explicit. */}
+        {picked.length > 0 && !state.channelsImported && (
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-card p-5 sm:p-6">
+            <p className="font-black text-ink-900">
+              We'll connect {joinNames(picked.map((c) => c.name))} for you
+            </p>
+            <p className="text-sm text-ink-500 mt-1 mb-3.5">
+              Our team sets up the sync — you'll get an email the moment your
+              calendar and rates are live on each one.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {picked.map((c) => (
+                <span
+                  key={c.key}
+                  className={`inline-flex items-center gap-2 rounded-full border pl-1.5 pr-3 py-1.5 text-xs font-semibold ${c.tint}`}
+                >
+                  <OtaLogo channelKey={c.key} name={c.name} size={22} />
+                  {c.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {bookingUrl && (
           <div className="rounded-2xl border border-brand-100 bg-brand-50/60 p-5 sm:p-6">

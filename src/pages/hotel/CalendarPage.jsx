@@ -8,6 +8,8 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "@/services/api";
+import { useAuthStore } from "@/store/authStore";
+import { usePropertyScope } from "@/store/propertyStore";
 import toast from "react-hot-toast";
 import {
   BedDouble,
@@ -240,6 +242,9 @@ function RateEditor({ room, currency, onSaved, onClose }) {
 /* ── Page ────────────────────────────────────────────────────────────────── */
 
 export default function CalendarPage() {
+  // Which hotel's calendar this is (multi-property accounts only).
+  const { activeWorkspace } = useAuthStore();
+  const { propertyId } = usePropertyScope(activeWorkspace);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [property, setProperty] = useState(null);
@@ -263,8 +268,13 @@ export default function CalendarPage() {
     setLoading(true);
     try {
       const { data } = await api.get("/hotel/properties");
-      const props = data.properties || [];
-      const prop = props[0] || null;
+      const props = (data.properties || []).filter((p) => p.active !== false);
+      // Honour the sidebar's property choice; fall back to the first so a
+      // single-property account (and a stale id) behaves exactly as before.
+      const prop =
+        props.find((p) => String(p._id) === String(propertyId)) ||
+        props[0] ||
+        null;
       setProperty(prop);
 
       if (!prop) {
@@ -299,7 +309,7 @@ export default function CalendarPage() {
     } finally {
       setLoading(false);
     }
-  }, [from]);
+  }, [from, propertyId]);
 
   useEffect(() => {
     load();

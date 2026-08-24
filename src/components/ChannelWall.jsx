@@ -5,8 +5,9 @@
  * pages, the pricing pages and the onboarding wizard. Data lives in
  * `@/data/otaChannels`.
  *
- * We don't ship OTA brand marks (no rights) — chips are coloured initials on a
- * tint, matching the onboarding wizard's original treatment.
+ * Chips carry the brand marks from `@/components/OtaLogo` — original, inline
+ * SVG recreations in each brand's colour (we don't ship the OTAs' real
+ * trademarked logos, and nothing is hotlinked from a CDN).
  *
  * Props
  *  variant   "card" (bordered white card w/ heading) | "bare" (chips only)
@@ -19,6 +20,7 @@
  *  dark      dark-surface palette for the card/bare chips
  */
 import { Globe2 } from "lucide-react";
+import OtaLogo from "@/components/OtaLogo";
 import {
   OTA_CHANNELS,
   MORE_CHANNELS_LABEL,
@@ -32,14 +34,14 @@ function Chip({ channel, size, dark }) {
     return (
       <span
         className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 font-semibold text-white/80 ${
-          compact ? "px-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
+          compact ? "pl-1 pr-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
         }`}
       >
-        {!compact && (
-          <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black text-white">
-            {channel.short}
-          </span>
-        )}
+        <OtaLogo
+          channelKey={channel.key}
+          name={channel.name}
+          size={compact ? 18 : 22}
+        />
         {channel.name}
       </span>
     );
@@ -48,14 +50,14 @@ function Chip({ channel, size, dark }) {
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full border font-semibold ${channel.tint} ${
-        compact ? "px-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
+        compact ? "pl-1 pr-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
       }`}
     >
-      {!compact && (
-        <span className="w-6 h-6 rounded-full bg-white/70 flex items-center justify-center text-[10px] font-black">
-          {channel.short}
-        </span>
-      )}
+      <OtaLogo
+        channelKey={channel.key}
+        name={channel.name}
+        size={compact ? 18 : 22}
+      />
       {channel.name}
     </span>
   );
