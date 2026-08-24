@@ -28,9 +28,8 @@ export const BOTLIFY_FAQ = [
       "about botlify",
       "explain botlify",
       "what is this",
-      "tell me about",
-      "platform",
-      "overview",
+      "tell me about botlify",
+      "overview of botlify",
     ],
     answer:
       "Botlify is a complete operating platform for a hotel — not just a chatbot.\n\nIt gives you:\n• A channel manager — Booking.com and Airbnb on one calendar\n• Your own direct-booking page, commission-free\n• An AI revenue manager that suggests nightly rates you approve\n• An AI concierge on WhatsApp, Instagram, Messenger and Telegram\n• A front desk — check-in, check-out, housekeeping and folio\n• A unified guest CRM and a reviews inbox\n• The Botlify Agent — type an instruction in plain language and it does it\n\nOne login, one calendar, one bill.",
@@ -133,6 +132,12 @@ export const BOTLIFY_FAQ = [
       "which otas do you connect to",
       "ota",
       "otas",
+      "traveloka",
+      "tiket",
+      "tiket.com",
+      "trip.com",
+      "hostelworld",
+      "google hotel",
       "booking.com",
       "booking com",
       "airbnb",
@@ -146,7 +151,7 @@ export const BOTLIFY_FAQ = [
       "two-way sync",
     ],
     answer:
-      "Booking.com and Airbnb today, connected through our connectivity partner. More channels are available through the same partner.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd it costs you nothing extra: OTA sync is 0% commission.",
+      "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50+ more, all through one connection.\n\nIf your hotel is listed anywhere, chances are we can sync it.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd it costs you nothing extra: OTA sync is 0% commission.",
   },
   {
     id: "messaging-channels",
@@ -294,6 +299,7 @@ export const BOTLIFY_FAQ = [
       "type an instruction",
       "natural language",
       "tell it what to do",
+      "agent",
     ],
     answer:
       "It's your hotel's command line, in plain English.\n\nType it the way you'd say it to a manager:\n• \"Change Deluxe Double to $95 next weekend\"\n• \"Who checks in today?\"\n• \"Block room 3 tomorrow — the AC is out\"\n• \"How did we do last month?\"\n\nRead-only questions are answered immediately. Anything that changes a rate, availability or a booking shows you exactly what will change and asks you to confirm first — it never acts on money or inventory without your say-so.\n\nOne confirmed instruction updates Booking.com, Airbnb and your direct page together.",
@@ -342,6 +348,11 @@ export const BOTLIFY_FAQ = [
     keywords: [
       "consultant program",
       "consultants",
+      "consultant",
+      "marketer",
+      "marketers",
+      "become a consultant",
+      "refer hotels",
       "affiliate",
       "referral",
       "reseller",
@@ -412,6 +423,8 @@ export const BOTLIFY_FAQ = [
     chip: "Data & security",
     keywords: [
       "is my data secure",
+      "is my data safe",
+      "safe",
       "data",
       "security",
       "secure",
@@ -488,9 +501,27 @@ const normalize = (s) =>
     .trim();
 
 /**
+ * Terms distinctive enough that seeing one on its own is a confident signal —
+ * a visitor typing just "tiktok" or "whatsapp" means that topic and nothing
+ * else. Generic words ("plan", "cost") stay at the normal single-word weight
+ * so they can't outrank a real phrase match.
+ */
+const STRONG_TERMS = new Set([
+  "botlify", "tiktok", "whatsapp", "instagram", "telegram", "messenger",
+  "airbnb", "booking.com", "expedia", "agoda", "vrbo", "ota", "otas",
+  "pms", "crm", "commission", "commissions", "pricing", "price", "refund",
+  "cancel", "consultant", "consultants", "affiliate", "referral", "gdpr",
+  "security", "secure", "privacy", "transfers", "transfer", "concierge",
+  "chatbot", "onboarding", "housekeeping", "folio", "adr", "occupancy",
+  "overbooking", "settlement", "ledger", "invoice", "statement",
+  "traveloka", "tiket", "trip.com", "hostelworld", "marketer", "marketers",
+]);
+
+/**
  * Score one entry against a normalized query.
  * Multi-word keyword phrases are worth far more than single-word hits, so
- * "how much does it cost" beats a stray "cost" appearing elsewhere.
+ * "how much does it cost" beats a stray "cost" appearing elsewhere — but a
+ * distinctive lone term still clears the confidence bar on its own.
  */
 function scoreEntry(entry, query, queryWords) {
   let score = 0;
@@ -502,7 +533,8 @@ function scoreEntry(entry, query, queryWords) {
     if (words.length > 1) {
       if (query.includes(kw)) score += 6 + words.length;
     } else if (queryWords.has(kw)) {
-      score += STOP_WORDS.has(kw) ? 0 : 2;
+      if (STOP_WORDS.has(kw)) continue;
+      score += STRONG_TERMS.has(kw) ? 5 : 2;
     }
   }
 

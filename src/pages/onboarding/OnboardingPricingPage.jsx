@@ -16,6 +16,9 @@ import {
   Sparkles,
   Loader2,
   ShieldCheck,
+  BadgePercent,
+  Wallet,
+  Plane,
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -184,14 +187,121 @@ export default function OnboardingPricingPage() {
         )}
 
         {!errored && (
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-400">
-              <ShieldCheck className="w-3 h-3" />
-              Free plan needs no card · Pro has a 3-day free trial · cancel
-              anytime
-            </p>
-          </div>
+          <>
+            <CommissionSummary />
+
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-400">
+                <ShieldCheck className="w-3 h-3" />
+                Free plan needs no card · Pro has a 3-day free trial · cancel
+                anytime
+              </p>
+            </div>
+          </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The commission model, shown before they pick a plan so there are no
+ * surprises later. Mirrors the public pricing page.
+ */
+function CommissionSummary() {
+  const rows = [
+    {
+      icon: Check,
+      source: "Booking.com & Airbnb bookings",
+      rate: "0%",
+      cls: "bg-emerald-50 border-emerald-100 text-emerald-700",
+      why: "OTA sync is completely free — we never take a cut.",
+    },
+    {
+      icon: BadgePercent,
+      source: "Bookings the AI closes for you",
+      sub: "WhatsApp · Instagram · Messenger · Telegram · your direct page",
+      rate: "10%",
+      cls: "bg-brand-50 border-brand-200 text-brand-700",
+      why: "OTAs charge 15–18% for the same booking — and this is revenue you wouldn't otherwise have had.",
+    },
+    {
+      icon: Plane,
+      source: "Airport transfers we arrange",
+      sub: "Through our partner network only",
+      rate: "~5–10%",
+      cls: "bg-ink-100 border-ink-200 text-ink-700",
+      why: "Use your own driver and you keep 100%.",
+    },
+  ];
+
+  return (
+    <div className="mt-10 max-w-2xl mx-auto">
+      <div className="rounded-2xl border border-ink-200 bg-white overflow-hidden shadow-sm">
+        <div className="px-5 py-4 border-b border-ink-100 bg-ink-50/60">
+          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+            <BadgePercent className="w-4 h-4 text-brand-500" />
+            How commission works
+          </p>
+          <p className="mt-0.5 text-xs text-ink-500">
+            On top of the subscription — worth knowing before you pick.
+          </p>
+        </div>
+
+        <ul className="divide-y divide-ink-100">
+          {rows.map((r) => {
+            const Icon = r.icon;
+            return (
+              <li key={r.source} className="px-5 py-3.5">
+                <div className="flex items-start gap-3">
+                  <span className="w-8 h-8 rounded-lg bg-ink-50 text-ink-400 flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-bold text-ink-900 leading-snug">
+                        {r.source}
+                      </p>
+                      <span
+                        className={clsx(
+                          "shrink-0 rounded-full border px-2.5 py-1 text-xs font-black",
+                          r.cls,
+                        )}
+                      >
+                        {r.rate}
+                      </span>
+                    </div>
+                    {r.sub && (
+                      <p className="mt-0.5 text-[11px] text-ink-400 leading-snug">
+                        {r.sub}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-ink-600 leading-relaxed">
+                      {r.why}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="px-5 py-4 bg-brand-50/50 border-t border-brand-100">
+          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-brand-500" />
+            Tracked automatically, settled manually
+          </p>
+          <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+            Commission is recorded in a ledger in your dashboard as bookings
+            come in, and we email you a monthly statement to settle by bank
+            transfer or invoice.{" "}
+            <b className="text-ink-900">
+              We never take money out of your account and never sit between your
+              guest and your payments
+            </b>{" "}
+            — you always collect from the guest directly.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -15,6 +15,9 @@ import {
   Loader2,
   Sparkles,
   Zap,
+  BadgePercent,
+  Wallet,
+  Plane,
 } from "lucide-react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
@@ -251,12 +254,123 @@ export default function PricingPage({
               </div>
             </div>
 
+            <CommissionPanel />
+
             <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-brand-500" />
               Start free · Pro has a 3-day free trial · Cancel anytime
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The commission model, stated plainly. Two numbers plus the transfer margin,
+ * and — the part hotels actually want to know — how it's settled.
+ */
+const COMMISSION_ROWS = [
+  {
+    icon: Check,
+    source: "Booking.com & Airbnb",
+    rate: "0%",
+    tone: "emerald",
+    why: "OTA sync is completely free. We never take a cut of a reservation that arrived through an OTA.",
+  },
+  {
+    icon: BadgePercent,
+    source: "Bookings the AI closes",
+    sub: "WhatsApp · Instagram · Messenger · Telegram · your direct page",
+    rate: "10%",
+    tone: "brand",
+    why: "OTAs charge 15–18% for the same reservation — this is cheaper, and it's on revenue you wouldn't otherwise have had.",
+  },
+  {
+    icon: Plane,
+    source: "Airport transfers",
+    sub: "Only when we arrange one through our partner network",
+    rate: "~5–10%",
+    tone: "ink",
+    why: "A small partner margin. Hotels with their own driver keep 100%.",
+  },
+];
+
+const TONES = {
+  emerald: "bg-emerald-50 border-emerald-100 text-emerald-700",
+  brand: "bg-brand-50 border-brand-200 text-brand-700",
+  ink: "bg-ink-100 border-ink-200 text-ink-700",
+};
+
+function CommissionPanel() {
+  return (
+    <div className="mt-6 max-w-2xl mx-auto">
+      <div className="rounded-2xl border border-ink-100 bg-white shadow-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-ink-100 bg-ink-50/60">
+          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+            <BadgePercent className="w-4 h-4 text-brand-500" />
+            And the commission, in full
+          </p>
+          <p className="mt-0.5 text-xs text-ink-500">
+            On top of the flat subscription — three lines, no small print.
+          </p>
+        </div>
+
+        <ul className="divide-y divide-ink-100">
+          {COMMISSION_ROWS.map((r) => {
+            const Icon = r.icon;
+            return (
+              <li key={r.source} className="px-5 py-4">
+                <div className="flex items-start gap-3">
+                  <span className="w-8 h-8 rounded-lg bg-ink-50 text-ink-400 flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-bold text-ink-900 leading-snug">
+                        {r.source}
+                      </p>
+                      <span
+                        className={clsx(
+                          "shrink-0 rounded-full border px-2.5 py-1 text-xs font-black",
+                          TONES[r.tone],
+                        )}
+                      >
+                        {r.rate}
+                      </span>
+                    </div>
+                    {r.sub && (
+                      <p className="mt-0.5 text-[11px] text-ink-400 leading-snug">
+                        {r.sub}
+                      </p>
+                    )}
+                    <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+                      {r.why}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="px-5 py-4 bg-brand-50/50 border-t border-brand-100">
+          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-brand-500" />
+            Tracked automatically, settled manually
+          </p>
+          <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+            Every commissionable booking is recorded in a ledger in your
+            dashboard as it happens, and we email you a statement each month.
+            You settle it by bank transfer or invoice.{" "}
+            <b className="text-ink-900">
+              Botlify never takes money out of your account and never sits
+              between your guest and your payments
+            </b>{" "}
+            — the hotel always collects from the guest directly.
+          </p>
+        </div>
       </div>
     </div>
   );

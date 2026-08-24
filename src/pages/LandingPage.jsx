@@ -69,7 +69,7 @@ import {
 import * as THREE from "three";
 import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
-import BookDemoModal from "@/components/BookDemoModal";
+import SupportChat from "@/components/SupportChat";
 
 // vanta.net reads `window.THREE` at module-evaluation time, so it MUST exist
 // before the vanta module is imported. We set it here, then dynamically import
@@ -106,7 +106,6 @@ function TopNav() {
   const token = useAuthStore((s) => s.token);
   const isAuthed = !!token;
   const [open, setOpen] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
 
   const NavItem = ({ link, onClick, className = "" }) =>
     link.to ? (
@@ -148,12 +147,6 @@ function TopNav() {
               </Link>
             ) : (
               <>
-                <button
-                  onClick={() => setDemoOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-600 hover:text-brand-700 border border-brand-200 hover:border-brand-300 bg-brand-50/60 rounded-lg px-4 py-2.5 transition"
-                >
-                  <Rocket className="w-4 h-4" /> Get free setup help
-                </button>
                 <Link
                   to="/login"
                   className="text-[15px] font-semibold text-ink-700 hover:text-ink-900 transition px-2"
@@ -206,15 +199,6 @@ function TopNav() {
               </Link>
             ) : (
               <>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    setDemoOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-brand-200 text-brand-600 font-bold hover:border-brand-300 transition"
-                >
-                  <Rocket className="w-4 h-4" /> Get free setup help
-                </button>
                 <Link
                   to="/login"
                   onClick={() => setOpen(false)}
@@ -234,8 +218,6 @@ function TopNav() {
           </div>
         </div>
       )}
-
-      <BookDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} source="landing" />
     </header>
   );
 }
@@ -2398,6 +2380,97 @@ function PricingTeaser() {
             );
           })}
         </div>
+        {/* Commission model — stated plainly, including how it's settled */}
+        <div className="mt-10 max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-ink-100 bg-white shadow-card overflow-hidden">
+            <div className="px-5 sm:px-6 py-4 border-b border-ink-100 bg-ink-50/60">
+              <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+                <BadgePercent className="w-4 h-4 text-brand-500" />
+                And the commission, in full
+              </p>
+              <p className="mt-0.5 text-xs text-ink-500">
+                On top of the flat subscription — three lines, no small print.
+              </p>
+            </div>
+
+            <ul className="divide-y divide-ink-100">
+              {[
+                {
+                  icon: Check,
+                  source: "Booking.com & Airbnb",
+                  rate: "0%",
+                  cls: "bg-emerald-50 border-emerald-100 text-emerald-700",
+                  why: "OTA sync is completely free. We never take a cut of a reservation that arrived through an OTA.",
+                },
+                {
+                  icon: BadgePercent,
+                  source: "Bookings the AI closes",
+                  sub: "WhatsApp · Instagram · Messenger · Telegram · your direct page",
+                  rate: "10%",
+                  cls: "bg-brand-50 border-brand-200 text-brand-700",
+                  why: "OTAs charge 15–18% for the same reservation — this is cheaper, and it's on revenue you wouldn't otherwise have had.",
+                },
+                {
+                  icon: Rocket,
+                  source: "Airport transfers",
+                  sub: "Only when we arrange one through our partner network",
+                  rate: "~5–10%",
+                  cls: "bg-ink-100 border-ink-200 text-ink-700",
+                  why: "A small partner margin. Hotels with their own driver keep 100%.",
+                },
+              ].map((r) => {
+                const Icon = r.icon;
+                return (
+                  <li key={r.source} className="px-5 sm:px-6 py-4">
+                    <div className="flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-ink-50 text-ink-400 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-sm font-bold text-ink-900 leading-snug">
+                            {r.source}
+                          </p>
+                          <span
+                            className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${r.cls}`}
+                          >
+                            {r.rate}
+                          </span>
+                        </div>
+                        {r.sub && (
+                          <p className="mt-0.5 text-[11px] text-ink-400 leading-snug">
+                            {r.sub}
+                          </p>
+                        )}
+                        <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+                          {r.why}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="px-5 sm:px-6 py-4 bg-brand-50/50 border-t border-brand-100">
+              <p className="text-sm font-black text-ink-900 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-brand-500" />
+                Tracked automatically, settled manually
+              </p>
+              <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+                Every commissionable booking is recorded in a ledger in your
+                dashboard as it happens, and we email you a statement each
+                month. You settle it by bank transfer or invoice.{" "}
+                <b className="text-ink-900">
+                  Botlify never takes money out of your account and never sits
+                  between your guest and your payments
+                </b>{" "}
+                — the hotel always collects from the guest directly.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <p className="mt-6 text-center text-xs text-ink-500">
           Free plan needs no card · Paid plan includes a 3-day free trial ·
           No setup fee, no per-room pricing · Cancel anytime
@@ -2618,6 +2691,7 @@ export default function LandingPage() {
       <FAQ />
       <FinalCTA />
       <Footer />
+      <SupportChat />
     </div>
   );
 }

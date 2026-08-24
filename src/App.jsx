@@ -99,6 +99,10 @@ const BusinessTypePage = lazyWithRetry(
 const HotelSetupPage = lazyWithRetry(
   () => import("@/pages/onboarding/HotelSetupPage"),
 );
+// The multi-step property-first setup wizard — the default onboarding flow.
+const SetupWizardPage = lazyWithRetry(
+  () => import("@/pages/onboarding/SetupWizardPage"),
+);
 const ReactivatePage = lazyWithRetry(() => import("@/pages/onboarding/ReactivatePage"));
 
 // Public
@@ -408,12 +412,18 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
+                {/* The setup wizard: property → rooms → channels →
+                    messaging → done. /onboarding/hotel is the entry every
+                    redirect in the app already points at, so it renders the
+                    wizard too. */}
+                <Route path="/onboarding" element={<SetupWizardPage />} />
+                <Route path="/onboarding/hotel" element={<SetupWizardPage />} />
+                {/* The single-field hotel-name page the wizard replaced. Kept
+                    reachable by URL; no longer part of the default flow. */}
                 <Route
-                  path="/onboarding"
-                  element={<Navigate to="/onboarding/hotel" replace />}
+                  path="/onboarding/hotel-quick"
+                  element={<HotelSetupPage />}
                 />
-                {/* Name your hotel — the only mandatory step. */}
-                <Route path="/onboarding/hotel" element={<HotelSetupPage />} />
                 <Route
                   path="/onboarding/choose-channel"
                   element={<ChooseChannelPage />}

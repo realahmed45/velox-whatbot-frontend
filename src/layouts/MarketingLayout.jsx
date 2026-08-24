@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import PublicHeader from "@/components/layout/PublicHeader";
 import Footer from "@/components/layout/Footer";
+import SupportChat from "@/components/SupportChat";
 
 export default function MarketingLayout() {
   return (
@@ -10,6 +11,7 @@ export default function MarketingLayout() {
         <Outlet />
       </main>
       <Footer />
+      <SupportChat />
     </div>
   );
 }
