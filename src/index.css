@@ -45,6 +45,26 @@
   .card {
     @apply bg-white rounded-lg border border-ink-100 shadow-card;
   }
+  /* Pages lifted into Settings tabs (Property, Channels, AI Assistant,
+     Transfers, Team, Billing) still carry the outer max-width + page padding
+     they had as standalone routes. Inside the settings shell that reads as a
+     double inset, so neutralise just the outermost one or two wrappers — the
+     shell supplies the width cap and padding instead. Deeper max-widths are
+     left alone: they're the pages' own internal layout. */
+  .settings-embed > div,
+  .settings-embed > div > div:first-child {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .settings-embed > div {
+    padding-top: 0;
+  }
+  /* Sticky save bars inside embedded pages keep their own inner gutter. */
+  .settings-embed .sticky > div {
+    max-width: none;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

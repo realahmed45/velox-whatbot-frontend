@@ -19,7 +19,6 @@ import {
   Instagram,
   Loader2,
   RefreshCw,
-  Settings as SettingsIcon,
   Shield,
   Lock,
   KeyRound,
@@ -38,7 +37,6 @@ import {
   CreditCard,
   SlidersHorizontal,
 } from "lucide-react";
-import StatHero from "@/components/ui/StatHero";
 import HolidayModeCard from "@/components/HolidayModeCard";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
@@ -84,140 +82,148 @@ export default function SettingsPage() {
   // routes of their own.
   const [params, setParams] = useSearchParams();
 
-  // Grouped so ten sections read as three short lists instead of one long
-  // strip that runs off the edge of the screen.
-  const GROUPS = [
-    {
-      heading: "Property",
-      items: [
-        { id: "property", label: "Property & Rooms", icon: Hotel },
-        { id: "extras", label: "Extras", icon: PackagePlus },
-        { id: "transfers", label: "Transfers", icon: Car },
-        { id: "pricing", label: "Pricing", icon: Tag },
-      ],
-    },
-    {
-      heading: "Channels & AI",
-      items: [
-        { id: "channels", label: "Channels", icon: Radio },
-        { id: "assistant", label: "AI Assistant", icon: Bot },
-      ],
-    },
-    {
-      heading: "Account",
-      items: [
-        ...(isOwner ? [{ id: "team", label: "Team", icon: Users }] : []),
-        ...(isOwner
-          ? [{ id: "billing", label: "Plan & Billing", icon: CreditCard }]
-          : []),
-        { id: "general", label: "General", icon: SlidersHorizontal },
-        { id: "security", label: "Security", icon: Shield },
-      ],
-    },
-  ].filter((g) => g.items.length > 0);
-
-  const TABS = GROUPS.flatMap((g) => g.items);
+  // One horizontal row. Labels are short on purpose so all ten fit a laptop
+  // width without scrolling; `group` only drives a hairline divider between
+  // clusters, never a heading or extra row. Ids are the ?tab= contract and
+  // never change.
+  const TABS = [
+    { id: "property", label: "Property", icon: Hotel, group: 0 },
+    { id: "extras", label: "Extras", icon: PackagePlus, group: 0 },
+    { id: "transfers", label: "Transfers", icon: Car, group: 0 },
+    { id: "pricing", label: "Pricing", icon: Tag, group: 0 },
+    { id: "channels", label: "Channels", icon: Radio, group: 1 },
+    { id: "assistant", label: "AI Assistant", icon: Bot, group: 1 },
+    ...(isOwner ? [{ id: "team", label: "Team", icon: Users, group: 2 }] : []),
+    ...(isOwner
+      ? [{ id: "billing", label: "Billing", icon: CreditCard, group: 2 }]
+      : []),
+    { id: "general", label: "General", icon: SlidersHorizontal, group: 2 },
+    { id: "security", label: "Security", icon: Shield, group: 2 },
+  ];
 
   const urlTab = params.get("tab");
   const tab = TABS.some((t) => t.id === urlTab) ? urlTab : "property";
   const setTab = (id) => setParams(id === "property" ? {} : { tab: id }, { replace: true });
 
   return (
-    <div className="p-4 sm:p-8 max-w-[1400px] mx-auto">
-      <StatHero
-        icon={SettingsIcon}
-        title="Settings"
-        subtitle="Your property, channels, assistant and account — all in one place"
-      />
+    <div className="min-h-full">
+      {/* Slim header + tab row, one light surface. Replaces the old dark hero
+          banner and the 280px left rail — the content pane below now gets the
+          full width. */}
+      <div className="border-b border-ink-100 bg-white">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Title row — a single compact line. */}
+          <div className="flex items-baseline gap-3 pt-5 pb-3">
+            <h1 className="text-[19px] font-semibold tracking-tight text-ink-900">
+              Settings
+            </h1>
+            <p className="hidden sm:block text-[13px] font-light text-ink-400 truncate">
+              Property, channels, assistant and account
+            </p>
+          </div>
 
-      {/* Vertical nav beside the content on desktop; a wrapped, fully visible
-          grid of chips above it on phones. Ten sections never scroll sideways
-          and nothing gets cut off. */}
-      <div className="mt-5 sm:mt-6 lg:flex lg:items-start lg:gap-8">
-        <nav className="lg:w-56 xl:w-60 lg:shrink-0 lg:sticky lg:top-6 mb-5 lg:mb-0">
-          {GROUPS.map((g) => (
-            <div key={g.heading} className="mb-4 lg:mb-5 last:mb-0">
-              <p className="px-1 lg:px-3 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400">
-                {g.heading}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 lg:flex lg:flex-col lg:gap-0.5">
-                {g.items.map((t) => {
-                  const Icon = t.icon;
-                  const active = tab === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setTab(t.id)}
-                      aria-current={active ? "page" : undefined}
-                      className={`flex items-center gap-2 w-full text-left px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition ${
-                        active
-                          ? "bg-white text-ink-900 shadow-sm ring-1 ring-ink-100 lg:ring-0 lg:bg-brand-50 lg:text-brand-700"
-                          : "bg-ink-100 text-ink-500 hover:text-ink-700 lg:bg-transparent lg:hover:bg-ink-50"
+          {/* Tabs: all ten in one row on desktop, wrapping cleanly below that.
+              On phones it becomes an edge-to-edge scrollable strip so nothing
+              is ever cut off. */}
+          <nav
+            aria-label="Settings sections"
+            className="-mx-4 sm:mx-0 px-4 sm:px-0 flex flex-nowrap sm:flex-wrap items-center gap-x-0.5 gap-y-1 overflow-x-auto sm:overflow-visible no-scrollbar"
+          >
+            {TABS.map((t, i) => {
+              const Icon = t.icon;
+              const active = tab === t.id;
+              const newGroup = i > 0 && t.group !== TABS[i - 1].group;
+              return (
+                <div key={t.id} className="flex items-center shrink-0">
+                  {newGroup && (
+                    <span
+                      aria-hidden="true"
+                      className="hidden lg:block w-px h-4 bg-ink-100 mx-2"
+                    />
+                  )}
+                  <button
+                    onClick={() => setTab(t.id)}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative flex items-center gap-1.5 whitespace-nowrap px-2.5 lg:px-3 pb-2.5 pt-1 text-[13px] transition-colors ${
+                      active
+                        ? "font-medium text-ink-900"
+                        : "font-light text-ink-500 hover:text-ink-800"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-[15px] h-[15px] shrink-0 transition-colors ${
+                        active ? "text-brand-500" : "text-ink-400"
                       }`}
-                    >
-                      <Icon
-                        className={`w-4 h-4 shrink-0 ${active ? "text-brand-600" : "text-ink-400"}`}
-                      />
-                      <span className="truncate">{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="min-w-0 flex-1">
-      {/* Embedded pages bring their own max-width + padding (they used to be
-          routes). Pull that back in so a tab doesn't look double-inset — only
-          out to the page edge on phones, where the nav sits above rather than
-          beside the content. */}
-      <Suspense fallback={<TabFallback />}>
-        {EMBEDDED.includes(tab) && (
-          <div className="-mx-4 sm:-mx-8 lg:mx-0 [&>div]:max-w-none [&_.max-w-5xl]:max-w-none [&_.max-w-4xl]:max-w-none [&_.max-w-3xl]:max-w-none">
-            {tab === "property" && <PropertyPage />}
-            {tab === "channels" && (
-              <>
-                <ChannelsPage />
-                {/* Instagram-only delivery tools, tucked under the board. */}
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-8">
-                  <ChannelHealth
-                    workspace={workspace}
-                    onSave={() => fetchWorkspace(activeWorkspace)}
-                  />
+                      strokeWidth={1.75}
+                    />
+                    {t.label}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute left-1.5 right-1.5 lg:left-2 lg:right-2 -bottom-px h-0.5 rounded-full transition-opacity ${
+                        active ? "bg-brand-500 opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  </button>
                 </div>
-              </>
-            )}
-            {tab === "assistant" && <IgAiBotPage />}
-            {tab === "transfers" && <TransfersPage />}
-            {tab === "team" && isOwner && <TeamPage />}
-            {tab === "billing" && isOwner && <BillingPage />}
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Content pane — full width now, capped at a comfortable reading width
+          and given one consistent inset. Embedded pages keep their own inner
+          layouts; we only neutralise their duplicate outer max-width. */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <Suspense fallback={<TabFallback />}>
+          {EMBEDDED.includes(tab) && (
+            <div className="settings-embed">
+              {tab === "property" && <PropertyPage />}
+              {tab === "channels" && (
+                <>
+                  <ChannelsPage />
+                  {/* Instagram-only delivery tools, tucked under the board. */}
+                  <div className="mt-6">
+                    <ChannelHealth
+                      workspace={workspace}
+                      onSave={() => fetchWorkspace(activeWorkspace)}
+                    />
+                  </div>
+                </>
+              )}
+              {tab === "assistant" && <IgAiBotPage />}
+              {tab === "transfers" && <TransfersPage />}
+              {tab === "team" && isOwner && <TeamPage />}
+              {tab === "billing" && isOwner && <BillingPage />}
+            </div>
+          )}
+          {tab === "extras" && <ExtrasSettings />}
+          {tab === "pricing" && <PricingSettings />}
+        </Suspense>
+
+        {tab === "general" && (
+          <div className="max-w-3xl space-y-6">
+            <GeneralSettings
+              workspace={workspace}
+              onSave={() => fetchWorkspace(activeWorkspace)}
+            />
+            <HolidayModeCard
+              workspace={workspace}
+              onSave={() => fetchWorkspace(activeWorkspace)}
+            />
+            <AutomationSettings
+              workspace={workspace}
+              onSave={() => fetchWorkspace(activeWorkspace)}
+            />
           </div>
         )}
-        {tab === "extras" && <ExtrasSettings />}
-        {tab === "pricing" && <PricingSettings />}
-      </Suspense>
-
-      {tab === "general" && (
-        <>
-          <GeneralSettings
-            workspace={workspace}
-            onSave={() => fetchWorkspace(activeWorkspace)}
-          />
-          <HolidayModeCard
-            workspace={workspace}
-            onSave={() => fetchWorkspace(activeWorkspace)}
-          />
-          <AutomationSettings
-            workspace={workspace}
-            onSave={() => fetchWorkspace(activeWorkspace)}
-          />
-        </>
-      )}
-      {tab === "security" && (
-        <SecuritySettings onGoToTeam={isOwner ? () => setTab("team") : undefined} />
-      )}
-        </div>
+        {tab === "security" && (
+          <div className="max-w-3xl">
+            <SecuritySettings
+              onGoToTeam={isOwner ? () => setTab("team") : undefined}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
