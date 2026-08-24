@@ -123,7 +123,7 @@ export default function SettingsPage() {
   const setTab = (id) => setParams(id === "property" ? {} : { tab: id }, { replace: true });
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-[1400px] mx-auto">
       <StatHero
         icon={SettingsIcon}
         title="Settings"
@@ -174,7 +174,7 @@ export default function SettingsPage() {
           beside the content. */}
       <Suspense fallback={<TabFallback />}>
         {EMBEDDED.includes(tab) && (
-          <div className="-mx-4 sm:-mx-8 lg:mx-0 [&>div]:max-w-none">
+          <div className="-mx-4 sm:-mx-8 lg:mx-0 [&>div]:max-w-none [&_.max-w-5xl]:max-w-none [&_.max-w-4xl]:max-w-none [&_.max-w-3xl]:max-w-none">
             {tab === "property" && <PropertyPage />}
             {tab === "channels" && (
               <>

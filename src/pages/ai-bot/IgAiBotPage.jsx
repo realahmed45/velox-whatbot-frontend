@@ -100,7 +100,7 @@ const VOICE_PRESETS = [
   },
 ];
 
-export default function IgAiBotPage() {
+export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
   const { activeWorkspace } = useAuthStore();
   const { workspace, fetchWorkspace } = useWorkspaceStore();
 
@@ -158,17 +158,19 @@ export default function IgAiBotPage() {
     };
   }, [property?._id, properties.length]);
 
-  // Keep the tab and the ?tab= URL param in sync (so the sidebar "Test your
-  // bot" deep-link and the in-page tabs stay consistent).
+  // Keep the tab and the URL in sync. When embedded in Settings this MUST use a
+  // different param than Settings' own ?tab= — otherwise selecting a tab here
+  // overwrote it, stopped matching "assistant", and bounced the user back to
+  // Property & Rooms.
   const setTab = (id) => {
     setTabState(id);
     const next = new URLSearchParams(searchParams);
-    if (id === "knows") next.delete("tab");
-    else next.set("tab", id);
+    if (id === "knows") next.delete(paramKey);
+    else next.set(paramKey, id);
     setSearchParams(next, { replace: true });
   };
   useEffect(() => {
-    const t = searchParams.get("tab");
+    const t = searchParams.get(paramKey);
     if (t && TABS.some((x) => x.id === t) && t !== tab) setTabState(t);
     if (!t && tab !== "knows") setTabState("knows");
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -188,7 +188,9 @@ export default function Sidebar({ onNavigate }) {
               <span className="font-black text-white text-[17px] tracking-tight">
                 Botlify
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-400/80 mt-1 truncate">
+              {/* Tighter tracking + no truncate so the full tagline fits the
+                  sidebar width instead of being cut to "ALL YOUR BOOKINGS, O..." */}
+              <span className="text-[9px] font-semibold uppercase tracking-[0.06em] text-brand-400/80 mt-1 leading-tight">
                 All your bookings, one place
               </span>
             </div>
