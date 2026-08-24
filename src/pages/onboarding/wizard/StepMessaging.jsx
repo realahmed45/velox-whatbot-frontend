@@ -67,7 +67,7 @@ const CHANNELS = [
     name: "Instagram",
     Mark: InstagramMark,
     tint: "bg-purple-50 text-purple-600",
-    desc: "Turn profile visitors into guests — the AI replies to DMs, story replies and comments.",
+    desc: "Turn profile visitors into guests — the AI answers DMs and comments about rooms, rates and availability.",
   },
   {
     key: "messenger",

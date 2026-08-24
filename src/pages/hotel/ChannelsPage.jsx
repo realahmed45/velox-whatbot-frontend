@@ -13,6 +13,8 @@ import api from "@/services/api";
 import toast from "react-hot-toast";
 import { Check, Loader2, MessageCircle, Plug, Unplug } from "lucide-react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import ChannelWall from "@/components/ChannelWall";
+import { CHANNEL_COUNT_PHRASE } from "@/data/otaChannels";
 
 /* Brand marks */
 function WhatsAppMark({ className = "w-6 h-6" }) {
@@ -72,7 +74,7 @@ const CHANNELS = [
     Mark: InstagramMark,
     tint: "bg-purple-50 text-purple-600",
     ring: "hover:border-purple-300",
-    desc: "Turn profile visitors into guests — the AI replies to DMs, story replies and comments.",
+    desc: "Turn profile visitors into guests — the AI answers DMs and comments about rooms, rates and availability.",
   },
   {
     key: "messenger",
@@ -308,6 +310,15 @@ export default function ChannelsPage() {
         The AI answers on every connected channel — quotes prices, checks
         availability and books rooms, 24/7.
       </p>
+
+      {/* Booking channels are a different thing from messaging channels — the
+          OTAs your rooms sell on. Shown here so "Channels" covers both. */}
+      <div className="mt-8">
+        <ChannelWall
+          title="Where your rooms sell"
+          subtitle={`Your availability and rates sync to ${CHANNEL_COUNT_PHRASE} through one connection. Set these up under Property & Rooms.`}
+        />
+      </div>
 
       {/* Telegram pairing modal */}
       {tg && (

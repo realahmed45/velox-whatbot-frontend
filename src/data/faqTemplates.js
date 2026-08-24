@@ -1,140 +1,137 @@
 /**
- * Botlify — FAQ template library.
+ * Botlify — hotel FAQ template library.
  *
- * ~100 ready-made question/answer pairs the user can toggle on for their AI
- * bot, grouped by category. Adding a template copies it into the workspace's
- * aiSettings.faqs[] (question + answer), where the user can edit it freely.
+ * Ready-made question/answer pairs a hotel can toggle on for its AI concierge,
+ * grouped by category. Adding a template copies it into the workspace's
+ * aiSettings.faqs[] (question + answer), where it can be edited freely.
  *
- * Answers are written as friendly, editable starting points — most contain a
- * [bracketed placeholder] the user should replace with their real details.
- * Kept intentionally short so they read well in an Instagram DM.
+ * Answers are friendly, editable starting points — most contain a [bracketed
+ * placeholder] to swap for the property's real details. Kept short so they read
+ * well in a WhatsApp, Instagram, Messenger or Telegram message.
+ *
+ * Shape is unchanged from the previous library (FAQ_CATEGORIES,
+ * FAQ_TEMPLATES, TEMPLATES_BY_CATEGORY, FAQ_TEMPLATE_COUNT) so the AI
+ * Assistant screen consumes it exactly as before.
  */
 
 export const FAQ_CATEGORIES = [
-  { key: "getting_started", label: "Getting started", emoji: "👋" },
-  { key: "ordering", label: "Ordering & payment", emoji: "🛒" },
-  { key: "shipping", label: "Shipping & delivery", emoji: "🚚" },
-  { key: "returns", label: "Returns & refunds", emoji: "↩️" },
-  { key: "products", label: "Products & stock", emoji: "📦" },
-  { key: "pricing", label: "Pricing & discounts", emoji: "🏷️" },
-  { key: "booking", label: "Booking & appointments", emoji: "📅" },
-  { key: "services", label: "Services & work", emoji: "💼" },
-  { key: "creators", label: "Creators & collabs", emoji: "✨" },
-  { key: "support", label: "Support & contact", emoji: "💬" },
-  { key: "trust", label: "Trust & policies", emoji: "🔒" },
+  { key: "booking", label: "Booking & availability", emoji: "📅" },
+  { key: "rates", label: "Rates & payment", emoji: "🏷️" },
+  { key: "rooms", label: "Rooms", emoji: "🛏️" },
+  { key: "checkin", label: "Check-in & check-out", emoji: "🔑" },
+  { key: "amenities", label: "Amenities & facilities", emoji: "🏊" },
+  { key: "food", label: "Breakfast & dining", emoji: "🍳" },
+  { key: "location", label: "Location & getting here", emoji: "📍" },
+  { key: "policies", label: "Policies & cancellation", emoji: "📋" },
+  { key: "guests", label: "Families, groups & pets", emoji: "👨‍👩‍👧" },
+  { key: "support", label: "During your stay", emoji: "💬" },
 ];
 
 // Each template: { category, question, answer }. Placeholders in [brackets].
 export const FAQ_TEMPLATES = [
-  // ── Getting started ────────────────────────────────────────────────
-  { category: "getting_started", question: "Hi! What do you sell?", answer: "Hey! 👋 We're [your brand] and we specialise in [what you sell]. What can I help you find today?" },
-  { category: "getting_started", question: "Are you a real person?", answer: "You're chatting with our assistant right now 🤖 — but a real teammate is always one message away if you need them!" },
-  { category: "getting_started", question: "How does this work?", answer: "Super simple — tell me what you're looking for and I'll point you to the right product, price or link. Ask me anything!" },
-  { category: "getting_started", question: "Where are you based?", answer: "We're based in [city, country] and we serve customers all over [region]. 🌍" },
-  { category: "getting_started", question: "Do you have a website?", answer: "Yes! You can browse everything here: [your website link] 🔗" },
-  { category: "getting_started", question: "Can I see your catalogue?", answer: "Of course! Here's our full catalogue: [link]. Let me know if anything catches your eye 😊" },
-  { category: "getting_started", question: "What are your hours?", answer: "We're online [days & hours, e.g. Mon–Sat, 9am–8pm]. Messages outside those hours are answered first thing the next day! ⏰" },
+  // ── Booking & availability ─────────────────────────────────────────
+  { category: "booking", question: "Do you have rooms available?", answer: "Happy to check! 😊 Which dates are you looking at, and how many guests?" },
+  { category: "booking", question: "How do I book?", answer: "I can take care of it right here — just tell me your dates and how many guests. Or book directly at [your booking link] 🔗" },
+  { category: "booking", question: "Can I book for tonight?", answer: "Let me check tonight's availability for you — how many guests will be staying?" },
+  { category: "booking", question: "How far in advance should I book?", answer: "We'd recommend booking [X weeks] ahead, especially in [peak season]. Popular dates fill up fast!" },
+  { category: "booking", question: "Can I hold a room?", answer: "We can usually hold a room for a short while ⏳. Tell me your dates and I'll see what I can do." },
+  { category: "booking", question: "Do I need to pay a deposit?", answer: "We ask for [deposit amount/percentage] to confirm the booking, with the balance due [when]. 💳" },
+  { category: "booking", question: "Can I change my booking dates?", answer: "Usually yes, subject to availability! Share your booking name or reference and I'll check what's possible." },
+  { category: "booking", question: "Did my booking go through?", answer: "Let me confirm for you 🔍 — what name is the reservation under?" },
+  { category: "booking", question: "Do you take walk-ins?", answer: "We do when we have rooms free 🚪. Booking ahead is safer, but message me and I'll tell you what's open right now." },
+  { category: "booking", question: "Can I book for someone else?", answer: "Absolutely! Just give me the guest's name and your dates, and I'll set it up. 😊" },
 
-  // ── Ordering & payment ─────────────────────────────────────────────
-  { category: "ordering", question: "How do I place an order?", answer: "Easy! Just tell me what you'd like, or order directly here: [order link]. I'll guide you through the rest. 🛍️" },
-  { category: "ordering", question: "How can I pay?", answer: "We accept [payment methods — e.g. card, bank transfer, cash on delivery]. Whatever's easiest for you!" },
-  { category: "ordering", question: "Do you offer cash on delivery?", answer: "Yes! 💵 Cash on delivery is available across [area/country]. You only pay when your order arrives." },
-  { category: "ordering", question: "Is online payment safe?", answer: "Absolutely 🔒 — all payments are processed through a secure, encrypted checkout. Your details are never stored by us." },
-  { category: "ordering", question: "Can I change my order?", answer: "If your order hasn't shipped yet, we can usually change it! Just send me your order number and what you'd like to update." },
-  { category: "ordering", question: "Can I cancel my order?", answer: "Sure — as long as it hasn't shipped. Share your order number and I'll get it sorted for you." },
-  { category: "ordering", question: "I didn't get an order confirmation", answer: "No worries! Send me the email or number you used and I'll check your order status right away. 🔍" },
-  { category: "ordering", question: "Do you take custom orders?", answer: "We love custom requests! ✨ Tell me what you have in mind and I'll let you know if we can make it happen." },
-  { category: "ordering", question: "What's the minimum order?", answer: "Our minimum order is [amount/quantity]. Let me know what you need and I'll confirm!" },
-  { category: "ordering", question: "Do you sell wholesale?", answer: "Yes, we offer wholesale pricing for bulk orders 📦. Tell me the quantity you're after and I'll share our rates." },
+  // ── Rates & payment ────────────────────────────────────────────────
+  { category: "rates", question: "How much is a room per night?", answer: "Rates start from [amount] per night and change with the season and dates 🏷️. Tell me your dates and I'll quote you exactly." },
+  { category: "rates", question: "What's your best rate?", answer: "Booking direct with us is always the best price — no commission added. Share your dates and I'll send you our lowest available rate! ✨" },
+  { category: "rates", question: "Is breakfast included in the price?", answer: "[Yes, breakfast is included / Breakfast is [amount] per person per day]. 🍳" },
+  { category: "rates", question: "Are taxes included?", answer: "Our quoted rates [include/exclude] taxes and fees — the total you see before confirming is exactly what you pay. ✅" },
+  { category: "rates", question: "What payment methods do you accept?", answer: "We accept [cards, bank transfer, cash] 💳. Whatever's easiest for you!" },
+  { category: "rates", question: "Can I pay on arrival?", answer: "[Yes, you can settle at check-in / We ask for payment in advance to confirm the room]. Let me know what suits you." },
+  { category: "rates", question: "Do you offer discounts for long stays?", answer: "We do! Stays of [X nights] or more get [discount] off 🎉. How long were you thinking?" },
+  { category: "rates", question: "Do you have any offers right now?", answer: "Let me check what's running for your dates — when are you planning to visit? ✨" },
+  { category: "rates", question: "Is there a city tax?", answer: "There's a local tax of [amount] per person per night, collected at the property. 📋" },
+  { category: "rates", question: "Can I get an invoice?", answer: "Of course 🧾. Send me the billing name and address and we'll have it ready for you." },
 
-  // ── Shipping & delivery ────────────────────────────────────────────
-  { category: "shipping", question: "Do you ship to my area?", answer: "We ship across [countries/regions] 🚚. Tell me your city and I'll confirm delivery and timing for you!" },
-  { category: "shipping", question: "How much is shipping?", answer: "Shipping is [amount], and it's FREE on orders over [amount] 🎉. Where should it go?" },
-  { category: "shipping", question: "How long does delivery take?", answer: "Most orders arrive within [X–Y] business days after dispatch. I'll always share tracking so you can follow along! 📦" },
-  { category: "shipping", question: "Do you offer free shipping?", answer: "Yes! Shipping is free on orders over [amount] 🚚✨. Anything below that is a flat [amount]." },
-  { category: "shipping", question: "Can I track my order?", answer: "Definitely! Once it ships you'll get a tracking link. Send me your order number and I'll pull it up for you. 🔎" },
-  { category: "shipping", question: "My order is late", answer: "So sorry about that! 🙏 Send me your order number and I'll check exactly where it is right now." },
-  { category: "shipping", question: "Do you offer express delivery?", answer: "We do! Express delivery gets it to you in [X] days for [amount]. Want me to add it to your order? ⚡" },
-  { category: "shipping", question: "Do you ship internationally?", answer: "Yes, we ship worldwide 🌍. International delivery takes about [X–Y] days — tell me your country for exact rates." },
-  { category: "shipping", question: "Can I collect in person?", answer: "Yes! You can pick up from [location] during [hours]. Just let me know and I'll set it aside for you. 🏬" },
+  // ── Rooms ──────────────────────────────────────────────────────────
+  { category: "rooms", question: "What room types do you have?", answer: "We have [room types, e.g. Standard Double, Deluxe Twin, Family Suite] 🛏️. Want me to describe any of them?" },
+  { category: "rooms", question: "How big are the rooms?", answer: "Our rooms range from about [size] — [room type] is our most spacious. Happy to send photos!" },
+  { category: "rooms", question: "Do rooms have air conditioning?", answer: "[Yes, every room is air-conditioned / Rooms have [heating/fans]] ❄️." },
+  { category: "rooms", question: "Is there a private bathroom?", answer: "[Yes, all rooms have a private en-suite bathroom / [details]] 🚿." },
+  { category: "rooms", question: "Do you have rooms with a view?", answer: "We do! Our [room type] looks out over [view] 🌅. Would you like me to check availability?" },
+  { category: "rooms", question: "Can I get a quiet room?", answer: "Of course — I'll note a preference for a quieter room away from [the street/lift]. We'll do our best on the day! 🤫" },
+  { category: "rooms", question: "Do rooms have a kettle or fridge?", answer: "[Yes, every room has [amenities] / [room type] includes [amenities]] ☕." },
+  { category: "rooms", question: "Can I see photos of the room?", answer: "Absolutely 📸 — here you go: [your photos link]. Let me know which one you like!" },
+  { category: "rooms", question: "Do you have connecting rooms?", answer: "[Yes, we have connecting rooms — great for families / We don't, but we can book you adjacent rooms]. 👨‍👩‍👧" },
+  { category: "rooms", question: "Is there a lift?", answer: "[Yes, there's a lift to all floors / We're a [X]-storey property without a lift — I can request a lower floor for you]. 🛗" },
 
-  // ── Returns & refunds ──────────────────────────────────────────────
-  { category: "returns", question: "What's your return policy?", answer: "You can return any item within [X] days if it's unused and in its original packaging. Want me to start a return? ↩️" },
-  { category: "returns", question: "How do I return an item?", answer: "Easy — send me your order number and the reason, and I'll email you a return label + next steps. 📮" },
-  { category: "returns", question: "When will I get my refund?", answer: "Refunds are processed within [X] business days of us receiving your return, back to your original payment method. 💳" },
-  { category: "returns", question: "Can I exchange for a different size?", answer: "Of course! 🔄 Tell me your order number and the size you'd like instead, and I'll arrange the swap." },
-  { category: "returns", question: "My item arrived damaged", answer: "Oh no, I'm sorry! 😔 Please send a quick photo and your order number — we'll replace it or refund you straight away." },
-  { category: "returns", question: "I received the wrong item", answer: "That's on us — apologies! 🙏 Send me a photo and your order number and I'll fix it immediately." },
-  { category: "returns", question: "Do returns cost anything?", answer: "Returns are [free / a flat amount]. For faulty or wrong items, we always cover the return cost. 👍" },
+  // ── Check-in & check-out ───────────────────────────────────────────
+  { category: "checkin", question: "What time is check-in?", answer: "Check-in is from [time] 🔑. Arriving earlier? Let me know and we'll try to help." },
+  { category: "checkin", question: "What time is check-out?", answer: "Check-out is by [time] ⏰. Need a little longer? Just ask on the day." },
+  { category: "checkin", question: "Can I check in early?", answer: "We'll do our best, subject to the room being ready 😊. What time do you expect to arrive?" },
+  { category: "checkin", question: "Can I check out late?", answer: "Late check-out is [free if available / [amount]] ⏳. Let the front desk know the evening before and we'll sort it." },
+  { category: "checkin", question: "I'm arriving late at night", answer: "No problem — [reception is open 24/7 / we'll arrange a late arrival for you]. What time do you expect to get in? 🌙" },
+  { category: "checkin", question: "What do I need to bring at check-in?", answer: "Just a valid ID or passport for each guest, and the card used to book if you paid online. 🪪" },
+  { category: "checkin", question: "Can I leave my luggage?", answer: "Yes! We can store your bags [before check-in and after check-out] free of charge 🧳." },
+  { category: "checkin", question: "Is there someone at reception all night?", answer: "[Reception is staffed 24 hours / Reception is open [hours], and there's a number for after-hours help]. 🛎️" },
 
-  // ── Products & stock ───────────────────────────────────────────────
-  { category: "products", question: "Is this in stock?", answer: "Let me check for you! 🔍 Tell me the exact item (and size/colour) and I'll confirm availability right away." },
-  { category: "products", question: "Do you have other colours?", answer: "We might! 🎨 Tell me which product you mean and I'll list all the colours we have available." },
-  { category: "products", question: "What sizes do you have?", answer: "We carry [size range]. Send me the item you like and I'll confirm what's in stock in your size! 📏" },
-  { category: "products", question: "When will you restock?", answer: "That item is restocking around [date] ⏳. Want me to message you the moment it's back?" },
-  { category: "products", question: "Can you tell me more about this product?", answer: "Happy to! Which product are you looking at? Send me the name or a screenshot and I'll share all the details. 📋" },
-  { category: "products", question: "What material is it made of?", answer: "It's made from [material] — [key quality, e.g. soft, durable, breathable]. Anything specific you'd like to know? 🧵" },
-  { category: "products", question: "Do you have a size guide?", answer: "Yes! Here's our full size guide: [link] 📐. Tell me your measurements and I'll recommend the best fit." },
-  { category: "products", question: "Is this good for gifting?", answer: "Perfect for gifts! 🎁 We also offer gift wrapping for [amount] — want me to add it?" },
-  { category: "products", question: "Do you offer gift wrapping?", answer: "We do! 🎀 Gift wrapping is [free / amount] and we can add a personal note too. Just say the word." },
+  // ── Amenities & facilities ─────────────────────────────────────────
+  { category: "amenities", question: "Is there free WiFi?", answer: "Yes — free WiFi throughout the property 📶. The details are in your room on arrival." },
+  { category: "amenities", question: "Do you have parking?", answer: "[Yes, free on-site parking / Parking is [amount] per night / There's public parking [distance] away] 🅿️." },
+  { category: "amenities", question: "Do you have a swimming pool?", answer: "[Yes! The pool is open [hours] / We don't have a pool, but [nearby option]] 🏊." },
+  { category: "amenities", question: "Is there a gym?", answer: "[Yes, our gym is open [hours] and free for guests / We don't have a gym on site]. 💪" },
+  { category: "amenities", question: "Do you have a spa?", answer: "[Yes — treatments can be booked at reception / We don't have a spa, but there's one nearby I can recommend]. 💆" },
+  { category: "amenities", question: "Is there a laundry service?", answer: "[Yes, laundry is available for [amount] / There's a laundrette [distance] away] 🧺." },
+  { category: "amenities", question: "Do you have airport transfers?", answer: "We do! A transfer is [amount] each way 🚗. Send me your flight details and I'll arrange it." },
+  { category: "amenities", question: "Is the property accessible?", answer: "[Yes — we have step-free access and accessible rooms / [details]] ♿. Tell me what you need and I'll confirm." },
+  { category: "amenities", question: "Do you have a business centre or workspace?", answer: "[Yes, there's a workspace with printing / Rooms have a desk and fast WiFi if you're working]. 💻" },
 
-  // ── Pricing & discounts ────────────────────────────────────────────
-  { category: "pricing", question: "How much is this?", answer: "Tell me exactly which item you mean and I'll give you the price right away! 🏷️" },
-  { category: "pricing", question: "Do you have any discounts?", answer: "Yes! 🎉 Right now you can use code [CODE] for [X]% off. Want me to share what's included?" },
-  { category: "pricing", question: "Is there a discount for first orders?", answer: "There is! First-time customers get [X]% off with code [CODE]. Welcome aboard! 🥳" },
-  { category: "pricing", question: "Do you have a sale on?", answer: "We do! 🔥 [Details of current sale]. Want me to send you the best deals right now?" },
-  { category: "pricing", question: "Can I get a bulk discount?", answer: "Definitely — the more you order, the more you save 📦. Tell me the quantity and I'll share your price." },
-  { category: "pricing", question: "Why is this priced this way?", answer: "Great question! Our pricing reflects [quality/materials/handmade/etc.] 💎. Happy to walk you through the value." },
-  { category: "pricing", question: "Do you price match?", answer: "Send me the link or screenshot of the other price and I'll see what I can do for you! 🤝" },
-  { category: "pricing", question: "Do you have a loyalty program?", answer: "Yes! Earn points on every order and redeem them for discounts 🎁. Want me to sign you up?" },
+  // ── Breakfast & dining ─────────────────────────────────────────────
+  { category: "food", question: "Do you serve breakfast?", answer: "Yes! Breakfast is served [hours] in [location] 🍳. [Included in your rate / [amount] per person]." },
+  { category: "food", question: "What's for breakfast?", answer: "We serve [buffet/continental/à la carte] with [examples]. Let me know if you have dietary needs! 🥐" },
+  { category: "food", question: "Do you have a restaurant?", answer: "[Yes, our restaurant is open [hours] / We don't have a restaurant, but there are great places a short walk away]. 🍽️" },
+  { category: "food", question: "Is there room service?", answer: "[Yes, room service runs [hours] / We don't offer room service, but there's plenty of delivery nearby]. 🛎️" },
+  { category: "food", question: "Can you cater for dietary requirements?", answer: "Absolutely — we handle [vegetarian, vegan, halal, gluten-free] 🌱. Tell me what you need and I'll pass it to the kitchen." },
+  { category: "food", question: "Is there a bar?", answer: "[Yes, our bar is open [hours] / We don't have a bar on site]. 🍸" },
+  { category: "food", question: "Can I get breakfast early for a flight?", answer: "We can usually arrange an early or packed breakfast 🥪 — just let reception know the night before." },
 
-  // ── Booking & appointments ─────────────────────────────────────────
-  { category: "booking", question: "How do I book an appointment?", answer: "Easy! Pick a time here: [booking link] 📅, or tell me your preferred day and I'll check availability." },
-  { category: "booking", question: "What are your available times?", answer: "I have openings on [days/times]. What works best for you and I'll lock it in? ⏰" },
-  { category: "booking", question: "How much does a session cost?", answer: "A [session type] is [amount] for [duration]. Want me to book you in? 💼" },
-  { category: "booking", question: "Can I reschedule?", answer: "Of course! Just tell me your current booking and the new time you'd like, and I'll update it for you. 🔄" },
-  { category: "booking", question: "What's your cancellation policy?", answer: "You can cancel free up to [X hours] before your appointment. After that a [amount/%] fee applies. 🙏" },
-  { category: "booking", question: "Do you take walk-ins?", answer: "We do when we have space! But booking ahead guarantees your spot 📅. Want me to reserve one?" },
-  { category: "booking", question: "Where are you located?", answer: "We're at [address] 📍. I can send directions or a map link if that helps!" },
-  { category: "booking", question: "Do you offer online sessions?", answer: "Yes! We offer virtual sessions over [Zoom/Meet] 💻. Want me to book you a remote slot?" },
+  // ── Location & getting here ────────────────────────────────────────
+  { category: "location", question: "Where exactly are you located?", answer: "We're at [full address] 📍. Here's a map: [maps link]." },
+  { category: "location", question: "How far are you from the airport?", answer: "About [X] minutes / [X] km from [airport] ✈️. I can arrange a transfer if you'd like." },
+  { category: "location", question: "How do I get to you from the airport?", answer: "[Taxi takes about [X] min and costs around [amount] / There's a direct [train/bus]] 🚕. Or we can pick you up — just ask!" },
+  { category: "location", question: "What's nearby?", answer: "You're right by [attractions/landmarks] 🗺️. Happy to recommend places once you arrive!" },
+  { category: "location", question: "Are you close to the beach?", answer: "[Yes — about [X] minutes' walk / We're [distance] from the nearest beach] 🏖️." },
+  { category: "location", question: "Is it easy to get around from there?", answer: "Very! [Public transport/taxis] are right on the doorstep, and lots is walkable. 🚶" },
+  { category: "location", question: "Is the area safe?", answer: "Yes — it's a [quiet/central] neighbourhood and guests walk about comfortably. Reception is always happy to advise. 😊" },
 
-  // ── Services & work ────────────────────────────────────────────────
-  { category: "services", question: "What services do you offer?", answer: "We offer [list your main services] 💼. Tell me a bit about what you need and I'll point you to the right one!" },
-  { category: "services", question: "How much do you charge?", answer: "Pricing depends on the project 📊. Tell me what you're after and I'll give you a clear quote." },
-  { category: "services", question: "How long does a project take?", answer: "Most projects take around [timeframe] ⏳, depending on scope. Share your details and I'll give you a timeline." },
-  { category: "services", question: "Can I see your portfolio?", answer: "Absolutely! Here's some of our recent work: [link] ✨. Let me know what style you're drawn to." },
-  { category: "services", question: "Do you offer a free consultation?", answer: "Yes! 🎉 We offer a free [X-minute] consultation to understand your needs. Want me to book one?" },
-  { category: "services", question: "How do I get started?", answer: "Simple — tell me what you need and I'll walk you through the first steps. Or book a call here: [link] 🚀" },
-  { category: "services", question: "Do you require a deposit?", answer: "Yes, we take a [%/amount] deposit to secure your slot, with the balance due [when]. Fully explained before you commit! 💳" },
-  { category: "services", question: "Do you work with clients abroad?", answer: "We do! 🌍 We work with clients worldwide, remotely. Tell me your timezone and we'll make it work." },
+  // ── Policies & cancellation ────────────────────────────────────────
+  { category: "policies", question: "What's your cancellation policy?", answer: "Free cancellation up to [timeframe] before check-in ✅. After that, [terms]." },
+  { category: "policies", question: "Can I get a refund?", answer: "Refunds follow our cancellation policy — [terms]. Send me your booking reference and I'll check yours." },
+  { category: "policies", question: "Do you allow smoking?", answer: "We're a [non-smoking] property 🚭. [There's a designated area outside]." },
+  { category: "policies", question: "Is there a minimum stay?", answer: "[No minimum / A [X]-night minimum applies on [dates/weekends]]. What dates were you thinking?" },
+  { category: "policies", question: "What's the age requirement to book?", answer: "The main guest needs to be [18/21] or over to check in. 🪪" },
+  { category: "policies", question: "Can I have visitors in my room?", answer: "Guests are welcome in the public areas; overnight visitors need to be registered at reception. 🙂" },
+  { category: "policies", question: "Do you have quiet hours?", answer: "Yes — quiet hours are [times] so everyone sleeps well. 🤫" },
+  { category: "policies", question: "What happens if I don't show up?", answer: "A no-show is charged [terms]. If your plans change, message me as early as you can and we'll help. 🙏" },
 
-  // ── Creators & collabs ─────────────────────────────────────────────
-  { category: "creators", question: "Do you do collaborations?", answer: "Love collabs! 🤝 Tell me a bit about you and what you have in mind, and I'll pass it to the team." },
-  { category: "creators", question: "How do I work with you?", answer: "Amazing! Share your niche, audience size and idea, and we'll see if it's a fit. Excited to hear from you! ✨" },
-  { category: "creators", question: "What are your rates?", answer: "Rates depend on the deliverables 📊. Send me what you're planning and I'll share a media kit + pricing." },
-  { category: "creators", question: "Can I get a discount code for my audience?", answer: "Possibly! 🎁 Tell me about your audience and we can set up a custom code for your followers." },
-  { category: "creators", question: "Do you send PR packages?", answer: "We do for the right fit! 📦 Share your profile and reach and we'll take a look." },
-  { category: "creators", question: "Where can I find your media kit?", answer: "Here you go: [media kit link] 📄. Let me know if you'd like anything tailored to your campaign!" },
-  { category: "creators", question: "Can I repost your content?", answer: "Please do — just tag and credit us 🙌. We love seeing our stuff shared!" },
-  { category: "creators", question: "Do you offer affiliate partnerships?", answer: "Yes! Earn commission on every sale you refer 💰. Want me to send you the affiliate details?" },
+  // ── Families, groups & pets ────────────────────────────────────────
+  { category: "guests", question: "Are children welcome?", answer: "Very much so! 👶 Children [age] and under stay [free/[amount]]. How many are travelling?" },
+  { category: "guests", question: "Do you have cots or extra beds?", answer: "[Yes — cots are free and extra beds are [amount] / [details]] 🛏️. Just let me know what you need." },
+  { category: "guests", question: "Are pets allowed?", answer: "[Yes, pets are welcome for [amount] per stay / Sorry, we can't accommodate pets — assistance animals always welcome] 🐾." },
+  { category: "guests", question: "How many people can stay in a room?", answer: "Our [room type] sleeps up to [X] guests. Tell me your group size and I'll suggest the best fit! 😊" },
+  { category: "guests", question: "Can you accommodate a large group?", answer: "We'd love to 🎉. How many guests and which dates? I'll check what we can put together." },
+  { category: "guests", question: "Do you host events or weddings?", answer: "[Yes — tell me your date and guest count and I'll pass you to our events team / We don't host events, but we're happy to block rooms for your guests]. 💐" },
 
-  // ── Support & contact ──────────────────────────────────────────────
-  { category: "support", question: "How can I contact you?", answer: "You can reach us right here in DMs, or by email at [your email] 📧. We usually reply within [timeframe]!" },
-  { category: "support", question: "I need help with my order", answer: "I'm on it! 🙌 Send me your order number and tell me what's going on — we'll sort it out fast." },
-  { category: "support", question: "Can I talk to a human?", answer: "Of course! 🙋 I'll flag this for a teammate — they'll jump in as soon as they're available." },
-  { category: "support", question: "How fast do you reply?", answer: "We usually reply within [timeframe] during business hours ⏰. I'm here 24/7 for quick questions in the meantime!" },
-  { category: "support", question: "I have a complaint", answer: "I'm really sorry to hear that 😔. Tell me what happened and I'll make sure the right person makes it right." },
-  { category: "support", question: "Do you have a phone number?", answer: "You can call us on [phone] during [hours] 📞, or just keep chatting here — whatever's easiest!" },
-  { category: "support", question: "Can you help me choose?", answer: "That's what I'm here for! 😊 Tell me what you're looking for and your budget, and I'll recommend the perfect option." },
-
-  // ── Trust & policies ───────────────────────────────────────────────
-  { category: "trust", question: "Is my data safe?", answer: "100% 🔒. We never share your details, and payments run through a secure encrypted checkout." },
-  { category: "trust", question: "Are you a legit business?", answer: "We are! ✅ You can see reviews from real customers here: [link]. Happy to answer anything that builds your confidence." },
-  { category: "trust", question: "Do you have reviews?", answer: "Loads! ⭐ Check out what customers say here: [link]. We're proud of the feedback!" },
-  { category: "trust", question: "What's your privacy policy?", answer: "You can read our full privacy policy here: [link] 🔒. Short version: your data stays yours." },
-  { category: "trust", question: "Do you offer a guarantee?", answer: "Yes! We stand behind everything with a [X-day] satisfaction guarantee 🛡️. Not happy? We'll make it right." },
-  { category: "trust", question: "How long have you been in business?", answer: "We've been serving happy customers since [year] 🎉. Thanks for considering us!" },
-  { category: "trust", question: "Are your products authentic?", answer: "Always 💯. Everything we sell is genuine and sourced directly. No fakes, ever." },
+  // ── During your stay ───────────────────────────────────────────────
+  { category: "support", question: "Can I talk to a person?", answer: "Of course! 🙋 I'll flag this for the front desk — someone will be with you shortly." },
+  { category: "support", question: "How do I contact reception?", answer: "You can message me here any time, call [phone], or dial [extension] from your room 📞." },
+  { category: "support", question: "Something's wrong with my room", answer: "I'm sorry about that 😔. Tell me the room number and what's happening and I'll get someone up right away." },
+  { category: "support", question: "Can I request extra towels?", answer: "Of course! 🧻 What's your room number and I'll send housekeeping." },
+  { category: "support", question: "What's the WiFi password?", answer: "The network is [network name] and the password is [password] 📶. Give me a shout if it won't connect." },
+  { category: "support", question: "Can you book a taxi for me?", answer: "Happy to 🚕. What time do you need it, and where are you heading?" },
+  { category: "support", question: "Can you recommend somewhere to eat?", answer: "Always! 🍽️ Tell me what you fancy and your budget, and I'll point you to a local favourite." },
+  { category: "support", question: "I left something behind", answer: "Let's find it 🔎. Tell me your room number, your dates and what it was — we'll check lost property." },
+  { category: "support", question: "How do I leave a review?", answer: "That would mean a lot to us 🙏 — you can leave one here: [review link]. Thank you!" },
 ];
 
 export const TEMPLATES_BY_CATEGORY = FAQ_CATEGORIES.map((c) => ({

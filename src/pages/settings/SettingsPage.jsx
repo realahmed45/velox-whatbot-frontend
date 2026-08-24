@@ -4,6 +4,10 @@
  * Folds in what used to be separate sidebar destinations: Property & Rooms,
  * Channels, Transfers, the AI Assistant config, Team and Billing — plus the
  * hotel Extras catalog and smart-pricing guard rails.
+ *
+ * Instagram is no longer a top-level concern: connecting it happens on the
+ * Channels board alongside WhatsApp, Messenger and Telegram, and its delivery
+ * diagnostics live in ChannelHealth under that same tab.
  */
 import { useEffect, useState, lazy, Suspense } from "react";
 import api from "@/services/api";
@@ -14,7 +18,6 @@ import {
   Save,
   Instagram,
   Loader2,
-  Trash2,
   RefreshCw,
   Settings as SettingsIcon,
   Shield,
@@ -28,10 +31,8 @@ import {
 } from "lucide-react";
 import StatHero from "@/components/ui/StatHero";
 import HolidayModeCard from "@/components/HolidayModeCard";
-import { useConfirm } from "@/components/ui/ConfirmDialog";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
-import { connectInstagram } from "@/utils/connectInstagram";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import ExtrasSettings from "@/pages/settings/ExtrasSettings";
@@ -118,7 +119,18 @@ export default function SettingsPage() {
         {EMBEDDED.includes(tab) && (
           <div className="-mx-4 sm:-mx-8 [&>div]:max-w-none">
             {tab === "property" && <PropertyPage />}
-            {tab === "channels" && <ChannelsPage />}
+            {tab === "channels" && (
+              <>
+                <ChannelsPage />
+                {/* Instagram-only delivery tools, tucked under the board. */}
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-8">
+                  <ChannelHealth
+                    workspace={workspace}
+                    onSave={() => fetchWorkspace(activeWorkspace)}
+                  />
+                </div>
+              </>
+            )}
             {tab === "assistant" && <IgAiBotPage />}
             {tab === "transfers" && <TransfersPage />}
             {tab === "team" && isOwner && <TeamPage />}
@@ -135,10 +147,6 @@ export default function SettingsPage() {
             workspace={workspace}
             onSave={() => fetchWorkspace(activeWorkspace)}
           />
-          <InstagramSettings
-            workspace={workspace}
-            onSave={() => fetchWorkspace(activeWorkspace)}
-          />
           <HolidayModeCard
             workspace={workspace}
             onSave={() => fetchWorkspace(activeWorkspace)}
@@ -149,12 +157,14 @@ export default function SettingsPage() {
           />
         </>
       )}
-      {tab === "security" && <SecuritySettings />}
+      {tab === "security" && (
+        <SecuritySettings onGoToTeam={isOwner ? () => setTab("team") : undefined} />
+      )}
     </div>
   );
 }
 
-function SecuritySettings() {
+function SecuritySettings({ onGoToTeam }) {
   const { user, setUser, logout } = useAuthStore();
   const navigate = useNavigate();
   const [hasPassword, setHasPassword] = useState(user?.hasPassword ?? true);
@@ -369,7 +379,8 @@ function SecuritySettings() {
           <h3 className="text-sm font-bold text-ink-900">Session</h3>
         </div>
         <p className="text-xs text-ink-500">
-          Sign out of Botlify on this device.
+          Sign out of your hotel account on this device. Bookings, guest
+          messages and your channels keep running while you're signed out.
         </p>
         <button
           onClick={doLogout}
@@ -379,6 +390,30 @@ function SecuritySettings() {
         </button>
       </div>
 
+      {/* Who else can sign in — owners only; staff can't manage the team. */}
+      {onGoToTeam && (
+      <div className="card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-1.5">
+          <Shield className="w-4 h-4 text-ink-500" />
+          <h3 className="text-sm font-bold text-ink-900">
+            Who else can get in
+          </h3>
+        </div>
+        <p className="text-xs text-ink-500">
+          Everyone with access to your property is listed under{" "}
+          <button
+            type="button"
+            onClick={onGoToTeam}
+            className="font-semibold text-brand-600 hover:underline"
+          >
+            Settings → Team
+          </button>
+          . Removing someone there cuts their access immediately. Staff can
+          never reach billing or delete your property.
+        </p>
+      </div>
+      )}
+
       {/* Support */}
       <div className="card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-1.5">
@@ -386,7 +421,7 @@ function SecuritySettings() {
           <h3 className="text-sm font-bold text-ink-900">Need help?</h3>
         </div>
         <p className="text-xs text-ink-500">
-          Questions, account issues, or security concerns — email us at{" "}
+          Questions about your hotel account, billing or security — email us at{" "}
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
             className="font-semibold text-brand-600 hover:underline"

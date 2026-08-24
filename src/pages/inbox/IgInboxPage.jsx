@@ -304,7 +304,7 @@ export default function IgInboxPage() {
               </div>
               <p className="text-xs text-ink-700 font-bold">No DMs yet</p>
               <p className="text-[11px] text-ink-400 mt-1">
-                When followers slide in, they'll appear here.
+                When guests message you, they'll appear here.
               </p>
             </div>
           )}

@@ -18,7 +18,6 @@ const ROUTE_TITLES = {
   "/dashboard/bookings": "Bookings",
   "/dashboard/calendar": "Calendar",
   "/dashboard/guests": "Guests",
-  "/dashboard/overview": "Overview",
   "/dashboard/inbox": "Inbox",
   "/dashboard/contacts": "Contacts",
   "/dashboard/automation": "Automations",

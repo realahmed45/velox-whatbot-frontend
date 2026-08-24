@@ -42,7 +42,7 @@ const ALL_TABS = [
   {
     id: "comment_kw",
     label: "Comment to DM",
-    desc: "When someone comments a keyword on your post, send them a DM automatically.",
+    desc: "When someone comments a keyword on your post, send them a DM automatically — great for \"RATES\" or \"BOOK\".",
     category: "popular",
     icon: Hash,
     plan: "ig_starter",
@@ -51,7 +51,7 @@ const ALL_TABS = [
   {
     id: "dm_kw",
     label: "DM keywords",
-    desc: "Reply automatically when a customer sends a specific word or phrase.",
+    desc: "Reply automatically when a guest sends a specific word or phrase.",
     category: "popular",
     icon: MessageCircle,
     plan: "ig_starter",
@@ -69,7 +69,7 @@ const ALL_TABS = [
   {
     id: "story_mention",
     label: "Story mentions",
-    desc: "Reply when your brand is mentioned in a customer's story.",
+    desc: "Reply when your hotel is mentioned in a guest's story.",
     category: "engagement",
     icon: Heart,
     plan: "ig_pro",
@@ -276,17 +276,17 @@ export default function AutomationSetupPage() {
       <StatHero
         icon={Zap}
         title={
-          isGallery ? "Smart Automations" : activeTab?.label || "Automation"
+          isGallery ? "Instagram automations" : activeTab?.label || "Automation"
         }
         subtitle={headerSubtitle}
         help={{
-          title: "Smart Automations",
+          title: "Instagram automations",
           tips: [
-            "Automations reply to Instagram DMs, comments and story interactions instantly, without you online.",
+            "These reply to Instagram DMs, comments and story interactions instantly, without anyone at the desk.",
             "Pick a type: welcome DMs, comment-to-DM, DM keywords, story replies or a catch-all default reply.",
             "Toggle any automation on or off, and add your own message or use the one-click example.",
-            "Connect your Instagram account first, or nothing will fire.",
-            "The default reply is the safety net when no other automation matches a message.",
+            "Connect Instagram under Settings → Channels first, or nothing will fire.",
+            "The default reply is the safety net when nothing else matches — your AI concierge handles the rest.",
           ],
         }}
       />

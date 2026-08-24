@@ -1,8 +1,8 @@
 /**
- * HolidayModeCard — the "Holiday / away mode" master switch. Shared between
- * Settings → Automations and Smart Automations. When ON, every incoming
- * message gets one calm "a manager will get back to you" reply and the AI bot
- * + all other automations pause. Saves workspace.holidayMode.
+ * HolidayModeCard — the "Away mode" master switch, on Settings → General.
+ * When ON, every guest message gets one calm "a manager will get back to you"
+ * reply and the AI concierge pauses on every channel. Saves
+ * workspace.holidayMode.
  */
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -11,7 +11,7 @@ import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 
 const DEFAULT_MSG =
-  "Hi {name}! 🙏 Thanks for your message. Our team is away right now, but a manager will personally get back to you within a day. We appreciate your patience!";
+  "Hi {name}! 🙏 Thanks for your message. Our front desk is away right now, but a manager will personally get back to you within a day. We appreciate your patience!";
 
 export default function HolidayModeCard({ workspace, onSave }) {
   const { activeWorkspace } = useAuthStore();
@@ -40,7 +40,7 @@ export default function HolidayModeCard({ workspace, onSave }) {
         },
       });
       toast.success(
-        nextEnabled ? "Holiday mode ON 🌙" : "Holiday mode off — back to normal",
+        nextEnabled ? "Away mode ON 🌙" : "Away mode off — back to normal",
       );
       onSave?.();
     } catch {
@@ -73,12 +73,12 @@ export default function HolidayModeCard({ workspace, onSave }) {
             <LifeBuoy className="w-5 h-5" />
           </span>
           <div className="min-w-0">
-            <p className="font-bold text-ink-900">Holiday / away mode</p>
+            <p className="font-bold text-ink-900">Away mode</p>
             <p className="text-xs text-ink-500 mt-0.5">
-              Flip this on when your team is on holiday, closed, or something's
-              wrong. Every message gets one calm "a manager will get back to
-              you" reply — the AI bot and all other automations pause until you
-              turn it off.
+              Flip this on when the property is closed, fully booked or
+              something's wrong. Every guest message gets one calm "a manager
+              will get back to you" reply, and your AI concierge stops
+              answering on every channel until you turn it off.
             </p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function HolidayModeCard({ workspace, onSave }) {
           className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${
             enabled ? "bg-brand-600" : "bg-ink-300"
           }`}
-          aria-label="Toggle holiday mode"
+          aria-label="Toggle away mode"
         >
           <span
             className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${
@@ -112,7 +112,7 @@ export default function HolidayModeCard({ workspace, onSave }) {
         <div className="flex items-center justify-between mt-2">
           <p className="text-[11px] text-ink-400">
             Use <code className="text-brand-600">{"{name}"}</code> to insert the
-            customer's name.
+            guest's name.
           </p>
           <button
             onClick={() => persist(enabled)}
@@ -130,7 +130,7 @@ export default function HolidayModeCard({ workspace, onSave }) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-600" />
           </span>
-          Holiday mode is live — automations are paused.
+          Away mode is live — your AI concierge is paused.
         </div>
       )}
     </div>

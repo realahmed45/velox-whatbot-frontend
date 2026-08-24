@@ -1,14 +1,17 @@
 /**
- * Instagram AI Bot — modern rebuild.
+ * AI Assistant — your concierge's brain.
  *
- * The creator teaches the bot about their business by:
+ * Answers guests on every connected channel (WhatsApp, Instagram, Messenger and
+ * Telegram) about rooms, rates, availability, amenities and check-in times.
+ *
+ * The hotel teaches it by:
  *   ✍️  writing a short description, and/or
  *   📄  uploading a PDF / menu / price list, and/or
  *   🔗  pasting their website link.
  *
- * Plus an FAQ list for exact-answer questions. No personality picker, no
- * Shopify, no preview tester, no temperature/token knobs — the bot
- * it "just works". Knowledge persists to workspace.aiKnowledge
+ * Plus an FAQ list for exact-answer questions (check-in times, parking,
+ * cancellation policy). No temperature/token knobs — it "just works".
+ * Knowledge persists to workspace.aiKnowledge
  * (content + sources[]); enable flag + FAQs persist to workspace.aiSettings.
  */
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -317,7 +320,7 @@ export default function IgAiBotPage() {
           brandVoice: data.persona.brandVoice || cfg.brandVoice || "",
           guardrails: data.persona.guardrails || cfg.guardrails || "",
         });
-        toast.success("Drafted from your Instagram ✨ — tweak & save");
+        toast.success("Drafted from your property ✨ — tweak & save");
       } else {
         toast.error("Couldn't draft — fill the fields manually");
       }
@@ -424,8 +427,8 @@ export default function IgAiBotPage() {
       )}
       {drafting && (
         <AiWorkingOverlay
-          title="Crafting your bot's personality…"
-          subtitle="Reading your Instagram to draft the perfect role, voice and guardrails."
+          title="Crafting your assistant's personality…"
+          subtitle="Reading your property details to draft the perfect role, voice and guardrails."
         />
       )}
 
@@ -440,7 +443,7 @@ export default function IgAiBotPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight">AI Bot</h1>
+                <h1 className="text-xl font-bold tracking-tight">AI Assistant</h1>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-white/60">
                   <Sparkles className="w-3 h-3" /> AI-powered
                 </span>
@@ -450,8 +453,8 @@ export default function IgAiBotPage() {
                 <AiBotHelp />
               </div>
               <p className="text-sm text-white/60 mt-1 max-w-md">
-                Teach it about your business once. It answers DMs, comments &
-                story replies 24/7 — in your voice.
+                Teach it about your hotel once. It answers guests on WhatsApp,
+                Instagram, Messenger &amp; Telegram 24/7 — in your voice.
               </p>
             </div>
 
@@ -477,7 +480,7 @@ export default function IgAiBotPage() {
                   className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
                     cfg.enabled ? "bg-emerald-500" : "bg-white/20"
                   }`}
-                  aria-label="Toggle AI bot"
+                  aria-label="Toggle AI assistant"
                 >
                   <span
                     className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
@@ -535,8 +538,8 @@ export default function IgAiBotPage() {
         {tab === "personality" && (
         <Section
           icon={Bot}
-          title="Bot personality"
-          subtitle="Shape exactly how your bot sounds and what it must never do. Auto-draft it from your Instagram, then fine-tune."
+          title="Assistant personality"
+          subtitle="Shape exactly how your assistant sounds to guests and what it must never do. Auto-draft it from your property, then fine-tune."
         >
           <div className="mb-4">
             <button
@@ -549,11 +552,11 @@ export default function IgAiBotPage() {
               ) : (
                 <Sparkle className="w-4 h-4" />
               )}
-              {drafting ? "Reading your Instagram…" : "Auto-draft from my Instagram"}
+              {drafting ? "Reading your property…" : "Auto-draft from my property"}
             </button>
             <p className="text-[11px] text-ink-400 mt-1.5">
-              We read your profile + business info to draft all three fields. You
-              stay in full control — edit anything.
+              We read your property details and rooms to draft all three fields.
+              You stay in full control — edit anything.
             </p>
           </div>
 
@@ -564,7 +567,7 @@ export default function IgAiBotPage() {
               value={cfg.aiRole || ""}
               onChange={(v) => set({ aiRole: v })}
               rows={2}
-              placeholder="You are the friendly assistant for [brand], a Karachi skincare shop. You help followers over DM."
+              placeholder="You are the front-desk assistant for [hotel name], a 24-room boutique hotel in Karachi. You help guests check rates, availability and amenities, and take bookings."
             />
             <PersonaField
               label="Brand voice"
@@ -572,7 +575,7 @@ export default function IgAiBotPage() {
               value={cfg.brandVoice || ""}
               onChange={(v) => set({ brandVoice: v })}
               rows={2}
-              placeholder="warm and friendly; concise 1-2 lines; at most 1 emoji; mirror the customer's language; never pushy"
+              placeholder="warm and professional; concise 1-2 lines; at most 1 emoji; mirror the guest's language; never pushy"
             />
             <PersonaField
               label="Guardrails"
@@ -581,7 +584,7 @@ export default function IgAiBotPage() {
               onChange={(v) => set({ guardrails: v })}
               rows={2}
               danger
-              placeholder="never quote a price you weren't given; never promise refunds; never share personal data; hand off complaints to a human"
+              placeholder="never quote a rate you weren't given; never confirm a room you haven't checked availability for; never promise refunds or upgrades; never share another guest's details; hand complaints to the front desk"
             />
           </div>
         </Section>
@@ -592,8 +595,8 @@ export default function IgAiBotPage() {
         <div className="space-y-5">
         <Section
           icon={BookOpen}
-          title="What does your business do?"
-          subtitle="A short description the bot uses to answer anything not covered by a source or FAQ."
+          title="Tell your assistant about the hotel"
+          subtitle="Location, style, amenities, check-in and check-out times, house rules — anything a guest might ask that isn't in a source or FAQ."
         >
           <textarea
             className="w-full rounded-xl border border-ink-200 bg-white px-3.5 py-3 text-sm leading-relaxed focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none min-h-[120px]"
@@ -703,7 +706,7 @@ export default function IgAiBotPage() {
         <Section
           icon={HelpCircle}
           title="Exact-answer FAQs"
-          subtitle="For questions that need a precise reply (price, hours, shipping) — the bot answers these word-for-word."
+          subtitle="For questions that need a precise reply (check-in time, parking, breakfast, cancellation policy) — your assistant answers these word-for-word."
         >
           {/* Browse the template library */}
           <button
@@ -718,8 +721,8 @@ export default function IgAiBotPage() {
                 Browse {FAQ_TEMPLATE_COUNT}+ ready-made FAQs
               </span>
               <span className="block text-xs text-ink-500">
-                Pick from templates for stores, creators & services — toggle on,
-                then edit to fit your business.
+                Pick from ready-made hotel questions — toggle on, then edit to
+                fit your property.
               </span>
             </span>
             <Plus className="w-4 h-4 text-brand-500 ml-auto shrink-0 group-hover:scale-110 transition" />
@@ -1546,11 +1549,11 @@ function AiBotHelp() {
   }, [open]);
 
   const tips = [
-    "The AI bot replies when no automation rule matches an incoming message.",
-    "Add your website and FAQs under Knowledge so answers sound like your business.",
-    "It answers DMs, comments and story replies 24/7 — in the tone you set.",
-    "Instagram only allows replies within 24 hours of a person's last message.",
-    "Watch the readiness meter, then Save before turning the bot Live.",
+    "Your AI assistant replies when no rule matches an incoming guest message.",
+    "Add your website and FAQs under Knowledge so answers match your hotel.",
+    "It answers guests on every connected channel 24/7 — in the tone you set.",
+    "Instagram and Messenger only allow replies within 24 hours of a guest's last message.",
+    "Watch the readiness meter, then Save before turning the assistant Live.",
   ];
 
   return (
@@ -1565,7 +1568,7 @@ function AiBotHelp() {
       </button>
       {open && (
         <div className="absolute left-0 top-full z-50 mt-2 w-72 sm:w-80 rounded-xl border border-ink-100 bg-white shadow-card-lg p-4 text-left">
-          <p className="text-sm font-black text-ink-900 mb-2">AI Bot</p>
+          <p className="text-sm font-black text-ink-900 mb-2">AI Assistant</p>
           <ul className="space-y-2">
             {tips.map((t, i) => (
               <li

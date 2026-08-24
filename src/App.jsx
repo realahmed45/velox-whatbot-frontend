@@ -28,7 +28,6 @@ const AccountPickerPage = lazyWithRetry(
 );
 
 // App Pages (lazy-loaded)
-const OverviewPage = lazyWithRetry(() => import("@/pages/dashboard/OverviewPage"));
 const AutomationSetupPage = lazyWithRetry(
   () => import("@/pages/automation/AutomationSetupPage"),
 );
@@ -219,8 +218,12 @@ export default function App() {
               >
                 {/* Today — the home screen (agent chat + pricing + glance) */}
                 <Route index element={<TodayPage />} />
-                {/* The old Instagram-era overview stays reachable by URL. */}
-                <Route path="overview" element={<OverviewPage />} />
+                {/* The old Instagram-era overview is gone — Today replaced it.
+                    Keep the URL alive so old bookmarks still land somewhere. */}
+                <Route
+                  path="overview"
+                  element={<Navigate to="/dashboard" replace />}
+                />
 
                 {/* Hotel product */}
                 <Route path="bookings" element={<BookingsPage />} />
