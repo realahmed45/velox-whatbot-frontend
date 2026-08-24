@@ -376,14 +376,16 @@ export default function App() {
                   }
                 />
 
-                {/* Onboarding inside dashboard shell — redirects for back-compat */}
+                {/* Onboarding inside dashboard shell — redirects for back-compat.
+                    Both point at the hotel flow; the old Instagram-first path is
+                    dead (Botlify onboards a PROPERTY, not a social account). */}
                 <Route
                   path="onboarding"
-                  element={<Navigate to="/onboarding/instagram" replace />}
+                  element={<Navigate to="/onboarding/hotel" replace />}
                 />
                 <Route
                   path="onboarding/instagram"
-                  element={<Navigate to="/onboarding/instagram" replace />}
+                  element={<Navigate to="/onboarding/hotel" replace />}
                 />
               </Route>
 
