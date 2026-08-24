@@ -1,7 +1,11 @@
 /**
  * Channels — connect the messaging channels your AI concierge answers on:
- * WhatsApp and Instagram. WhatsApp uses the /channels connect flow;
- * Instagram keeps its existing OAuth connect flow.
+ * WhatsApp, Instagram, Facebook Messenger and Telegram.
+ *
+ * WhatsApp/Messenger use the hosted /channels OAuth flow; Instagram keeps its
+ * existing OAuth page; Telegram can't be OAuth'd at all — the hotel adds our
+ * bot to their group/channel as an admin and sends it a short code, so it gets
+ * a guided pairing modal that polls until the link completes.
  */
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +36,27 @@ function InstagramMark({ className = "w-6 h-6" }) {
   );
 }
 
+function MessengerMark({ className = "w-6 h-6" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 0C5.24 0 0 4.95 0 11.64c0 3.5 1.44 6.53 3.78 8.62c.2.18.32.42.32.69l.07 2.14c.02.68.72 1.13 1.35.86l2.39-1.05c.2-.09.43-.11.65-.05c1.09.3 2.25.46 3.44.46c6.76 0 12-4.95 12-11.64S18.76 0 12 0m7.2 8.93l-3.52 5.6c-.56.89-1.76 1.11-2.6.48l-2.8-2.1a.72.72 0 0 0-.87 0l-3.79 2.87c-.5.38-1.16-.22-.82-.75l3.52-5.6c.56-.89 1.76-1.11 2.6-.48l2.8 2.1c.26.19.61.19.87 0l3.79-2.87c.5-.38 1.16.22.82.75"
+      />
+    </svg>
+  );
+}
+function TelegramMark({ className = "w-6 h-6" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12a12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0m4.962 7.224c.1-.002.321.023.465.14a.5.5 0 0 1 .171.325c.016.093.036.306.02.472c-.18 1.898-.962 6.502-1.36 8.627c-.168.9-.499 1.201-.82 1.23c-.696.065-1.225-.46-1.9-.902c-1.056-.693-1.653-1.124-2.678-1.8c-1.185-.78-.417-1.21.258-1.91c.177-.184 3.247-2.977 3.307-3.23c.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345c-.48.33-.913.49-1.302.48c-.428-.008-1.252-.241-1.865-.44c-.752-.245-1.349-.374-1.297-.789c.027-.216.325-.437.893-.663c3.498-1.524 5.83-2.529 6.998-3.014c3.332-1.386 4.025-1.627 4.476-1.635"
+      />
+    </svg>
+  );
+}
+
 const CHANNELS = [
   {
     key: "whatsapp",
@@ -48,6 +73,23 @@ const CHANNELS = [
     tint: "bg-purple-50 text-purple-600",
     ring: "hover:border-purple-300",
     desc: "Turn profile visitors into guests — the AI replies to DMs, story replies and comments.",
+  },
+  {
+    key: "messenger",
+    name: "Facebook Messenger",
+    Mark: MessengerMark,
+    tint: "bg-blue-50 text-blue-600",
+    ring: "hover:border-blue-300",
+    desc: "Most hotels already get enquiries on their Facebook Page. The AI answers those too.",
+  },
+  {
+    key: "telegram",
+    name: "Telegram",
+    Mark: TelegramMark,
+    tint: "bg-sky-50 text-sky-600",
+    ring: "hover:border-sky-300",
+    desc: "Popular with European and Russian travellers. Connects by adding our bot to your group or channel.",
+    pairing: true,
   },
 ];
 
@@ -74,10 +116,66 @@ export default function ChannelsPage() {
     load();
   }, [load]);
 
+  // ── Telegram pairing ───────────────────────────────────────────────────────
+  // Generate a code, show the hotel what to do, then poll until Zernio reports
+  // the channel linked. Polling stops on success, expiry, or when they close.
+  const [tg, setTg] = useState(null); // { code, botUsername, status }
+  const startTelegramPairing = async () => {
+    setBusy("telegram");
+    try {
+      const { data } = await api.get("/channels/telegram/code");
+      setTg({
+        code: data.code,
+        botUsername: data.botUsername,
+        instructions: data.instructions || [],
+        status: "pending",
+      });
+    } catch (e) {
+      toast.error(
+        e?.response?.data?.message || "Couldn't start Telegram pairing",
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!tg?.code || tg.status !== "pending") return undefined;
+    let stopped = false;
+    const tick = async () => {
+      try {
+        const { data } = await api.get("/channels/telegram/status", {
+          params: { code: tg.code },
+        });
+        if (stopped) return;
+        if (data.status === "connected") {
+          setTg((t) => ({ ...t, status: "connected" }));
+          toast.success("Telegram connected");
+          load();
+        } else if (data.status === "expired") {
+          setTg((t) => ({ ...t, status: "expired" }));
+        }
+      } catch {
+        /* transient — keep polling until the code expires */
+      }
+    };
+    const id = setInterval(tick, 3000);
+    return () => {
+      stopped = true;
+      clearInterval(id);
+    };
+  }, [tg?.code, tg?.status, load]);
+
   const connect = async (key) => {
     if (key === "instagram") {
       // Instagram keeps its existing OAuth connect flow.
       navigate("/onboarding/instagram");
+      return;
+    }
+    if (key === "telegram") {
+      // Telegram can't be OAuth'd — it pairs by adding our bot and sending a
+      // code, so it gets its own guided modal instead of a redirect.
+      startTelegramPairing();
       return;
     }
     setBusy(key);
@@ -210,6 +308,106 @@ export default function ChannelsPage() {
         The AI answers on every connected channel — quotes prices, checks
         availability and books rooms, 24/7.
       </p>
+
+      {/* Telegram pairing modal */}
+      {tg && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink-950/50 p-0 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tg-title"
+          onClick={(e) => e.target === e.currentTarget && setTg(null)}
+        >
+          <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <TelegramMark className="w-6 h-6" />
+              </div>
+              <h2 id="tg-title" className="text-lg font-black text-ink-900">
+                Connect Telegram
+              </h2>
+            </div>
+
+            {tg.status === "connected" ? (
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                  <Check className="w-6 h-6" />
+                </div>
+                <p className="font-bold text-ink-900">Telegram is connected</p>
+                <p className="text-sm text-ink-500 mt-1">
+                  Your AI will now answer guests there.
+                </p>
+                <button
+                  onClick={() => setTg(null)}
+                  className="mt-5 w-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5"
+                >
+                  Done
+                </button>
+              </div>
+            ) : tg.status === "expired" ? (
+              <div className="text-center py-4">
+                <p className="font-bold text-ink-900">That code expired</p>
+                <p className="text-sm text-ink-500 mt-1">
+                  Codes last 15 minutes. Generate a new one to try again.
+                </p>
+                <button
+                  onClick={startTelegramPairing}
+                  className="mt-5 w-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5"
+                >
+                  Get a new code
+                </button>
+              </div>
+            ) : (
+              <>
+                <ol className="space-y-3 mb-5">
+                  {(tg.instructions || []).map((step, i) => (
+                    <li key={i} className="flex gap-3 text-sm text-ink-700">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-ink-100 text-ink-700 font-bold text-xs flex items-center justify-center">
+                        {i + 1}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="rounded-xl border border-ink-100 bg-ink-50 p-4 text-center">
+                  <p className="text-[11px] uppercase tracking-wider font-bold text-ink-500 mb-1">
+                    Your code
+                  </p>
+                  <p className="text-2xl font-black tracking-widest text-ink-900 font-mono">
+                    {tg.code}
+                  </p>
+                  <button
+                    onClick={() => {
+                      try {
+                        navigator.clipboard.writeText(tg.code);
+                        toast.success("Code copied");
+                      } catch {
+                        /* clipboard unavailable — the code is on screen */
+                      }
+                    }}
+                    className="mt-2 text-xs font-bold text-brand-600 hover:text-brand-700"
+                  >
+                    Copy code
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-ink-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Waiting for you to send the code…
+                </div>
+
+                <button
+                  onClick={() => setTg(null)}
+                  className="mt-4 w-full border border-ink-200 text-ink-700 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
