@@ -414,12 +414,14 @@ function ImportPane({ onImported, onManual, state, patch }) {
             </span>
             <div>
               <p className="font-black text-[15px]">
-                Your AI goes live today. The channel sync follows on its own.
+                Your AI goes live today. One quick step turns the channels on.
               </p>
               <p className="text-sm text-white/60 mt-1">
-                Once your details are in, we start the connection in the
-                background — your OTA takes a few days to approve it, which is
-                the same everywhere. You'll get an email when it's syncing.{" "}
+                Airbnb connects in one click. For Booking.com, Agoda and the
+                rest, your OTA asks you to approve the connection from your own
+                extranet — we show you exactly where, and it takes about a
+                minute. That approval is the OTA's own screen, so it can only
+                come from you.{" "}
                 {CHANNEL_TOTAL_LABEL} channels are supported,{" "}
                 {MORE_CHANNELS_PHRASE}.
               </p>
@@ -708,12 +710,13 @@ function ReviewPane({ imported, onConfirm, onBack, onAddRooms }) {
             </span>
             <div>
               <p className="font-black text-[15px]">
-                Next: connect WhatsApp and your AI is live
+                Next: switch your channels on
               </p>
               <p className="text-sm text-white/60 mt-1">
-                The OTA connection carries on by itself — your channel takes a
-                few days to approve it, and we'll email you the moment it starts
-                syncing. Nothing to wait for.
+                Airbnb is one click. Booking.com, Agoda and the others ask you
+                to approve the connection in your own extranet — about a minute
+                each, and we walk you through it. Your calendar starts syncing
+                the moment one goes live.
               </p>
             </div>
           </div>

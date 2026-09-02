@@ -268,8 +268,10 @@ function ImportFlow({ onBack, onDone, onManual }) {
   const doImport = async (p) => {
     setImporting(p.channexId);
     try {
-      await api.post("/hotel/channex/import", {
-        channexPropertyId: p.channexId,
+      // The unified import: the backend resolves whichever channel provider is
+      // configured, so this stays correct if the provider ever changes.
+      await api.post("/hotel/connection/import", {
+        providerPropertyId: p.channexId,
       });
       toast.success(`${p.name} imported with its rooms!`);
       onDone();

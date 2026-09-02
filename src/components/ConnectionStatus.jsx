@@ -3,7 +3,7 @@
  *
  * This card exists because of one uncomfortable truth we refuse to hide: when
  * a hotel hands rate and availability control to ANY channel manager,
- * Booking.com runs its own approval and it takes 1–5 days. Every competitor
+ * Booking.com runs its own approval from the hotel's extranet. Every competitor
  * has this wait. We can't remove it — so the job here is to make sure the
  * hotelier is never blocked by it and never confused about it.
  *
@@ -111,9 +111,10 @@ function present(conn) {
           ? `Waiting for ${joinNames(pendingOtas)} to approve`
           : "Waiting for your channel to approve",
         body:
-          "This usually takes 1–5 days and happens entirely on their side — every " +
-          "channel manager has this step. Nothing is on hold for you: your AI is " +
-          "already taking bookings and your calendar is live.",
+          "Approve the connection from your own extranet and it goes live in " +
+          "minutes — the OTA only accepts that from you, which is why every " +
+          "channel manager has this step. Nothing is on hold meanwhile: your AI " +
+          "is already taking bookings and your calendar is live.",
       };
     case "live":
       return {

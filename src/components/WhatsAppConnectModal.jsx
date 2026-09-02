@@ -355,7 +355,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 type="button"
                 onClick={startOauth}
                 disabled={redirecting}
-                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition disabled:opacity-60"
+                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 border border-ink-200 text-ink-800 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50 transition disabled:opacity-60"
               >
                 {redirecting && <Loader2 className="w-4 h-4 animate-spin" />}
                 Connect my existing number
@@ -381,7 +381,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
               <button
                 type="button"
                 onClick={openBuy}
-                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 border border-ink-200 text-ink-800 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50 transition"
+                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
               >
                 Get a number for my hotel
               </button>

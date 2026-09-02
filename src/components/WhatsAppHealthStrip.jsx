@@ -40,8 +40,23 @@ function readHealth(h) {
     healthStatus === "limited" ||
     ["flagged", "restricted", "banned", "disabled", "pending"].includes(status);
   if (bad) {
+    // A PIN only fixes a PIN problem. Telling a banned or rate-limited hotel to
+    // enter one sends them looking for a code that cannot help — so name the
+    // cause and let the caller pick the right remedy.
+    const cause = ["banned", "disabled", "restricted", "flagged"].includes(
+      status,
+    )
+      ? "account"
+      : quality === "red" || quality === "yellow"
+        ? "quality"
+        : healthStatus === "blocked" || healthStatus === "limited"
+          ? "blocked"
+          : status === "pending"
+            ? "pending"
+            : "unknown";
     return {
       tone: "bad",
+      cause,
       label:
         quality === "red"
           ? "Quality rating is low"
@@ -49,7 +64,9 @@ function readHealth(h) {
             ? "Blocked by WhatsApp"
             : status === "pending"
               ? "Waiting on WhatsApp"
-              : "Needs attention",
+              : cause === "account"
+                ? "WhatsApp restricted this number"
+                : "Needs attention",
     };
   }
   if (quality === "yellow") {
@@ -119,7 +136,10 @@ export default function WhatsAppHealthStrip({ webhookError = false }) {
   }
   if (!health) return null;
 
-  const { tone, label } = readHealth(health);
+  const { tone, label, cause } = readHealth(health);
+  // Only a PIN problem is self-serviceable. Everything else needs a different
+  // message — offering the PIN form for a ban is worse than saying nothing.
+  const pinFixable = webhookError || cause === "unknown" || cause === "blocked";
   const needsFix = tone === "bad" || webhookError;
 
   const dot =
@@ -163,20 +183,33 @@ export default function WhatsAppHealthStrip({ webhookError = false }) {
             <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="min-w-0">
               <p className="text-xs font-bold text-amber-900">
-                Messages may not be going out
+                {cause === "account"
+                  ? "WhatsApp has restricted this number"
+                  : cause === "quality"
+                    ? "Your quality rating is dropping"
+                    : cause === "pending"
+                      ? "WhatsApp is still reviewing this number"
+                      : "Messages may not be going out"}
               </p>
               <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                This usually means your number already had a two-step PIN. Enter
-                it once and sending is restored.
+                {cause === "account"
+                  ? "This is a decision on WhatsApp's side, so we can't undo it from here. Open WhatsApp Manager to see the reason and request a review. Your OTA bookings and calendar are unaffected."
+                  : cause === "quality"
+                    ? "Guests are blocking or reporting messages. Reply faster, message only guests who wrote first, and the rating recovers on its own."
+                    : cause === "pending"
+                      ? "Nothing to do — this usually clears by itself. Your OTA bookings and calendar keep working meanwhile."
+                      : "This usually means your number already had a two-step PIN. Enter it once and sending is restored."}
               </p>
-              <button
-                type="button"
-                onClick={() => setShowPin(true)}
-                className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 underline underline-offset-2"
-              >
-                <KeyRound className="w-3 h-3" />
-                Enter my WhatsApp PIN
-              </button>
+              {pinFixable && (
+                <button
+                  type="button"
+                  onClick={() => setShowPin(true)}
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 underline underline-offset-2"
+                >
+                  <KeyRound className="w-3 h-3" />
+                  Enter my WhatsApp PIN
+                </button>
+              )}
             </div>
           </div>
         </div>
