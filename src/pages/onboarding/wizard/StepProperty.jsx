@@ -200,6 +200,13 @@ export default function StepProperty({ state, patch, goNext, shell = {} }) {
   const [amenities, setAmenities] = useState([]);
   const [photos, setPhotos] = useState([]);
 
+  // Airport pickups. A hotel with its own driver gives us that driver's
+  // details so we can dispatch them; a hotel without one is served from
+  // Botlify's own pool, so there is nothing more to ask.
+  const [ownTaxi, setOwnTaxi] = useState(null); // null | true | false
+  const [driver, setDriver] = useState({ name: "", phone: "", vehicle: "" });
+  const setDriverField = (k, v) => setDriver((d) => ({ ...d, [k]: v }));
+
   const toggleAmenity = (a) =>
     setAmenities((list) =>
       list.includes(a) ? list.filter((x) => x !== a) : [...list, a],
@@ -316,6 +323,32 @@ export default function StepProperty({ state, patch, goNext, shell = {} }) {
           if (updated?.property) property = updated.property;
         } catch {
           /* the property exists — these are editable in Settings later */
+        }
+      }
+
+      /**
+       * Airport pickups. Saved separately from the property call above because
+       * a driver is its own record — and because neither is worth failing
+       * setup over: both are editable in Settings afterwards.
+       */
+      if (ownTaxi !== null && property._id) {
+        try {
+          await api.put(`/hotel/properties/${property._id}`, {
+            transfers: {
+              ...(property.transfers || {}),
+              hasOwnService: ownTaxi,
+            },
+          });
+          // Only a hotel with its own service has a driver to tell us about.
+          if (ownTaxi && driver.name.trim() && driver.phone.trim()) {
+            await api.post("/drivers", {
+              name: driver.name.trim(),
+              phone: driver.phone.trim(),
+              vehicle: { model: driver.vehicle.trim() },
+            });
+          }
+        } catch {
+          /* editable later under Settings → Transfers */
         }
       }
 
@@ -692,6 +725,87 @@ export default function StepProperty({ state, patch, goNext, shell = {} }) {
                   The AI uses these to answer "do you have parking?" without
                   waking you up.
                 </p>
+              </div>
+
+              {/* Airport pickups. Two answers, and both lead somewhere: their
+                  own driver gets dispatched, or ours does. */}
+              <div>
+                <span className="label">Airport pickups</span>
+                <p className="text-xs text-ink-400 mb-2.5">
+                  When a guest asks for a lift from the airport, who drives?
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setOwnTaxi(true)}
+                    className={`text-left rounded-xl border p-3.5 transition ${
+                      ownTaxi === true
+                        ? "border-brand-400 bg-brand-50/60 ring-1 ring-brand-200"
+                        : "border-ink-200 hover:border-brand-300"
+                    }`}
+                  >
+                    <p className="font-bold text-ink-900 text-sm">
+                      We have our own driver
+                    </p>
+                    <p className="text-xs text-ink-500 mt-0.5">
+                      We'll send them the job and give the guest their number.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOwnTaxi(false)}
+                    className={`text-left rounded-xl border p-3.5 transition ${
+                      ownTaxi === false
+                        ? "border-brand-400 bg-brand-50/60 ring-1 ring-brand-200"
+                        : "border-ink-200 hover:border-brand-300"
+                    }`}
+                  >
+                    <p className="font-bold text-ink-900 text-sm">
+                      Use a Botlify driver
+                    </p>
+                    <p className="text-xs text-ink-500 mt-0.5">
+                      We find one from our own drivers — nothing for you to do.
+                    </p>
+                  </button>
+                </div>
+
+                {ownTaxi === true && (
+                  <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50/40 p-3.5">
+                    <p className="text-xs font-bold text-ink-700 mb-2.5">
+                      Your driver's details
+                    </p>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <input
+                        value={driver.name}
+                        onChange={(e) => setDriverField("name", e.target.value)}
+                        placeholder="Name"
+                        className="input"
+                        autoComplete="off"
+                      />
+                      <input
+                        type="tel"
+                        value={driver.phone}
+                        onChange={(e) => setDriverField("phone", e.target.value)}
+                        placeholder="WhatsApp number"
+                        className="input"
+                        autoComplete="off"
+                      />
+                      <input
+                        value={driver.vehicle}
+                        onChange={(e) =>
+                          setDriverField("vehicle", e.target.value)
+                        }
+                        placeholder="Car (optional)"
+                        className="input"
+                        autoComplete="off"
+                      />
+                    </div>
+                    <p className="text-xs text-ink-400 mt-2">
+                      This number is what we give the guest. Add more drivers
+                      and their ID details any time in Settings.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">

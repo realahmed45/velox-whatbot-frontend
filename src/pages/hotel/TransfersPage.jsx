@@ -21,6 +21,7 @@ import {
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import DriversPanel from "@/components/DriversPanel";
 
 const STATUS_STYLE = {
   pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -272,6 +273,12 @@ export default function TransfersPage() {
           })}
         </div>
       )}
+
+      {/* Who actually drives. Sits under the trips because a hotel comes here
+          to check a pickup far more often than to edit the roster. */}
+      <div className="mt-10 pt-8 border-t border-ink-100">
+        <DriversPanel scope="hotel" />
+      </div>
 
       <NewTransferModal
         open={showNew}

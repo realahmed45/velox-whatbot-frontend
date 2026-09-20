@@ -9,6 +9,7 @@
  */
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import DriversPanel from "@/components/DriversPanel";
 import {
   Loader2,
   LogOut,
@@ -365,6 +366,7 @@ function AdminDashboard({ onLogout }) {
                   id: "consultants",
                   label: `Consultants${stats?.consultants?.total != null ? ` (${stats.consultants.total})` : ""}`,
                 },
+                { id: "drivers", label: "Drivers" },
               ].map((t) => (
                 <button
                   key={t.id}
@@ -627,6 +629,15 @@ function AdminDashboard({ onLogout }) {
 
             {/* ── CONSULTANTS ── */}
             {tab === "consultants" && <ConsultantsAdmin />}
+
+            {/* ── DRIVERS ──
+                Botlify's own pool, dispatched for hotels with no taxi service
+                of their own. Same panel the hotel uses for its drivers. */}
+            {tab === "drivers" && (
+              <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
+                <DriversPanel scope="platform" client={adminApi} />
+              </div>
+            )}
 
             {/* ── SUBS ── */}
             {tab === "subs" && (
