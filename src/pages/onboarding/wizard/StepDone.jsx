@@ -181,7 +181,7 @@ export default function StepDone({ state, goBack }) {
                   ? "The sync switches itself on once your channel approves it — we'll email you."
                   : picked.length > 0
                     ? `We'll connect ${joinNames(picked.map((c) => c.name))} for you.`
-                    : "Connect Booking.com, Airbnb, Agoda and 60+ more from Property → Channels."
+                    : "Connect Booking.com, Airbnb and the rest any time from Settings → Channels."
               }
             />
             <Row

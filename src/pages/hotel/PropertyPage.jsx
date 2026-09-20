@@ -101,6 +101,13 @@ export default function PropertyPage() {
     setSearchParams(searchParams, { replace: true });
   };
 
+  // A hotel that set itself up manually still needs a way to connect its OTAs
+  // later — this reopens the same import flow first-run uses.
+  const openConnect = () => {
+    searchParams.set("new", "1");
+    setSearchParams(searchParams, { replace: false });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -156,7 +163,10 @@ export default function PropertyPage() {
               rooms are edited — so a blocker ("set a nightly rate for Deluxe
               Double") is one scroll from the field that fixes it. */}
           <div className="mb-6">
-            <ConnectionStatus propertyId={property._id} />
+            <ConnectionStatus
+              propertyId={property._id}
+              onConnect={openConnect}
+            />
           </div>
           <PropertyEditor property={property} onChanged={load} />
         </>
@@ -176,7 +186,8 @@ function SetupCards({ onDone, onCancel }) {
       {onCancel && (
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <p className="text-sm text-ink-500">
-            Adding another property to this account.
+            Import a property from a booking channel, or add another to this
+            account.
           </p>
           <button
             onClick={onCancel}

@@ -237,6 +237,7 @@ function Blockers({ blockers, fixHref }) {
  *                                 and nothing is wrong (keeps Today calm)
  */
 export default function ConnectionStatus({
+  onConnect,
   propertyId,
   compact = false,
   fixHref = "/dashboard/property",
@@ -389,6 +390,20 @@ export default function ConnectionStatus({
           )}
 
           <Blockers blockers={conn.blockers} fixHref={fixHref} />
+
+          {/* A hotel that set itself up manually has no other route to its
+              OTAs — without this the "connect whenever you're ready" copy is a
+              dead end. onConnect is supplied where an import flow exists. */}
+          {idle && onConnect && (
+            <button
+              type="button"
+              onClick={onConnect}
+              className="mt-3 inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-lg px-3.5 py-2 transition"
+            >
+              <CloudDownload className="w-3.5 h-3.5" />
+              Connect a booking channel
+            </button>
+          )}
 
           {/* Reassurance that the thing they actually bought is working, shown
               exactly when the OTA side isn't finished yet. */}

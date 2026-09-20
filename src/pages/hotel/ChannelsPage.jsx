@@ -305,12 +305,40 @@ export default function ChannelsPage() {
       </p>
 
       {/* Booking channels are a different thing from messaging channels — the
-          OTAs your rooms sell on. Shown here so "Channels" covers both. */}
-      <div className="mt-8">
-        <ChannelWall
-          title="Where your rooms sell"
-          subtitle={`Your availability and rates sync to ${CHANNEL_COUNT_PHRASE} through one connection. Set these up under Property & Rooms.`}
-        />
+          OTAs your rooms sell on. Everything here rides the Channex connection:
+          one link carries availability, rates, reservations AND guest messages.
+          Onboarding deliberately doesn't ask for these; this is where a hotel
+          comes to switch them on. */}
+      <div className="mt-10 pt-8 border-t border-ink-100">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+          <div>
+            <h2 className="text-lg font-black text-ink-900">
+              Where your rooms sell
+            </h2>
+            <p className="text-sm text-ink-500 mt-1 max-w-xl">
+              One connection keeps your calendar and rates in step across{" "}
+              {CHANNEL_COUNT_PHRASE}, and brings guest messages from
+              Booking.com, Airbnb and Expedia into the inbox above.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/app/property")}
+            className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition shrink-0"
+          >
+            <Plug className="w-4 h-4" />
+            Connect a booking channel
+          </button>
+        </div>
+
+        <div className="mt-5">
+          <ChannelWall variant="bare" />
+        </div>
+
+        <p className="text-xs text-ink-400 mt-4">
+          Your OTA asks you to approve the connection from its own extranet —
+          that screen belongs to them, so it can only come from you. Airbnb is
+          one click; the rest take about a minute.
+        </p>
       </div>
 
       {/* WhatsApp chooser — existing number, or a new one from us */}

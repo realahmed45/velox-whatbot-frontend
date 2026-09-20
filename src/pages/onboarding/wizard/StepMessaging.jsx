@@ -58,6 +58,12 @@ function TelegramMark({ className = "w-6 h-6" }) {
   );
 }
 
+// Onboarding asks for WhatsApp and nothing else. It carries roughly a third of
+// a hotel's bookings, and it is the one channel worth interrupting setup for.
+// Instagram, Messenger and Telegram are fully built and connect the same way —
+// they just live in Settings > Channels, where a hotelier reaches for them when
+// they actually want them. The OTAs (Booking.com, Airbnb, Expedia) are not
+// messaging channels at all: they arrive through Channex, also from Settings.
 const CHANNELS = [
   {
     key: "whatsapp",
@@ -65,27 +71,6 @@ const CHANNELS = [
     Mark: WhatsAppMark,
     tint: "bg-emerald-50 text-emerald-600",
     desc: "Where most guests book. The AI answers, quotes rooms and confirms reservations on your number.",
-  },
-  {
-    key: "instagram",
-    name: "Instagram",
-    Mark: InstagramMark,
-    tint: "bg-purple-50 text-purple-600",
-    desc: "Turn profile visitors into guests — the AI answers DMs and comments about rooms, rates and availability.",
-  },
-  {
-    key: "messenger",
-    name: "Facebook Messenger",
-    Mark: MessengerMark,
-    tint: "bg-blue-50 text-blue-600",
-    desc: "Most hotels already get enquiries on their Page. The AI answers those too.",
-  },
-  {
-    key: "telegram",
-    name: "Telegram",
-    Mark: TelegramMark,
-    tint: "bg-sky-50 text-sky-600",
-    desc: "Popular with European and Russian travellers. Pairs by adding our bot to your group.",
   },
 ];
 
@@ -221,11 +206,11 @@ export default function StepMessaging({ patch, goNext, goBack }) {
       step={1}
       icon={MessageCircle}
       eyebrow="Step 2 of 3 · Optional"
-      title="Let the AI answer your guests"
-      subtitle="Connect the apps your guests message you on. Your AI concierge replies 24/7 — answers questions, quotes rooms and books them, in any language."
+      title="Let the AI answer on WhatsApp"
+      subtitle="Where most guests message you. Your AI replies 24/7 — answers questions, quotes rooms and books them, in any language. Instagram, Messenger, Telegram and your booking channels all connect later from Settings."
       onBack={goBack}
       onSkip={goNext}
-      skipLabel="Skip — I'll connect messaging later"
+      skipLabel="Skip — I'll connect WhatsApp later"
       onNext={goNext}
       nextLabel="Continue"
       wide
@@ -235,7 +220,7 @@ export default function StepMessaging({ patch, goNext, goBack }) {
           <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid gap-4">
           {CHANNELS.map((ch) => {
             const st = statusMap[ch.key] || {};
             const connected = st.status === "connected";
