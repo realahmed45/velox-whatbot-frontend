@@ -156,6 +156,8 @@ export default function GuestInboxPage() {
   const [channel, setChannel] = useState("all");
   const [byChannel, setByChannel] = useState({});
   const [connected, setConnected] = useState([]);
+  // Channels whose "connected" state is implied by having conversations.
+  const OTA_CHANNELS = ["booking_com", "airbnb", "expedia"];
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
@@ -201,9 +203,17 @@ export default function GuestInboxPage() {
       try {
         const { data } = await api.get("/channels/status");
         if (cancelled) return;
-        setConnected(
-          CHANNEL_ORDER.filter((k) => data?.[k]?.status === "connected"),
+        // /channels/status only knows about the social channels we connect
+        // directly. OTA threads arrive through the channel manager, so the
+        // honest test for those is simply "are there conversations?" — a tab
+        // with guests behind it is never a dead end.
+        const social = CHANNEL_ORDER.filter(
+          (k) => data?.[k]?.status === "connected",
         );
+        const withThreads = [
+          ...new Set((conversations || []).map((c) => c.channelType)),
+        ].filter((k) => OTA_CHANNELS.includes(k));
+        setConnected([...new Set([...social, ...withThreads])]);
       } catch {
         // Non-fatal: without the status map we simply show no channel tabs.
         if (!cancelled) setConnected([]);
@@ -212,7 +222,7 @@ export default function GuestInboxPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeWorkspace]);
+  }, [activeWorkspace, conversations]);
 
   // Refetch whenever the channel tab, status filter or search text changes.
   // Search is debounced so typing doesn't hammer the endpoint.

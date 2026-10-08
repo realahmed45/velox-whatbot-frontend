@@ -53,6 +53,28 @@ export function TelegramMark({ className = "w-6 h-6" }) {
  * Every guest channel Botlify answers on, in the order they're shown.
  * `key` matches the backend `channelType` / `/channels/status` keys.
  */
+/**
+ * OTA threads reuse the real brand marks from OtaLogo. Those take a pixel
+ * `size`; everything here takes a `className`, so wrap rather than redraw —
+ * one set of brand artwork, used in both places.
+ */
+import {
+  BookingMark as BookingBrand,
+  AirbnbMark as AirbnbBrand,
+  ExpediaMark as ExpediaBrand,
+} from "@/components/OtaLogo";
+
+const sized = (Brand) =>
+  function SizedBrand({ className = "w-6 h-6" }) {
+    // Tailwind w-N is N*4px; default to 24 when the class isn't a plain size.
+    const m = /w-(\d+)/.exec(className);
+    return <Brand size={m ? Number(m[1]) * 4 : 24} />;
+  };
+
+export const BookingComMark = sized(BookingBrand);
+export const AirbnbChannelMark = sized(AirbnbBrand);
+export const ExpediaChannelMark = sized(ExpediaBrand);
+
 export const CHANNEL_META = {
   whatsapp: {
     key: "whatsapp",
@@ -94,11 +116,46 @@ export const CHANNEL_META = {
     dot: "bg-sky-500",
     solid: "bg-sky-500 text-white",
   },
+  // Guests messaging from inside an OTA. Same inbox, same AI — the hotelier
+  // shouldn't have to care which app the question arrived from.
+  booking_com: {
+    key: "booking_com",
+    name: "Booking.com",
+    shortName: "Booking.com",
+    Mark: BookingComMark,
+    tint: "bg-blue-50 text-blue-700",
+    ring: "hover:border-blue-300",
+    dot: "bg-blue-600",
+    solid: "bg-blue-600 text-white",
+  },
+  airbnb: {
+    key: "airbnb",
+    name: "Airbnb",
+    shortName: "Airbnb",
+    Mark: AirbnbChannelMark,
+    tint: "bg-rose-50 text-rose-600",
+    ring: "hover:border-rose-300",
+    dot: "bg-rose-500",
+    solid: "bg-rose-500 text-white",
+  },
+  expedia: {
+    key: "expedia",
+    name: "Expedia",
+    shortName: "Expedia",
+    Mark: ExpediaChannelMark,
+    tint: "bg-amber-50 text-amber-700",
+    ring: "hover:border-amber-300",
+    dot: "bg-amber-500",
+    solid: "bg-amber-500 text-white",
+  },
 };
 
 /** Display order for channel tabs / lists. */
 export const CHANNEL_ORDER = [
   "whatsapp",
+  "booking_com",
+  "airbnb",
+  "expedia",
   "instagram",
   "messenger",
   "telegram",
