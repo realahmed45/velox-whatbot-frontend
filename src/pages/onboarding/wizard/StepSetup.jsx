@@ -359,8 +359,9 @@ function ImportPane({ onImported, onManual, state, patch }) {
               We'll connect your channels for you
             </p>
             <p className="text-sm text-ink-500 mt-1">
-              {unavailable} Add your rooms below and our team takes it from
-              there — your AI, calendar and direct bookings all work exactly the
+              Set your hotel up below and we'll link your booking channels for
+              you — there's an approval step on the OTA's side that only takes a
+              minute. Your AI, calendar and direct bookings all work exactly the
               same in the meantime.
             </p>
           </div>

@@ -322,7 +322,7 @@ export default function ChannelsPage() {
             </p>
           </div>
           <button
-            onClick={() => navigate("/app/property")}
+            onClick={() => navigate("/dashboard/property")}
             className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition shrink-0"
           >
             <Plug className="w-4 h-4" />
