@@ -31,6 +31,7 @@ import {
   Loader2,
   PencilLine,
   Search,
+  Check,
   ShieldCheck,
   Sparkles,
   Ticket,
@@ -42,9 +43,8 @@ import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import OtaLogo from "@/components/OtaLogo";
 import {
-  OTA_CHANNELS,
-  CHANNEL_TOTAL_LABEL,
-  MORE_CHANNELS_PHRASE,
+  LIVE_OTA_CHANNELS,
+  LIVE_OTA_NAMES,
 } from "@/data/otaChannels";
 import WizardShell from "./WizardShell";
 import StepProperty from "./StepProperty";
@@ -101,7 +101,19 @@ function ImportPane({ onImported, onManual, state, patch }) {
   const { fetchWorkspace } = useWorkspaceStore();
   const [ensuring, setEnsuring] = useState(!activeWorkspace);
 
-  const [hotelId, setHotelId] = useState("");
+  // Which of the three live channels this hotel sells on, and the property id
+  // each one knows it by. A hotel is usually on two or three, so this is a
+  // multi-select rather than a single field.
+  const [otaIds, setOtaIds] = useState({});
+  const setOtaId = (key, value) =>
+    setOtaIds((prev) => ({ ...prev, [key]: value }));
+  const toggleOta = (key) =>
+    setOtaIds((prev) => {
+      const next = { ...prev };
+      if (key in next) delete next[key];
+      else next[key] = "";
+      return next;
+    });
   const [importing, setImporting] = useState(false);
   // Properties the provider can see. Populated on load when sync is switched
   // on; also returned by the import call when a hotel ID couldn't be matched.
@@ -273,7 +285,24 @@ function ImportPane({ onImported, onManual, state, patch }) {
     );
   }
 
-  const canSubmit = hotelId.trim().length > 0 && !importing;
+  // Ready once at least one selected channel has an id typed in.
+  const filledOtas = Object.entries(otaIds).filter(([, v]) => v.trim());
+  const canSubmit = filledOtas.length > 0 && !importing;
+
+  /**
+   * Import the property once, then note the other channels the hotel sells on.
+   *
+   * A property is imported from ONE source — importing the same hotel twice
+   * would duplicate rooms. The rest are recorded as channels to connect, which
+   * is what the connection state machine already tracks.
+   */
+  const importSelected = () => {
+    const [[, firstId]] = filledOtas;
+    runImport({
+      otaPropertyId: firstId.trim(),
+      requestedOtas: filledOtas.map(([key]) => key),
+    });
+  };
 
   return (
     <WizardShell
@@ -281,60 +310,102 @@ function ImportPane({ onImported, onManual, state, patch }) {
       icon={CloudDownload}
       eyebrow="Step 1 of 3"
       title="Bring your hotel across"
-      subtitle="Enter your Booking.com hotel ID and we'll pull your property, rooms, photos and occupancy over. No forms to fill in."
+      subtitle="Tell us where you already sell, and we'll pull your property, rooms, photos and occupancy across. No forms to fill in."
       hideFooter
       wide
     >
       <div className="space-y-4">
         {/* ── The hotel ID input — the headline action ─────────────────── */}
         <div className="rounded-2xl border-2 border-brand-200 bg-white p-5 sm:p-6 shadow-lg">
-          <label className="label" htmlFor="hotelId">
-            Your Booking.com hotel ID
-          </label>
+          <span className="label">Where do you sell your rooms?</span>
+          <p className="text-xs text-ink-400 -mt-1 mb-3">
+            Pick the ones you're on and give us the ID each knows your property
+            by. We'll pull your rooms, photos and occupancy across.
+          </p>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (canSubmit) runImport({ otaPropertyId: hotelId.trim() });
+              if (canSubmit) importSelected();
             }}
-            className="flex flex-col sm:flex-row gap-2.5"
+            className="space-y-2.5"
           >
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" />
-              <input
-                id="hotelId"
-                value={hotelId}
-                onChange={(e) => setHotelId(e.target.value)}
-                placeholder="e.g. 1234567"
-                className="input pl-9"
-                autoComplete="off"
-              />
-            </div>
+            {/* Only the channels a hotel can actually connect today. A logo
+                they can't click yet is a promise we haven't kept. */}
+            {LIVE_OTA_CHANNELS.map((c) => {
+              const picked = c.key in otaIds;
+              return (
+                <div
+                  key={c.key}
+                  className={`rounded-xl border transition ${
+                    picked
+                      ? "border-brand-300 bg-brand-50/40"
+                      : "border-ink-200 hover:border-brand-200"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleOta(c.key)}
+                    className="w-full flex items-center gap-3 p-3 text-left"
+                  >
+                    <span
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition ${
+                        picked
+                          ? "bg-brand-500 border-brand-500"
+                          : "border-ink-300"
+                      }`}
+                    >
+                      {picked && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                    <OtaLogo channelKey={c.key} name={c.name} size={26} />
+                    <span className="font-bold text-ink-800 text-sm">
+                      {c.name}
+                    </span>
+                  </button>
+
+                  {picked && (
+                    <div className="px-3 pb-3 pl-11">
+                      <input
+                        value={otaIds[c.key]}
+                        onChange={(e) => setOtaId(c.key, e.target.value)}
+                        placeholder={
+                          c.key === "airbnb"
+                            ? "Airbnb listing ID, e.g. 12345678"
+                            : c.key === "expedia"
+                              ? "Expedia property ID"
+                              : "Booking.com hotel ID, e.g. 1234567"
+                        }
+                        className="input text-sm"
+                        autoComplete="off"
+                      />
+                      <p className="text-[11px] text-ink-400 mt-1">
+                        {c.key === "booking"
+                          ? "The number in your extranet URL."
+                          : c.key === "airbnb"
+                            ? "The number at the end of your listing's web address."
+                            : "From your Expedia Partner Central account."}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
             <button
               type="submit"
               disabled={!canSubmit}
-              className="btn-primary justify-center shrink-0 disabled:opacity-50"
+              className="btn-primary w-full justify-center disabled:opacity-50"
             >
               {importing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <CloudDownload className="w-4 h-4" />
               )}
-              Bring it across
+              {filledOtas.length > 1
+                ? `Bring my hotel across (${filledOtas.length} channels)`
+                : "Bring my hotel across"}
             </button>
           </form>
-          <p className="text-xs text-ink-400 mt-2">
-            It's the number in your Booking.com extranet URL. Not sure? Pick
-            your property from the list below instead.
-          </p>
-
-          <div className="mt-4 flex flex-wrap items-center gap-1.5">
-            {OTA_CHANNELS.slice(0, 6).map((c) => (
-              <OtaLogo key={c.key} channelKey={c.key} name={c.name} size={30} />
-            ))}
-            <span className="inline-flex items-center rounded-lg bg-ink-50 border border-ink-200 px-2 text-[11px] font-bold text-ink-500">
-              +{CHANNEL_TOTAL_LABEL}
-            </span>
-          </div>
         </div>
 
         {/* Couldn't match the typed ID — say so plainly and offer the list. */}
@@ -418,13 +489,11 @@ function ImportPane({ onImported, onManual, state, patch }) {
                 Your AI goes live today. One quick step turns the channels on.
               </p>
               <p className="text-sm text-white/60 mt-1">
-                Airbnb connects in one click. For Booking.com, Agoda and the
-                rest, your OTA asks you to approve the connection from your own
-                extranet — we show you exactly where, and it takes about a
-                minute. That approval is the OTA's own screen, so it can only
-                come from you.{" "}
-                {CHANNEL_TOTAL_LABEL} channels are supported,{" "}
-                {MORE_CHANNELS_PHRASE}.
+                {LIVE_OTA_NAMES} are supported. Airbnb connects in one click.
+                Booking.com and Expedia ask you to approve the connection from
+                your own extranet — we show you exactly where, and it takes
+                about a minute. That approval is the OTA's own screen, so it
+                can only come from you.
               </p>
             </div>
           </div>
@@ -714,7 +783,7 @@ function ReviewPane({ imported, onConfirm, onBack, onAddRooms }) {
                 Next: switch your channels on
               </p>
               <p className="text-sm text-white/60 mt-1">
-                Airbnb is one click. Booking.com, Agoda and the others ask you
+                Airbnb is one click. Booking.com and Expedia ask you
                 to approve the connection in your own extranet — about a minute
                 each, and we walk you through it. Your calendar starts syncing
                 the moment one goes live.

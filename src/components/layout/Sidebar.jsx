@@ -22,6 +22,7 @@ import {
   BedDouble,
   CalendarDays,
   HandCoins,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -46,6 +47,15 @@ const NAV = [
     items: [
       { to: "/dashboard", icon: LayoutDashboard, label: "Today", end: true },
       { to: "/dashboard/bookings", icon: BedDouble, label: "Bookings" },
+      // Guest conversations from every channel — WhatsApp and the OTA inboxes
+      // alike. It was only reachable as a tab inside Bookings, which buried the
+      // part of the product a hotelier actually opens all day.
+      {
+        to: "/dashboard/inbox",
+        icon: MessageSquare,
+        label: "Messages",
+        perm: "inbox",
+      },
       { to: "/dashboard/calendar", icon: CalendarDays, label: "Calendar" },
       { to: "/dashboard/guests", icon: Users, label: "Guests" },
       { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },

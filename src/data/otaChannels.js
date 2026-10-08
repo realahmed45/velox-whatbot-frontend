@@ -81,6 +81,30 @@ export const OTA_CHANNELS = [
   },
 ];
 
+/**
+ * The channels we can actually connect a hotel to TODAY.
+ *
+ * Channex carries 60+, but only these three are approved for the full
+ * two-way integration — calendar, rates, reservations AND guest messaging.
+ * Onboarding shows only these, because a logo a hotelier cannot connect on
+ * the day they sign up is a promise we haven't kept yet.
+ *
+ * The wider list stays for marketing pages, where it is a roadmap claim
+ * rather than something the hotelier is about to click.
+ */
+export const LIVE_OTA_KEYS = ["booking", "airbnb", "expedia"];
+
+/** The three live channels, in display order. */
+export const LIVE_OTA_CHANNELS = LIVE_OTA_KEYS.map((k) =>
+  OTA_CHANNELS.find((c) => c.key === k),
+).filter(Boolean);
+
+/** "Booking.com, Airbnb and Expedia" — for prose. */
+export const LIVE_OTA_NAMES = (() => {
+  const names = LIVE_OTA_CHANNELS.map((c) => c.name);
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+})();
+
 /** Headline figure used in copy everywhere. */
 export const CHANNEL_TOTAL_LABEL = "60+";
 
