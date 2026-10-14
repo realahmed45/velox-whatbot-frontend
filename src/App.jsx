@@ -65,6 +65,7 @@ const AppointmentsPage = lazyWithRetry(
 const TodayPage = lazyWithRetry(() => import("@/pages/hotel/TodayPage"));
 const CalendarPage = lazyWithRetry(() => import("@/pages/hotel/CalendarPage"));
 const GuestsPage = lazyWithRetry(() => import("@/pages/hotel/GuestsPage"));
+const TrainAiPage = lazyWithRetry(() => import("@/pages/hotel/TrainAiPage"));
 const BookingsPage = lazyWithRetry(() => import("@/pages/hotel/BookingsPage"));
 const PropertyPage = lazyWithRetry(() => import("@/pages/hotel/PropertyPage"));
 const TransfersPage = lazyWithRetry(() => import("@/pages/hotel/TransfersPage"));
@@ -94,6 +95,9 @@ const HotelSetupPage = lazyWithRetry(
 // The multi-step property-first setup wizard — the default onboarding flow.
 const SetupWizardPage = lazyWithRetry(
   () => import("@/pages/onboarding/SetupWizardPage"),
+);
+const HotelOnboarding = lazyWithRetry(
+  () => import("@/pages/onboarding/HotelOnboarding"),
 );
 const ReactivatePage = lazyWithRetry(() => import("@/pages/onboarding/ReactivatePage"));
 
@@ -228,6 +232,7 @@ export default function App() {
                 <Route path="bookings" element={<BookingsPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="guests" element={<GuestsPage />} />
+                <Route path="train" element={<TrainAiPage />} />
                 <Route path="property" element={<PropertyPage />} />
                 <Route path="transfers" element={<TransfersPage />} />
                 <Route path="channels" element={<ChannelsPage />} />
@@ -398,8 +403,8 @@ export default function App() {
                     messaging → done. /onboarding/hotel is the entry every
                     redirect in the app already points at, so it renders the
                     wizard too. */}
-                <Route path="/onboarding" element={<SetupWizardPage />} />
-                <Route path="/onboarding/hotel" element={<SetupWizardPage />} />
+                <Route path="/onboarding" element={<HotelOnboarding />} />
+                <Route path="/onboarding/hotel" element={<HotelOnboarding />} />
                 {/* The single-field hotel-name page the wizard replaced. Kept
                     reachable by URL; no longer part of the default flow. */}
                 <Route

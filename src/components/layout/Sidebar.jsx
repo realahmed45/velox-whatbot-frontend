@@ -23,6 +23,7 @@ import {
   CalendarDays,
   HandCoins,
   MessageSquare,
+  GraduationCap,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -58,6 +59,8 @@ const NAV = [
       },
       { to: "/dashboard/calendar", icon: CalendarDays, label: "Calendar" },
       { to: "/dashboard/guests", icon: Users, label: "Guests" },
+      // The hotel's own answers — what the AI tells guests on every channel.
+      { to: "/dashboard/train", icon: GraduationCap, label: "Train your AI" },
       { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },
     ],
   },
