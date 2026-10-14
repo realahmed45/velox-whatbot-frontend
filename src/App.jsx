@@ -93,9 +93,6 @@ const HotelSetupPage = lazyWithRetry(
   () => import("@/pages/onboarding/HotelSetupPage"),
 );
 // The multi-step property-first setup wizard — the default onboarding flow.
-const SetupWizardPage = lazyWithRetry(
-  () => import("@/pages/onboarding/SetupWizardPage"),
-);
 const HotelOnboarding = lazyWithRetry(
   () => import("@/pages/onboarding/HotelOnboarding"),
 );
