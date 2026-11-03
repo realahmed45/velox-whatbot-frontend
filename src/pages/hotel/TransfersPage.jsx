@@ -22,6 +22,7 @@ import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import DriversPanel from "@/components/DriversPanel";
+import AssignDriver from "@/components/AssignDriver";
 
 const STATUS_STYLE = {
   pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -48,6 +49,20 @@ export default function TransfersPage() {
   const [status, setStatus] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [tab, setTab] = useState("upcoming");
+  const [drivers, setDrivers] = useState([]);
+
+  // The hotel's own drivers, for the Assign picker on each pickup.
+  const loadDrivers = useCallback(async () => {
+    try {
+      const { data } = await api.get("/drivers");
+      setDrivers(data.drivers || []);
+    } catch {
+      /* the picker just shows "no drivers yet" */
+    }
+  }, []);
+  useEffect(() => {
+    loadDrivers();
+  }, [loadDrivers]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -211,7 +226,11 @@ export default function TransfersPage() {
                           : "bg-ink-50 text-ink-500"
                       }`}
                     >
-                      {t.provider === "mozio" ? "Partner" : "Own car"}
+                      {t.provider === "mozio"
+                        ? "Partner"
+                        : t.provider === "platform"
+                          ? "Botlify driver"
+                          : "Own driver"}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 mt-1.5">
@@ -240,6 +259,27 @@ export default function TransfersPage() {
                   </div>
                   {t.notes && (
                     <p className="text-xs text-ink-400 mt-1">{t.notes}</p>
+                  )}
+                  {t.provider === "platform" ? (
+                    t.driverSnapshot?.phone ? (
+                      <AssignDriver transfer={t} drivers={[]} onAssign={() => {}} />
+                    ) : (
+                      ["pending", "confirmed"].includes(t.status) && (
+                        <p className="mt-2 text-xs text-ink-500">
+                          Botlify is arranging a driver for this pickup.
+                        </p>
+                      )
+                    )
+                  ) : (
+                    <AssignDriver
+                      transfer={t}
+                      drivers={drivers}
+                      onAssign={async (driverId) => {
+                        const { data } = await api.patch(`/transfers/${t._id}/driver`, { driverId });
+                        await load();
+                        return data;
+                      }}
+                    />
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -277,7 +317,7 @@ export default function TransfersPage() {
       {/* Who actually drives. Sits under the trips because a hotel comes here
           to check a pickup far more often than to edit the roster. */}
       <div className="mt-10 pt-8 border-t border-ink-100">
-        <DriversPanel scope="hotel" />
+        <DriversPanel scope="hotel" onChange={setDrivers} />
       </div>
 
       <NewTransferModal

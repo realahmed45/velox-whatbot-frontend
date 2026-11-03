@@ -10,6 +10,7 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import DriversPanel from "@/components/DriversPanel";
+import AdminPickups from "./AdminPickups";
 import {
   Loader2,
   LogOut,
@@ -249,6 +250,7 @@ function AdminDashboard({ onLogout }) {
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState(null);
   const [tab, setTab] = useState("overview");
+  const [platformDrivers, setPlatformDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [stage, setStage] = useState("");
@@ -634,8 +636,17 @@ function AdminDashboard({ onLogout }) {
                 Botlify's own pool, dispatched for hotels with no taxi service
                 of their own. Same panel the hotel uses for its drivers. */}
             {tab === "drivers" && (
-              <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
-                <DriversPanel scope="platform" client={adminApi} />
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
+                  <AdminPickups client={adminApi} drivers={platformDrivers} />
+                </div>
+                <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
+                  <DriversPanel
+                    scope="platform"
+                    client={adminApi}
+                    onChange={setPlatformDrivers}
+                  />
+                </div>
               </div>
             )}
 

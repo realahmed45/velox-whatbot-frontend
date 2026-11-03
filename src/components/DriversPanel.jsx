@@ -1,5 +1,5 @@
 /**
- * Drivers — the roster we dispatch airport pickups to.
+ * Drivers — who can be assigned to airport pickups.
  *
  * One component, two homes, because the shape is identical either way:
  *   scope="hotel"    → Settings → Transfers. The hotel's own driver(s).
@@ -7,9 +7,8 @@
  *                      of their own.
  *
  * Only the endpoints differ, so they're passed in rather than branched on
- * throughout. The dispatch link is the one thing that needs explaining in the
- * UI: a driver has no Botlify login, so that link IS their way in, and it can
- * be reissued if a phone goes missing.
+ * throughout. Drivers are contacted by hand; assigning one to a pickup sends
+ * the guest the driver's name, car and WhatsApp number.
  */
 import { useCallback, useEffect, useState } from "react";
 import defaultApi from "@/services/api";
@@ -17,12 +16,9 @@ import toast from "react-hot-toast";
 import {
   Car,
   Check,
-  Copy,
-  Link2,
   Loader2,
   Pencil,
   Plus,
-  RefreshCw,
   Trash2,
   X,
 } from "lucide-react";
@@ -61,14 +57,13 @@ const dateInput = (v) => (v ? String(v).slice(0, 10) : "");
  * axios instance — the app's shared client would send the wrong credentials
  * there. Callers pass whichever one is right for their side of the app.
  */
-export default function DriversPanel({ scope = "hotel", client }) {
+export default function DriversPanel({ scope = "hotel", client, onChange }) {
   const api = client || defaultApi;
   const base = scope === "platform" ? "/admin/drivers" : "/drivers";
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null); // null | {} | driver
   const [saving, setSaving] = useState(false);
-  const [linkFor, setLinkFor] = useState(null);
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
@@ -76,6 +71,7 @@ export default function DriversPanel({ scope = "hotel", client }) {
     try {
       const { data } = await api.get(base);
       setDrivers(data.drivers || []);
+      onChange?.(data.drivers || []);
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't load drivers");
     } finally {
@@ -117,7 +113,7 @@ export default function DriversPanel({ scope = "hotel", client }) {
     const yes = await confirm({
       title: `Remove ${driver.name}?`,
       description:
-        "They'll stop receiving pickup offers. Trips they already drove stay on record.",
+        "They can no longer be assigned to pickups. Trips they already drove stay on record.",
       confirmLabel: "Remove",
       danger: true,
     });
@@ -131,18 +127,6 @@ export default function DriversPanel({ scope = "hotel", client }) {
     }
   };
 
-  const getLink = async (driver, rotate = false) => {
-    try {
-      const { data } = await api.get(
-        `${base}/${driver._id}/link${rotate ? "?rotate=1" : ""}`,
-      );
-      setLinkFor({ driver, link: data.link });
-      if (rotate) toast.success("New link issued — the old one stopped working");
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Couldn't get that link");
-    }
-  };
-
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
@@ -152,8 +136,8 @@ export default function DriversPanel({ scope = "hotel", client }) {
           </h2>
           <p className="text-sm text-ink-500 mt-0.5 max-w-xl">
             {scope === "platform"
-              ? "Dispatched for hotels that don't run their own taxi service. We offer a job to one driver at a time and move on if they don't answer."
-              : "When a guest asks for an airport pickup we offer the job to your drivers, one at a time, and give the guest whoever accepts."}
+              ? "Used for hotels that don't run their own taxi service. Assign one to a pickup and the guest gets their name, car and WhatsApp number."
+              : "When a guest books an airport pickup, assign one of these drivers to it and the guest gets their name, car and WhatsApp number automatically."}
           </p>
         </div>
         <button
@@ -173,7 +157,7 @@ export default function DriversPanel({ scope = "hotel", client }) {
         <EmptyState
           icon={Car}
           title="No drivers yet"
-          description="Add a driver and we'll send them airport pickups as they come in."
+          description="Add a driver so you can assign them to airport pickups."
         />
       ) : (
         <div className="space-y-2.5">
@@ -205,13 +189,6 @@ export default function DriversPanel({ scope = "hotel", client }) {
                 </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => getLink(d)}
-                  title="Their dispatch link"
-                  className="p-2 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
-                >
-                  <Link2 className="w-4 h-4" />
-                </button>
                 <button
                   onClick={() =>
                     setEditing({
@@ -249,59 +226,7 @@ export default function DriversPanel({ scope = "hotel", client }) {
         />
       )}
 
-      {linkFor && (
-        <LinkModal
-          data={linkFor}
-          onRotate={() => getLink(linkFor.driver, true)}
-          onClose={() => setLinkFor(null)}
-        />
-      )}
     </div>
-  );
-}
-
-/* ── The driver's private link ─────────────────────────────────────────── */
-function LinkModal({ data, onRotate, onClose }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(data.link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Couldn't copy — select the link and copy it by hand.");
-    }
-  };
-  return (
-    <Modal open onClose={onClose} title={`${data.driver.name}'s link`}>
-      <p className="text-sm text-ink-500">
-        Send this to {data.driver.name}. They open it to accept or pass on
-        pickups — no app, no password. Anyone with the link can answer as them,
-        so if they lose their phone, issue a new one.
-      </p>
-      <div className="mt-3 flex items-center gap-2">
-        <input
-          readOnly
-          value={data.link}
-          onClick={(e) => e.target.select()}
-          className="input flex-1 text-xs font-mono"
-        />
-        <button
-          onClick={copy}
-          className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-3.5 py-2.5 transition shrink-0"
-        >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <button
-        onClick={onRotate}
-        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-ink-500 hover:text-rose-600 transition"
-      >
-        <RefreshCw className="w-3.5 h-3.5" />
-        Issue a new link (stops the old one)
-      </button>
-    </Modal>
   );
 }
 

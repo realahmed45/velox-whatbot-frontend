@@ -23,7 +23,6 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 const VerifyEmailPage = lazyWithRetry(() => import("@/pages/auth/VerifyEmailPage"));
 const InvitePage = lazyWithRetry(() => import("@/pages/auth/InvitePage"));
-const DriverPage = lazyWithRetry(() => import("@/pages/DriverPage"));
 const PublicBookingPage = lazyWithRetry(
   () => import("@/pages/PublicBookingPage"),
 );
@@ -148,9 +147,6 @@ export default function App() {
               <Route path="/admin" element={<AdminPage />} />
               {/* Team-invite landing (self-redirects to login if needed) */}
               <Route path="/invite" element={<InvitePage />} />
-              {/* A driver's job page. Public by design — the token in the URL
-                  is the credential; a driver has no Botlify account. */}
-              <Route path="/drive/:token" element={<DriverPage />} />
               {/* The hotel's own booking page. Public, no OTA, no commission —
                   this is the link a hotel shares with its own guests. */}
               <Route path="/book/:slug" element={<PublicBookingPage />} />
