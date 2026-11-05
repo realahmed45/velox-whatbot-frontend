@@ -1,13 +1,15 @@
 /**
- * Settings — one screen, every knob, behind tabs.
+ * Settings — everything a hotelier needs to run Botlify, in one place.
  *
- * Folds in what used to be separate sidebar destinations: Property & Rooms,
- * Channels, Transfers, the AI Assistant config, Team and Billing — plus the
- * hotel Extras catalog and smart-pricing guard rails.
+ * Hotels-only: WhatsApp is the single guest messaging channel (OTA guest
+ * messages from Booking.com / Airbnb arrive through the booking-channel
+ * connection on the same WhatsApp tab). Instagram / Messenger / Telegram tools
+ * and the old developer-ish knobs are no longer surfaced here; their pages and
+ * routes still exist, they're just not part of Settings.
  *
- * Instagram is no longer a top-level concern: connecting it happens on the
- * Channels board alongside WhatsApp, Messenger and Telegram, and its delivery
- * diagnostics live in ChannelHealth under that same tab.
+ * Layout: a grouped left rail on desktop, a scrollable chip strip on phones.
+ * Tab ids are the ?tab= deep-link contract (CommandPalette, ConnectChannelGate
+ * and the AI Assistant link to them) — keep them stable.
  */
 import { useEffect, useState, lazy, Suspense } from "react";
 import api from "@/services/api";
@@ -16,9 +18,7 @@ import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 import {
   Save,
-  Instagram,
   Loader2,
-  RefreshCw,
   Shield,
   Lock,
   KeyRound,
@@ -28,7 +28,6 @@ import {
   CheckCircle2,
   LifeBuoy,
   Hotel,
-  Radio,
   Bot,
   PackagePlus,
   Tag,
@@ -36,11 +35,17 @@ import {
   Users,
   CreditCard,
   SlidersHorizontal,
+  MessageCircle,
+  PauseCircle,
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+  Clock,
 } from "lucide-react";
 import HolidayModeCard from "@/components/HolidayModeCard";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import ExtrasSettings from "@/pages/settings/ExtrasSettings";
 import PricingSettings from "@/pages/settings/PricingSettings";
@@ -56,15 +61,8 @@ const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 
 const SUPPORT_EMAIL = "contactus@botlify.site";
 
-// Tabs whose content is a whole page lifted in from a former route.
-const EMBEDDED = [
-  "property",
-  "channels",
-  "assistant",
-  "transfers",
-  "team",
-  "billing",
-];
+// Embedded pages that render their own page title.
+const OWN_HEADER = ["property", "transfers", "assistant"];
 
 function TabFallback() {
   return (
@@ -74,156 +72,392 @@ function TabFallback() {
   );
 }
 
+/** Section title + one plain-English line, shown above every tab's content. */
+function SectionHeader({ title, subtitle }) {
+  return (
+    <div className="mb-6">
+      <h2 className="text-[17px] font-semibold tracking-tight text-ink-900">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-[13px] text-ink-500 mt-1 max-w-2xl">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { workspace, fetchWorkspace } = useWorkspaceStore();
   const { activeWorkspace } = useAuthStore();
   const { isOwner } = usePermissions();
-  // ?tab= keeps a tab shareable/deep-linkable now that these are no longer
-  // routes of their own.
   const [params, setParams] = useSearchParams();
+  const refresh = () => fetchWorkspace(activeWorkspace);
 
-  // One horizontal row. Labels are short on purpose so all ten fit a laptop
-  // width without scrolling; `group` only drives a hairline divider between
-  // clusters, never a heading or extra row. Ids are the ?tab= contract and
-  // never change.
-  const TABS = [
-    { id: "property", label: "Property", icon: Hotel, group: 0 },
-    { id: "extras", label: "Extras", icon: PackagePlus, group: 0 },
-    { id: "transfers", label: "Transfers", icon: Car, group: 0 },
-    { id: "pricing", label: "Pricing", icon: Tag, group: 0 },
-    { id: "channels", label: "Channels", icon: Radio, group: 1 },
-    { id: "assistant", label: "AI Assistant", icon: Bot, group: 1 },
-    ...(isOwner ? [{ id: "team", label: "Team", icon: Users, group: 2 }] : []),
-    ...(isOwner
-      ? [{ id: "billing", label: "Billing", icon: CreditCard, group: 2 }]
-      : []),
-    { id: "general", label: "General", icon: SlidersHorizontal, group: 2 },
-    { id: "security", label: "Security", icon: Shield, group: 2 },
+  // Grouped navigation. `subtitle` doubles as the section's one-line intro.
+  const GROUPS = [
+    {
+      label: "Your hotel",
+      tabs: [
+        {
+          id: "general",
+          label: "Hotel details",
+          icon: SlidersHorizontal,
+          subtitle:
+            "Your hotel's name, timezone and the language your AI answers in.",
+        },
+        {
+          id: "property",
+          label: "Property & rooms",
+          icon: Hotel,
+          subtitle:
+            "Rooms, rates, photos, address and the booking sites your rooms sell on.",
+        },
+        {
+          id: "extras",
+          label: "Extras",
+          icon: PackagePlus,
+          subtitle:
+            "Add-ons guests can buy — breakfast, late check-out, tours and more.",
+        },
+        {
+          id: "transfers",
+          label: "Airport transfers",
+          icon: Car,
+          subtitle: "Taxi and pick-up prices your AI can offer and book.",
+        },
+        {
+          id: "pricing",
+          label: "Pricing",
+          icon: Tag,
+          subtitle:
+            "Direct-booking prices and the limits smart pricing must stay within.",
+        },
+      ],
+    },
+    {
+      label: "Guests & AI",
+      tabs: [
+        {
+          id: "channels",
+          label: "WhatsApp",
+          icon: MessageCircle,
+          subtitle:
+            "Connect your WhatsApp number, switch AI replies on or off, and set when it answers.",
+        },
+        {
+          id: "assistant",
+          label: "AI assistant",
+          icon: Bot,
+          subtitle: "How your AI concierge sounds and when it hands over to you.",
+        },
+      ],
+    },
+    {
+      label: "Account",
+      tabs: [
+        ...(isOwner
+          ? [
+              {
+                id: "team",
+                label: "Team",
+                icon: Users,
+                subtitle: "Invite staff and choose what they can see.",
+              },
+              {
+                id: "billing",
+                label: "Billing & plan",
+                icon: CreditCard,
+                subtitle: "Your plan, payment method and invoices.",
+              },
+            ]
+          : []),
+        {
+          id: "security",
+          label: "Account & security",
+          icon: Shield,
+          subtitle: "Your login, password, and signing out.",
+        },
+      ],
+    },
   ];
+  const TABS = GROUPS.flatMap((g) => g.tabs);
 
   const urlTab = params.get("tab");
   const tab = TABS.some((t) => t.id === urlTab) ? urlTab : "property";
-  const setTab = (id) => setParams(id === "property" ? {} : { tab: id }, { replace: true });
+  const current = TABS.find((t) => t.id === tab);
+  const setTab = (id) =>
+    setParams(id === "property" ? {} : { tab: id }, { replace: true });
 
   return (
     <div className="min-h-full">
-      {/* Slim header + tab row, one light surface. Replaces the old dark hero
-          banner and the 280px left rail — the content pane below now gets the
-          full width. */}
-      <div className="border-b border-ink-100 bg-white">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Title row — a single compact line. */}
-          <div className="flex items-baseline gap-3 pt-5 pb-3">
-            <h1 className="text-[19px] font-semibold tracking-tight text-ink-900">
-              Settings
-            </h1>
-            <p className="hidden sm:block text-[13px] font-light text-ink-400 truncate">
-              Property, channels, assistant and account
-            </p>
-          </div>
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-5 lg:mb-7">
+          <h1 className="text-[22px] font-semibold tracking-tight text-ink-900">
+            Settings
+          </h1>
+          <p className="text-[13px] text-ink-500 mt-0.5">
+            Your hotel, WhatsApp, AI assistant and account.
+          </p>
+        </div>
 
-          {/* Tabs: all ten in one row on desktop, wrapping cleanly below that.
-              On phones it becomes an edge-to-edge scrollable strip so nothing
-              is ever cut off. */}
+        <div className="lg:flex lg:gap-8">
+          {/* Left rail (desktop) / chip strip (phones & tablets). */}
           <nav
             aria-label="Settings sections"
-            className="-mx-4 sm:mx-0 px-4 sm:px-0 flex flex-nowrap sm:flex-wrap items-center gap-x-0.5 gap-y-1 overflow-x-auto sm:overflow-visible no-scrollbar"
+            className="lg:w-[230px] lg:shrink-0 mb-6 lg:mb-0"
           >
-            {TABS.map((t, i) => {
-              const Icon = t.icon;
-              const active = tab === t.id;
-              const newGroup = i > 0 && t.group !== TABS[i - 1].group;
-              return (
-                <div key={t.id} className="flex items-center shrink-0">
-                  {newGroup && (
-                    <span
-                      aria-hidden="true"
-                      className="hidden lg:block w-px h-4 bg-ink-100 mx-2"
-                    />
-                  )}
+            {/* Phones/tablets: one scrollable row of chips. */}
+            <div className="lg:hidden -mx-4 px-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                const active = tab === t.id;
+                return (
                   <button
+                    key={t.id}
                     onClick={() => setTab(t.id)}
                     aria-current={active ? "page" : undefined}
-                    className={`relative flex items-center gap-1.5 whitespace-nowrap px-2.5 lg:px-3 pb-2.5 pt-1 text-[13px] transition-colors ${
+                    className={`shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[13px] transition ${
                       active
-                        ? "font-medium text-ink-900"
-                        : "font-light text-ink-500 hover:text-ink-800"
+                        ? "border-brand-200 bg-brand-50 text-brand-700 font-medium"
+                        : "border-ink-100 bg-white text-ink-600"
                     }`}
                   >
-                    <Icon
-                      className={`w-[15px] h-[15px] shrink-0 transition-colors ${
-                        active ? "text-brand-500" : "text-ink-400"
-                      }`}
-                      strokeWidth={1.75}
-                    />
+                    <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
                     {t.label}
-                    <span
-                      aria-hidden="true"
-                      className={`absolute left-1.5 right-1.5 lg:left-2 lg:right-2 -bottom-px h-0.5 rounded-full transition-opacity ${
-                        active ? "bg-brand-500 opacity-100" : "opacity-0"
-                      }`}
-                    />
                   </button>
+                );
+              })}
+            </div>
+
+            {/* Desktop: grouped vertical list, sticky while scrolling. */}
+            <div className="hidden lg:block sticky top-6 space-y-5">
+              {GROUPS.filter((g) => g.tabs.length).map((g) => (
+                <div key={g.label}>
+                  <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+                    {g.label}
+                  </p>
+                  <div className="space-y-0.5">
+                    {g.tabs.map((t) => {
+                      const Icon = t.icon;
+                      const active = tab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => setTab(t.id)}
+                          aria-current={active ? "page" : undefined}
+                          className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13.5px] transition ${
+                            active
+                              ? "bg-brand-50 text-ink-900 font-medium"
+                              : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+                          }`}
+                        >
+                          <Icon
+                            className={`w-4 h-4 shrink-0 ${
+                              active ? "text-brand-500" : "text-ink-400"
+                            }`}
+                            strokeWidth={1.75}
+                          />
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </nav>
+
+          {/* Content pane. Embedded pages keep their own inner layouts; the
+              .settings-embed class only neutralises their outer max-width. */}
+          <main className="flex-1 min-w-0">
+            {/* Pages lifted in from former routes already carry their own
+                title, so only the native sections get one here. */}
+            {!OWN_HEADER.includes(tab) && (
+              <SectionHeader title={current?.label} subtitle={current?.subtitle} />
+            )}
+
+            <Suspense fallback={<TabFallback />}>
+              {tab === "general" && (
+                <div className="max-w-3xl">
+                  <GeneralSettings workspace={workspace} onSave={refresh} />
+                </div>
+              )}
+              {tab === "property" && (
+                <div className="settings-embed">
+                  <PropertyPage />
+                </div>
+              )}
+              {tab === "extras" && <ExtrasSettings />}
+              {tab === "transfers" && (
+                <div className="settings-embed">
+                  <TransfersPage />
+                </div>
+              )}
+              {tab === "pricing" && <PricingSettings />}
+
+              {tab === "channels" && (
+                <div className="space-y-6">
+                  <div className="max-w-3xl space-y-6">
+                    <WhatsAppAiToggle workspace={workspace} onSave={refresh} />
+                  </div>
+                  <div className="settings-embed">
+                    <ChannelsPage hideHeader />
+                  </div>
+                  <div className="max-w-3xl space-y-6">
+                    <ReplyTimingSettings workspace={workspace} onSave={refresh} />
+                    <HolidayModeCard workspace={workspace} onSave={refresh} />
+                  </div>
+                </div>
+              )}
+              {tab === "assistant" && (
+                <div className="settings-embed">
+                  <IgAiBotPage />
+                </div>
+              )}
+
+              {tab === "team" && isOwner && (
+                <div className="settings-embed">
+                  <TeamPage />
+                </div>
+              )}
+              {tab === "billing" && isOwner && (
+                <div className="settings-embed">
+                  <BillingPage />
+                </div>
+              )}
+              {tab === "security" && (
+                <div className="max-w-3xl">
+                  <SecuritySettings
+                    onGoToTeam={isOwner ? () => setTab("team") : undefined}
+                  />
+                </div>
+              )}
+            </Suspense>
+          </main>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Content pane — full width now, capped at a comfortable reading width
-          and given one consistent inset. Embedded pages keep their own inner
-          layouts; we only neutralise their duplicate outer max-width. */}
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <Suspense fallback={<TabFallback />}>
-          {EMBEDDED.includes(tab) && (
-            <div className="settings-embed">
-              {tab === "property" && <PropertyPage />}
-              {tab === "channels" && (
-                <>
-                  <ChannelsPage />
-                  {/* Instagram-only delivery tools, tucked under the board. */}
-                  <div className="mt-6">
-                    <ChannelHealth
-                      workspace={workspace}
-                      onSave={() => fetchWorkspace(activeWorkspace)}
-                    />
-                  </div>
-                </>
-              )}
-              {tab === "assistant" && <IgAiBotPage />}
-              {tab === "transfers" && <TransfersPage />}
-              {tab === "team" && isOwner && <TeamPage />}
-              {tab === "billing" && isOwner && <BillingPage />}
+/**
+ * WhatsApp AI replies — the one switch a hotelier reaches for when they want
+ * to answer guests themselves. Writes aiSettings.whatsappAiEnabled through the
+ * dotted-key path on PUT /workspaces/:id (so the rest of aiSettings is never
+ * touched). Off = guest messages still land in the Inbox; nothing automated is
+ * sent on WhatsApp.
+ */
+function WhatsAppAiToggle({ workspace, onSave }) {
+  const stored = workspace?.aiSettings?.whatsappAiEnabled !== false;
+  const [on, setOn] = useState(stored);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setOn(stored);
+  }, [stored]);
+
+  // Other switches that silently stop every reply — surfaced so "on" is honest.
+  const automationOff = workspace?.settings?.automationEnabled === false;
+  const assistantOff = workspace?.aiSettings?.enabled === false;
+
+  const toggle = async () => {
+    if (!workspace?._id || saving) return;
+    const next = !on;
+    setOn(next);
+    setSaving(true);
+    try {
+      await api.put(`/workspaces/${workspace._id}`, {
+        "aiSettings.whatsappAiEnabled": next,
+      });
+      // The legacy global automation switch drops guest messages entirely when
+      // off and no longer has its own control — make sure it's on.
+      if (next && automationOff) {
+        await api.put("/instagram/settings", { automationEnabled: true });
+      }
+      toast.success(next ? "AI replies are on" : "AI replies paused");
+      onSave?.();
+    } catch (err) {
+      setOn(!next);
+      toast.error(err.response?.data?.message || "Couldn't update AI replies");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className={`card p-4 sm:p-5 border ${
+        on ? "border-emerald-200" : "border-amber-200"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        <span
+          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+            on ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+          }`}
+        >
+          {on ? (
+            <Sparkles className="w-5 h-5" />
+          ) : (
+            <PauseCircle className="w-5 h-5" />
+          )}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h3 className="text-[15px] font-semibold text-ink-900">
+                WhatsApp AI replies
+              </h3>
+              <p className="text-[13px] text-ink-500 mt-0.5">
+                {on
+                  ? "Your AI answers guests on WhatsApp automatically, day and night."
+                  : "AI is paused — you'll reply to guests yourself from the Inbox."}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={on}
+              aria-label="WhatsApp AI replies"
+              onClick={toggle}
+              disabled={saving || !workspace?._id}
+              className={`relative w-14 h-8 rounded-full transition-colors shrink-0 disabled:opacity-60 ${
+                on ? "bg-emerald-500" : "bg-ink-300"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                  on ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {!on && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800">
+              <span>
+                Guest messages still arrive in your Inbox — nothing is sent
+                automatically until you switch this back on.
+              </span>
+              <Link
+                to="/dashboard/inbox"
+                className="inline-flex items-center gap-1 font-semibold text-amber-900 hover:underline"
+              >
+                Open Inbox <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           )}
-          {tab === "extras" && <ExtrasSettings />}
-          {tab === "pricing" && <PricingSettings />}
-        </Suspense>
 
-        {tab === "general" && (
-          <div className="max-w-3xl space-y-6">
-            <GeneralSettings
-              workspace={workspace}
-              onSave={() => fetchWorkspace(activeWorkspace)}
-            />
-            <HolidayModeCard
-              workspace={workspace}
-              onSave={() => fetchWorkspace(activeWorkspace)}
-            />
-            <AutomationSettings
-              workspace={workspace}
-              onSave={() => fetchWorkspace(activeWorkspace)}
-            />
-          </div>
-        )}
-        {tab === "security" && (
-          <div className="max-w-3xl">
-            <SecuritySettings
-              onGoToTeam={isOwner ? () => setTab("team") : undefined}
-            />
-          </div>
-        )}
+          {on && assistantOff && (
+            <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
+              <span>
+                Your AI assistant is switched off in the AI assistant tab, so it
+                won't reply yet. Turn it on there too.
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -437,24 +671,6 @@ function SecuritySettings({ onGoToTeam }) {
         </button>
       </div>
 
-      {/* Session */}
-      <div className="card p-4 sm:p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <LogOut className="w-4 h-4 text-ink-500" />
-          <h3 className="text-sm font-semibold text-ink-900">Session</h3>
-        </div>
-        <p className="text-xs text-ink-500">
-          Sign out of your hotel account on this device. Bookings, guest
-          messages and your channels keep running while you're signed out.
-        </p>
-        <button
-          onClick={doLogout}
-          className="inline-flex items-center gap-2 rounded-xl border border-red-200 text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition"
-        >
-          <LogOut className="w-4 h-4" /> Log out
-        </button>
-      </div>
-
       {/* Who else can sign in — owners only; staff can't manage the team. */}
       {onGoToTeam && (
       <div className="card p-4 sm:p-5">
@@ -495,6 +711,49 @@ function SecuritySettings({ onGoToTeam }) {
           </a>
           . We usually reply within a day.
         </p>
+      </div>
+
+      {/* Danger zone */}
+      <div className="rounded-2xl border border-red-200 bg-red-50/40 p-4 sm:p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-500" />
+          <h3 className="text-sm font-semibold text-red-700">Danger zone</h3>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-ink-900">Log out</p>
+            <p className="text-xs text-ink-500">
+              Sign out on this device. Bookings and guest messages keep running
+              while you're signed out.
+            </p>
+          </div>
+          <button
+            onClick={doLogout}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition shrink-0"
+          >
+            <LogOut className="w-4 h-4" /> Log out
+          </button>
+        </div>
+
+        {onGoToTeam && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-red-100 pt-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-ink-900">Delete a property</p>
+              <p className="text-xs text-ink-500">
+                Permanently removes a property and its guests, messages and
+                settings. Cancel its plan under Billing first — deleting doesn't
+                stop billing.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/accounts")}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition shrink-0"
+            >
+              Manage properties <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -604,152 +863,16 @@ function GeneralSettings({ workspace, onSave }) {
 }
 
 /**
- * ChannelHealth — the Instagram-specific troubleshooting tools, kept because
- * they're genuinely useful, but no longer presented as the main event.
- *
- * Instagram is one of four messaging channels now. Connecting and disconnecting
- * every channel happens on the Channels board above (ChannelsPage); this panel
- * sits underneath it and only appears once Instagram is actually connected,
- * because the diagnose + webhook-resubscribe endpoints are Instagram-only. If a
- * hotel never connects Instagram they never see it.
- */
-function ChannelHealth({ workspace, onSave }) {
-  const ig = workspace?.instagram;
-  const [diagLoading, setDiagLoading] = useState(false);
-  const [diag, setDiag] = useState(null);
-  const [resubLoading, setResubLoading] = useState(false);
-
-  const runDiagnose = async () => {
-    setDiagLoading(true);
-    try {
-      const { data } = await api.get("/instagram/diagnose");
-      setDiag(data);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Diagnose failed");
-    } finally {
-      setDiagLoading(false);
-    }
-  };
-
-  const resubscribe = async () => {
-    setResubLoading(true);
-    try {
-      const { data } = await api.post("/instagram/webhook/resubscribe");
-      toast.success(data.message || "Webhook re-subscribed!");
-      onSave();
-      runDiagnose();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Resubscribe failed");
-    } finally {
-      setResubLoading(false);
-    }
-  };
-
-  // Instagram-only tools — nothing to show until Instagram is connected.
-  if (ig?.status !== "connected") return null;
-
-  return (
-    <div className="card p-4 sm:p-5 space-y-4">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <Instagram className="w-4.5 h-4.5" />
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-ink-900">
-              Instagram message delivery
-            </h3>
-            <p className="text-xs text-ink-500">
-              Not seeing guest DMs from{" "}
-              {ig?.username ? `@${ig.username}` : "Instagram"} in your inbox?
-              Check the connection here.
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={runDiagnose}
-          disabled={diagLoading}
-          className="flex items-center gap-1.5 text-xs font-semibold bg-ink-50 hover:bg-ink-100 border border-ink-200 px-3 py-1.5 rounded-lg transition disabled:opacity-60 shrink-0"
-        >
-          {diagLoading ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
-          ) : (
-            <RefreshCw className="w-3 h-3" />
-          )}
-          Run check
-        </button>
-      </div>
-
-      {diag && (
-        <div className="space-y-2">
-          {diag.checks?.map((c, i) => (
-            <div
-              key={i}
-              className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${c.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
-            >
-              <span className="mt-0.5 shrink-0">{c.ok ? "✅" : "⚠️"}</span>
-              <div>
-                <p className="font-medium">{c.label}</p>
-                {!c.ok && c.hint && (
-                  <p className="mt-0.5 text-amber-700">{c.hint}</p>
-                )}
-              </div>
-            </div>
-          ))}
-          {diag.checks?.some((c) => !c.ok) && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1.5">
-              <p className="font-semibold">
-                Guest messages aren't coming through. Try this:
-              </p>
-              <ol className="list-decimal list-inside space-y-1 pl-1">
-                <li>
-                  Make sure your hotel's Instagram is a{" "}
-                  <strong>Business account</strong>, not a personal one.
-                </li>
-                <li>
-                  Click <strong>Re-subscribe</strong> below to refresh the
-                  connection.
-                </li>
-                <li>
-                  Send a test DM from another account — it should land in your
-                  inbox within a few seconds.
-                </li>
-                <li>
-                  Still stuck? Disconnect and reconnect Instagram on the
-                  Channels board above.
-                </li>
-              </ol>
-            </div>
-          )}
-        </div>
-      )}
-
-      <button
-        onClick={resubscribe}
-        disabled={resubLoading}
-        className="w-full flex items-center justify-center gap-2 bg-ink-900 hover:bg-ink-800 text-white text-xs font-semibold py-2.5 rounded-lg transition disabled:opacity-60"
-      >
-        {resubLoading ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-        ) : (
-          <RefreshCw className="w-3.5 h-3.5" />
-        )}
-        Re-subscribe to Instagram messages
-      </button>
-    </div>
-  );
-}
-
-/**
- * Reply behaviour — the global guard rails on the AI concierge, applied on every
- * connected channel (WhatsApp, Instagram, Messenger, Telegram).
+ * Reply timing — how quickly and during which hours the AI answers guests.
+ * The on/off switch now lives in WhatsAppAiToggle above; the old global
+ * "automationEnabled" toggle is gone because switching it off dropped guest
+ * messages entirely instead of leaving them in the Inbox.
  *
  * Persists to `PUT /instagram/settings` — the route name is historical; it
- * writes workspace.settings, which every channel's reply pipeline reads.
+ * writes workspace.settings, which the reply pipeline reads.
  */
-function AutomationSettings({ workspace, onSave }) {
+function ReplyTimingSettings({ workspace, onSave }) {
   const [form, setForm] = useState({
-    automationEnabled: workspace?.settings?.automationEnabled ?? true,
     minDelayMinutes: workspace?.settings?.minDelayMinutes ?? 1,
     maxDelayMinutes: workspace?.settings?.maxDelayMinutes ?? 5,
     activeHourStart: workspace?.settings?.activeHourStart ?? 8,
@@ -760,7 +883,6 @@ function AutomationSettings({ workspace, onSave }) {
   useEffect(() => {
     if (workspace?.settings)
       setForm({
-        automationEnabled: workspace.settings.automationEnabled ?? true,
         minDelayMinutes: workspace.settings.minDelayMinutes ?? 1,
         maxDelayMinutes: workspace.settings.maxDelayMinutes ?? 5,
         activeHourStart: workspace.settings.activeHourStart ?? 8,
@@ -784,42 +906,17 @@ function AutomationSettings({ workspace, onSave }) {
   return (
     <div className="card p-4 sm:p-5 space-y-5">
       <div>
-        <h3 className="text-sm font-semibold text-ink-900">Reply behaviour</h3>
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-ink-500" />
+          <h3 className="text-sm font-semibold text-ink-900">Reply timing</h3>
+        </div>
         <p className="text-xs text-ink-500 mt-0.5">
-          Applies to your AI concierge on every connected channel — WhatsApp,
-          Instagram, Messenger and Telegram.
+          How fast your AI answers, and during which hours.
         </p>
       </div>
 
-      {/* Master toggle */}
-      <div className="flex items-center justify-between gap-4 py-2 border-t border-ink-100 pt-4">
-        <div className="min-w-0">
-          <p className="font-medium text-ink-800 text-sm">
-            Let the AI answer guests
-          </p>
-          <p className="text-xs text-ink-500">
-            Turn this off and every message waits for a human in the inbox.
-          </p>
-        </div>
-        <button
-          onClick={() =>
-            setForm((f) => ({ ...f, automationEnabled: !f.automationEnabled }))
-          }
-          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-            form.automationEnabled ? "bg-brand-600" : "bg-ink-300"
-          }`}
-          aria-label="Toggle AI replies"
-        >
-          <span
-            className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-              form.automationEnabled ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
-        </button>
-      </div>
-
       {/* Delay range */}
-      <div>
+      <div className="border-t border-ink-100 pt-4">
         <label className="label">Reply delay range (minutes)</label>
         <p className="text-xs text-ink-400 mb-3">
           A short random pause before the AI replies, so answers feel like your

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, REQUIRE_EMAIL_VERIFICATION } from "@/store/authStore";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
@@ -58,7 +58,11 @@ export default function RegisterPage() {
         "cf-turnstile-token": captcha,
       });
       login(data.user, data.token, data.refreshToken);
-      toast.success("Account created — check your email for a code.");
+      toast.success(
+        REQUIRE_EMAIL_VERIFICATION
+          ? "Account created — check your email for a code."
+          : "Account created — let's set up your hotel.",
+      );
 
       // If they picked a plan on /pricing before signup, activate it now
       if (planHint) {
@@ -75,7 +79,13 @@ export default function RegisterPage() {
       // Email/password signups verify a 4-digit code before onboarding.
       // Carry `next` (e.g. a team-invite link) through so the invitee lands
       // back on the invite page once verified.
-      navigate("/verify-email", { state: { email: form.email, next } });
+      // (Only when REQUIRE_EMAIL_VERIFICATION is on — otherwise straight on to
+      // plan selection + onboarding, exactly where a verified user would land.)
+      if (REQUIRE_EMAIL_VERIFICATION) {
+        navigate("/verify-email", { state: { email: form.email, next } });
+      } else {
+        navigate(next || "/onboarding/pricing", { replace: true });
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {

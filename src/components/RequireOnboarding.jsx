@@ -15,7 +15,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, REQUIRE_EMAIL_VERIFICATION } from "@/store/authStore";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 
 const EXEMPT_PATHS = [
@@ -64,7 +64,7 @@ export default function RequireOnboarding({ children }) {
 
   // Email/password signups must confirm their 4-digit code first. Google
   // signups arrive with isEmailVerified: true, so they pass straight through.
-  if (user && user.isEmailVerified === false) {
+  if (REQUIRE_EMAIL_VERIFICATION && user && user.isEmailVerified === false) {
     return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
   }
 

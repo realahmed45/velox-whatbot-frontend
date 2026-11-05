@@ -1249,8 +1249,8 @@ function AiBotHelp() {
   const tips = [
     "Your AI assistant replies when no rule matches an incoming guest message.",
     "Add your website and FAQs under Knowledge so answers match your hotel.",
-    "It answers guests on every connected channel 24/7 — in the tone you set.",
-    "Instagram and Messenger only allow replies within 24 hours of a guest's last message.",
+    "It answers guests on WhatsApp 24/7 — in the tone you set.",
+    "WhatsApp only allows free replies within 24 hours of a guest's last message.",
     "Watch the readiness meter, then Save before turning the assistant Live.",
   ];
 

@@ -10,6 +10,16 @@ import { persist } from "zustand/middleware";
  */
 export const DEV_TOKEN = "dev-ui-token";
 
+/**
+ * Email verification gate. OFF for now: new signups go straight into onboarding
+ * without the 4-digit code step. Set VITE_REQUIRE_EMAIL_VERIFICATION=true (and
+ * REQUIRE_EMAIL_VERIFICATION=true on the backend) to bring it back. The
+ * /verify-email route stays in place either way.
+ */
+export const REQUIRE_EMAIL_VERIFICATION =
+  String(import.meta.env.VITE_REQUIRE_EMAIL_VERIFICATION || "").toLowerCase() ===
+  "true";
+
 const DEV_USER = {
   _id: "dev-user",
   name: "Dev User",

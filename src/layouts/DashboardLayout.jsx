@@ -12,12 +12,14 @@ import HelpWidget from "@/components/layout/HelpWidget";
 import OfflineBanner from "@/components/layout/OfflineBanner";
 import ShortcutsHelp from "@/components/layout/ShortcutsHelp";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import TrainingReminder from "@/components/TrainingReminder";
 
 const ROUTE_TITLES = {
   "/dashboard": "Today",
   "/dashboard/bookings": "Bookings",
   "/dashboard/calendar": "Calendar",
   "/dashboard/guests": "Guests",
+  "/dashboard/train": "Train your AI",
   "/dashboard/inbox": "Inbox",
   "/dashboard/contacts": "Contacts",
   "/dashboard/automation": "Automations",
@@ -148,6 +150,7 @@ export default function DashboardLayout() {
           className="flex-1 overflow-auto pb-16 lg:pb-0"
           tabIndex={-1}
         >
+          <TrainingReminder />
           <ErrorBoundary>
             <AnimatePresence mode="wait">
               <motion.div

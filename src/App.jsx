@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense } from "react";
 import lazyWithRetry from "@/utils/lazyWithRetry";
 import { Toaster } from "react-hot-toast";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, REQUIRE_EMAIL_VERIFICATION } from "@/store/authStore";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
@@ -26,6 +26,8 @@ const InvitePage = lazyWithRetry(() => import("@/pages/auth/InvitePage"));
 const PublicBookingPage = lazyWithRetry(
   () => import("@/pages/PublicBookingPage"),
 );
+// A hotel's own website at botlify.site/<slug> (public, no auth).
+const PublicSitePage = lazyWithRetry(() => import("@/pages/PublicSitePage"));
 const AccountPickerPage = lazyWithRetry(
   () => import("@/pages/auth/AccountPickerPage"),
 );
@@ -69,6 +71,9 @@ const BookingsPage = lazyWithRetry(() => import("@/pages/hotel/BookingsPage"));
 const PropertyPage = lazyWithRetry(() => import("@/pages/hotel/PropertyPage"));
 const TransfersPage = lazyWithRetry(() => import("@/pages/hotel/TransfersPage"));
 const ChannelsPage = lazyWithRetry(() => import("@/pages/hotel/ChannelsPage"));
+const ManageWebsitePage = lazyWithRetry(
+  () => import("@/pages/website/ManageWebsitePage"),
+);
 
 // Consultant program
 const ConsultantsLandingPage = lazyWithRetry(
@@ -116,7 +121,7 @@ const GuestRoute = ({ children }) => {
   if (!token) return children;
   // A logged-in but unverified email/password user must finish the 4-digit
   // code step before entering the app — never bounce them to the dashboard.
-  if (user && user.isEmailVerified === false) {
+  if (REQUIRE_EMAIL_VERIFICATION && user && user.isEmailVerified === false) {
     return <Navigate to="/verify-email" replace state={{ email: user.email }} />;
   }
   return <Navigate to="/dashboard" replace />;
@@ -229,6 +234,8 @@ export default function App() {
                 <Route path="property" element={<PropertyPage />} />
                 <Route path="transfers" element={<TransfersPage />} />
                 <Route path="channels" element={<ChannelsPage />} />
+                {/* The hotel's own website — design, content, gallery. */}
+                <Route path="website" element={<ManageWebsitePage />} />
 
                 {/* Consultant program */}
                 <Route path="consultant" element={<ConsultantDashboardPage />} />
@@ -428,6 +435,14 @@ export default function App() {
                   element={<ReactivatePage />}
                 />
               </Route>
+
+              {/* Hotel websites: botlify.site/<slug>[/<page>]. Dynamic
+                  segments rank below every static route above, so app pages
+                  always win; an unknown slug renders the 404 page itself. */}
+              <Route path="/site/:slug" element={<PublicSitePage />} />
+              <Route path="/site/:slug/:page" element={<PublicSitePage />} />
+              <Route path="/:slug" element={<PublicSitePage />} />
+              <Route path="/:slug/:page" element={<PublicSitePage />} />
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFoundPage />} />

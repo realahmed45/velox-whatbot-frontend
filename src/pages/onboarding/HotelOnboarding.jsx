@@ -5,22 +5,29 @@
  * ideas, and this copies all three:
  *
  *   1. Three named phases, shown up front so the end is visible from the start:
- *      "Tell us about your hotel" → "Make it stand out" → "Finish up".
+ *      "Tell us about your hotel" → "Make it stand out" → "Your website & AI".
  *   2. ONE question per screen. Big tappable cards and +/− steppers instead of
  *      forms, so nothing is ever a wall of fields.
  *   3. A fixed footer: Back on the left, Next on the right, and a three-part
  *      progress bar above it.
  *
- * The old wizard asked ~16 property fields and ~10 per room type. This asks
- * only what a guest-facing AI and a calendar actually need on day one — type,
- * name, location, rooms with a count and a price — and leaves everything else
- * to Settings, where it already lives.
+ * Two lanes into the same finish:
  *
- * Saving happens as you go (the property when the location is confirmed, the
- * rooms when they're confirmed) so a refresh or a WhatsApp OAuth round trip
- * never loses work. Answers are mirrored to sessionStorage, and the OAuth
- * return URL (?step=messaging, hardcoded in channelController.js) lands back
- * on the WhatsApp screen.
+ *   Fast lane — already on Airbnb / Booking.com / Expedia: give us the listing
+ *   ID, we import the hotel and its rooms, show it all on one review screen
+ *   (every field editable), "All good" → straight to the website step.
+ *
+ *   Manual lane — type → name → location → rooms → pickups → website step.
+ *
+ * Then: choose a website design (full live previews) → WhatsApp number for
+ * the site → photos (or stock for now) → "your site is live at
+ * botlify.site/<slug>" → connect WhatsApp → done.
+ *
+ * Saving happens as you go so a refresh or a WhatsApp OAuth round trip never
+ * loses work. Answers are mirrored to sessionStorage, and the OAuth return URL
+ * (?step=messaging, hardcoded in channelController.js) lands back on the
+ * WhatsApp screen — screens are addressed by id, not index, so adding screens
+ * never breaks that.
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -29,11 +36,16 @@ import {
   Building2,
   Castle,
   Check,
+  CloudDownload,
+  Copy,
+  ExternalLink,
+  Globe,
   Home,
   Hotel,
   Loader2,
   Minus,
   Palmtree,
+  PenLine,
   Plus,
   Trash2,
   Users,
@@ -44,6 +56,11 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import OtaLogo from "@/components/OtaLogo";
 import WhatsAppConnectModal from "@/components/WhatsAppConnectModal";
 import { LIVE_OTA_CHANNELS } from "@/data/otaChannels";
+import TemplateGallery from "@/website/TemplateGallery";
+import SiteRenderer from "@/website/SiteRenderer";
+import { GalleryManager } from "@/website/editor";
+import { SITE_HOST, siteUrl, websiteApi } from "@/website/api";
+import { templateById } from "@/website/templates";
 
 const KEY = "botlify.onboarding.simple.v1";
 
@@ -66,28 +83,61 @@ const ID_HINT = {
 
 /**
  * The screens, in order. `phase` drives the three-part progress bar; `intro`
- * screens are the big phase title cards Airbnb shows between sections.
+ * screens are the big phase title cards Airbnb shows between sections. Which
+ * screen follows which is decided by nextOf() — the fast lane skips some.
  */
 const SCREENS = [
   { id: "welcome", phase: 0 },
   { id: "phase1", phase: 1, intro: true },
+  { id: "start", phase: 1 },
+  { id: "import", phase: 1 },
+  { id: "review", phase: 1 },
   { id: "type", phase: 1 },
   { id: "name", phase: 1 },
   { id: "location", phase: 1 },
   { id: "phase2", phase: 2, intro: true },
   { id: "rooms", phase: 2 },
+  { id: "pickup", phase: 2 },
   { id: "phase3", phase: 3, intro: true },
-  { id: "channels", phase: 3 },
-  { id: "pickup", phase: 3 },
+  { id: "template", phase: 3 },
+  { id: "whatsapp", phase: 3 },
+  { id: "photos", phase: 3 },
+  { id: "sitelive", phase: 3 },
   { id: "messaging", phase: 3 },
   { id: "done", phase: 3 },
 ];
-const indexOf = (id) => SCREENS.findIndex((s) => s.id === id);
+const indexOf = (id) => SCREENS.findIndex((x) => x.id === id);
+
+/** Where Next goes from each screen. */
+function nextOf(s) {
+  switch (s.screen) {
+    case "welcome": return "phase1";
+    case "phase1": return "start";
+    case "start": return s.path === "import" ? "import" : "type";
+    case "import": return "review";
+    case "review": return "phase3"; // fast lane: straight to the website
+    case "type": return "name";
+    case "name": return "location";
+    case "location": return "phase2";
+    case "phase2": return "rooms";
+    case "rooms": return "pickup";
+    case "pickup": return "phase3";
+    case "phase3": return "template";
+    case "template": return "whatsapp";
+    case "whatsapp": return "photos";
+    case "photos": return "sitelive";
+    case "sitelive": return "messaging";
+    case "messaging": return "done";
+    default: return "done";
+  }
+}
 
 const blankRoom = () => ({ name: "", units: 1, price: "" });
 
 const initial = () => ({
   screen: "welcome",
+  trail: [], // screens visited, for Back
+  path: null, // "import" | "manual"
   type: "",
   name: "",
   city: "",
@@ -96,10 +146,15 @@ const initial = () => ({
   currency: "IDR",
   rooms: [{ name: "Standard Room", units: 1, price: "" }],
   otas: {}, // { booking: "1234567", airbnb: "" }
+  imported: false,
   ownTaxi: null,
   driver: { name: "", phone: "" },
   propertyId: null,
   roomIds: [], // server ids, parallel to rooms[]
+  templateId: null,
+  siteSlug: null,
+  whatsapp: "",
+  photos: [], // the hotel's own photos for the website gallery
 });
 
 function load() {
@@ -134,6 +189,13 @@ export default function HotelOnboarding() {
   const [waOpen, setWaOpen] = useState(false);
   const [waConnected, setWaConnected] = useState(false);
   const [ready, setReady] = useState(false);
+  // Fast lane
+  const [importChoices, setImportChoices] = useState(null);
+  const [importError, setImportError] = useState("");
+  // Website
+  const [previewSite, setPreviewSite] = useState(null); // draft for template previews
+  const [liveSite, setLiveSite] = useState(null); // the generated site
+  const [choosing, setChoosing] = useState(null); // template being generated
 
   const set = (fields) =>
     setS((cur) => {
@@ -192,12 +254,45 @@ export default function HotelOnboarding() {
       .catch(() => {});
   }, [s.screen, waOpen]);
 
+  // The template gallery previews every design with the hotel's own details.
+  useEffect(() => {
+    if (s.screen !== "template" || previewSite) return;
+    websiteApi.draft().then(setPreviewSite).catch(() => {});
+  }, [s.screen, previewSite]);
+
+  // After a refresh mid-website, fetch the generated site again.
+  useEffect(() => {
+    if (!["whatsapp", "photos", "sitelive"].includes(s.screen) || liveSite) return;
+    websiteApi
+      .get()
+      .then((res) => {
+        if (!res.website) return;
+        setLiveSite(res.site);
+        if (!s.siteSlug) set({ siteSlug: res.website.slug });
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.screen, liveSite]);
+
   const go = (id) => {
-    set({ screen: id });
+    setS((cur) => {
+      const next = { ...cur, trail: [...(cur.trail || []), cur.screen].slice(-30), screen: id };
+      persist(next);
+      return next;
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const next = () => go(SCREENS[Math.min(idx + 1, SCREENS.length - 1)].id);
-  const back = () => go(SCREENS[Math.max(idx - 1, 0)].id);
+  const next = () => go(nextOf(s));
+  const back = () => {
+    setS((cur) => {
+      const trail = [...(cur.trail || [])];
+      const prev = trail.pop() || SCREENS[Math.max(indexOf(cur.screen) - 1, 0)].id;
+      const nextState = { ...cur, trail, screen: prev };
+      persist(nextState);
+      return nextState;
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // ── Saving ────────────────────────────────────────────────────────────
   const saveProperty = async () => {
@@ -217,7 +312,7 @@ export default function HotelOnboarding() {
     return id;
   };
 
-  const saveRooms = async () => {
+  const saveRooms = async (propertyId = s.propertyId) => {
     const ids = [...(s.roomIds || [])];
     for (let i = 0; i < s.rooms.length; i++) {
       const r = s.rooms[i];
@@ -226,14 +321,16 @@ export default function HotelOnboarding() {
         unitsCount: Math.max(1, Number(r.units) || 1),
         baseRate: Number(r.price),
         currency: s.currency,
-        maxAdults: 2,
-        maxOccupancy: 2,
       };
+      if (!ids[i]) {
+        payload.maxAdults = 2;
+        payload.maxOccupancy = 2;
+      }
       if (ids[i]) {
         await api.put(`/hotel/rooms/${ids[i]}`, payload);
       } else {
         const { data } = await api.post(
-          `/hotel/properties/${s.propertyId}/rooms`,
+          `/hotel/properties/${propertyId}/rooms`,
           payload,
         );
         ids[i] = (data?.roomType || data?.room)?._id;
@@ -248,14 +345,11 @@ export default function HotelOnboarding() {
     set({ roomIds: ids.slice(0, s.rooms.length) });
   };
 
-  const saveChannels = async () => {
-    const requestedOtas = Object.entries(s.otas)
-      .filter(([, v]) => String(v).trim())
-      .map(([k]) => k);
-    if (!requestedOtas.length) return;
-    // Recorded now; the connection itself is made through the channel
-    // manager, so it's tracked from here on and shown on the dashboard.
-    await api.put(`/hotel/properties/${s.propertyId}`, { requestedOtas });
+  // The OTAs the hotel told us they're on — recorded as intent, not state.
+  const saveChannels = async (propertyId = s.propertyId) => {
+    const requestedOtas = Object.keys(s.otas || {});
+    if (!requestedOtas.length || !propertyId) return;
+    await api.put(`/hotel/properties/${propertyId}`, { requestedOtas }).catch(() => {});
   };
 
   const savePickup = async () => {
@@ -272,6 +366,98 @@ export default function HotelOnboarding() {
     }
   };
 
+  // ── Fast lane: import from the OTA listing ────────────────────────────
+  const applyImport = (data) => {
+    const p = data.property || {};
+    const rts = (data.roomTypes || []).filter((r) => r.active !== false);
+    set({
+      imported: true,
+      propertyId: p._id,
+      name: p.name || s.name,
+      type: p.propertyType || s.type || "hotel",
+      city: p.city || "",
+      country: p.country || s.country,
+      address: p.address || "",
+      currency: p.currency || s.currency,
+      rooms: rts.length
+        ? rts.map((r) => ({ name: r.name, units: r.unitsCount || 1, price: r.baseRate ? String(r.baseRate) : "" }))
+        : s.rooms,
+      roomIds: rts.map((r) => r._id),
+    });
+    setImportChoices(null);
+    setImportError("");
+    go("review");
+  };
+
+  const doImport = async (providerPropertyId) => {
+    const requestedOtas = Object.keys(s.otas);
+    const otaPropertyId = Object.values(s.otas).map((v) => String(v).trim()).find(Boolean);
+    setBusy(true);
+    setImportError("");
+    try {
+      const { data } = await api.post("/hotel/connection/import", {
+        ...(providerPropertyId ? { providerPropertyId } : { otaPropertyId }),
+        requestedOtas,
+      });
+      if (data.resolved === false) {
+        setImportChoices(data.choices || []);
+        if (!data.choices?.length) setImportError(data.message);
+        return;
+      }
+      applyImport(data);
+      toast.success("We brought your hotel across — check it over");
+    } catch (e) {
+      setImportError(
+        e?.response?.data?.message ||
+          "We couldn't import your listing just now.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── Website ───────────────────────────────────────────────────────────
+  const chooseTemplate = async (templateId) => {
+    if (busy) return;
+    setBusy(true);
+    setChoosing(templateId);
+    try {
+      const res = await websiteApi.generate({ templateId });
+      setLiveSite(res.site);
+      const own = (res.website.content?.gallery || []).filter((g) => !g.stock);
+      set({
+        templateId,
+        siteSlug: res.website.slug,
+        whatsapp: s.whatsapp || (res.website.whatsappNumber ? `+${res.website.whatsappNumber}` : user?.phone || ""),
+        photos: s.photos?.length ? s.photos : own,
+      });
+      go("whatsapp");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Couldn't create your website — try again.");
+    } finally {
+      setBusy(false);
+      setChoosing(null);
+    }
+  };
+
+  const saveWhatsapp = async () => {
+    const res = await websiteApi.update({ whatsappNumber: s.whatsapp });
+    setLiveSite(res.site);
+    set({ whatsapp: res.website.whatsappNumber ? `+${res.website.whatsappNumber}` : s.whatsapp });
+  };
+
+  const savePhotos = async () => {
+    const own = (s.photos || []).filter((p) => p.url);
+    if (!own.length) return; // skipped — the stock gallery stays
+    const content = {
+      gallery: own,
+      hero: { image: own[0].url },
+      about: { image: (own[1] || own[0]).url },
+    };
+    const res = await websiteApi.update({ content });
+    setLiveSite(res.site);
+  };
+
   const finish = async () => {
     try {
       sessionStorage.removeItem(KEY);
@@ -285,12 +471,21 @@ export default function HotelOnboarding() {
   // Next, with whatever saving this screen needs first.
   const onNext = async () => {
     if (busy) return;
+    if (s.screen === "import") return doImport();
     setBusy(true);
     try {
-      if (s.screen === "location") await saveProperty();
+      if (s.screen === "location") {
+        const id = await saveProperty();
+        await saveChannels(id);
+      }
       if (s.screen === "rooms") await saveRooms();
-      if (s.screen === "channels") await saveChannels();
+      if (s.screen === "review") {
+        const id = await saveProperty();
+        await saveRooms(id);
+      }
       if (s.screen === "pickup") await savePickup();
+      if (s.screen === "whatsapp") await saveWhatsapp();
+      if (s.screen === "photos") await savePhotos();
       if (s.screen === "done") return finish();
       next();
     } catch (e) {
@@ -301,8 +496,20 @@ export default function HotelOnboarding() {
   };
 
   // ── What makes Next available ─────────────────────────────────────────
+  const roomsOk =
+    s.rooms.length > 0 && s.rooms.every((r) => r.name.trim() && Number(r.price) > 0);
   const canNext = useMemo(() => {
     switch (s.screen) {
+      case "start":
+        return !!s.path;
+      case "import":
+        return (
+          Object.keys(s.otas).length > 0 &&
+          Object.values(s.otas).some((v) => String(v).trim()) &&
+          !importChoices
+        );
+      case "review":
+        return s.name.trim().length > 1 && s.city.trim() && roomsOk;
       case "type":
         return !!s.type;
       case "name":
@@ -310,16 +517,17 @@ export default function HotelOnboarding() {
       case "location":
         return s.city.trim() && s.country.trim();
       case "rooms":
-        return (
-          s.rooms.length > 0 &&
-          s.rooms.every((r) => r.name.trim() && Number(r.price) > 0)
-        );
+        return roomsOk;
       case "pickup":
         return s.ownTaxi === false || (s.ownTaxi === true && s.driver.name.trim() && s.driver.phone.trim());
+      case "template":
+        return !!s.templateId && !!s.siteSlug;
+      case "whatsapp":
+        return String(s.whatsapp).replace(/\D/g, "").length >= 8;
       default:
         return true;
     }
-  }, [s]);
+  }, [s, roomsOk, importChoices]);
 
   if (!ready) {
     return (
@@ -329,21 +537,152 @@ export default function HotelOnboarding() {
     );
   }
 
+  const ownPhotos = (s.photos || []).filter((p) => p.url).length;
   const nextLabel =
     s.screen === "welcome"
       ? "Get started"
       : s.screen === "done"
         ? "Go to my dashboard"
-        : (s.screen === "channels" && !Object.values(s.otas).some((v) => String(v).trim())) ||
-            (s.screen === "messaging" && !waConnected)
-          ? "Skip for now"
-          : "Next";
+        : s.screen === "import"
+          ? "Import my listing"
+          : s.screen === "review"
+            ? "All good — continue"
+            : s.screen === "template"
+              ? s.templateId ? "Next" : "Pick a design above"
+              : s.screen === "photos"
+                ? ownPhotos ? "Use these photos" : "Skip — use stock photos for now"
+                : s.screen === "sitelive"
+                  ? "Continue to WhatsApp"
+                  : s.screen === "messaging" && !waConnected
+                    ? "Skip for now"
+                    : "Next";
+
+  const wide = s.screen === "template";
 
   return (
     <div className="pb-36">
-      <div className="max-w-2xl mx-auto px-5 sm:px-6 pt-10 sm:pt-16">
+      <div className={`${wide ? "max-w-6xl" : "max-w-2xl"} mx-auto px-5 sm:px-6 pt-10 sm:pt-16`}>
         {screen.id === "welcome" && <Welcome />}
         {screen.intro && <PhaseIntro phase={screen.phase} />}
+
+        {screen.id === "start" && (
+          <Question
+            title="Are you already on Airbnb, Booking.com or Expedia?"
+            sub="If you are, we'll bring your hotel, rooms and prices across for you — no retyping."
+          >
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Choice
+                active={s.path === "import"}
+                onClick={() => set({ path: "import" })}
+                title="Yes — import my listing"
+                body="The fastest way. Takes about a minute."
+                icon={<CloudDownload className="w-6 h-6 text-ink-800" />}
+              />
+              <Choice
+                active={s.path === "manual"}
+                onClick={() => set({ path: "manual", otas: {} })}
+                title="No, I'll set it up"
+                body="A few quick questions about your place."
+                icon={<PenLine className="w-6 h-6 text-ink-800" />}
+              />
+            </div>
+          </Question>
+        )}
+
+        {screen.id === "import" && (
+          <Question
+            title="Where are you listed?"
+            sub="Pick every site you're on and add your listing ID. Bookings from them will land in Botlify on one calendar."
+          >
+            {!importChoices ? (
+              <OtaPicker otas={s.otas} onChange={(otas) => set({ otas })} />
+            ) : (
+              <div>
+                <p className="font-bold text-ink-900">Which of these is yours?</p>
+                <p className="text-sm text-ink-500 mt-1">
+                  We couldn't match that ID automatically — pick your property and we'll bring it across.
+                </p>
+                <div className="mt-4 space-y-2">
+                  {importChoices.map((c) => (
+                    <button
+                      key={c.providerPropertyId}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => doImport(c.providerPropertyId)}
+                      className="w-full text-left rounded-2xl border-2 border-ink-200 hover:border-ink-900 p-4 transition disabled:opacity-60"
+                    >
+                      <p className="font-bold text-ink-900">{c.name}</p>
+                      <p className="text-sm text-ink-500">
+                        {[c.city, c.country].filter(Boolean).join(", ")}
+                        {c.rooms !== undefined ? ` · ${c.rooms} room types` : ""}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" onClick={() => setImportChoices(null)} className="mt-4 text-sm font-bold underline text-ink-600">
+                  Try a different ID
+                </button>
+              </div>
+            )}
+            {importError && (
+              <div className="mt-5 rounded-2xl bg-amber-50 border-2 border-amber-200 p-4">
+                <p className="font-bold text-ink-900">We couldn't import it automatically</p>
+                <p className="text-sm text-ink-600 mt-1">
+                  {importError} We've noted where you're listed and will connect those channels for you —
+                  meanwhile, set up your place in two minutes.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportError("");
+                    setImportChoices(null);
+                    set({ path: "manual" });
+                    go("type");
+                  }}
+                  className="mt-3 inline-flex items-center gap-2 bg-ink-900 text-white font-bold rounded-xl px-4 py-2.5 text-sm"
+                >
+                  Set it up manually
+                </button>
+              </div>
+            )}
+          </Question>
+        )}
+
+        {screen.id === "review" && (
+          <Question
+            title="Here's what we found"
+            sub="Check it over — change anything that's not right, or just continue."
+          >
+            <div className="rounded-2xl border-2 border-ink-200 divide-y-2 divide-ink-200 overflow-hidden">
+              <Field label="Name">
+                <input value={s.name} onChange={(e) => set({ name: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent font-bold" maxLength={80} />
+              </Field>
+              <Field label="Type">
+                <select value={s.type || "hotel"} onChange={(e) => set({ type: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent">
+                  {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </Field>
+              <Field label="Street address">
+                <input value={s.address} onChange={(e) => set({ address: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+              </Field>
+              <div className="grid grid-cols-2 divide-x-2 divide-ink-200">
+                <Field label="City">
+                  <input value={s.city} onChange={(e) => set({ city: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+                </Field>
+                <Field label="Country">
+                  <input value={s.country} onChange={(e) => set({ country: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+                </Field>
+              </div>
+            </div>
+            <p className="mt-8 mb-3 font-bold text-ink-900">Rooms &amp; nightly prices</p>
+            <RoomsEditor s={s} set={set} />
+            {!roomsOk && (
+              <p className="mt-3 text-sm font-semibold text-amber-700">
+                Add a nightly price for every room — your AI quotes these to guests.
+              </p>
+            )}
+          </Question>
+        )}
 
         {screen.id === "type" && (
           <Question title="Which of these best describes your place?">
@@ -387,7 +726,7 @@ export default function HotelOnboarding() {
         {screen.id === "location" && (
           <Question
             title="Where's your place located?"
-            sub="Shared with guests once they've booked."
+            sub="Shown on your website map, and shared with guests once they've booked."
           >
             <div className="rounded-2xl border-2 border-ink-200 divide-y-2 divide-ink-200 overflow-hidden">
               <Field label="Street address (optional)">
@@ -424,147 +763,7 @@ export default function HotelOnboarding() {
             title="What rooms do you have?"
             sub="One line per kind of room. Ten identical doubles is one line with 10 of them."
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-ink-600">Prices in</span>
-              <select
-                value={s.currency}
-                onChange={(e) => set({ currency: e.target.value })}
-                className="border-2 border-ink-200 rounded-xl px-3 py-1.5 text-sm font-bold outline-none focus:border-ink-900"
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-3">
-              {s.rooms.map((r, i) => {
-                const update = (fields) =>
-                  set({
-                    rooms: s.rooms.map((x, j) => (j === i ? { ...x, ...fields } : x)),
-                  });
-                return (
-                  <div key={i} className="rounded-2xl border-2 border-ink-200 p-4">
-                    <div className="flex items-center gap-2">
-                      <input
-                        value={r.name}
-                        onChange={(e) => update({ name: e.target.value })}
-                        placeholder="Room name, e.g. Deluxe Double"
-                        className="flex-1 font-bold text-ink-900 outline-none text-[17px] bg-transparent"
-                      />
-                      {s.rooms.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            set({ rooms: s.rooms.filter((_, j) => j !== i) })
-                          }
-                          className="p-1.5 text-ink-400 hover:text-rose-600"
-                          aria-label="Remove room"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-ink-100 flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-ink-600">How many</span>
-                        <Stepper
-                          value={r.units}
-                          onChange={(units) => update({ units })}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-ink-600">Per night</span>
-                        <div className="flex items-center border-2 border-ink-200 focus-within:border-ink-900 rounded-xl px-3 py-1.5">
-                          <span className="text-xs font-bold text-ink-400 mr-1.5">
-                            {s.currency}
-                          </span>
-                          <input
-                            inputMode="numeric"
-                            value={r.price}
-                            onChange={(e) =>
-                              update({ price: e.target.value.replace(/[^0-9.]/g, "") })
-                            }
-                            placeholder="0"
-                            className="w-24 outline-none font-bold text-ink-900 bg-transparent"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => set({ rooms: [...s.rooms, blankRoom()] })}
-              className="mt-3 w-full rounded-2xl border-2 border-dashed border-ink-300 hover:border-ink-500 py-3.5 font-bold text-ink-700 inline-flex items-center justify-center gap-1.5 transition"
-            >
-              <Plus className="w-4 h-4" />
-              Add another room
-            </button>
-          </Question>
-        )}
-
-        {screen.id === "channels" && (
-          <Question
-            title="Where do you already sell?"
-            sub="Pick the ones you're on. Bookings from them will land in Botlify on one calendar — no more double bookings."
-          >
-            <div className="space-y-3">
-              {LIVE_OTA_CHANNELS.map((c) => {
-                const on = c.key in s.otas;
-                return (
-                  <div
-                    key={c.key}
-                    className={`rounded-2xl border-2 transition ${
-                      on ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const otas = { ...s.otas };
-                        if (on) delete otas[c.key];
-                        else otas[c.key] = "";
-                        set({ otas });
-                      }}
-                      className="w-full flex items-center gap-3.5 p-4 text-left"
-                    >
-                      <OtaLogo channelKey={c.key} name={c.name} size={36} />
-                      <span className="flex-1 font-bold text-ink-900 text-[17px]">
-                        {c.name}
-                      </span>
-                      <span
-                        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${
-                          on ? "bg-ink-900 border-ink-900" : "border-ink-300"
-                        }`}
-                      >
-                        {on && <Check className="w-4 h-4 text-white" />}
-                      </span>
-                    </button>
-                    {on && (
-                      <div className="px-4 pb-4">
-                        <input
-                          autoFocus
-                          value={s.otas[c.key]}
-                          onChange={(e) =>
-                            set({ otas: { ...s.otas, [c.key]: e.target.value } })
-                          }
-                          placeholder={`Your ${c.name} property ID`}
-                          className="w-full border-2 border-ink-200 focus:border-ink-900 rounded-xl px-3.5 py-2.5 outline-none bg-white"
-                        />
-                        <p className="text-xs text-ink-500 mt-1.5">{ID_HINT[c.key]}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-xs text-ink-400 mt-4">
-              Not on any yet? Skip — you can connect them any time in Settings.
-            </p>
+            <RoomsEditor s={s} set={set} />
           </Question>
         )}
 
@@ -612,6 +811,62 @@ export default function HotelOnboarding() {
           </Question>
         )}
 
+        {screen.id === "template" && (
+          <Question
+            title="Choose your website design"
+            sub="Your hotel gets its own website, free. Every design below is already filled with your details — tap Preview to click through all five pages on desktop or phone."
+          >
+            {choosing && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700">
+                <Loader2 className="h-4 w-4 animate-spin" /> Building your website…
+              </div>
+            )}
+            <TemplateGallery
+              site={previewSite}
+              currentId={s.templateId}
+              busyId={choosing}
+              onSelect={chooseTemplate}
+            />
+          </Question>
+        )}
+
+        {screen.id === "whatsapp" && (
+          <Question
+            title="Which WhatsApp number should guests message?"
+            sub="Every 'Book on WhatsApp' button on your website opens a chat with this number."
+          >
+            <div className="rounded-2xl border-2 border-ink-200 overflow-hidden">
+              <Field label="WhatsApp number, with country code">
+                <input
+                  autoFocus
+                  type="tel"
+                  value={s.whatsapp}
+                  onChange={(e) => set({ whatsapp: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && canNext && onNext()}
+                  placeholder="+62 812 3456 7890"
+                  className="w-full outline-none text-ink-900 bg-transparent text-xl font-bold"
+                />
+              </Field>
+            </div>
+            <p className="text-xs text-ink-400 mt-3">
+              A local number like 0812… works too — we add your country code.
+            </p>
+          </Question>
+        )}
+
+        {screen.id === "photos" && (
+          <Question
+            title="Add photos of your place"
+            sub="Upload photos or paste links. Short on time? Skip — we'll use beautiful stock photos for now, and you can swap them any time in Manage your website."
+          >
+            <GalleryManager photos={s.photos || []} onChange={(photos) => set({ photos })} max={24} />
+          </Question>
+        )}
+
+        {screen.id === "sitelive" && (
+          <SiteLive slug={s.siteSlug} site={liveSite} templateId={s.templateId} />
+        )}
+
         {screen.id === "messaging" && (
           <Question
             title="Let your AI answer on WhatsApp"
@@ -657,11 +912,15 @@ export default function HotelOnboarding() {
               {s.name || "Your hotel"} is ready
             </h1>
             <p className="text-lg text-ink-500 mt-3 max-w-md mx-auto">
-              Your calendar is live and your AI knows your rooms and prices.
+              Your calendar and website are live, and your AI knows your rooms and prices.
               Everything else can be fine-tuned in Settings.
             </p>
             <div className="mt-8 grid sm:grid-cols-3 gap-3 text-left">
               <Summary label="Rooms" value={`${s.rooms.reduce((n, r) => n + (Number(r.units) || 0), 0)} across ${s.rooms.length} type${s.rooms.length === 1 ? "" : "s"}`} />
+              <Summary
+                label="Website"
+                value={s.siteSlug ? `${SITE_HOST}/${s.siteSlug}` : "Not set up yet"}
+              />
               <Summary
                 label="Booking channels"
                 value={
@@ -670,7 +929,6 @@ export default function HotelOnboarding() {
                     : "Direct bookings"
                 }
               />
-              <Summary label="Airport pickups" value={s.ownTaxi ? "Your driver" : "Botlify drivers"} />
             </div>
           </div>
         )}
@@ -723,9 +981,9 @@ export default function HotelOnboarding() {
 
 function Welcome() {
   const steps = [
-    ["Tell us about your hotel", "What kind of place it is and where it is."],
+    ["Tell us about your hotel", "Already on Airbnb or Booking.com? We'll bring it all across."],
     ["Make it stand out", "Your rooms and what they cost a night."],
-    ["Finish up", "Connect where you sell, and switch your AI on."],
+    ["Your website & AI", "Pick a design for your free website, then switch your AI on."],
   ];
   return (
     <div>
@@ -750,15 +1008,15 @@ function Welcome() {
 const PHASES = {
   1: {
     title: "Tell us about your hotel",
-    body: "We'll ask what kind of place you have and where it is. That's what your AI needs to start talking to guests.",
+    body: "If you're already on Airbnb, Booking.com or Expedia we'll import everything. If not, a few quick questions: what kind of place it is and where.",
   },
   2: {
     title: "Make it stand out",
     body: "Now your rooms — how many of each, and the price per night. Your AI quotes these and your calendar is built from them.",
   },
   3: {
-    title: "Finish up",
-    body: "Last bits: where you already sell, who handles airport pickups, and switching your AI on.",
+    title: "Your website & AI",
+    body: "Pick a design and your hotel gets its own website — filled in for you, with a WhatsApp booking button. Then switch your AI on.",
   },
 };
 
@@ -796,7 +1054,7 @@ function Field({ label, children }) {
   );
 }
 
-function Choice({ active, onClick, title, body }) {
+function Choice({ active, onClick, title, body, icon }) {
   return (
     <button
       type="button"
@@ -805,9 +1063,205 @@ function Choice({ active, onClick, title, body }) {
         active ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
       }`}
     >
+      {icon && <span className="block mb-3">{icon}</span>}
       <p className="font-bold text-ink-900 text-[17px]">{title}</p>
       <p className="text-sm text-ink-500 mt-1">{body}</p>
     </button>
+  );
+}
+
+/** Pick the OTAs you're on, each with its listing ID. */
+function OtaPicker({ otas, onChange }) {
+  return (
+    <div className="space-y-3">
+      {LIVE_OTA_CHANNELS.map((c) => {
+        const on = c.key in otas;
+        return (
+          <div
+            key={c.key}
+            className={`rounded-2xl border-2 transition ${
+              on ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                const nextOtas = { ...otas };
+                if (on) delete nextOtas[c.key];
+                else nextOtas[c.key] = "";
+                onChange(nextOtas);
+              }}
+              className="w-full flex items-center gap-3.5 p-4 text-left"
+            >
+              <OtaLogo channelKey={c.key} name={c.name} size={36} />
+              <span className="flex-1 font-bold text-ink-900 text-[17px]">{c.name}</span>
+              <span
+                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${
+                  on ? "bg-ink-900 border-ink-900" : "border-ink-300"
+                }`}
+              >
+                {on && <Check className="w-4 h-4 text-white" />}
+              </span>
+            </button>
+            {on && (
+              <div className="px-4 pb-4">
+                <input
+                  autoFocus
+                  value={otas[c.key]}
+                  onChange={(e) => onChange({ ...otas, [c.key]: e.target.value })}
+                  placeholder={`Your ${c.name} property ID`}
+                  className="w-full border-2 border-ink-200 focus:border-ink-900 rounded-xl px-3.5 py-2.5 outline-none bg-white"
+                />
+                <p className="text-xs text-ink-500 mt-1.5">{ID_HINT[c.key]}</p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Rooms with a count and a nightly price — used by both lanes. */
+function RoomsEditor({ s, set }) {
+  return (
+    <>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-semibold text-ink-600">Prices in</span>
+        <select
+          value={s.currency}
+          onChange={(e) => set({ currency: e.target.value })}
+          className="border-2 border-ink-200 rounded-xl px-3 py-1.5 text-sm font-bold outline-none focus:border-ink-900"
+        >
+          {[...new Set([s.currency, ...CURRENCIES])].map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-3">
+        {s.rooms.map((r, i) => {
+          const update = (fields) =>
+            set({
+              rooms: s.rooms.map((x, j) => (j === i ? { ...x, ...fields } : x)),
+            });
+          return (
+            <div key={i} className="rounded-2xl border-2 border-ink-200 p-4">
+              <div className="flex items-center gap-2">
+                <input
+                  value={r.name}
+                  onChange={(e) => update({ name: e.target.value })}
+                  placeholder="Room name, e.g. Deluxe Double"
+                  className="flex-1 font-bold text-ink-900 outline-none text-[17px] bg-transparent"
+                />
+                {s.rooms.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => set({ rooms: s.rooms.filter((_, j) => j !== i) })}
+                    className="p-1.5 text-ink-400 hover:text-rose-600"
+                    aria-label="Remove room"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <div className="mt-3 pt-3 border-t border-ink-100 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-ink-600">How many</span>
+                  <Stepper value={r.units} onChange={(units) => update({ units })} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-ink-600">Per night</span>
+                  <div className="flex items-center border-2 border-ink-200 focus-within:border-ink-900 rounded-xl px-3 py-1.5">
+                    <span className="text-xs font-bold text-ink-400 mr-1.5">{s.currency}</span>
+                    <input
+                      inputMode="numeric"
+                      value={r.price}
+                      onChange={(e) => update({ price: e.target.value.replace(/[^0-9.]/g, "") })}
+                      placeholder="0"
+                      className="w-24 outline-none font-bold text-ink-900 bg-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => set({ rooms: [...s.rooms, blankRoom()] })}
+        className="mt-3 w-full rounded-2xl border-2 border-dashed border-ink-300 hover:border-ink-500 py-3.5 font-bold text-ink-700 inline-flex items-center justify-center gap-1.5 transition"
+      >
+        <Plus className="w-4 h-4" />
+        Add another room
+      </button>
+    </>
+  );
+}
+
+/** "Your website is live" — the URL, a peek at it, and Open. */
+function SiteLive({ slug, site, templateId }) {
+  const url = slug ? siteUrl(slug) : null;
+  return (
+    <div className="text-center pt-2">
+      <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto">
+        <Globe className="w-8 h-8" />
+      </div>
+      <h1 className="text-3xl sm:text-4xl font-black text-ink-900 mt-6">Your website is live</h1>
+      <p className="text-lg text-ink-500 mt-3">
+        Share it anywhere — guests can see your rooms and book with you on WhatsApp.
+      </p>
+      {slug && (
+        <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border-2 border-ink-200 bg-white pl-4 pr-2 py-2">
+          <span className="font-bold text-ink-900 text-[17px]">{SITE_HOST}/{slug}</span>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(url);
+              toast.success("Link copied");
+            }}
+            className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+            aria-label="Copy link"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+      {site && (
+        <a
+          href={url || undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 block overflow-hidden rounded-2xl border-2 border-ink-100 shadow-lg text-left"
+        >
+          <div className="flex items-center gap-1.5 border-b border-ink-100 bg-ink-50 px-3 py-2">
+            <span className="h-2 w-2 rounded-full bg-rose-300" />
+            <span className="h-2 w-2 rounded-full bg-amber-300" />
+            <span className="h-2 w-2 rounded-full bg-emerald-300" />
+            <span className="ml-3 text-xs font-semibold text-ink-500">{SITE_HOST}/{slug}</span>
+          </div>
+          <SiteRenderer site={site} templateId={templateId} mode="thumb" className="aspect-[16/10] w-full" />
+        </a>
+      )}
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        {url && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-ink-900 px-5 py-3 font-bold text-ink-900 hover:bg-ink-50"
+          >
+            Open website <ExternalLink className="w-4 h-4" />
+          </a>
+        )}
+      </div>
+      <p className="text-sm text-ink-400 mt-4">
+        {templateId ? `${templateById(templateId).name} design. ` : ""}
+        Change the design, text and photos any time in <b>Manage your website</b>.
+      </p>
+    </div>
   );
 }
 
@@ -842,7 +1296,7 @@ function Summary({ label, value }) {
   return (
     <div className="rounded-2xl border border-ink-200 p-4">
       <p className="text-xs font-bold text-ink-500">{label}</p>
-      <p className="font-bold text-ink-900 mt-1">{value}</p>
+      <p className="font-bold text-ink-900 mt-1 break-words">{value}</p>
     </div>
   );
 }

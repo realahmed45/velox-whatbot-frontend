@@ -61,6 +61,8 @@ const NAV = [
       { to: "/dashboard/guests", icon: Users, label: "Guests" },
       // The hotel's own answers — what the AI tells guests on every channel.
       { to: "/dashboard/train", icon: GraduationCap, label: "Train your AI" },
+      // The hotel's own website (botlify.site/<slug>) — templates, content, gallery.
+      { to: "/dashboard/website", icon: Globe, label: "Manage your website" },
       { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },
     ],
   },

@@ -1,6 +1,11 @@
 /**
- * Channels — connect the messaging channels your AI concierge answers on:
- * WhatsApp, Instagram, Facebook Messenger and Telegram.
+ * Channels — connect the messaging channel your AI concierge answers on.
+ *
+ * Hotels-only pivot: WhatsApp is the one guest messaging channel we offer.
+ * Instagram, Messenger and Telegram are kept in CHANNELS (and their connect
+ * code below) so they can be switched back on, but only the keys listed in
+ * ACTIVE_CHANNEL_KEYS are shown. OTA guest messages (Booking.com, Airbnb…)
+ * still arrive via the booking-channel connection further down the page.
  *
  * WhatsApp/Messenger use the hosted /channels OAuth flow; Instagram keeps its
  * existing OAuth page; Telegram can't be OAuth'd at all — the hotel adds our
@@ -63,7 +68,13 @@ const CHANNELS = [
   },
 ];
 
-export default function ChannelsPage() {
+// Which messaging channels hotels can connect today.
+const ACTIVE_CHANNEL_KEYS = ["whatsapp"];
+const VISIBLE_CHANNELS = CHANNELS.filter((c) =>
+  ACTIVE_CHANNEL_KEYS.includes(c.key),
+);
+
+export default function ChannelsPage({ hideHeader = false }) {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -203,6 +214,7 @@ export default function ChannelsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      {!hideHeader && (
       <div className="flex items-center gap-3 mb-7">
         <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center">
           <MessageCircle className="w-4.5 h-4.5 text-brand-500" />
@@ -212,18 +224,21 @@ export default function ChannelsPage() {
             Channels
           </h1>
           <p className="text-sm text-ink-500">
-            Connect the channels your AI concierge answers guests on.
+            Connect the WhatsApp number your AI concierge answers guests on.
           </p>
         </div>
       </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-5">
-          {CHANNELS.map((ch) => {
+        <div
+          className={`grid gap-5 ${VISIBLE_CHANNELS.length > 1 ? "md:grid-cols-2" : ""}`}
+        >
+          {VISIBLE_CHANNELS.map((ch) => {
             const st = statusMap[ch.key] || {};
             const connected = st.status === "connected";
             const Mark = ch.Mark;
@@ -300,8 +315,8 @@ export default function ChannelsPage() {
       )}
 
       <p className="text-xs text-ink-400 mt-6 text-center">
-        The AI answers on every connected channel — quotes prices, checks
-        availability and books rooms, 24/7.
+        Your AI answers guests on WhatsApp — quotes prices, checks availability
+        and books rooms, 24/7.
       </p>
 
       {/* Booking channels are a different thing from messaging channels — the
