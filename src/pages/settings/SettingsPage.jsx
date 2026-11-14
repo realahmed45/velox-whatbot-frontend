@@ -353,6 +353,7 @@ export default function SettingsPage() {
               {tab === "channels" && (
                 <div className="space-y-6">
                   <div className="max-w-3xl space-y-6">
+                    <OtaAiToggle workspace={workspace} onSave={refresh} />
                     <WhatsAppAiToggle workspace={workspace} onSave={refresh} />
                   </div>
                   <div className="settings-embed">
@@ -404,8 +405,31 @@ export default function SettingsPage() {
  * touched). Off = guest messages still land in the Inbox; nothing automated is
  * sent on WhatsApp.
  */
-function WhatsAppAiToggle({ workspace, onSave }) {
-  const stored = workspace?.aiSettings?.whatsappAiEnabled !== false;
+function WhatsAppAiToggle(props) {
+  return (
+    <AiChannelToggle
+      {...props}
+      field="whatsappAiEnabled"
+      title="WhatsApp AI replies"
+      onText="Your AI answers guests on WhatsApp automatically, day and night."
+    />
+  );
+}
+
+/** AI replies inside the Airbnb / Booking.com / Expedia guest inboxes. */
+function OtaAiToggle(props) {
+  return (
+    <AiChannelToggle
+      {...props}
+      field="otaAiEnabled"
+      title="Booking-site AI replies"
+      onText="Your AI answers guests inside their Airbnb, Booking.com and Expedia inboxes, day and night."
+    />
+  );
+}
+
+function AiChannelToggle({ workspace, onSave, field, title, onText }) {
+  const stored = workspace?.aiSettings?.[field] !== false;
   const [on, setOn] = useState(stored);
   const [saving, setSaving] = useState(false);
 
@@ -424,7 +448,7 @@ function WhatsAppAiToggle({ workspace, onSave }) {
     setSaving(true);
     try {
       await api.put(`/workspaces/${workspace._id}`, {
-        "aiSettings.whatsappAiEnabled": next,
+        [`aiSettings.${field}`]: next,
       });
       // The legacy global automation switch drops guest messages entirely when
       // off and no longer has its own control — make sure it's on.
@@ -471,11 +495,11 @@ function WhatsAppAiToggle({ workspace, onSave }) {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <h3 className="text-[15px] font-semibold text-ink-900">
-                WhatsApp AI replies
+                {title}
               </h3>
               <p className="text-[13px] text-ink-500 mt-0.5">
                 {on
-                  ? "Your AI answers guests on WhatsApp automatically, day and night."
+                  ? onText
                   : "AI is paused — you'll reply to guests yourself from the Inbox."}
               </p>
             </div>
@@ -483,7 +507,7 @@ function WhatsAppAiToggle({ workspace, onSave }) {
               type="button"
               role="switch"
               aria-checked={on}
-              aria-label="WhatsApp AI replies"
+              aria-label={title}
               onClick={toggle}
               disabled={saving || !workspace?._id}
               className={`relative w-14 h-8 rounded-full transition-colors duration-300 shrink-0 disabled:opacity-60 shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] active:scale-95 ${
