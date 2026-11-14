@@ -8,14 +8,14 @@ import { Link } from "react-router-dom";
 
 export default function ContactPage() {
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-night-950 text-white grain">
-      <Aurora variant="dark" />
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[80vh] bg-dot-grid-dark mask-fade-b opacity-60" />
+    <div className="relative isolate min-h-screen overflow-hidden bg-[#FBFAF8] text-ink-950">
+      <Aurora />
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[70vh] bg-dot-grid mask-fade-b opacity-50" />
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
         {/* Header */}
         <div className="text-center mb-14">
           <Reveal>
-            <h1 className="font-display text-5xl sm:text-7xl font-semibold tracking-[-0.05em] leading-[0.95] text-white mb-5">
+            <h1 className="font-display text-5xl sm:text-7xl font-semibold tracking-[-0.05em] leading-[0.95] text-ink-950 mb-5">
               Get in{" "}
               <span className="font-serif italic font-normal tracking-[-0.02em] text-sunset pr-1">
                 Touch
@@ -23,9 +23,9 @@ export default function ContactPage() {
             </h1>
           </Reveal>
           <Reveal delay={0.08}>
-            <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-              Have questions? Need help? We're here for you. Reach out and we'll
-              get back to you as soon as possible.
+            <p className="text-base sm:text-lg text-ink-600 max-w-2xl mx-auto leading-relaxed">
+              Questions about connecting Booking.com, Airbnb, Expedia or WhatsApp? Need help?
+              We're here for you. Reach out and we'll get back to you as soon as possible.
             </p>
           </Reveal>
         </div>
@@ -37,20 +37,20 @@ export default function ContactPage() {
             <Spotlight
               as="a"
               href="mailto:contactus@botlify.site"
-              className="card-dark group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
+              className="card group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
             >
               <div className="flex items-start gap-4">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
                   <Mail className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mb-1.5">
+                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-950 mb-1.5">
                     Email Us
                   </h3>
-                  <p className="text-sm text-white/60 mb-3">
+                  <p className="text-sm text-ink-600 mb-3">
                     Send us an email and we'll respond within 24 hours.
                   </p>
-                  <p className="inline-flex items-center gap-1 break-all text-sm font-semibold text-sunset-gold">
+                  <p className="inline-flex items-center gap-1 break-all text-sm font-semibold text-sunset-flame">
                     contactus@botlify.site
                     <ArrowUpRight className="w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </p>
@@ -64,20 +64,20 @@ export default function ContactPage() {
             <Spotlight
               as={Link}
               to="/help"
-              className="card-dark group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
+              className="card group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
             >
               <div className="flex items-start gap-4">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/[0.07] ring-1 ring-white/10 text-sunset-gold transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
                   <MessageSquare className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mb-1.5">
+                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-950 mb-1.5">
                     Help Center
                   </h3>
-                  <p className="text-sm text-white/60 mb-3">
+                  <p className="text-sm text-ink-600 mb-3">
                     Browse our guides and tutorials to get started quickly.
                   </p>
-                  <p className="inline-flex items-center gap-1 text-sm font-semibold text-white/85">
+                  <p className="inline-flex items-center gap-1 text-sm font-semibold text-ink-800">
                     Visit Help Center{" "}
                     <span className="transition-transform duration-500 ease-spring group-hover:translate-x-1">→</span>
                   </p>
@@ -89,13 +89,13 @@ export default function ContactPage() {
 
         {/* FAQ Section */}
         <Reveal>
-          <div className="card-dark p-6 sm:p-9">
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-7">
+          <div className="card p-6 sm:p-9">
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-7">
               Frequently Asked{" "}
               <span className="font-serif italic font-normal">Questions</span>
             </h2>
 
-            <div className="divide-y divide-white/[0.07]">
+            <div className="divide-y divide-ink-900/[0.06]">
               {[
                 [
                   "How quickly will I get a response?",
@@ -113,11 +113,11 @@ export default function ContactPage() {
                   "Can I request a new feature?",
                   "Absolutely! We love hearing from our users. Email us your feature request and we'll review it for our product roadmap.",
                 ],
-              ].map(([q, a], i) => (
-                <Reveal key={q} delay={i * 0.05} y={12} className="py-5 first:pt-0 last:pb-0">
-                  <h3 className="font-semibold text-white mb-1.5">{q}</h3>
-                  <p className="text-[15px] text-white/60 leading-relaxed">{a}</p>
-                </Reveal>
+              ].map(([q, a]) => (
+                <div key={q} className="py-5 first:pt-0 last:pb-0">
+                  <h3 className="font-semibold text-ink-950 mb-1.5">{q}</h3>
+                  <p className="text-[15px] text-ink-600 leading-relaxed">{a}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function ContactPage() {
         {/* CTA */}
         <Reveal>
           <div className="text-center mt-14">
-            <p className="text-white/60 mb-5">Ready to let Botlify answer your guests?</p>
+            <p className="text-ink-600 mb-5">Ready to let Botlify answer your guests on every OTA and WhatsApp?</p>
             <Magnetic strength={0.3}>
               <Link to="/register" className="group btn-primary px-8 py-3.5 text-[15px]">
                 Get Started Free

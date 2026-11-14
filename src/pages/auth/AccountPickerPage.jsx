@@ -1,7 +1,7 @@
 /**
  * AccountPicker — the "choose an account" screen shown right after login.
- * One Botlify identity → many accounts (each a workspace with its own IG, bot,
- * data and billing). Picking one persists it server-side and enters it.
+ * One Botlify identity → many accounts (each a workspace with its own hotel,
+ * AI, data and billing). Picking one persists it server-side and enters it.
  *
  * - 0 accounts  → straight into onboarding (create the first one).
  * - 1 account   → auto-enter it (no needless click).
@@ -9,7 +9,7 @@
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Plus, Check, Instagram, LogOut, Trash2 } from "lucide-react";
+import { Loader2, Plus, Check, Building2, LogOut, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -109,12 +109,12 @@ export default function AccountPickerPage() {
 
   if (accounts === null) {
     return (
-      <div className="relative isolate min-h-screen grid place-items-center bg-night-950 overflow-hidden grain">
-        <Aurora variant="dark" />
+      <div className="relative isolate min-h-screen grid place-items-center bg-[#FBFAF8] overflow-hidden">
+        <Aurora />
         <div className="w-full max-w-lg px-4 space-y-3" aria-busy="true">
-          <div className="mx-auto mb-8 h-14 w-14 rounded-2xl bg-white/[0.06] animate-pulse" />
+          <div className="mx-auto mb-8 h-14 w-14 rounded-2xl bg-ink-900/[0.04] animate-pulse" />
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[88px] rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06] animate-pulse" />
+            <div key={i} className="h-[88px] rounded-2xl bg-ink-900/[0.04] ring-1 ring-ink-900/[0.08] animate-pulse" />
           ))}
           <span className="sr-only">
             <Loader2 className="w-8 h-8 animate-spin" />
@@ -126,39 +126,32 @@ export default function AccountPickerPage() {
   }
 
   return (
-    <div className="relative isolate min-h-screen bg-night-950 text-white flex flex-col items-center px-4 py-14 overflow-hidden grain">
-      <Aurora variant="dark" />
+    <div className="relative isolate min-h-screen bg-[#FBFAF8] text-ink-950 flex flex-col items-center px-4 py-14 overflow-hidden">
+      <Aurora />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"
+        className="absolute inset-0 -z-10 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"
       />
       <div className="w-full max-w-lg">
         <Reveal className="text-center mb-9">
           <div className="relative w-14 h-14 mx-auto mb-5">
-            <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-25 blur-2xl" />
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-              className="relative"
-            >
+            <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-20 blur-2xl" />
+            <div className="relative">
               <BotlifyMark size={56} className="mx-auto" />
-            </motion.div>
+            </div>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-ink-950">
             Choose an{" "}
             <span className="font-serif italic font-normal text-sunset">account</span>
           </h1>
-          <p className="text-white/60 mt-2 text-[15px]">
+          <p className="text-ink-600 mt-2 text-[15px]">
             Signed in as{" "}
-            <span className="font-semibold text-white break-all">{user?.email}</span>
+            <span className="font-semibold text-ink-950 break-all">{user?.email}</span>
           </p>
         </Reveal>
 
         <div className="space-y-3">
           {accounts.map((a, i) => {
-            const handle = a.instagram?.username
-              ? `@${a.instagram.username}`
-              : "No Instagram connected";
             const isEntering = entering === a._id;
             return (
               <Reveal key={a._id} delay={0.05 + i * 0.06}>
@@ -168,42 +161,34 @@ export default function AccountPickerPage() {
                   whileHover={entering ? undefined : { y: -3 }}
                   whileTap={entering ? undefined : { scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 420, damping: 26 }}
-                  className={`group card-dark w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 text-left disabled:opacity-60 transition-shadow duration-500 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,106,43,0.35),0_20px_50px_-20px_rgba(255,61,119,0.55)] ${
+                  className={`group card w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 text-left disabled:opacity-60 transition-shadow duration-500 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.3),0_18px_40px_-18px_rgba(255,61,119,0.35)] ${
                     isEntering ? "ring-1 ring-sunset-flame/60" : ""
                   }`}
                 >
-                  {a.instagram?.profilePicture ? (
-                    <img
-                      src={a.instagram.profilePicture}
-                      alt=""
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover flex-shrink-0 ring-1 ring-white/15 transition-transform duration-500 ease-spring group-hover:-rotate-3 group-hover:scale-105"
-                    />
-                  ) : (
-                    <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sunset flex items-center justify-center text-white text-lg font-display font-semibold flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105">
+                  <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sunset flex items-center justify-center text-white text-lg font-display font-semibold flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105">
                       {(a.name?.[0] || "A").toUpperCase()}
-                    </span>
-                  )}
+                  </span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-display font-semibold text-white truncate">{a.name}</p>
-                    <p className="text-sm text-white/50 truncate flex items-center gap-1.5">
-                      <Instagram className="w-3.5 h-3.5 flex-shrink-0" /> {handle}
+                    <p className="font-display font-semibold text-ink-950 truncate">{a.name}</p>
+                    <p className="text-sm text-ink-500 truncate flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 flex-shrink-0" /> Hotel workspace
                     </p>
                   </div>
                   <span
                     className={`hidden min-[380px]:inline-flex text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 ring-1 ring-inset ${
                       a.lifetime
-                        ? "bg-amber-400/15 text-amber-200 ring-amber-300/25"
+                        ? "bg-amber-50 text-amber-700 ring-amber-200"
                         : a.subscriptionStatus === "trialing"
-                          ? "bg-sky-400/15 text-sky-200 ring-sky-300/25"
-                          : "bg-emerald-400/15 text-emerald-200 ring-emerald-300/25"
+                          ? "bg-sky-50 text-sky-700 ring-sky-200"
+                          : "bg-emerald-50 text-emerald-700 ring-emerald-200"
                     }`}
                   >
                     {planBadge(a)}
                   </span>
                   {isEntering ? (
-                    <Loader2 className="w-5 h-5 text-sunset-gold animate-spin flex-shrink-0" />
+                    <Loader2 className="w-5 h-5 text-sunset-flame animate-spin flex-shrink-0" />
                   ) : (
-                    <Check className="w-5 h-5 text-white/25 flex-shrink-0 transition-all duration-500 ease-spring group-hover:text-sunset-gold group-hover:scale-110" />
+                    <Check className="w-5 h-5 text-ink-400 flex-shrink-0 transition-all duration-500 ease-spring group-hover:text-sunset-flame group-hover:scale-110" />
                   )}
                   {accounts.length > 1 && (
                     <span
@@ -212,7 +197,7 @@ export default function AccountPickerPage() {
                       onClick={(e) => remove(a, e)}
                       onKeyDown={(e) => e.key === "Enter" && remove(a, e)}
                       title="Delete account"
-                      className="flex-shrink-0 h-9 w-9 grid place-items-center rounded-lg text-white/30 hover:text-rose-300 hover:bg-rose-500/15 active:scale-90 transition duration-300 ease-spring"
+                      className="flex-shrink-0 h-9 w-9 grid place-items-center rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition duration-300 ease-spring"
                     >
                       {removing === a._id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -233,9 +218,9 @@ export default function AccountPickerPage() {
               whileHover={entering ? undefined : { y: -3 }}
               whileTap={entering ? undefined : { scale: 0.98 }}
               transition={{ type: "spring", stiffness: 420, damping: 26 }}
-              className="group w-full flex items-center gap-3 sm:gap-4 border border-dashed border-white/15 hover:border-sunset-flame/50 hover:bg-white/[0.03] rounded-2xl p-3.5 sm:p-4 transition-colors duration-300 text-left text-white disabled:opacity-60"
+              className="group w-full flex items-center gap-3 sm:gap-4 border border-dashed border-ink-900/15 hover:border-sunset-flame/50 hover:bg-ink-900/[0.04] rounded-2xl p-3.5 sm:p-4 transition-colors duration-300 text-left text-ink-950 disabled:opacity-60"
             >
-              <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border border-dashed border-sunset-gold/40 bg-sunset-soft flex items-center justify-center flex-shrink-0 text-sunset-gold">
+              <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border border-dashed border-sunset-flame/40 bg-sunset-soft flex items-center justify-center flex-shrink-0 text-sunset-flame">
                 {entering === "new" ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
@@ -244,8 +229,8 @@ export default function AccountPickerPage() {
               </span>
               <div className="min-w-0">
                 <p className="font-display font-semibold">Add another account</p>
-                <p className="text-sm text-white/50">
-                  Connect a new Instagram — separate bot &amp; billing
+                <p className="text-sm text-ink-500">
+                  Another hotel — separate AI &amp; billing
                 </p>
               </div>
             </motion.button>
@@ -255,7 +240,7 @@ export default function AccountPickerPage() {
         <div className="text-center mt-9">
           <button
             onClick={signOut}
-            className="btn-glass-dark group text-sm"
+            className="btn-secondary group text-sm"
           >
             <LogOut className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" />{" "}
             Sign out

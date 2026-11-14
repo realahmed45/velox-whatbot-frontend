@@ -150,7 +150,7 @@ export function TemplatePreview({ site, templateId, onClose, onChange, onSelect,
               <div className="flex items-center gap-1">
                 <motion.button whileHover={{ x: -2 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={() => step(-1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white" aria-label="Previous design"><ChevronLeft className="h-5 w-5" /></motion.button>
                 <AnimatePresence mode="wait" initial={false}>
-                  <motion.span key={t.id} initial={{ opacity: 0, y: 6, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -6, filter: "blur(4px)" }} transition={{ duration: 0.25 }} className="min-w-[84px] text-center font-display font-semibold tracking-[-0.02em]">{t.name}</motion.span>
+                  <motion.span key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="min-w-[84px] text-center font-display font-semibold tracking-[-0.02em]">{t.name}</motion.span>
                 </AnimatePresence>
                 <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={() => step(1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white" aria-label="Next design"><ChevronRight className="h-5 w-5" /></motion.button>
               </div>

@@ -34,7 +34,6 @@ const SOURCE_META = {
   booking_com: { label: "Booking.com", cls: "bg-blue-500/10 text-blue-700 ring-blue-500/20" },
   airbnb: { label: "Airbnb", cls: "bg-rose-500/10 text-rose-600 ring-rose-500/20" },
   whatsapp: { label: "WhatsApp", cls: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20" },
-  instagram: { label: "Instagram", cls: "bg-purple-500/10 text-purple-700 ring-purple-500/20" },
   tiktok: { label: "TikTok", cls: "bg-ink-900 text-white ring-ink-900" },
   direct: { label: "Direct", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
   manual: { label: "Manual", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
@@ -198,8 +197,8 @@ function GuestPanel({ guest, onClose }) {
               {guest.bookings.map((b, i) => (
                 <motion.div
                   key={b._id}
-                  initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: Math.min(i, 10) * 0.05, ease: [0.16, 1, 0.3, 1] }}
                   className="flex items-start justify-between gap-3 rounded-2xl bg-white/75 p-3.5 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] transition-colors duration-300 hover:bg-white"
                 >
@@ -380,7 +379,7 @@ export default function GuestsPage() {
         />
       ) : (
         <Reveal y={16} className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-ink-900/[0.06] bg-white/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400 backdrop-blur">
+          <div className="flex items-center justify-between border-b border-ink-900/[0.06] bg-white/90 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
             <span>
               <span className="tabular-nums">{filtered.length}</span> guest{filtered.length === 1 ? "" : "s"}
             </span>

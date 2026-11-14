@@ -160,9 +160,8 @@ export default function App() {
                 <Route path="/consultants" element={<ConsultantsLandingPage />} />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route path="/docs" element={<DocsPage />} />
-                {/* Legacy Instagram-era features page — it still sells the pre-pivot
-                    product, so send visitors to the current platform section
-                    instead. The file is kept, just unreachable. */}
+                {/* Legacy pre-pivot features page — send visitors to the current
+                    platform section instead. */}
                 <Route
                   path="/features"
                   element={<Navigate to="/#platform" replace />}
@@ -219,7 +218,7 @@ export default function App() {
               >
                 {/* Today — the home screen (agent chat + pricing + glance) */}
                 <Route index element={<TodayPage />} />
-                {/* The old Instagram-era overview is gone — Today replaced it.
+                {/* The old pre-pivot overview is gone — Today replaced it.
                     Keep the URL alive so old bookmarks still land somewhere. */}
                 <Route
                   path="overview"
@@ -255,9 +254,8 @@ export default function App() {
                     </RequirePermission>
                   }
                 />
-                {/* Legacy screens from the Instagram era. The 5-screen app
-                    covers these now, so they redirect instead of showing
-                    follower/hashtag content. Files kept, routes retired. */}
+                {/* Legacy pre-pivot screens. The hotel app covers these now,
+                    so the old URLs redirect instead of 404ing. */}
                 <Route
                   path="contacts"
                   element={<Navigate to="/dashboard/guests" replace />}
@@ -368,8 +366,7 @@ export default function App() {
                 />
 
                 {/* Onboarding inside dashboard shell — redirects for back-compat.
-                    Both point at the hotel flow; the old Instagram-first path is
-                    dead (Botlify onboards a PROPERTY, not a social account). */}
+                    Both point at the hotel flow (Botlify onboards a PROPERTY). */}
                 <Route
                   path="onboarding"
                   element={<Navigate to="/onboarding/hotel" replace />}
@@ -419,9 +416,8 @@ export default function App() {
                   path="/onboarding/pricing"
                   element={<OnboardingPricingPage />}
                 />
-                {/* The old Instagram-first onboarding screen. Dead — a hotel
-                    sets up its property first, and Instagram is one of four
-                    messaging channels in Settings. */}
+                {/* Old pre-pivot onboarding URL — a hotel sets up its property
+                    first. Kept as a redirect so bookmarks don't 404. */}
                 <Route
                   path="/onboarding/instagram"
                   element={<Navigate to="/onboarding/hotel" replace />}

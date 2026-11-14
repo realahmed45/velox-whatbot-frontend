@@ -32,14 +32,11 @@ const ROUTE_TITLES = {
   "/dashboard/billing": "Billing",
   "/dashboard/pricing": "Pricing",
   "/dashboard/guide": "Guide",
-  "/dashboard/scheduled-posts": "Scheduled Posts",
   "/dashboard/drip": "Drip Campaigns",
-  "/dashboard/hashtags": "Hashtag Research",
   "/dashboard/integrations": "Integrations",
   "/dashboard/apps": "Apps",
   "/dashboard/team": "Team",
   "/dashboard/onboarding": "Get Started",
-  "/dashboard/onboarding/instagram": "Connect Instagram",
 };
 
 export default function DashboardLayout() {
@@ -159,9 +156,9 @@ export default function DashboardLayout() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Outlet />

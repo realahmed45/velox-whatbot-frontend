@@ -11,10 +11,10 @@ import TurnstileWidget, {
 } from "@/components/auth/TurnstileWidget";
 import { Magnetic, Reveal } from "@/components/fx";
 
-// Dark liquid-glass field — `.input` is the light variant.
+// Shared light form-field classes from index.css.
 const FIELD =
-  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
-const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+  "input";
+const LABEL = "label";
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -61,17 +61,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="card-dark p-6 sm:p-8">
+    <div className="card p-6 sm:p-8">
       <Reveal>
-        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-white leading-tight">
+        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-ink-950 leading-tight">
           Welcome{" "}
           <span className="font-serif italic font-normal text-sunset">back</span>
         </h2>
-        <p className="text-white/60 text-sm mt-2 mb-7">
+        <p className="text-ink-600 text-sm mt-2 mb-7">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-sunset-gold font-semibold underline-offset-4 hover:underline"
+            className="text-sunset-flame font-semibold underline-offset-4 hover:underline"
           >
             Sign up free
           </Link>
@@ -80,16 +80,16 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Reveal delay={0.06}>
-          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-ink-900/[0.08] transition-transform duration-500 ease-spring hover:-translate-y-0.5">
             <GoogleSignInButton />
           </div>
         </Reveal>
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-ink-900/10 to-transparent"></div>
           </div>
           <div className="relative flex justify-center text-[11px] uppercase tracking-[0.14em]">
-            <span className="px-3 text-white/40 bg-night-950/60 backdrop-blur rounded-full">
+            <span className="px-3 text-ink-400 bg-white rounded-full">
               Or continue with email
             </span>
           </div>
@@ -99,7 +99,7 @@ export default function LoginPage() {
           <div className="relative group">
             <Mail
               strokeWidth={1.8}
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold"
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame"
             />
             <input
               className={`${FIELD} pl-9`}
@@ -116,7 +116,7 @@ export default function LoginPage() {
           <div className="relative group">
             <Lock
               strokeWidth={1.8}
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold"
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame"
             />
             <input
               className={`${FIELD} pl-9 pr-11`}
@@ -129,7 +129,7 @@ export default function LoginPage() {
             <button
               type="button"
               aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
               onClick={() => setShow(!show)}
             >
               {show ? (
@@ -142,7 +142,7 @@ export default function LoginPage() {
           <div className="text-right mt-1.5">
             <Link
               to="/forgot-password"
-              className="text-xs text-white/55 hover:text-sunset-gold transition-colors"
+              className="text-xs text-ink-600 hover:text-sunset-flame transition-colors"
             >
               Forgot password?
             </Link>
@@ -177,7 +177,7 @@ export default function LoginPage() {
             toast.success("Dev session — UI only (no backend)");
             navigate("/dashboard");
           }}
-          className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-sunset-gold/40 text-sunset-gold text-sm font-semibold hover:bg-white/[0.05] transition-colors"
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-sunset-flame/40 text-sunset-flame text-sm font-semibold hover:bg-ink-900/[0.04] transition-colors"
         >
           <Wrench className="w-4 h-4" /> Enter as Dev (UI only · local)
         </motion.button>

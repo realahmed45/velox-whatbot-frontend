@@ -144,7 +144,7 @@ export default function SupportChat() {
         aria-controls="botlify-support-chat"
         className={`group fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full text-white transition-all duration-500 ease-spring hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame focus-visible:ring-offset-2 ${
           open
-            ? "bg-night-900 shadow-[0_14px_34px_-10px_rgba(6,5,10,0.7),inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-white/10"
+            ? "bg-white !text-ink-800 shadow-[0_14px_34px_-10px_rgba(15,23,42,0.35),inset_0_1px_0_#fff] ring-1 ring-ink-900/10"
             : "bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_34px_-10px_rgba(255,61,119,0.7),0_4px_12px_-2px_rgba(124,92,255,0.4)]"
         }`}
       >
@@ -174,20 +174,16 @@ export default function SupportChat() {
                      sm:inset-auto sm:bottom-24 sm:right-5 sm:w-[24rem] sm:h-[min(34rem,calc(100vh-8rem))] sm:rounded-3xl"
         >
           {/* Header */}
-          <div className="relative flex shrink-0 items-center gap-3 overflow-hidden bg-night-900 px-4 py-3.5 text-white">
-            <div aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-32 w-32 rounded-full bg-sunset-violet/30 blur-3xl" />
-            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-sunset opacity-70" />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full bg-sunset-flame/35 blur-3xl animate-drift-a"
-            />
-            <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] ring-1 ring-white/15">
+          <div className="relative flex shrink-0 items-center gap-3 overflow-hidden border-b border-ink-900/[0.06] bg-white px-4 py-3.5 text-ink-950">
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-sunset-soft opacity-60" />
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-sunset opacity-60" />
+            <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_4px_10px_-4px_rgba(255,61,119,0.35)]">
               <BotlifyMark size={22} />
             </div>
             <div className="relative min-w-0 flex-1">
               <p className="font-display text-sm font-semibold leading-tight tracking-[-0.01em]">Botlify assistant</p>
-              <p className="text-[11px] text-white/60 leading-tight inline-flex items-center gap-1.5">
-                <PulseDot color="bg-emerald-400" className="scale-75" />
+              <p className="text-[11px] text-ink-500 leading-tight inline-flex items-center gap-1.5">
+                <PulseDot color="bg-emerald-500" className="scale-75" />
                 Answers instantly · no waiting
               </p>
             </div>
@@ -195,7 +191,7 @@ export default function SupportChat() {
               type="button"
               onClick={close}
               aria-label="Close assistant"
-              className="group/x relative -mr-1 grid h-9 w-9 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame"
+              className="group/x relative -mr-1 grid h-9 w-9 place-items-center rounded-xl text-ink-500 transition hover:bg-ink-900/[0.05] hover:text-ink-900 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame"
             >
               <X className="h-5 w-5 transition-transform duration-500 ease-spring group-hover/x:rotate-90" />
             </button>
@@ -203,7 +199,7 @@ export default function SupportChat() {
 
           {/* Thread */}
           <div
-            className="flex-1 space-y-3 overflow-y-auto bg-white/30 px-3.5 py-4"
+            className="flex-1 space-y-3 overflow-y-auto bg-[#FBFAF8] px-3.5 py-4"
             aria-live="polite"
           >
             {messages.map((m) =>
@@ -267,7 +263,7 @@ export default function SupportChat() {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about pricing, channels, setup…"
+                placeholder="Ask about pricing, OTAs, WhatsApp…"
                 autoComplete="off"
                 className="min-w-0 flex-1 rounded-full border border-ink-900/10 bg-white/80 px-4 py-2.5 text-[13px] text-ink-800 transition placeholder:text-ink-400 focus:border-sunset-flame/60 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sunset-flame/10"
               />

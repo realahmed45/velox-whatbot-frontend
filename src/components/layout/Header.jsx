@@ -26,9 +26,9 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 const pop = {
-  initial: { opacity: 0, y: -6, scale: 0.96, filter: "blur(4px)" },
-  animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, y: -4, scale: 0.97, filter: "blur(4px)" },
+  initial: { opacity: 0, y: -6, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -4, scale: 0.97 },
   transition: { type: "spring", stiffness: 420, damping: 30 },
 };
 import { useWorkspaceStore } from "@/store/workspaceStore";

@@ -30,8 +30,8 @@ export default function PageHeader({
         )}
       >
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-sunset-flame/30 blur-[70px] animate-drift-a" />
-          <div className="absolute -bottom-20 -left-12 h-56 w-56 rounded-full bg-sunset-violet/25 blur-[70px] animate-drift-b" />
+          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-sunset-flame/30 blur-[70px]" />
+          <div className="absolute -bottom-20 -left-12 h-56 w-56 rounded-full bg-sunset-violet/25 blur-[70px]" />
           <div className="absolute inset-0 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
         </div>

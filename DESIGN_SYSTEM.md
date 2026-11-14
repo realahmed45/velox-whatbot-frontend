@@ -3,6 +3,20 @@
 The single source of truth for how every Botlify screen looks and moves.
 Built Nov 2026. If a page disagrees with this file, the page is wrong.
 
+## What Botlify is (the pitch — use these words, nothing else)
+
+**Botlify is the AI channel manager for hotels.** It syncs rooms, rates and
+availability across Airbnb, Booking.com and Expedia — and its AI answers every
+guest message *inside* those OTA inboxes and on WhatsApp, 24/7, replacing the
+human work of guest messaging.
+
+- Core promise: "Your guests message on Airbnb, Booking.com or WhatsApp. Botlify
+  answers — instantly, accurately, in their language — and books them."
+- **Instagram is gone.** Never mention, show or link Instagram anywhere in the
+  UI or marketing. Messaging channels = the OTA inboxes (Airbnb, Booking.com,
+  Expedia) + WhatsApp.
+- Live OTAs to name: Booking.com, Airbnb, Expedia. Others are "coming".
+
 ## The idea
 
 Botlify is an AI concierge for hotels, starting in Bali. The brand is a Bali
@@ -22,14 +36,33 @@ sunset seen through liquid glass:
   `ease-out-expo` for reveals. Everything respects `prefers-reduced-motion`
   (handled globally in index.css and inside the FX components).
 
-Two canvases:
+**Everything is LIGHT** (Nov 2026 update — the dark marketing look was
+rejected as too dark). Dark is reserved for small accents only: the dashboard
+sidebar, a code block, at most one contrasting band per page.
+
+Canvases:
 - **Dashboard (logged-in app)**: LIGHT. Warm paper canvas `var(--canvas)`
   (#F7F5F2) with a faint aurora + dot grid behind (already rendered by
   `DashboardLayout`). Content sits on light glass cards. Sidebar is night glass.
   Hotel staff read this all day — contrast and density beat spectacle.
-- **Marketing + auth + onboarding**: DARK, cinematic. `bg-night-950`
-  (#06050A) with `<Aurora variant="dark" />`, `.grain`, white type,
-  `.card-dark` panels, `.btn-glass-dark` secondary buttons.
+- **Marketing + auth + onboarding**: LIGHT and airy. White / warm paper
+  (`bg-[#FBFAF8]` or `var(--canvas)`), `<Aurora />` (light, static), ink type
+  (`text-ink-950` headings, `text-ink-600` body), `.card` panels,
+  `.btn-secondary` secondary buttons. No `bg-night-*` page backgrounds, no
+  `.card-dark` panels, no white-on-dark text blocks.
+
+## Performance rules (the site lagged — these are mandatory)
+
+- **No animated `filter: blur`** in framer-motion (initial/animate/exit). Animate
+  only `opacity` and `transform` (x, y, scale, rotate).
+- **No `backdrop-blur` on cards or list rows.** Allowed only on a few
+  overlays: sticky headers/nav, modals, dropdowns.
+- **No infinite animations on large or blurred elements.** Infinite loops only
+  on tiny things (a typing dot, a status ping).
+- No scroll-jacking / sticky horizontal scroll sections, no custom cursors, no
+  grain overlays, no parallax on big sections.
+- Reveal on scroll at most once per element, short (≤0.5s), small offset.
+- Static blurred decorative blobs are fine (painted once) — keep them few.
 
 ## Type
 
@@ -77,7 +110,6 @@ Two canvases:
 - `<SlidingTabs items={[{value,label,icon}]} value onChange dark? size="sm|md" />` springy segmented control — replace hand-rolled tab rows with it.
 - `<Marquee speed={30}>` infinite strip.
 - `<PulseDot color="bg-emerald-500" />` live status.
-- `<CursorAura />` custom cursor — marketing pages only, mount once.
 - `framer-motion` is available for anything bespoke (`AnimatePresence` for
   modals/dropdowns: scale .96→1 + blur 4px→0 + spring stiffness ~420 damping ~30).
 

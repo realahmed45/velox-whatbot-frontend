@@ -46,8 +46,8 @@ export default function StatHero({
     >
       {/* sunset glow + dot texture, clipped to the slab (the popover must not be) */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-        <div className="absolute -top-20 right-10 h-56 w-56 rounded-full bg-sunset-flame/25 blur-[70px] animate-drift-a" />
-        <div className="absolute -bottom-24 right-1/3 h-48 w-48 rounded-full bg-sunset-violet/25 blur-[70px] animate-drift-b" />
+        <div className="absolute -top-20 right-10 h-56 w-56 rounded-full bg-sunset-flame/25 blur-[70px]" />
+        <div className="absolute -bottom-24 right-1/3 h-48 w-48 rounded-full bg-sunset-violet/25 blur-[70px]" />
         <div className="absolute inset-0 bg-dot-grid-dark opacity-30 [mask-image:linear-gradient(90deg,transparent,black)]" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       </div>
@@ -155,9 +155,9 @@ function HeroHelp({ title = "How this works", tips = [], footer }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             style={{ transformOrigin: "top right" }}
             className="glass-strong absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl p-4 text-left sm:w-80"

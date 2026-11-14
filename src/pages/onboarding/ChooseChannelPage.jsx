@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-/** Instagram-only — connect the channel first, pricing comes after. */
+/** Legacy route — channel setup now lives inside the hotel setup wizard. */
 export default function ChooseChannelPage() {
   const navigate = useNavigate();
   useEffect(() => {
-    navigate("/onboarding/instagram", { replace: true });
+    navigate("/onboarding/hotel", { replace: true });
   }, [navigate]);
   return null;
 }

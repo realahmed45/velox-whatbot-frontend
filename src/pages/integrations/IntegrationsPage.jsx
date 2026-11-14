@@ -28,9 +28,8 @@ const actBtn =
   "group/act flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-90";
 
 const EVENTS = [
-  { key: "dm.received", label: "DM received" },
-  { key: "dm.sent", label: "DM sent (bot reply)" },
-  { key: "comment.received", label: "Comment / story reply received" },
+  { key: "dm.received", label: "Guest message received" },
+  { key: "dm.sent", label: "Message sent (AI reply)" },
   { key: "lead.created", label: "New lead (email/phone captured)" },
   { key: "flow.completed", label: "Flow completed" },
   { key: "contact.tagged", label: "Contact tagged" },
@@ -46,7 +45,7 @@ const PAYLOAD_EXAMPLE = `{
   "data": {
     "contactId": "ct_1029",
     "email": "jane@acme.com",
-    "source": "instagram_dm"
+    "source": "whatsapp"
   },
   "timestamp": "2026-07-24T14:32:07.512Z",
   "signature": "sha256=9d1f4c…"
@@ -156,7 +155,7 @@ export default function IntegrationsPage() {
         <StatHero
           icon={Plug}
           title="Webhooks"
-          subtitle="Send DMs, comments & leads to Zapier, Make, or any URL"
+          subtitle="Send guest messages & leads to Zapier, Make, or any URL"
           stats={
             list.length > 0
               ? [
@@ -205,7 +204,7 @@ export default function IntegrationsPage() {
           <EmptyState
             icon={Plug}
             title="No webhooks yet"
-            description="Connect Botlify to your stack. Every DM, comment, and lead can flow into Zapier, Make, or your own endpoints."
+            description="Connect Botlify to your stack. Every guest message and lead can flow into Zapier, Make, or your own endpoints."
             action={
               <button
                 onClick={() => setShowModal(true)}
@@ -222,8 +221,8 @@ export default function IntegrationsPage() {
               <motion.div
                 key={i._id}
                 layout
-                initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { delay: Math.min(idx, 8) * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: Math.min(idx, 8) * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
                 exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.2 } }}
               >
               <WebhookCard
@@ -477,9 +476,9 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
       <motion.div
         className="glass-strong flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl"
         onMouseDown={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, y: 12, scale: 0.96, filter: "blur(4px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: 8, scale: 0.97, filter: "blur(4px)" }}
+        initial={{ opacity: 0, y: 12, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 8, scale: 0.97 }}
         transition={{ type: "spring", stiffness: 420, damping: 30 }}
       >
         {/* sticky header */}

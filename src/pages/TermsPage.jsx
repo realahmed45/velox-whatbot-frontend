@@ -8,18 +8,18 @@ const SECTIONS = [
   },
   {
     h: "Description of Service",
-    p: "Botlify lets you automate replies to your own Instagram direct messages and comments — auto-replies, comment-to-DM, story triggers, drip sequences, broadcasts, scheduled posts, and AI-assisted responses. Botlify connects to Instagram through a third-party messaging provider and is not affiliated with, endorsed by, or operated by Instagram or Meta.",
+    p: "Botlify is a channel manager for hotels and other accommodation businesses: it syncs rooms, rates and availability across the online travel agencies you connect (such as Booking.com, Airbnb and Expedia) and lets you automate replies to your guests' messages in those platforms' messaging inboxes and on WhatsApp — auto-replies, drip sequences, broadcasts, and AI-assisted responses. Botlify connects to online travel agencies through a third-party connectivity partner and to WhatsApp through Meta's WhatsApp Business API via a third-party messaging provider, and is not affiliated with, endorsed by, or operated by Booking.com, Airbnb, Expedia, WhatsApp or Meta.",
   },
   {
     h: "Account Requirements",
-    p: "You must be at least 16 years old and provide accurate registration details. To use the messaging features you need an Instagram Business or Creator account, which you authorize us to access on your behalf. You are responsible for keeping your login credentials secure and for all activity under your account and that of any team members you invite.",
+    p: "You must be at least 16 years old and provide accurate registration details. To use the channel and messaging features you need an account with each online travel agency you connect and/or a WhatsApp Business number, which you authorize us to access on your behalf. You are responsible for keeping your login credentials secure and for all activity under your account and that of any team members you invite.",
   },
   {
     h: "Your Responsibilities",
     p: "You agree to:",
     ul: [
-      "Comply with Instagram's and Meta's Terms of Service, Platform Policy, and Community Guidelines at all times",
-      "Only message people in line with Instagram's rules (including its 24-hour messaging window) and applicable anti-spam laws",
+      "Comply with the terms of service, policies, and guidelines of each connected platform (including Booking.com, Airbnb, Expedia, WhatsApp and Meta) at all times",
+      "Only message people in line with each connected platform's rules (including WhatsApp's 24-hour messaging window) and applicable anti-spam laws",
       "Obtain any consent required to contact your audience",
       "Keep your account credentials secure and your billing information current",
       "Not circumvent plan limits, rate limits, or other restrictions",
@@ -49,7 +49,7 @@ const SECTIONS = [
   },
   {
     h: "Service Availability",
-    p: "We work to keep Botlify reliable but do not guarantee uninterrupted or error-free service. Features depend on third parties (including Instagram and our messaging provider) whose availability and policies are outside our control, and the Service may be unavailable during maintenance or events beyond our control.",
+    p: "We work to keep Botlify reliable but do not guarantee uninterrupted or error-free service. Features depend on third parties (including the connected online travel agencies, WhatsApp, our connectivity partner and our messaging provider) whose availability and policies are outside our control, and the Service may be unavailable during maintenance or events beyond our control.",
   },
   {
     h: "Intellectual Property",
@@ -57,7 +57,7 @@ const SECTIONS = [
   },
   {
     h: "Limitation of Liability",
-    p: 'Botlify is provided "as is" and "as available" without warranties of any kind. To the maximum extent permitted by law, we are not liable for indirect, incidental, or consequential damages, including Instagram account restrictions or bans, data loss, or lost profits. Our total liability for any claim is limited to the amount you paid us in the 3 months before the claim.',
+    p: 'Botlify is provided "as is" and "as available" without warranties of any kind. To the maximum extent permitted by law, we are not liable for indirect, incidental, or consequential damages, including restrictions or suspensions of your accounts on connected platforms, data loss, or lost profits. Our total liability for any claim is limited to the amount you paid us in the 3 months before the claim.',
   },
   {
     h: "Termination",

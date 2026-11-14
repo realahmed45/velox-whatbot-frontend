@@ -118,9 +118,9 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
         {open && (
           <motion.div
             role="listbox"
-            initial={{ opacity: 0, scale: 0.96, y: -6, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: -6, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.96, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: -6 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             style={{ transformOrigin: "top center" }}
             className="glass-darker absolute left-3 right-3 top-full z-30 mt-2 overflow-hidden rounded-2xl py-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)]"

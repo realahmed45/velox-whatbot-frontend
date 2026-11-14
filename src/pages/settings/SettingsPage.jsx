@@ -1,11 +1,10 @@
 /**
  * Settings — everything a hotelier needs to run Botlify, in one place.
  *
- * Hotels-only: WhatsApp is the single guest messaging channel (OTA guest
- * messages from Booking.com / Airbnb arrive through the booking-channel
- * connection on the same WhatsApp tab). Instagram / Messenger / Telegram tools
- * and the old developer-ish knobs are no longer surfaced here; their pages and
- * routes still exist, they're just not part of Settings.
+ * Hotels-only: guests are answered inside the OTA inboxes (Booking.com,
+ * Airbnb, Expedia — via the booking-channel connection) and on WhatsApp.
+ * Messenger / Telegram tools and the old developer-ish knobs are no longer
+ * surfaced here.
  *
  * Layout: a grouped left rail on desktop, a scrollable chip strip on phones.
  * Tab ids are the ?tab= deep-link contract (CommandPalette, ConnectChannelGate
@@ -791,7 +790,7 @@ function SecuritySettings({ onGoToTeam }) {
       </div>
 
       {/* Danger zone */}
-      <div className="rounded-2xl bg-rose-50/60 ring-1 ring-rose-500/20 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] p-4 sm:p-5 space-y-4">
+      <div className="rounded-2xl bg-rose-50/80 ring-1 ring-rose-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-rose-100 text-rose-600">
             <AlertTriangle className="w-4 h-4" strokeWidth={1.8} />

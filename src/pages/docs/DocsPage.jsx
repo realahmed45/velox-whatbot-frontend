@@ -40,7 +40,7 @@ function RichText({ text }) {
     const tok = m[0];
     if (tok.startsWith("**"))
       nodes.push(
-        <strong key={key++} className="font-semibold text-white">
+        <strong key={key++} className="font-semibold text-ink-900">
           {tok.slice(2, -2)}
         </strong>,
       );
@@ -48,7 +48,7 @@ function RichText({ text }) {
       nodes.push(
         <code
           key={key++}
-          className="text-[0.85em] font-mono bg-white/[0.08] text-sunset-gold ring-1 ring-white/10 rounded-md px-1.5 py-0.5"
+          className="text-[0.85em] font-mono bg-ink-900/[0.06] text-sunset-flame rounded-md px-1.5 py-0.5"
         >
           {tok.slice(1, -1)}
         </code>,
@@ -60,21 +60,21 @@ function RichText({ text }) {
 }
 
 const NOTE_STYLE = {
-  info: "border-sky-400/20 bg-sky-400/[0.07] text-sky-100",
-  tip: "border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-100",
-  warn: "border-amber-400/20 bg-amber-400/[0.07] text-amber-100",
+  info: "border-sky-200 bg-sky-50/80 text-sky-900",
+  tip: "border-emerald-200 bg-emerald-50/80 text-emerald-900",
+  warn: "border-amber-200 bg-amber-50/80 text-amber-900",
 };
 
 function Block({ b }) {
   if (b.p)
     return (
-      <p className="text-white/65 leading-relaxed">
+      <p className="text-ink-600 leading-relaxed">
         <RichText text={b.p} />
       </p>
     );
   if (b.h)
     return (
-      <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mt-7 mb-1 scroll-mt-24">
+      <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-950 mt-7 mb-1 scroll-mt-24">
         {b.h}
       </h3>
     );
@@ -82,7 +82,7 @@ function Block({ b }) {
     return (
       <ul className="space-y-2 my-1">
         {b.list.map((li, i) => (
-          <li key={i} className="flex gap-2.5 text-white/65 leading-relaxed">
+          <li key={i} className="flex gap-2.5 text-ink-600 leading-relaxed">
             <span className="mt-2 w-1.5 h-1.5 rounded-full bg-sunset shrink-0" />
             <span>
               <RichText text={li} />
@@ -95,7 +95,7 @@ function Block({ b }) {
     return (
       <ol className="space-y-2.5 my-1">
         {b.steps.map((st, i) => (
-          <li key={i} className="flex gap-3 text-white/65 leading-relaxed">
+          <li key={i} className="flex gap-3 text-ink-600 leading-relaxed">
             <span className="shrink-0 w-6 h-6 rounded-full bg-sunset text-white text-xs font-bold grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] tabular-nums">
               {i + 1}
             </span>
@@ -109,27 +109,27 @@ function Block({ b }) {
   if (b.note)
     return (
       <div
-        className={`my-2 rounded-xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${NOTE_STYLE[b.tone] || NOTE_STYLE.info}`}
+        className={`my-2 rounded-xl border px-4 py-3 text-sm leading-relaxed ${NOTE_STYLE[b.tone] || NOTE_STYLE.info}`}
       >
         <RichText text={b.note} />
       </div>
     );
   if (b.code)
     return (
-      <div className="my-2 rounded-xl bg-black/50 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] text-white/85 font-mono text-[13px] px-4 py-3 overflow-x-auto">
+      <div className="my-2 rounded-xl bg-night-950 ring-1 ring-ink-900/10 text-white/85 font-mono text-[13px] px-4 py-3 overflow-x-auto">
         {b.code}
       </div>
     );
   if (b.table)
     return (
-      <div className="my-3 overflow-x-auto rounded-xl ring-1 ring-white/10 bg-white/[0.03]">
+      <div className="my-3 overflow-x-auto rounded-xl ring-1 ring-ink-900/[0.08] bg-white">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-white/[0.05] text-left">
+            <tr className="bg-ink-900/[0.03] text-left">
               {b.table.head.map((h, i) => (
                 <th
                   key={i}
-                  className="px-3.5 py-2.5 font-semibold text-white/80 border-b border-white/10 whitespace-nowrap"
+                  className="px-3.5 py-2.5 font-semibold text-ink-700 border-b border-ink-900/[0.08] whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -138,11 +138,11 @@ function Block({ b }) {
           </thead>
           <tbody>
             {b.table.rows.map((row, ri) => (
-              <tr key={ri} className="border-b border-white/[0.06] last:border-0 transition-colors hover:bg-white/[0.03]">
+              <tr key={ri} className="border-b border-ink-900/[0.06] last:border-0 transition-colors hover:bg-ink-900/[0.02]">
                 {row.map((cell, ci) => (
                   <td
                     key={ci}
-                    className={`px-3.5 py-2.5 ${ci === 0 ? "font-medium text-white/90" : "text-white/60"}`}
+                    className={`px-3.5 py-2.5 ${ci === 0 ? "font-medium text-ink-900" : "text-ink-600"}`}
                   >
                     {cell || "—"}
                   </td>
@@ -206,7 +206,7 @@ export default function DocsPage() {
   const navList = (mobile) =>
     groups.map((g) => (
       <div key={g.group} className={mobile ? "mb-5" : undefined}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40 mb-2 px-2.5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 mb-2 px-2.5">
           {g.group}
         </p>
         <ul className="space-y-0.5">
@@ -218,14 +218,14 @@ export default function DocsPage() {
                   onClick={() => jump(s.id)}
                   className={`relative isolate block w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all duration-300 ease-spring ${
                     on
-                      ? "text-white font-medium"
-                      : "text-white/55 hover:text-white hover:bg-white/[0.05] hover:translate-x-0.5"
+                      ? "text-ink-900 font-medium"
+                      : "text-ink-500 hover:text-ink-900 hover:bg-ink-900/[0.04] hover:translate-x-0.5"
                   }`}
                 >
                   {on && (
                     <motion.span
                       layoutId={mobile ? "docs-nav-m" : "docs-nav"}
-                      className="absolute inset-0 -z-10 rounded-lg bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                      className="absolute inset-0 -z-10 rounded-lg bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]"
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
                     >
                       <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-sunset" />
@@ -241,31 +241,32 @@ export default function DocsPage() {
     ));
 
   return (
-    <div className="bg-night-950 text-white">
+    <div className="bg-[#FBFAF8] text-ink-900">
       {/* Header band */}
-      <div className="relative isolate overflow-hidden border-b border-white/[0.07] grain">
-        <Aurora variant="dark" />
-        <div className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b" aria-hidden />
+      <div className="relative isolate overflow-hidden border-b border-ink-900/[0.06]">
+        <Aurora />
+        <div className="absolute inset-0 -z-10 bg-dot-grid mask-fade-b opacity-60" aria-hidden />
         <Reveal className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-white/70 bg-white/[0.06] ring-1 ring-white/10 px-3 py-1 rounded-full">
-            <BookOpen className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} /> Documentation
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-600 bg-white ring-1 ring-ink-900/[0.08] shadow-sm px-3 py-1 rounded-full">
+            <BookOpen className="w-3.5 h-3.5 text-sunset-flame" strokeWidth={1.8} /> Documentation
           </span>
-          <h1 className="mt-5 font-display text-4xl sm:text-6xl font-semibold tracking-[-0.04em] leading-[1]">
+          <h1 className="mt-5 font-display text-4xl sm:text-6xl font-semibold tracking-[-0.04em] leading-[1] text-ink-950">
             Everything you need to{" "}
             <span className="font-serif italic font-normal text-sunset">run</span>{" "}
             Botlify.
           </h1>
-          <p className="mt-4 text-white/60 max-w-2xl sm:text-lg">
-            Set up your account, teach your AI, and connect your booking channels —
-            step by step. Search below or browse the sidebar.
+          <p className="mt-4 text-ink-600 max-w-2xl sm:text-lg">
+            Botlify is the AI channel manager for hotels. Set up your property,
+            connect Booking.com, Airbnb, Expedia and WhatsApp, and teach the AI that
+            answers your guests — step by step. Search below or browse the sidebar.
           </p>
           <div className="group mt-7 relative max-w-lg">
-            <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 transition-transform duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-gold" />
+            <Search className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 z-10 -translate-y-1/2 transition-transform duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-flame" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search the docs…"
-              className="w-full rounded-xl bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl pl-10 pr-3 py-3 text-sm text-white placeholder:text-white/35 outline-none transition-all duration-300 focus:bg-white/[0.09] focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.15)]"
+              className="input w-full !pl-10"
             />
           </div>
         </Reveal>
@@ -277,7 +278,7 @@ export default function DocsPage() {
           <nav className="sticky top-24 space-y-6 max-h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar">
             {navList(false)}
             {!groups.length && (
-              <p className="text-sm text-white/40 px-2.5">No matches.</p>
+              <p className="text-sm text-ink-400 px-2.5">No matches.</p>
             )}
           </nav>
         </aside>
@@ -303,14 +304,14 @@ export default function DocsPage() {
         <AnimatePresence>
           {navOpen && (
             <motion.div
-              className="lg:hidden fixed inset-0 z-20 bg-night-950/50 backdrop-blur-md"
+              className="lg:hidden fixed inset-0 z-20 bg-night-950/30"
               onClick={() => setNavOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="glass-darker absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] p-5 overflow-y-auto"
+                className="glass-strong absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] p-5 overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
@@ -328,27 +329,27 @@ export default function DocsPage() {
           {visibleSections.length === 0 && (
             <div className="relative text-center py-20">
               <div className="relative mx-auto mb-5 h-14 w-14">
-                <div className="absolute inset-0 rounded-full bg-sunset opacity-30 blur-2xl" />
-                <div className="relative h-14 w-14 rounded-2xl grid place-items-center bg-white/[0.06] ring-1 ring-white/10">
-                  <Search className="h-6 w-6 text-sunset-gold" strokeWidth={1.8} />
+                <div className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+                <div className="relative h-14 w-14 rounded-2xl grid place-items-center bg-white ring-1 ring-ink-900/[0.08]">
+                  <Search className="h-6 w-6 text-sunset-flame" strokeWidth={1.8} />
                 </div>
               </div>
-              <p className="font-display text-xl font-semibold text-white">No results</p>
-              <p className="text-sm text-white/50">Try a different search term.</p>
+              <p className="font-display text-xl font-semibold text-ink-950">No results</p>
+              <p className="text-sm text-ink-500">Try a different search term.</p>
             </div>
           )}
           {visibleSections.map((s) => (
             <section
               key={s.id}
               id={s.id}
-              className="scroll-mt-24 mb-14 pb-14 border-b border-white/[0.07] last:border-0"
+              className="scroll-mt-24 mb-14 pb-14 border-b border-ink-900/[0.06] last:border-0"
             >
               <Reveal y={16}>
-                <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white">
+                <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950">
                   {s.title}
                 </h2>
                 {s.summary && (
-                  <p className="mt-1.5 text-sunset-gold/90 font-medium">{s.summary}</p>
+                  <p className="mt-1.5 text-sunset-flame font-medium">{s.summary}</p>
                 )}
                 <div className="mt-5 space-y-3">
                   {s.blocks.map((b, i) => (
@@ -362,13 +363,13 @@ export default function DocsPage() {
           {/* CTA footer */}
           {!q && (
             <Reveal>
-              <div className="card-dark relative overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sunset opacity-25 blur-3xl" aria-hidden />
+              <div className="card relative overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sunset opacity-15 blur-3xl" aria-hidden />
                 <div className="relative">
-                  <p className="font-display font-semibold text-xl tracking-[-0.02em]">
-                    Ready to automate your DMs?
+                  <p className="font-display font-semibold text-xl tracking-[-0.02em] text-ink-950">
+                    Ready to stop answering guests by hand?
                   </p>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-ink-600 text-sm">
                     Start your 3-day free trial — live in minutes.
                   </p>
                 </div>

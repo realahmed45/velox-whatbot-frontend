@@ -215,9 +215,9 @@ function SetupCards({ onDone, onCancel }) {
       {!mode && (
         <motion.div
           key="choose"
-          initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="grid md:grid-cols-2 gap-4"
         >
@@ -261,12 +261,12 @@ function SetupCards({ onDone, onCancel }) {
       )}
 
       {mode === "import" && (
-        <motion.div key="import" initial={{ opacity: 0, y: 12, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(6px)" }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+        <motion.div key="import" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
           <ImportFlow onBack={() => setMode(null)} onDone={onDone} onManual={() => setMode("manual")} />
         </motion.div>
       )}
       {mode === "manual" && (
-        <motion.div key="manual" initial={{ opacity: 0, y: 12, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(6px)" }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+        <motion.div key="manual" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
           <ManualCreateForm onBack={() => setMode(null)} onDone={onDone} />
         </motion.div>
       )}
@@ -985,8 +985,8 @@ function RoomsSection({ property }) {
           {rooms.map((r, i) => (
             <motion.div
               key={r._id}
-              initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring, delay: Math.min(i, 8) * 0.05 }}
               className={`group rounded-xl p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color,box-shadow] duration-500 ease-spring ${r.active === false ? "bg-ink-900/[0.02] opacity-60" : "bg-white/60 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-18px_rgba(255,61,119,0.35)]"}`}
             >

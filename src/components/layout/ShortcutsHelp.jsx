@@ -35,9 +35,9 @@ export default function ShortcutsHelp({ open, onClose }) {
         >
           <motion.div
             className="glass-strong relative w-full max-w-md overflow-hidden rounded-3xl p-6"
-            initial={{ opacity: 0, scale: 0.94, y: 10, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: 6, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.94, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: 6 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
           >
             <div aria-hidden className="pointer-events-none absolute inset-x-8 top-0 h-px bg-sunset opacity-60" />

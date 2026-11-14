@@ -22,7 +22,6 @@ import toast from "react-hot-toast";
 
 const PLATFORM_LABELS = {
   whatsapp: "WhatsApp",
-  instagram: "Instagram",
   messenger: "Facebook Messenger",
   telegram: "Telegram",
 };

@@ -433,7 +433,7 @@ export default function ManageWebsitePage() {
       <AnimatePresence>
       {galleryOpen && (
         <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[150] overflow-y-auto bg-night-950/40 p-3 backdrop-blur-md sm:p-4" onClick={() => setGalleryOpen(false)}>
-          <motion.div initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, y: 16, scale: 0.97, filter: "blur(4px)" }} transition={spring} className="glass-strong mx-auto my-6 max-w-6xl rounded-3xl p-4 sm:p-8" onClick={(e) => e.stopPropagation()}>
+          <motion.div initial={{ opacity: 0, y: 24, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={spring} className="glass-strong mx-auto my-6 max-w-6xl rounded-3xl p-4 sm:p-8" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <h2 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900">Change <span className="font-serif italic font-normal">design</span></h2>

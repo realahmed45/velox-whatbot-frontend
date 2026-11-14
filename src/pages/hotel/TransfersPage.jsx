@@ -208,8 +208,8 @@ export default function TransfersPage() {
               <motion.div
                 key={t._id}
                 layout
-                initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ ...spring, delay: Math.min(i, 8) * 0.04 }}
               >

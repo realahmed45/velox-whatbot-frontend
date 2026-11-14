@@ -173,8 +173,8 @@ export default function PublicBookingPage() {
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#FBFAF8] p-6">
         <div aria-hidden className="absolute h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgba(15,23,42,0.07),transparent_65%)]" />
         <motion.div
-          initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-sm text-center"
         >
@@ -208,8 +208,8 @@ export default function PublicBookingPage() {
           </div>
         )}
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(8px)" }}
-          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 26 }}
           className="relative max-w-md w-full rounded-[28px] bg-white/80 p-6 sm:p-8 text-center backdrop-blur-2xl backdrop-saturate-150 shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_30px_80px_-30px_rgba(15,23,42,0.35)]"
         >
@@ -293,8 +293,8 @@ export default function PublicBookingPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 pb-12 sm:p-7 sm:pb-14">
           <motion.div
-            initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-3xl mx-auto"
           >
@@ -498,8 +498,8 @@ export default function PublicBookingPage() {
                 {rooms.map((r, i) => (
                   <motion.div
                     key={r.id}
-                    initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <RoomCard

@@ -1,7 +1,7 @@
 /**
  * accounts.js — client helpers for multi-account (multi-workspace) management.
- * One Botlify identity → many accounts (each = a workspace with its own IG,
- * bot, data and billing). These wrap the backend endpoints and keep the
+ * One Botlify identity → many accounts (each = a workspace with its own
+ * property, channels, AI, data and billing). These wrap the backend endpoints and keep the
  * persisted active-account choice in sync.
  */
 import api from "@/services/api";
@@ -30,14 +30,14 @@ export async function switchAccount(workspaceId) {
 
 /**
  * Create a brand-new account (independent workspace) and switch into it, then
- * route into onboarding to connect that account's Instagram + start its trial.
+ * route into onboarding to set up that account's property + start its trial.
  */
 export async function addAccount() {
   const { data } = await api.post("/workspaces/add-account", {});
   const ws = data.workspace;
   useAuthStore.getState().setActiveWorkspace(ws._id);
-  // New account has no plan + no IG yet → onboarding gate will walk them
-  // through pricing → connect IG → business type, all scoped to this new ws.
+  // New account has no plan yet → onboarding gate will walk it through
+  // setup, all scoped to this new ws.
   window.location.assign("/onboarding/pricing");
   return ws;
 }

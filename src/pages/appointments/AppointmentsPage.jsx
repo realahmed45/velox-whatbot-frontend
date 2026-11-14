@@ -217,8 +217,8 @@ export default function AppointmentsPage() {
             <span className="font-serif italic font-normal">Appointments</span>
           </h1>
           <p className="text-sm text-ink-500 mt-0.5">
-            Bookings your bot captures from Instagram DMs, and how scheduling
-            works.
+            Bookings your AI captures from guest conversations, and how
+            scheduling works.
           </p>
         </div>
       </Reveal>
@@ -238,9 +238,9 @@ export default function AppointmentsPage() {
       <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={tab}
-        initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       >
       {tab === "bookings" ? (
@@ -276,13 +276,13 @@ export default function AppointmentsPage() {
             <Reveal className="card text-center py-16 px-6">
               <div className="relative mx-auto w-14 h-14 mb-4">
                 <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
-                <div className="relative w-14 h-14 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center animate-float">
+                <div className="relative w-14 h-14 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center">
                   <CalendarCheck className="w-7 h-7" strokeWidth={1.8} />
                 </div>
               </div>
               <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">No bookings yet</p>
               <p className="text-sm text-ink-500 mt-1">
-                When your bot books someone from a DM, it'll show up here.
+                When your AI books a guest from a conversation, it'll show up here.
               </p>
             </Reveal>
           ) : (
@@ -321,9 +321,6 @@ export default function AppointmentsPage() {
                         <span className="inline-flex items-center gap-1">
                           <Phone className="w-3.5 h-3.5" /> <span className="tabular-nums">{a.customerPhone}</span>
                         </span>
-                      )}
-                      {a.igUsername && (
-                        <span className="text-ink-400">@{a.igUsername}</span>
                       )}
                     </div>
                   </div>

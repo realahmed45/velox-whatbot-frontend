@@ -488,8 +488,8 @@ export default function TrainAiPage() {
               </div>
               {tab === "test" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="max-w-3xl mx-auto"
                 >
@@ -828,9 +828,9 @@ function QuestionsPanel({
       <AnimatePresence initial={false}>
         {addDraft && (
           <motion.div
-            initial={{ opacity: 0, height: 0, filter: "blur(4px)" }}
-            animate={{ opacity: 1, height: "auto", filter: "blur(0px)" }}
-            exit={{ opacity: 0, height: 0, filter: "blur(4px)" }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
@@ -1589,9 +1589,9 @@ function PlaybookPanel({ playbook, onSave }) {
             <motion.div
               key={r._k}
               layout="position"
-              initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.97, filter: "blur(4px)" }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97 }}
               transition={spring}
               className={`card group p-4 transition-shadow duration-500 ${flagged ? ringError : "focus-within:shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.45),0_16px_36px_-18px_rgba(255,61,119,0.35)]"}`}
             >
@@ -1672,9 +1672,9 @@ function SaveBar({ dirty, saving, error, onSave, onDiscard, label }) {
     <AnimatePresence>
       {(dirty || error) && (
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(6px)" }}
+          initial={{ opacity: 0, y: 24, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.97 }}
           transition={spring}
           className="sticky bottom-16 lg:bottom-0 z-20 mt-5 pb-4"
         >

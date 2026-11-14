@@ -550,9 +550,9 @@ export default function CalendarPage() {
                 {openRoom && (
                   <motion.div
                     key={String(openRoom)}
-                    initial={{ height: 0, opacity: 0, filter: "blur(4px)" }}
-                    animate={{ height: "auto", opacity: 1, filter: "blur(0px)" }}
-                    exit={{ height: 0, opacity: 0, filter: "blur(4px)" }}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                     className="overflow-hidden"
                   >

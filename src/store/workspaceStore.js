@@ -18,7 +18,7 @@ export const useWorkspaceStore = create(
         const haveCachedMatch =
           cached && String(cached._id) === String(workspaceId);
         // Only show the blocking spinner when we have nothing to show yet —
-        // unless `force` is set (e.g. right after connecting Instagram, when the
+        // unless `force` is set (e.g. right after connecting a channel, when the
         // cached copy is known-stale and we must not render off it).
         set({ loading: opts.force || !haveCachedMatch });
         try {

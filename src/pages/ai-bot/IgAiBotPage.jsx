@@ -14,7 +14,7 @@
  *   🙋  handoff keywords          — when to fetch a human
  *
  * Removed on purpose: product catalog, free-text "business context", the
- * Instagram-era persona fields and the knowledge-source uploader — every one
+ * legacy persona fields and the knowledge-source uploader — every one
  * of those is either answered by the property/room record or belongs to the
  * old chatbot product. Their stored values are preserved verbatim on save so
  * nothing is destroyed server-side (workspace.aiSettings is replaced wholesale
@@ -58,9 +58,9 @@ import { PulseDot, Reveal, SlidingTabs } from "@/components/fx";
 
 // Shared pop for popovers + modal panels (design system spring).
 const pop = {
-  initial: { opacity: 0, y: 8, scale: 0.96, filter: "blur(4px)" },
-  animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, y: 6, scale: 0.97, filter: "blur(4px)" },
+  initial: { opacity: 0, y: 8, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 6, scale: 0.97 },
   transition: { type: "spring", stiffness: 420, damping: 30 },
 };
 
@@ -391,9 +391,9 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={tab}
-          initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
 
@@ -1118,7 +1118,7 @@ function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, dan
   );
 }
 
-/* Playground — try the real bot in a sandbox chat. No DM is sent. (Phase 2) */
+/* Playground — try the real bot in a sandbox chat. No message is sent. (Phase 2) */
 function Playground({ workspaceId, enabled }) {
   const [msgs, setMsgs] = useState([]); // {role:'user'|'assistant', content}
   const [input, setInput] = useState("");
@@ -1181,7 +1181,7 @@ function Playground({ workspaceId, enabled }) {
               Test your bot
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
-              A safe sandbox — try messages before going live. No real DM is
+              A safe sandbox — try messages before going live. No real guest message is
               sent.
             </p>
           </div>
@@ -1205,7 +1205,7 @@ function Playground({ workspaceId, enabled }) {
           <div className="h-full flex flex-col items-center justify-center text-center px-6">
             <div className="relative mb-3">
               <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
-              <div className="relative w-12 h-12 rounded-2xl bg-white ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] grid place-items-center animate-float">
+              <div className="relative w-12 h-12 rounded-2xl bg-white ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] grid place-items-center">
                 <Bot className="w-6 h-6 text-sunset-flame" strokeWidth={1.8} />
               </div>
             </div>
@@ -1279,7 +1279,7 @@ function Playground({ workspaceId, enabled }) {
       {!enabled && (
         <p className="px-4 pb-3 text-[11px] text-amber-600">
           Note: the bot is currently paused — testing still works here, but it
-          won't reply to real DMs until you turn it on and save.
+          won't reply to real guests until you turn it on and save.
         </p>
       )}
     </div>

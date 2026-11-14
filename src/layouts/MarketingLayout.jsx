@@ -5,14 +5,13 @@ import SupportChat from "@/components/SupportChat";
 import { Aurora } from "@/components/fx";
 
 /**
- * Public marketing shell — the dark, cinematic canvas: night base, a slow
- * sunset aurora fixed behind everything, and a film-grain veil.
+ * Public marketing shell — warm, light canvas with a static sunset aurora
+ * fixed behind everything.
  */
 export default function MarketingLayout() {
   return (
-    <div className="relative isolate flex min-h-screen flex-col bg-night-950 text-white">
-      <Aurora variant="dark" fixed className="opacity-70" />
-      <div aria-hidden className="grain pointer-events-none fixed inset-0 -z-10" />
+    <div className="relative isolate flex min-h-screen flex-col bg-[#FBFAF8] text-ink-950">
+      <Aurora fixed />
       <PublicHeader />
       <main className="flex-1">
         <Outlet />

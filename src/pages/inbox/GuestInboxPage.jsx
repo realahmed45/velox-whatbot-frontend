@@ -2,18 +2,21 @@
  * Guest inbox — every channel Botlify answers on, in one two-pane screen.
  *
  * Conversations are split by platform first: a row of channel tabs (All ·
- * WhatsApp · Instagram · Messenger · Telegram) sits above the list, each
- * carrying its brand mark and a count/unread badge from the server's
- * `byChannel` totals. Picking a tab refetches with `?channel=`; "All" omits it.
- * Tabs only render for channels the workspace has actually connected, and are
- * hidden entirely when fewer than two are live — a single-channel hotel gets
- * the plain list it had before.
+ * Airbnb · Booking.com · Expedia · WhatsApp) sits above the list — OTA inbox
+ * conversations first, since that's where most guests write. Each tab carries
+ * its brand mark and a count/unread badge from the server's `byChannel`
+ * totals. Picking a tab refetches with `?channel=`; "All" omits it. Any other
+ * channel the workspace has connected is appended after the core four.
  *
  * Responsive: list-only on mobile, swaps to the chat when a conversation opens.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
-import { CHANNEL_ORDER, channelMeta } from "@/components/ChannelMarks";
+import {
+  CHANNEL_ORDER,
+  CORE_CHANNELS,
+  channelMeta,
+} from "@/components/ChannelMarks";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useInboxStore } from "@/store/inboxStore";
@@ -162,9 +165,9 @@ export default function GuestInboxPage() {
   const [filter, setFilter] = useState("all");
   const [channel, setChannel] = useState("all");
   const [byChannel, setByChannel] = useState({});
-  const [connected, setConnected] = useState([]);
-  // Channels whose "connected" state is implied by having conversations.
-  const OTA_CHANNELS = ["booking_com", "airbnb", "expedia"];
+  // Channels beyond the core four (OTA inboxes + WhatsApp) that this
+  // workspace has connected — appended after the core tabs.
+  const [extraConnected, setExtraConnected] = useState([]);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
@@ -202,34 +205,35 @@ export default function GuestInboxPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, search, setConversations]);
 
-  // Which channels this hotel has actually connected — tabs for anything else
-  // would just be dead ends.
+  // The core four tabs (Airbnb, Booking.com, Expedia, WhatsApp) always show.
+  // Any other channel the hotel has connected directly is appended. Fetched
+  // once per workspace — not on every incoming message.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const { data } = await api.get("/channels/status");
         if (cancelled) return;
-        // /channels/status only knows about the social channels we connect
-        // directly. OTA threads arrive through the channel manager, so the
-        // honest test for those is simply "are there conversations?" — a tab
-        // with guests behind it is never a dead end.
-        const social = CHANNEL_ORDER.filter(
-          (k) => data?.[k]?.status === "connected",
+        setExtraConnected(
+          CHANNEL_ORDER.filter(
+            (k) =>
+              !CORE_CHANNELS.includes(k) && data?.[k]?.status === "connected",
+          ),
         );
-        const withThreads = [
-          ...new Set((conversations || []).map((c) => c.channelType)),
-        ].filter((k) => OTA_CHANNELS.includes(k));
-        setConnected([...new Set([...social, ...withThreads])]);
       } catch {
-        // Non-fatal: without the status map we simply show no channel tabs.
-        if (!cancelled) setConnected([]);
+        // Non-fatal: the core tabs still show.
+        if (!cancelled) setExtraConnected([]);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [activeWorkspace, conversations]);
+  }, [activeWorkspace]);
+
+  const connected = useMemo(
+    () => [...CORE_CHANNELS, ...extraConnected],
+    [extraConnected],
+  );
 
   // Refetch whenever the channel tab, status filter or search text changes.
   // Search is debounced so typing doesn't hammer the endpoint.
@@ -380,8 +384,7 @@ export default function GuestInboxPage() {
     });
   }, [conversations, channel, filter, search]);
 
-  // Tabs only earn their space when there's more than one channel to switch
-  // between.
+  // OTA inboxes + WhatsApp are always there to switch between.
   const showTabs = connected.length >= 2;
   const tabs = useMemo(
     () =>
@@ -416,7 +419,7 @@ export default function GuestInboxPage() {
       {/* List pane */}
       <div
         className={clsx(
-          "relative flex-shrink-0 border-r border-white/70 bg-white/60 backdrop-blur-2xl backdrop-saturate-150 shadow-[1px_0_0_rgba(15,23,42,0.05)] flex flex-col h-full min-h-0",
+          "relative flex-shrink-0 border-r border-white/70 bg-white/85 shadow-[1px_0_0_rgba(15,23,42,0.05)] flex flex-col h-full min-h-0",
           "w-full md:w-[21rem] lg:w-[23rem]",
           activeConversationId && "hidden md:flex",
         )}
@@ -654,7 +657,7 @@ export default function GuestInboxPage() {
       {active ? (
         <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
           {/* Chat header — light glass */}
-          <div className="relative z-10 border-b border-white/70 bg-white/65 px-3 py-3.5 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_1px_0_rgba(15,23,42,0.05)] sm:px-5">
+          <div className="relative z-10 border-b border-white/70 bg-white/90 px-3 py-3.5 shadow-[0_1px_0_rgba(15,23,42,0.05)] sm:px-5">
             <button
               onClick={() => setActiveConversation(null)}
               className="group mb-2 inline-flex min-h-[32px] items-center gap-1 rounded-lg pr-2 text-xs font-semibold text-sunset-flame md:hidden"
@@ -823,7 +826,7 @@ export default function GuestInboxPage() {
           </div>
 
           {/* Reply box */}
-          <div className="border-t border-white/70 bg-white/60 p-3 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_-1px_0_rgba(15,23,42,0.05)]">
+          <div className="border-t border-white/70 bg-white/90 p-3 shadow-[0_-1px_0_rgba(15,23,42,0.05)]">
             <AnimatePresence initial={false}>
               {active.botEnabled === false && (
                 <motion.div
@@ -889,7 +892,7 @@ export default function GuestInboxPage() {
           <Reveal className="relative max-w-sm px-6">
             <div className="relative mx-auto mb-6 h-24 w-24">
               <div className="absolute inset-0 rounded-3xl bg-sunset opacity-30 blur-2xl" />
-              <div className="glass-strong relative flex h-24 w-24 animate-float items-center justify-center rounded-3xl">
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white/90 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff,0_12px_30px_-14px_rgba(15,23,42,0.25)]">
                 <BotlifyMark size={56} className="drop-shadow" />
               </div>
             </div>
@@ -975,7 +978,7 @@ function Bubble({ msg }) {
           "relative max-w-[82%] overflow-hidden px-3.5 py-2.5 text-sm sm:max-w-[70%]",
           out
             ? "rounded-2xl rounded-br-md bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(0,0,0,0.06),0_10px_24px_-12px_rgba(255,61,119,0.55)]"
-            : "rounded-2xl rounded-bl-md bg-white/85 text-ink-800 ring-1 ring-ink-900/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_#fff,0_4px_14px_-8px_rgba(15,23,42,0.18)]",
+            : "rounded-2xl rounded-bl-md bg-white text-ink-800 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff,0_4px_14px_-8px_rgba(15,23,42,0.18)]",
         )}
       >
         {out && (

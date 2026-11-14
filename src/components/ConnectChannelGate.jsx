@@ -1,9 +1,9 @@
 /**
  * Messaging-channel gate.
  * Pages wrapped by this component render normally when ANY guest messaging
- * channel is connected — WhatsApp, Instagram, Messenger or Telegram. A hotel
- * running WhatsApp only must never be blocked out of its own inbox, which is
- * what this used to do when it checked Instagram alone.
+ * channel is connected. A hotel running WhatsApp only must never be blocked
+ * out of its own inbox. `workspace.instagram` is the backend's historical
+ * connection record and is still checked so no existing connection is missed.
  */
 import { MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -35,8 +35,9 @@ export default function ConnectChannelGate({ children, feature }) {
               : "Connect a channel to see guest messages"}
           </p>
           <p className="text-xs text-ink-500 mt-0.5">
-            Connect WhatsApp, Instagram, Messenger or Telegram and your AI
-            starts answering guests there. Takes about a minute.
+            Connect WhatsApp and your AI starts answering guests there —
+            booking-site messages arrive once Airbnb, Booking.com or Expedia
+            is linked. Takes about a minute.
           </p>
         </div>
         <Link

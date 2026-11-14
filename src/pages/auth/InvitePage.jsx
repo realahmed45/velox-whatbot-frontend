@@ -24,10 +24,10 @@ import TurnstileWidget, {
 import { checkPassword } from "@/utils/passwordPolicy";
 import toast from "react-hot-toast";
 
-// Dark liquid-glass field — `.input` is the light variant.
+// Shared light form-field classes from index.css.
 const FIELD =
-  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
-const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+  "input";
+const LABEL = "label";
 
 /**
  * Team-invite landing page. Emailed link:
@@ -220,11 +220,11 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="relative isolate min-h-screen flex flex-col items-center justify-center bg-night-950 text-white p-4 overflow-hidden grain">
-      <Aurora variant="dark" />
+    <div className="relative isolate min-h-screen flex flex-col items-center justify-center bg-[#FBFAF8] text-ink-950 p-4 overflow-hidden">
+      <Aurora />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+        className="absolute inset-0 -z-10 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
       />
 
       <Link
@@ -236,35 +236,35 @@ export default function InvitePage() {
 
       <motion.div
         layout
-        initial={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
-        className="card-dark w-full max-w-sm p-6 sm:p-8"
+        className="card w-full max-w-sm p-6 sm:p-8"
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={phase}
-            initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
           >
             {phase === "loading" && (
               <div className="text-center py-4">
-                <Loader2 className="w-7 h-7 text-sunset-gold animate-spin mx-auto mb-3" />
-                <p className="text-sm text-white/60">Checking your invite…</p>
+                <Loader2 className="w-7 h-7 text-sunset-flame animate-spin mx-auto mb-3" />
+                <p className="text-sm text-ink-600">Checking your invite…</p>
               </div>
             )}
 
             {phase === "accepting" && (
               <div className="text-center py-2">
                 <div className="relative w-14 h-14 mx-auto mb-4">
-                  <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl" />
+                  <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-20 blur-2xl" />
                   <div className="relative w-14 h-14 rounded-2xl bg-sunset grid place-items-center">
                     <Loader2 className="w-7 h-7 text-white animate-spin" />
                   </div>
                 </div>
-                <p className="font-display font-semibold text-white">Joining the team…</p>
+                <p className="font-display font-semibold text-ink-950">Joining the team…</p>
               </div>
             )}
 
@@ -276,16 +276,16 @@ export default function InvitePage() {
                   transition={{ type: "spring", stiffness: 420, damping: 14 }}
                   className="relative w-14 h-14 mx-auto mb-4"
                 >
-                  <div aria-hidden className="absolute -inset-3 rounded-full bg-emerald-400 opacity-30 blur-2xl" />
-                  <div className="relative w-14 h-14 rounded-2xl bg-emerald-500/20 ring-1 ring-emerald-400/40 grid place-items-center">
-                    <Check className="w-7 h-7 text-emerald-300" />
+                  <div aria-hidden className="absolute -inset-3 rounded-full bg-emerald-400 opacity-20 blur-2xl" />
+                  <div className="relative w-14 h-14 rounded-2xl bg-emerald-50 ring-1 ring-emerald-200 grid place-items-center">
+                    <Check className="w-7 h-7 text-emerald-600" />
                   </div>
                 </motion.div>
-                <p className="font-display font-semibold tracking-[-0.02em] text-white text-xl">
+                <p className="font-display font-semibold tracking-[-0.02em] text-ink-950 text-xl">
                   You're <span className="font-serif italic font-normal">in!</span> 🎉
                 </p>
-                <p className="text-sm text-white/60 mt-1.5">{message}</p>
-                <p className="text-xs text-white/40 mt-3">
+                <p className="text-sm text-ink-600 mt-1.5">{message}</p>
+                <p className="text-xs text-ink-400 mt-3">
                   Taking you to the dashboard…
                 </p>
               </div>
@@ -293,16 +293,16 @@ export default function InvitePage() {
 
             {phase === "error" && (
               <div className="text-center py-2">
-                <div className="w-14 h-14 rounded-2xl bg-rose-500/15 ring-1 ring-rose-400/30 grid place-items-center mx-auto mb-4">
-                  <XCircle className="w-7 h-7 text-rose-300" />
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 ring-1 ring-rose-200 grid place-items-center mx-auto mb-4">
+                  <XCircle className="w-7 h-7 text-rose-600" />
                 </div>
-                <p className="font-display font-semibold tracking-[-0.02em] text-white text-xl">
+                <p className="font-display font-semibold tracking-[-0.02em] text-ink-950 text-xl">
                   Invite problem
                 </p>
-                <p className="text-sm text-white/60 mt-1.5">{message}</p>
+                <p className="text-sm text-ink-600 mt-1.5">{message}</p>
                 <Link
                   to="/dashboard"
-                  className="btn-glass-dark mt-5 group"
+                  className="btn-secondary mt-5 group"
                 >
                   <Users className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />{" "}
                   Go to dashboard
@@ -314,24 +314,20 @@ export default function InvitePage() {
               <div>
                 <div className="text-center mb-6">
                   <div className="relative w-12 h-12 mx-auto mb-4">
-                    <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl" />
-                    <motion.div
-                      animate={{ y: [0, -3, 0] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                      className="relative w-12 h-12 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
-                    >
+                    <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-20 blur-2xl" />
+                    <div className="relative w-12 h-12 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                       <Users className="w-6 h-6" strokeWidth={1.8} />
-                    </motion.div>
+                    </div>
                   </div>
-                  <h1 className="font-display font-semibold tracking-[-0.03em] text-white text-2xl leading-tight">
+                  <h1 className="font-display font-semibold tracking-[-0.03em] text-ink-950 text-2xl leading-tight">
                     Join{" "}
                     <span className="font-serif italic font-normal">
                       {info.workspaceName}
                     </span>
                   </h1>
-                  <p className="text-sm text-white/60 mt-1.5">
+                  <p className="text-sm text-ink-600 mt-1.5">
                     {info.ownerName ? `${info.ownerName} invited ` : "You were invited "}
-                    <span className="font-semibold text-white break-all">{info.email}</span>{" "}
+                    <span className="font-semibold text-ink-950 break-all">{info.email}</span>{" "}
                     as a team member.
                   </p>
                 </div>
@@ -340,7 +336,7 @@ export default function InvitePage() {
                 {authToken &&
                   user?.email &&
                   user.email.toLowerCase() !== info.email.toLowerCase() && (
-                    <div className="mb-4 rounded-xl bg-amber-400/10 ring-1 ring-amber-300/25 p-3 text-xs text-amber-100">
+                    <div className="mb-4 rounded-xl bg-amber-50 ring-1 ring-amber-200 p-3 text-xs text-amber-800">
                       You're signed in as{" "}
                       <span className="font-semibold">{user.email}</span>. To accept,
                       continue as the invited email below.
@@ -350,7 +346,7 @@ export default function InvitePage() {
                 {/* Existing account → just sign in */}
                 {info.hasAccount ? (
                   <div className="space-y-3">
-                    <p className="text-sm text-white/65 text-center">
+                    <p className="text-sm text-ink-600 text-center">
                       You already have a Botlify account. Sign in to accept.
                     </p>
                     <button onClick={goSignIn} className="btn-primary w-full h-11 group">
@@ -360,7 +356,7 @@ export default function InvitePage() {
                   </div>
                 ) : (
                   <div className="space-y-3.5">
-                    <div className="flex justify-center rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+                    <div className="flex justify-center rounded-xl overflow-hidden ring-1 ring-ink-900/[0.08] transition-transform duration-500 ease-spring hover:-translate-y-0.5">
                       <GoogleLogin
                         onSuccess={handleGoogle}
                         onError={() => toast.error("Google sign-in was cancelled")}
@@ -372,10 +368,10 @@ export default function InvitePage() {
 
                     <div className="relative py-1">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                        <div className="w-full h-px bg-gradient-to-r from-transparent via-ink-900/10 to-transparent" />
                       </div>
                       <div className="relative flex justify-center">
-                        <span className="px-3 text-[11px] uppercase tracking-[0.14em] text-white/40 bg-night-950/60 backdrop-blur rounded-full">
+                        <span className="px-3 text-[11px] uppercase tracking-[0.14em] text-ink-400 bg-white rounded-full">
                           or create a password
                         </span>
                       </div>
@@ -385,11 +381,11 @@ export default function InvitePage() {
                     <div>
                       <label className={LABEL}>Email</label>
                       <div className="relative">
-                        <Mail strokeWidth={1.8} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+                        <Mail strokeWidth={1.8} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
                         <input
                           readOnly
                           value={info.email}
-                          className="w-full rounded-xl bg-white/[0.03] ring-1 ring-white/10 pl-9 pr-3 py-2.5 text-sm text-white/50 cursor-not-allowed outline-none"
+                          className="w-full rounded-xl bg-ink-900/[0.04] ring-1 ring-ink-900/[0.08] pl-9 pr-3 py-2.5 text-sm text-ink-500 cursor-not-allowed outline-none"
                         />
                       </div>
                     </div>
@@ -409,7 +405,7 @@ export default function InvitePage() {
                       <div className="relative group">
                         <Lock
                           strokeWidth={1.8}
-                          className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none"
+                          className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame pointer-events-none"
                         />
                         <input
                           type={showPw ? "text" : "password"}
@@ -425,7 +421,7 @@ export default function InvitePage() {
                           type="button"
                           aria-label={showPw ? "Hide password" : "Show password"}
                           onClick={() => setShowPw((v) => !v)}
-                          className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
                         >
                           {showPw ? (
                             <EyeOff className="w-4 h-4" />
@@ -462,11 +458,11 @@ export default function InvitePage() {
                       )}
                     </button>
 
-                    <p className="text-center text-xs text-white/45">
+                    <p className="text-center text-xs text-ink-500">
                       Already have an account?{" "}
                       <button
                         onClick={goSignIn}
-                        className="font-semibold text-sunset-gold hover:underline underline-offset-4"
+                        className="font-semibold text-sunset-flame hover:underline underline-offset-4"
                       >
                         Sign in
                       </button>

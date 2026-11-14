@@ -51,9 +51,9 @@ export default function HelpHint({ title = "How this works", tips = [], footer, 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             style={{ transformOrigin: align === "right" ? "top right" : "top left" }}
             className={`glass-strong absolute top-full z-50 mt-2 w-72 rounded-2xl p-4 sm:w-80 ${

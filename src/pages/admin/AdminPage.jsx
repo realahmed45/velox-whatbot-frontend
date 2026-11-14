@@ -24,7 +24,7 @@ import {
   LogOut,
   Users,
   CreditCard,
-  Instagram,
+  Plug,
   TrendingUp,
   RefreshCw,
   ShieldCheck,
@@ -169,8 +169,8 @@ function AdminLogin({ onSuccess }) {
       <Aurora variant="dark" />
       <motion.form
         onSubmit={submit}
-        initial={{ opacity: 0, y: 20, scale: 0.97, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 26 }}
         className="card-dark w-full max-w-sm p-7"
       >
@@ -227,7 +227,7 @@ const STAGE_META = {
   signed_up: { label: "Signed up", cls: "bg-ink-100 text-ink-600" },
   onboarded: { label: "Onboarded", cls: "bg-blue-100 text-blue-700" },
   knowledge: { label: "Added knowledge", cls: "bg-violet-100 text-violet-700" },
-  connected: { label: "IG connected", cls: "bg-pink-100 text-pink-700" },
+  connected: { label: "Channel connected", cls: "bg-pink-100 text-pink-700" },
   trial: { label: "On trial", cls: "bg-amber-100 text-amber-700" },
   paying: { label: "Paying", cls: "bg-emerald-100 text-emerald-700" },
   canceling: { label: "Canceling", cls: "bg-orange-100 text-orange-700" },
@@ -247,7 +247,7 @@ function StageBadge({ stage }) {
 
 const EVENT_ICON = {
   signup: UserPlus,
-  ig_connected: Instagram,
+  ig_connected: Plug,
   payment: CreditCard,
   knowledge_added: Sparkles,
   trial_expired: Activity,
@@ -410,8 +410,8 @@ function AdminDashboard({ onLogout }) {
 
             <motion.div
               key={tab}
-              initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 420, damping: 34 }}
             >
             {/* ── OVERVIEW ── */}
@@ -426,8 +426,8 @@ function AdminDashboard({ onLogout }) {
                 sub={`+${overview?.users?.today ?? 0} today · +${overview?.users?.thisWeek ?? 0} this week`}
               />
               <StatCard
-                icon={Instagram}
-                label="IG connected"
+                icon={Plug}
+                label="Channel connected"
                 value={overview?.workspaces?.igConnected ?? 0}
                 sub={`${overview?.workspaces?.onboarded ?? 0} onboarded`}
               />
@@ -454,7 +454,7 @@ function AdminDashboard({ onLogout }) {
                 {[
                   ["Signed up", f.signedUp, "bg-ink-100 text-ink-700"],
                   ["Onboarded", f.onboarded, "bg-blue-100 text-blue-700"],
-                  ["IG connected", f.connectedIg, "bg-pink-100 text-pink-700"],
+                  ["Channel connected", f.connectedIg, "bg-pink-100 text-pink-700"],
                   [
                     "Added knowledge",
                     f.addedKnowledge,
@@ -514,7 +514,7 @@ function AdminDashboard({ onLogout }) {
                     <option value="signed_up">Signed up</option>
                     <option value="onboarded">Onboarded</option>
                     <option value="knowledge">Added knowledge</option>
-                    <option value="connected">IG connected</option>
+                    <option value="connected">Channel connected</option>
                     <option value="trial">On trial</option>
                     <option value="paying">Paying</option>
                     <option value="canceling">Canceling</option>
@@ -529,7 +529,7 @@ function AdminDashboard({ onLogout }) {
                         <th className="px-3 py-2.5">#</th>
                         <th className="px-3 py-2.5">User</th>
                         <th className="px-3 py-2.5">Stage</th>
-                        <th className="px-3 py-2.5">Instagram</th>
+                        <th className="px-3 py-2.5">Channel</th>
                         <th className="px-3 py-2.5">Plan</th>
                         <th className="px-3 py-2.5">Knowledge</th>
                         <th className="px-3 py-2.5">Msgs / AI</th>
@@ -570,14 +570,9 @@ function AdminDashboard({ onLogout }) {
                           </td>
                           <td className="px-3 py-2.5">
                             {r.ig.connected ? (
-                              <div>
-                                <div className="font-medium text-ink-800">
-                                  @{r.ig.username || "—"}
-                                </div>
-                                <div className="text-xs text-ink-400">
-                                  {r.ig.followers?.toLocaleString()} followers
-                                </div>
-                              </div>
+                              <span className="font-medium text-emerald-700">
+                                Connected
+                              </span>
                             ) : (
                               <span className="text-ink-300">Not connected</span>
                             )}
@@ -687,7 +682,6 @@ function AdminDashboard({ onLogout }) {
                   <thead>
                     <tr className="text-left text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur sticky top-0 z-[1]">
                       <th className="px-3 py-2.5">Workspace</th>
-                      <th className="px-3 py-2.5">IG</th>
                       <th className="px-3 py-2.5">Plan</th>
                       <th className="px-3 py-2.5">Status</th>
                       <th className="px-3 py-2.5">Provider</th>
@@ -703,9 +697,6 @@ function AdminDashboard({ onLogout }) {
                         <td className="px-3 py-2.5 font-medium text-ink-900">
                           {s.name}
                         </td>
-                        <td className="px-3 py-2.5 text-ink-600">
-                          {s.igUsername ? `@${s.igUsername}` : "—"}
-                        </td>
                         <td className="px-3 py-2.5 capitalize">{s.plan}</td>
                         <td className="px-3 py-2.5 capitalize">{s.status}</td>
                         <td className="px-3 py-2.5 text-ink-500">
@@ -719,7 +710,7 @@ function AdminDashboard({ onLogout }) {
                     {!subs.length && (
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={5}
                           className="px-3 py-10 text-center text-ink-400"
                         >
                           No paid subscriptions yet.
@@ -1207,8 +1198,8 @@ function Drawer({ title, subtitle, onClose, children }) {
         onClick={onClose}
       />
       <motion.div
-        initial={{ x: 48, opacity: 0, filter: "blur(4px)" }}
-        animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+        initial={{ x: 48, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 420, damping: 36 }}
         className="w-full max-w-3xl bg-[var(--canvas)] h-full overflow-y-auto shadow-[-24px_0_80px_-24px_rgba(6,5,10,0.45)]"
       >

@@ -105,14 +105,14 @@ export const LIVE_OTA_NAMES = (() => {
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 })();
 
-/** Headline figure used in copy everywhere. */
-export const CHANNEL_TOTAL_LABEL = "60+";
+/** Headline figure used in copy — the count of LIVE channels, never a roadmap number. */
+export const CHANNEL_TOTAL_LABEL = String(LIVE_OTA_KEYS.length);
 
 /** Copy for the trailing "and 50 more" chip / phrase. */
-export const MORE_CHANNELS_LABEL = "and 50 more";
+export const MORE_CHANNELS_LABEL = "more coming soon";
 
 /** Longer form for prose, e.g. "…plus 50+ more through one connection." */
-export const MORE_CHANNELS_PHRASE = "50+ more through one connection";
+export const MORE_CHANNELS_PHRASE = "more booking sites coming soon";
 
 /**
  * Comma-joined channel names.
@@ -130,5 +130,5 @@ export function channelNames(limit, withMore = false) {
   return withMore ? `${joined} — ${MORE_CHANNELS_PHRASE}` : joined;
 }
 
-/** e.g. "60+ channels" */
-export const CHANNEL_COUNT_PHRASE = `${CHANNEL_TOTAL_LABEL} booking channels`;
+/** e.g. "Booking.com, Airbnb and Expedia" */
+export const CHANNEL_COUNT_PHRASE = LIVE_OTA_NAMES;

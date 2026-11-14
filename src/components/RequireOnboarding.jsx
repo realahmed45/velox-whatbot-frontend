@@ -7,7 +7,7 @@
  *   3. an active/trialing plan (Botlify has no free tier)
  *
  * What is NOT: connecting a messaging channel, and picking a business type —
- * both were Instagram-era steps. A hotel owner goes straight from signup to
+ * both were legacy steps. A hotel owner goes straight from signup to
  * naming their hotel to the dashboard.
  *
  * Billing/settings remain accessible so users can pay or sign out.
@@ -33,7 +33,7 @@ export default function RequireOnboarding({ children }) {
   const { activeWorkspace, user } = useAuthStore();
   const location = useLocation();
 
-  // Just came back from connecting Instagram (?connected=true). The cached
+  // Just came back from connecting a channel (?connected=true). The cached
   // workspace still shows "not connected", which would bounce us straight back
   // to onboarding — a loop. Force ONE fresh fetch and hold the gate until it
   // resolves so we read the real, just-connected status.
@@ -57,10 +57,10 @@ export default function RequireOnboarding({ children }) {
   }, [workspace, activeWorkspace, loading, fetchWorkspace]);
 
   // Hold everything while we refresh the just-connected workspace. Show a
-  // reassuring label so the brief window after Instagram's redirect reads as
+  // reassuring label so the brief window after a channel's OAuth redirect reads as
   // "we're finishing up", not a broken page.
   if (justConnected && refreshing)
-    return <BrandSpinner label="Finishing your Instagram connection" />;
+    return <BrandSpinner label="Finishing your connection" />;
 
   // Email/password signups must confirm their 4-digit code first. Google
   // signups arrive with isEmailVerified: true, so they pass straight through.
@@ -69,8 +69,8 @@ export default function RequireOnboarding({ children }) {
   }
 
   // A brand-new owner has NO workspace yet (we no longer create one at signup).
-  // Send them to onboarding, which creates their workspace and connects
-  // Instagram. Verified users with no active workspace land here.
+  // Send them to onboarding, which creates their workspace and sets up
+  // their hotel. Verified users with no active workspace land here.
   // Exception: the consultant dashboard — consultants aren't hotels and don't
   // need a workspace to apply / see their referral code.
   if (!activeWorkspace) {
@@ -78,8 +78,7 @@ export default function RequireOnboarding({ children }) {
     return <Navigate to="/onboarding/hotel" replace />;
   }
 
-  // While the workspace is still loading we don't yet know if Instagram is
-  // connected — show a spinner instead of flashing the dashboard (or the
+  // While the workspace is still loading we don't yet know its status — show a spinner instead of flashing the dashboard (or the
   // onboarding redirect) and then correcting it a moment later.
   if (loading || !workspace) return <BrandSpinner />;
 
@@ -118,7 +117,7 @@ export default function RequireOnboarding({ children }) {
   }
 
   // Hotels are not gated on connecting a messaging channel — an owner can run
-  // the whole product (bookings, calendar, guests) without Instagram. Channels
+  // the whole product (bookings, calendar, guests) without a messaging channel. Channels
   // are opt-in from Settings → Channels whenever they want them.
   //
   // The business-type / vertical picker is gone too: the backend defaults every

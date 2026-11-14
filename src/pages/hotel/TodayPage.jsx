@@ -61,9 +61,9 @@ const errMsg = (e, fallback) => e?.response?.data?.message || fallback;
 const spring = { type: "spring", stiffness: 420, damping: 30 };
 
 const bubbleIn = {
-  initial: { opacity: 0, y: 10, scale: 0.96, filter: "blur(4px)" },
-  animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, y: -4, scale: 0.97, filter: "blur(4px)" },
+  initial: { opacity: 0, y: 10, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -4, scale: 0.97 },
   transition: spring,
 };
 
@@ -178,7 +178,7 @@ function AgentChat({ onActionDone }) {
         aria-hidden
         className="pointer-events-none absolute -inset-x-6 -inset-y-4 -z-10 rounded-[2.5rem] bg-sunset opacity-[0.12] blur-3xl"
       />
-      <div className="glass-strong relative overflow-hidden rounded-3xl">
+      <div className="card relative overflow-hidden rounded-3xl">
         {/* specular sunset hairline */}
         <div
           aria-hidden
@@ -222,8 +222,8 @@ function AgentChat({ onActionDone }) {
                     key={s}
                     type="button"
                     onClick={() => send(s)}
-                    initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ ...spring, delay: 0.08 * i }}
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.96 }}

@@ -1,16 +1,16 @@
 /**
  * Channels — connect the messaging channel your AI concierge answers on.
  *
- * Hotels-only pivot: WhatsApp is the one guest messaging channel we offer.
- * Instagram, Messenger and Telegram are kept in CHANNELS (and their connect
- * code below) so they can be switched back on, but only the keys listed in
- * ACTIVE_CHANNEL_KEYS are shown. OTA guest messages (Booking.com, Airbnb…)
- * still arrive via the booking-channel connection further down the page.
+ * Two sections, in pitch order:
+ *   1. Booking sites — Airbnb, Booking.com, Expedia. One connection syncs
+ *      rooms/rates/availability AND brings guest messages into the inbox,
+ *      where the AI answers them.
+ *   2. WhatsApp — the one direct messaging channel hotels connect.
  *
- * WhatsApp/Messenger use the hosted /channels OAuth flow; Instagram keeps its
- * existing OAuth page; Telegram can't be OAuth'd at all — the hotel adds our
- * bot to their group/channel as an admin and sends it a short code, so it gets
- * a guided pairing modal that polls until the link completes.
+ * Messenger and Telegram are kept in CHANNELS (and their connect code below)
+ * so they can be switched back on, but only ACTIVE_CHANNEL_KEYS are shown.
+ * WhatsApp/Messenger use the hosted /channels OAuth flow; Telegram pairs via a
+ * short code in a guided modal that polls until the link completes.
  *
  * Zodomus (channel manager, the primary OTA provider) gets a "Connect a
  * booking site" card: pick the OTA, type the property/listing ID, done. The
@@ -41,7 +41,6 @@ import { CHANNEL_COUNT_PHRASE, OTA_CHANNELS } from "@/data/otaChannels";
 import { Magnetic, PulseDot, Reveal, Spotlight } from "@/components/fx";
 import {
   WhatsAppMark,
-  InstagramMark,
   MessengerMark,
   TelegramMark,
 } from "@/components/ChannelMarks";
@@ -56,14 +55,6 @@ const CHANNELS = [
     tint: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15",
     ring: "hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(16,185,129,0.28),0_18px_40px_-16px_rgba(16,185,129,0.35)]",
     desc: "Where most guests book. Your AI answers, quotes rooms and confirms reservations on your WhatsApp number.",
-  },
-  {
-    key: "instagram",
-    name: "Instagram",
-    Mark: InstagramMark,
-    tint: "bg-purple-50 text-purple-600 ring-1 ring-purple-500/15",
-    ring: "hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(168,85,247,0.28),0_18px_40px_-16px_rgba(168,85,247,0.35)]",
-    desc: "Turn profile visitors into guests — the AI answers DMs and comments about rooms, rates and availability.",
   },
   {
     key: "messenger",
@@ -167,7 +158,7 @@ function ZodomusConnectCard({ onConnected }) {
 
   return (
     <Reveal>
-      <Spotlight className="card glass-strong relative mt-5 overflow-hidden p-5 sm:p-6">
+      <Spotlight className="card relative mt-5 overflow-hidden p-5 sm:p-6">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sunset opacity-[0.12] blur-3xl"
@@ -277,8 +268,8 @@ function ZodomusConnectCard({ onConnected }) {
         <AnimatePresence>
           {last && (
             <motion.div
-              initial={{ opacity: 0, y: 6, scale: 0.97, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 6, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.97 }}
               transition={spring}
               className="relative mt-4 flex items-center gap-2.5 rounded-xl bg-emerald-50/80 px-3.5 py-2.5 text-[13px] text-emerald-800 ring-1 ring-emerald-500/20"
@@ -379,11 +370,6 @@ export default function ChannelsPage({ hideHeader = false }) {
   }, [tg?.code, tg?.status, load]);
 
   const connect = async (key) => {
-    if (key === "instagram") {
-      // Instagram keeps its existing OAuth connect flow.
-      navigate("/onboarding/instagram");
-      return;
-    }
     if (key === "telegram") {
       // Telegram can't be OAuth'd — it pairs by adding our bot and sending a
       // code, so it gets its own guided modal instead of a redirect.
@@ -447,12 +433,86 @@ export default function ChannelsPage({ hideHeader = false }) {
                 Channels
               </h1>
               <p className="text-sm text-ink-500">
-                Connect the WhatsApp number your AI concierge answers guests on.
+                Connect your booking sites and WhatsApp — your AI answers every
+                guest message on them.
               </p>
             </div>
           </div>
         </Reveal>
       )}
+
+      {/* Booking channels are a different thing from messaging channels — the
+          OTAs your rooms sell on. Everything here rides the Channex connection:
+          one link carries availability, rates, reservations AND guest messages.
+          Onboarding deliberately doesn't ask for these; this is where a hotel
+          comes to switch them on. */}
+      <div className="relative">
+        <Reveal>
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+                <Globe2 className="h-5 w-5" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-ink-900">
+                  Booking{" "}
+                  <span className="font-serif italic font-normal">sites</span>
+                </h2>
+                <p className="text-sm text-ink-500 mt-1 max-w-xl">
+                  Sync + AI replies in their inbox. One connection keeps your
+                  rooms, rates and availability in step across{" "}
+                  {CHANNEL_COUNT_PHRASE} — and your AI answers every guest
+                  message from Airbnb, Booking.com and Expedia right inside
+                  their inbox.
+                </p>
+              </div>
+            </div>
+            <Magnetic strength={0.25}>
+              <button
+                onClick={() => navigate("/dashboard/property")}
+                className="btn-secondary group min-h-[44px] shrink-0"
+              >
+                <Plug className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-12deg]" />
+                Connect a booking channel
+              </button>
+            </Magnetic>
+          </div>
+        </Reveal>
+
+        <ZodomusConnectCard onConnected={load} />
+
+        <Reveal delay={0.06}>
+          <div className="card mt-5 p-4 sm:p-5">
+            <ChannelWall variant="bare" />
+          </div>
+        </Reveal>
+
+        <p className="text-xs text-ink-400 mt-4">
+          Your OTA asks you to approve the connection from its own extranet —
+          that screen belongs to them, so it can only come from you. Airbnb is
+          one click; the rest take about a minute.
+        </p>
+      </div>
+
+      {/* WhatsApp — the direct messaging channel */}
+      <div className="relative mt-12 pt-10">
+        <div className="divider absolute inset-x-0 top-0" />
+        <Reveal>
+          <div className="flex items-start gap-3 min-w-0 mb-5">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15">
+              <WhatsAppMark className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-ink-900">
+                WhatsApp
+              </h2>
+              <p className="text-sm text-ink-500 mt-1 max-w-xl">
+                Guests who message you directly get the same instant, accurate
+                answers — and get booked.
+              </p>
+            </div>
+          </div>
+        </Reveal>
 
       {loading ? (
         <div
@@ -565,57 +625,6 @@ export default function ChannelsPage({ hideHeader = false }) {
         Your AI answers guests on WhatsApp — quotes prices, checks availability
         and books rooms, 24/7.
       </p>
-
-      {/* Booking channels are a different thing from messaging channels — the
-          OTAs your rooms sell on. Everything here rides the Channex connection:
-          one link carries availability, rates, reservations AND guest messages.
-          Onboarding deliberately doesn't ask for these; this is where a hotel
-          comes to switch them on. */}
-      <div className="relative mt-12 pt-10">
-        <div className="divider absolute inset-x-0 top-0" />
-        <Reveal>
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
-                <Globe2 className="h-5 w-5" strokeWidth={1.8} />
-              </div>
-              <div className="min-w-0">
-                <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-ink-900">
-                  Where your rooms{" "}
-                  <span className="font-serif italic font-normal">sell</span>
-                </h2>
-                <p className="text-sm text-ink-500 mt-1 max-w-xl">
-                  One connection keeps your calendar and rates in step across{" "}
-                  {CHANNEL_COUNT_PHRASE}, and brings guest messages from
-                  Booking.com, Airbnb and Expedia into the inbox above.
-                </p>
-              </div>
-            </div>
-            <Magnetic strength={0.25}>
-              <button
-                onClick={() => navigate("/dashboard/property")}
-                className="btn-secondary group min-h-[44px] shrink-0"
-              >
-                <Plug className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-12deg]" />
-                Connect a booking channel
-              </button>
-            </Magnetic>
-          </div>
-        </Reveal>
-
-        <ZodomusConnectCard onConnected={load} />
-
-        <Reveal delay={0.06}>
-          <div className="card mt-5 p-4 sm:p-5">
-            <ChannelWall variant="bare" />
-          </div>
-        </Reveal>
-
-        <p className="text-xs text-ink-400 mt-4">
-          Your OTA asks you to approve the connection from its own extranet —
-          that screen belongs to them, so it can only come from you. Airbnb is
-          one click; the rest take about a minute.
-        </p>
       </div>
 
       {/* WhatsApp chooser — existing number, or a new one from us */}
@@ -668,9 +677,9 @@ export default function ChannelsPage({ hideHeader = false }) {
             onClick={(e) => e.target === e.currentTarget && setTg(null)}
           >
             <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: 16, scale: 0.97, filter: "blur(4px)" }}
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.97 }}
               transition={spring}
               className="glass-strong w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6"
             >

@@ -11,12 +11,12 @@ import TurnstileWidget, {
 } from "@/components/auth/TurnstileWidget";
 import { checkPassword } from "@/utils/passwordPolicy";
 
-// Dark liquid-glass field — `.input` is the light variant.
+// Shared light form-field classes from index.css.
 const FIELD =
-  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
-const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+  "input";
+const LABEL = "label";
 const ICON =
-  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none";
+  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame pointer-events-none";
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
@@ -66,15 +66,15 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="card-dark p-6 sm:p-8">
+      <div className="card p-6 sm:p-8">
         <Reveal>
-          <div className="h-11 w-11 rounded-xl grid place-items-center bg-rose-500/15 ring-1 ring-rose-400/30 text-rose-300 mb-4">
+          <div className="h-11 w-11 rounded-xl grid place-items-center bg-rose-50 ring-1 ring-rose-200 text-rose-600 mb-4">
             <Link2Off className="w-5 h-5" strokeWidth={1.8} />
           </div>
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-1">
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
             Link <span className="font-serif italic font-normal">expired</span>
           </h2>
-          <p className="text-white/60 text-sm mb-6">
+          <p className="text-ink-600 text-sm mb-6">
             This password reset link is missing or invalid. Please request a new
             one.
           </p>
@@ -90,15 +90,15 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="card-dark p-6 sm:p-8">
+    <div className="card p-6 sm:p-8">
       <Reveal>
         <div className="h-11 w-11 rounded-xl grid place-items-center bg-sunset text-white mb-4 shadow-[0_10px_30px_-10px_rgba(255,61,119,0.7)]">
           <ShieldCheck className="w-5 h-5" strokeWidth={1.8} />
         </div>
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-1">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
           Set new <span className="font-serif italic font-normal">password</span>
         </h2>
-        <p className="text-white/60 text-sm mb-6">
+        <p className="text-ink-600 text-sm mb-6">
           Choose a strong password for your account.
         </p>
       </Reveal>
@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
               onClick={() => setShow(!show)}
             >
               {show ? (
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="text-[11px] text-rose-300 mt-1"
+                className="text-[11px] text-rose-600 mt-1"
               >
                 Passwords don't match.
               </motion.p>

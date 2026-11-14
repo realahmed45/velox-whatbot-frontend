@@ -302,7 +302,7 @@ function FlowBuilderInner() {
       );
       toast.success(
         newStatus === "active"
-          ? "Flow is live — it now runs on incoming DMs"
+          ? "Flow is live — it now runs on incoming guest messages"
           : "Flow deactivated",
       );
     } catch (err) {
@@ -427,7 +427,7 @@ function FlowBuilderInner() {
                 transition={{ type: "spring", stiffness: 420, damping: 36 }}
                 className="overflow-hidden"
               >
-                <div className="px-4 py-2 bg-amber-50/80 backdrop-blur border-b border-amber-200/60 text-xs text-amber-800 flex items-center gap-2">
+                <div className="px-4 py-2 bg-amber-50/95 border-b border-amber-200/60 text-xs text-amber-800 flex items-center gap-2">
                   <Workflow className="w-3.5 h-3.5 flex-shrink-0" />
                   <span>
                     Add a <b>Trigger</b> node (Add Node → Triggers) so this flow knows
@@ -478,12 +478,12 @@ function FlowBuilderInner() {
                   />
                   <Controls
                     showInteractive={false}
-                    className="!bg-white/70 !backdrop-blur-xl !border !border-white/80 !rounded-xl overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
+                    className="!bg-white/95 !border !border-white/80 !rounded-xl overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
                   />
                   <MiniMap
                     pannable
                     zoomable
-                    className="!hidden sm:!block !bg-white/70 !backdrop-blur-xl !rounded-2xl !border !border-white/80 overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
+                    className="!hidden sm:!block !bg-white/95 !rounded-2xl !border !border-white/80 overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
                     nodeColor="#FF6A2B"
                     maskColor="rgba(247,245,242,0.6)"
                   />
@@ -500,15 +500,15 @@ function FlowBuilderInner() {
                     className="pointer-events-none absolute inset-0 flex items-center justify-center p-4"
                   >
                     <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.96, filter: "blur(4px)" }}
-                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: 8, scale: 0.97, filter: "blur(4px)" }}
+                      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
                       transition={{ type: "spring", stiffness: 420, damping: 30 }}
-                      className="glass-strong pointer-events-auto text-center max-w-xs rounded-3xl p-5"
+                      className="card pointer-events-auto text-center max-w-xs rounded-3xl p-5"
                     >
                       <div className="relative mx-auto w-12 h-12 mb-3">
                         <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-25 blur-2xl" />
-                        <div className="relative w-12 h-12 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center animate-float">
+                        <div className="relative w-12 h-12 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center">
                           <Workflow className="w-6 h-6" strokeWidth={1.8} />
                         </div>
                       </div>
@@ -538,7 +538,7 @@ function FlowBuilderInner() {
               className="max-w-lg w-full"
               icon={Workflow}
               title="Select or create a flow"
-              description="Build automated Instagram DM conversations with a visual drag-and-drop editor. Start from a ready-made template, or build from scratch."
+              description="Build automated guest conversations with a visual drag-and-drop editor. Start from a ready-made template, or build from scratch."
               action={
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                   <button

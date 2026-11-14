@@ -8,8 +8,8 @@ export default function PageTransition({ children, className = "" }) {
   const reduce = useReducedMotion();
   return (
     <motion.div
-      initial={reduce ? false : { opacity: 0, y: 10, filter: "blur(6px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+      initial={reduce ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0, transitionEnd: { filter: "none" } }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >

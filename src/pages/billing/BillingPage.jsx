@@ -46,7 +46,7 @@ export default function BillingPage() {
 
   // Returning from checkout. Activation is async (provider webhook), so POLL the
   // workspace until it's entitled, then move the user forward automatically
-  // (dashboard, or Instagram onboarding if not connected yet) instead of
+  // (dashboard, or hotel onboarding if no channel is connected yet) instead of
   // stranding them on the billing page.
   useEffect(() => {
     const billing = searchParams.get("billing") || searchParams.get("checkout");
@@ -71,7 +71,7 @@ export default function BillingPage() {
           if (entitled) {
             toast.success("You're all set! 🎉");
             const connected = ws?.instagram?.status === "connected";
-            navigate(connected ? "/dashboard" : "/onboarding/instagram", {
+            navigate(connected ? "/dashboard" : "/onboarding/hotel", {
               replace: true,
             });
           }
@@ -238,7 +238,7 @@ export default function BillingPage() {
                 : status === "trialing" && sub?.trialEndsAt
                   ? `Trial ends ${new Date(sub.trialEndsAt).toLocaleDateString()} — your card is charged then unless you cancel.`
                   : isTrial
-                    ? "Pick a plan below to unlock your Instagram automations."
+                    ? "Pick a plan below to switch on channel sync and AI guest replies."
                     : cancelPending
                       ? `Cancels on ${sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : "period end"} — you keep access until then.`
                       : sub?.currentPeriodEnd
@@ -487,8 +487,8 @@ function formatPlan(id) {
     free: "Free trial",
     hotel_free: "Launch (Free)",
     hotel_pro: "Botlify for Hotels",
-    ig_starter: "Basic — Instagram",
-    ig_pro: "Instagram Pro",
+    ig_starter: "Basic (legacy)",
+    ig_pro: "Pro (legacy)",
     starter: "Starter (legacy)",
     growth: "Basic (legacy)",
     scale: "Pro (legacy)",

@@ -233,7 +233,7 @@ function GoogleMark({ size }) {
 }
 
 // Re-exported so the inbox can show an OTA thread with its real brand mark
-// instead of falling back to the Instagram glyph.
+// instead of a generic glyph.
 export { BookingMark, AirbnbMark, ExpediaMark };
 
 const MARKS = {

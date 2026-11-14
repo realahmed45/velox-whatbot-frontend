@@ -110,20 +110,14 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="card-dark p-6 sm:p-8 text-center">
+    <div className="card p-6 sm:p-8 text-center">
       <Reveal>
         <div className="relative w-16 h-16 mx-auto mb-5">
           <div
             aria-hidden
-            className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl"
+            className="absolute -inset-3 rounded-full bg-sunset opacity-20 blur-2xl"
           />
-          <motion.div
-            animate={submitting ? { scale: [1, 1.06, 1] } : { y: [0, -4, 0] }}
-            transition={{
-              duration: submitting ? 1 : 3.2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <div
             className="relative w-16 h-16 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_36px_-12px_rgba(255,61,119,0.8)]"
           >
             {submitting ? (
@@ -131,14 +125,14 @@ export default function VerifyEmailPage() {
             ) : (
               <Mail className="w-7 h-7" strokeWidth={1.8} />
             )}
-          </motion.div>
+          </div>
         </div>
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-2">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-2">
           Verify your <span className="font-serif italic font-normal">email</span>
         </h2>
-        <p className="text-white/60 text-sm mb-7">
+        <p className="text-ink-600 text-sm mb-7">
           We sent a 4-digit code to{" "}
-          <strong className="text-white font-semibold break-all">{email}</strong>.
+          <strong className="text-ink-950 font-semibold break-all">{email}</strong>.
         </p>
       </Reveal>
 
@@ -156,11 +150,10 @@ export default function VerifyEmailPage() {
             disabled={submitting}
             onChange={(e) => setDigit(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
-            initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{
               opacity: 1,
               y: 0,
-              filter: "blur(0px)",
               scale: d ? [1, 1.08, 1] : 1,
             }}
             transition={{
@@ -169,22 +162,22 @@ export default function VerifyEmailPage() {
               stiffness: 420,
               damping: 26,
             }}
-            className={`w-14 h-16 text-center text-2xl font-bold font-display tabular-nums text-white rounded-xl outline-none transition-[box-shadow,background-color] duration-300 disabled:opacity-50 focus:ring-2 focus:ring-sunset-flame/70 focus:bg-white/[0.1] focus:shadow-[0_0_0_5px_rgba(255,106,43,0.14),0_10px_28px_-12px_rgba(255,61,119,0.7)] ${
+            className={`w-14 h-16 text-center text-2xl font-bold font-display tabular-nums text-ink-950 rounded-xl outline-none transition-[box-shadow,background-color] duration-300 disabled:opacity-50 focus:ring-2 focus:ring-sunset-flame/70 focus:bg-white focus:shadow-[0_0_0_5px_rgba(255,106,43,0.14),0_10px_28px_-12px_rgba(255,61,119,0.7)] ${
               d
-                ? "bg-white/[0.1] ring-1 ring-sunset-gold/50"
-                : "bg-white/[0.06] ring-1 ring-white/10 hover:ring-white/20"
+                ? "bg-white ring-1 ring-sunset-flame/50"
+                : "bg-white ring-1 ring-ink-900/10 hover:ring-ink-900/20"
             }`}
           />
         ))}
       </div>
 
-      <p className="text-xs text-white/45">
+      <p className="text-xs text-ink-500">
         Didn't get it?{" "}
         <button
           type="button"
           onClick={resend}
           disabled={resendIn > 0}
-          className="inline-flex items-center gap-1 text-sunset-gold font-semibold hover:underline underline-offset-4 disabled:text-white/40 disabled:no-underline tabular-nums"
+          className="inline-flex items-center gap-1 text-sunset-flame font-semibold hover:underline underline-offset-4 disabled:text-ink-400 disabled:no-underline tabular-nums"
         >
           <RotateCw
             className={`w-3 h-3 ${resendIn > 0 ? "" : "transition-transform duration-500 ease-spring hover:rotate-180"}`}
@@ -194,7 +187,7 @@ export default function VerifyEmailPage() {
         {" · "}
         <Link
           to="/login"
-          className="text-white/70 hover:text-white hover:underline underline-offset-4"
+          className="text-ink-700 hover:text-ink-950 hover:underline underline-offset-4"
         >
           Back to login
         </Link>

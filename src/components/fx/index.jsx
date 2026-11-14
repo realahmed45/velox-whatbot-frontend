@@ -36,31 +36,22 @@ import {
 const cx = (...a) => a.filter(Boolean).join(" ");
 
 // ── Aurora ────────────────────────────────────────────────────────────────
+/**
+ * A soft sunset wash behind a surface. Deliberately STATIC: layered radial
+ * gradients painted once, no blur filter and no animation — the old drifting
+ * blurred blobs repainted the whole screen every frame and made scrolling lag.
+ */
 export function Aurora({ className = "", variant = "light", fixed = false }) {
   const dark = variant === "dark";
-  const o = dark ? 1 : 0.55;
+  const bg = dark
+    ? "radial-gradient(60% 50% at 10% 0%, rgba(255,181,71,0.22), transparent 70%), radial-gradient(50% 45% at 95% 10%, rgba(124,92,255,0.22), transparent 70%), radial-gradient(60% 50% at 50% 110%, rgba(255,61,119,0.18), transparent 70%)"
+    : "radial-gradient(55% 45% at 8% 0%, rgba(255,181,71,0.20), transparent 70%), radial-gradient(45% 40% at 96% 6%, rgba(124,92,255,0.12), transparent 70%), radial-gradient(55% 45% at 60% 105%, rgba(255,61,119,0.10), transparent 70%)";
   return (
     <div
       aria-hidden
-      className={cx(
-        fixed ? "fixed" : "absolute",
-        "inset-0 -z-10 overflow-hidden pointer-events-none",
-        className,
-      )}
-    >
-      <div
-        className="absolute -top-[20%] -left-[10%] h-[60vmax] w-[60vmax] rounded-full blur-[110px] animate-drift-a"
-        style={{ background: "radial-gradient(circle, #FFB547 0%, transparent 65%)", opacity: 0.55 * o }}
-      />
-      <div
-        className="absolute top-[10%] -right-[15%] h-[55vmax] w-[55vmax] rounded-full blur-[120px] animate-drift-b"
-        style={{ background: "radial-gradient(circle, #7C5CFF 0%, transparent 65%)", opacity: 0.5 * o }}
-      />
-      <div
-        className="absolute -bottom-[25%] left-[20%] h-[55vmax] w-[55vmax] rounded-full blur-[120px] animate-drift-c"
-        style={{ background: "radial-gradient(circle, #FF3D77 0%, transparent 65%)", opacity: 0.45 * o }}
-      />
-    </div>
+      className={cx(fixed ? "fixed" : "absolute", "inset-0 -z-10 pointer-events-none", className)}
+      style={{ background: bg }}
+    />
   );
 }
 
@@ -155,20 +146,49 @@ export function Tilt({ children, max = 8, className = "", glare = true }) {
 }
 
 // ── Reveal ────────────────────────────────────────────────────────────────
-export function Reveal({ children, delay = 0, y = 24, className = "", as = "div", once = true }) {
+export function Reveal({ children, delay = 0, y = 14, className = "", as = "div", once = true }) {
+  // Plain CSS transition toggled by an IntersectionObserver — lighter than a
+  // framer animation per element, and FAIL-SAFE: if the observer never fires
+  // (old browser, headless renderer, odd layout) content still appears after
+  // a short timeout instead of staying invisible.
+  const ref = useRef(null);
   const reduce = useReducedMotion();
-  const M = motion[as] || motion.div;
-  if (reduce) return <M className={className}>{children}</M>;
+  const [shown, setShown] = useState(!!reduce);
+  useEffect(() => {
+    if (reduce || shown) return;
+    const el = ref.current;
+    const fallback = setTimeout(() => setShown(true), 1200 + delay * 1000);
+    if (!el || typeof IntersectionObserver === "undefined") return () => clearTimeout(fallback);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          if (once) io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    io.observe(el);
+    return () => {
+      clearTimeout(fallback);
+      io.disconnect();
+    };
+  }, [reduce, shown, once, delay]);
+  const Tag = as;
   return (
-    <M
+    <Tag
+      ref={ref}
       className={className}
-      initial={{ opacity: 0, y, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once, margin: "-10% 0px" }}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "none" : `translate3d(0, ${y}px, 0)`,
+        transition: reduce
+          ? undefined
+          : `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${Math.min(delay, 0.3)}s, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${Math.min(delay, 0.3)}s`,
+      }}
     >
       {children}
-    </M>
+    </Tag>
   );
 }
 
@@ -186,32 +206,36 @@ export function RevealGroup({ children, step = 0.07, className = "", y = 20 }) {
 }
 
 // ── NumberTicker ──────────────────────────────────────────────────────────
-export function NumberTicker({ value = 0, duration = 1.4, prefix = "", suffix = "", decimals = 0, className = "" }) {
+/** Counts up once when visible. Writes straight to the DOM — no re-renders per frame. */
+export function NumberTicker({ value = 0, duration = 1.2, prefix = "", suffix = "", decimals = 0, className = "" }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px" });
   const reduce = useReducedMotion();
-  const [shown, setShown] = useState(reduce ? value : 0);
+  const fmt = (v) =>
+    prefix +
+    Number(v).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) +
+    suffix;
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const target = Number(value) || 0;
     if (!inView || reduce) {
-      setShown(value);
+      el.textContent = fmt(inView || reduce ? target : 0);
       return;
     }
-    const controls = animate(0, Number(value) || 0, {
+    const controls = animate(0, target, {
       duration,
       ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setShown(v),
+      onUpdate: (v) => {
+        el.textContent = fmt(v);
+      },
     });
     return () => controls.stop();
-  }, [inView, value, duration, reduce]);
-  const text = Number(shown).toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView, value, duration, reduce, prefix, suffix, decimals]);
   return (
     <span ref={ref} className={cx("tabular-nums", className)}>
-      {prefix}
-      {text}
-      {suffix}
+      {fmt(reduce ? value : 0)}
     </span>
   );
 }
@@ -295,63 +319,9 @@ export function Marquee({ children, speed = 32, className = "", reverse = false 
 }
 
 // ── CursorAura ────────────────────────────────────────────────────────────
-/**
- * A custom cursor: a crisp dot plus a lagging ring that swells over anything
- * clickable and shows a label from data-cursor="View". Desktop pointers only.
- */
+/** Retired for performance — kept as a no-op so old imports still compile. */
 export function CursorAura() {
-  const reduce = useReducedMotion();
-  const [enabled, setEnabled] = useState(false);
-  const [hover, setHover] = useState(false);
-  const [label, setLabel] = useState("");
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const rx = useSpring(x, { stiffness: 260, damping: 26, mass: 0.6 });
-  const ry = useSpring(y, { stiffness: 260, damping: 26, mass: 0.6 });
-
-  useEffect(() => {
-    if (reduce) return;
-    const fine = window.matchMedia("(pointer: fine)").matches;
-    if (!fine) return;
-    setEnabled(true);
-    const move = (e) => {
-      x.set(e.clientX);
-      y.set(e.clientY);
-      const t = e.target.closest?.("a,button,[role=button],[data-cursor],input,textarea,select,label");
-      setHover(!!t);
-      setLabel(t?.getAttribute?.("data-cursor") || "");
-    };
-    window.addEventListener("pointermove", move, { passive: true });
-    document.documentElement.classList.add("cursor-aura");
-    return () => {
-      window.removeEventListener("pointermove", move);
-      document.documentElement.classList.remove("cursor-aura");
-    };
-  }, [reduce, x, y]);
-
-  if (!enabled) return null;
-  return (
-    <>
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[9999] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference"
-        style={{ x, y }}
-      />
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[9998] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 mix-blend-difference"
-        style={{ x: rx, y: ry }}
-        animate={{
-          width: label ? 76 : hover ? 46 : 30,
-          height: label ? 76 : hover ? 46 : 30,
-          backgroundColor: label ? "rgba(255,255,255,1)" : "rgba(255,255,255,0)",
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 22 }}
-      >
-        {label && <span className="text-[11px] font-semibold uppercase tracking-wider text-black">{label}</span>}
-      </motion.div>
-    </>
-  );
+  return null;
 }
 
 // ── ShimmerText ───────────────────────────────────────────────────────────

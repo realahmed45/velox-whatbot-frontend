@@ -32,7 +32,7 @@ export const BOTLIFY_FAQ = [
       "overview of botlify",
     ],
     answer:
-      "Botlify is a complete operating platform for a hotel — not just a chatbot.\n\nIt gives you:\n• A channel manager — 60+ booking channels (Booking.com, Airbnb, Agoda, Expedia, Traveloka, Tiket.com and more) on one calendar\n• Your own direct-booking page, commission-free\n• An AI revenue manager that suggests nightly rates you approve\n• An AI concierge on WhatsApp, Instagram, Messenger and Telegram\n• A front desk — check-in, check-out, housekeeping and folio\n• A unified guest CRM and a reviews inbox\n• The Botlify Agent — type an instruction in plain language and it does it\n\nOne login, one calendar, one bill.",
+      "Botlify is the AI channel manager for hotels.\n\nIt does two jobs that usually take two tools and a person:\n• Channel sync — your rooms, rates and availability stay in sync across Booking.com, Airbnb and Expedia on one calendar (more OTAs are coming)\n• AI guest messaging — the AI answers every guest message inside your Booking.com, Airbnb and Expedia inboxes and on WhatsApp, 24/7, in the guest's language, and books them\n\nIt replaces the manual work of guest messaging. Around that you also get a commission-free direct booking page, guest profiles and airport transfers.\n\nOne login, one calendar, one bill.",
   },
   {
     id: "pricing",
@@ -81,7 +81,7 @@ export const BOTLIFY_FAQ = [
       "do you charge per booking",
     ],
     answer:
-      "Two numbers, and that's the whole model:\n\n• 0% on OTA bookings — all 60+ channels. OTA sync is completely free — we never take a cut of a reservation that came through an OTA.\n• 10% only on bookings the AI closes for you — through WhatsApp, Instagram, Messenger, Telegram or your direct booking page.\n\nWhy 10% is the good deal: OTAs charge 15–18% for the same reservation. Our 10% is cheaper, and it only applies to revenue you would not otherwise have had — the AI closed it, at 3am, in a chat you never had to answer.\n\nThere is also a small partner margin (roughly 5–10%) when we arrange an airport transfer through our partner network. If you use your own driver, you keep 100%.",
+      "Two numbers, and that's the whole model:\n\n• 0% on OTA bookings — Booking.com, Airbnb and Expedia. OTA sync is completely free — we never take a cut of a reservation that came through an OTA, even when the AI answered the guest in the OTA inbox.\n• 10% only on bookings the AI closes for you — through WhatsApp or your direct booking page.\n\nWhy 10% is the good deal: OTAs charge 15–18% for the same reservation. Our 10% is cheaper, and it only applies to revenue you would not otherwise have had — the AI closed it, at 3am, in a chat you never had to answer.\n\nThere is also a small partner margin (roughly 5–10%) when we arrange an airport transfer through our partner network. If you use your own driver, you keep 100%.",
   },
   {
     id: "commission-settlement",
@@ -151,7 +151,7 @@ export const BOTLIFY_FAQ = [
       "two-way sync",
     ],
     answer:
-      "Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50+ more, so 60+ booking channels in total, all through one connection with our connectivity partner.\n\nTraveloka and Tiket.com matter especially if you want Indonesian domestic travellers. If your hotel is listed anywhere, chances are we can sync it.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd it costs you nothing extra: OTA sync is 0% commission.",
+      "Live today: Booking.com, Airbnb and Expedia — all through one connection with our connectivity partner.\n\nMore OTAs are coming (including the ones Indonesian domestic travellers use). If there's one you need, tell us — it helps us prioritise.\n\nThe sync is two-way: your rooms, rates and availability push out, and reservations pull in. The moment a room sells anywhere — an OTA, your direct page, or in a chat — availability drops everywhere else. That's what makes double-bookings stop.\n\nAnd the AI also answers guest messages inside those OTA inboxes. It costs you nothing extra: OTA sync is 0% commission.",
   },
   {
     id: "messaging-channels",
@@ -161,11 +161,12 @@ export const BOTLIFY_FAQ = [
       "which messaging channels",
       "messaging",
       "whatsapp",
-      "instagram",
-      "messenger",
-      "facebook",
-      "telegram",
-      "sms",
+      "inbox",
+      "ota inbox",
+      "guest messages",
+      "booking.com inbox",
+      "airbnb inbox",
+      "expedia inbox",
       "channels does the ai work",
       "where does the ai reply",
       "social",
@@ -173,11 +174,11 @@ export const BOTLIFY_FAQ = [
       "dms",
     ],
     answer:
-      "The AI concierge works on:\n• WhatsApp\n• Instagram\n• Facebook Messenger\n• Telegram\n• Your own direct booking page\n\nWhatsApp, Instagram and Messenger connect with a normal authorisation flow from your dashboard.\n\nTelegram is different: you add our bot to your group or channel as an admin, then send it the short code shown in your dashboard. That's it.\n\nOne thing we're honest about: TikTok is not supported — see \"TikTok\" if you want the reason.",
+      "The AI answers your guests wherever they already message you:\n• Your Booking.com inbox\n• Your Airbnb inbox\n• Your Expedia inbox\n• WhatsApp\n• Your own direct booking page\n\nOTA inboxes come with the channel connection — once a channel is connected, the AI starts replying to its guest messages. WhatsApp connects with a normal authorisation flow from your dashboard.\n\nIt replies instantly, 24/7, in the guest's language, and your team can take over any conversation from the unified inbox.",
   },
   {
     id: "tiktok",
-    question: "Does the AI work on TikTok?",
+    question: "Does the AI work on TikTok or other social apps?",
     chip: "TikTok?",
     keywords: [
       "does the ai work on tiktok",
@@ -185,9 +186,12 @@ export const BOTLIFY_FAQ = [
       "tik tok",
       "tiktok dm",
       "tiktok messages",
+      "messenger",
+      "facebook",
+      "telegram",
     ],
     answer:
-      "No — and we'd rather say so plainly than promise it.\n\nTikTok does not offer a messaging API to platforms like us. There is no supported way for Botlify (or any similar tool) to read or reply to TikTok DMs on your behalf, so we don't claim to.\n\nEverything else works: WhatsApp, Instagram, Facebook Messenger, Telegram and your direct booking page. If TikTok ever opens up messaging, we'll add it.",
+      "No — and we'd rather say so plainly than promise it.\n\nBotlify focuses on where hotel guests actually message you: the Booking.com, Airbnb and Expedia inboxes and WhatsApp. TikTok does not offer a messaging API to platforms like us, so there is no supported way for Botlify (or any similar tool) to reply to TikTok DMs, and we don't claim to.\n\nEverything that matters for bookings works: every OTA inbox we connect, WhatsApp and your direct booking page.",
   },
   {
     id: "onboarding",
@@ -245,7 +249,7 @@ export const BOTLIFY_FAQ = [
       "already have a channel manager",
     ],
     answer:
-      "No — Botlify is the channel manager.\n\nYour rooms, rates and availability sync two-way with all 60+ channels — Booking.com, Airbnb, Agoda, Expedia, Traveloka, Tiket.com and the rest — and a sale on any channel drops availability everywhere else instantly. There's nothing extra to subscribe to and nothing to wire two products together.\n\nIf you already pay for one, Botlify is meant to replace that line item, not sit next to it.",
+      "No — Botlify is the channel manager.\n\nYour rooms, rates and availability sync two-way with Booking.com, Airbnb and Expedia (more OTAs are coming), and a sale on any channel drops availability everywhere else instantly. On top of that, the AI answers guest messages inside those OTA inboxes — something a classic channel manager doesn't do.\n\nThere's nothing extra to subscribe to and nothing to wire two products together. If you already pay for one, Botlify is meant to replace that line item, not sit next to it.",
   },
   {
     id: "replace-pms",
@@ -283,7 +287,7 @@ export const BOTLIFY_FAQ = [
       "invent",
     ],
     answer:
-      "It reads the same live calendar the rest of the platform uses — so it can only quote rooms and nights that genuinely exist and are genuinely free.\n\nWhat it does in a conversation:\n• Answers questions about your property, in your tone, 24/7\n• Quotes real availability and your real nightly rate\n• Re-checks availability one more time immediately before confirming, so a room that sold 30 seconds ago can't be sold twice\n• Books the room and sends a confirmation\n• Arranges an airport transfer and offers extras like breakfast or late check-out\n\nIt never invents a room type. And your front desk can take over any conversation mid-way from the unified inbox.",
+      "It reads the same live calendar the rest of the platform uses — so it can only quote rooms and nights that genuinely exist and are genuinely free.\n\nWhat it does in a conversation:\n• Answers questions about your property, in your tone, 24/7\n• Quotes real availability and your real nightly rate\n• Re-checks availability one more time immediately before confirming, so a room that sold 30 seconds ago can't be sold twice\n• Books the room and sends a confirmation\n• Arranges an airport transfer and offers extras like breakfast or late check-out\n\nIt works the same inside your Booking.com, Airbnb and Expedia inboxes and on WhatsApp. It never invents a room type. And your front desk can take over any conversation mid-way from the unified inbox.",
   },
   {
     id: "botlify-agent",
@@ -398,7 +402,7 @@ export const BOTLIFY_FAQ = [
       "conflict",
     ],
     answer:
-      "No. Everything writes to a single calendar.\n\n• Every channel — OTAs, direct page, chat, manual bookings — reads and writes the same availability.\n• OTA sync is two-way across all 60+ channels, so a Booking.com or Traveloka reservation removes that night everywhere else.\n• Both the booking page and the AI re-check live availability in the moment before confirming, not just when the conversation started.\n\nThat last check is the one that matters — it's what stops a room being promised twice in two simultaneous chats.",
+      "No. Everything writes to a single calendar.\n\n• Every channel — OTAs, direct page, chat, manual bookings — reads and writes the same availability.\n• OTA sync is two-way, so a Booking.com, Airbnb or Expedia reservation removes that night everywhere else.\n• Both the booking page and the AI re-check live availability in the moment before confirming, not just when the conversation started.\n\nThat last check is the one that matters — it's what stops a room being promised twice in two simultaneous chats.",
   },
   {
     id: "guest-crm",
@@ -507,7 +511,7 @@ const normalize = (s) =>
  * so they can't outrank a real phrase match.
  */
 const STRONG_TERMS = new Set([
-  "botlify", "tiktok", "whatsapp", "instagram", "telegram", "messenger",
+  "botlify", "tiktok", "whatsapp", "telegram", "messenger", "inbox",
   "airbnb", "booking.com", "expedia", "agoda", "vrbo", "ota", "otas",
   "pms", "crm", "commission", "commissions", "pricing", "price", "refund",
   "cancel", "consultant", "consultants", "affiliate", "referral", "gdpr",
@@ -580,4 +584,4 @@ export const FALLBACK_ANSWER =
   " and a real person will get back to you within a few hours.";
 
 export const WELCOME_MESSAGE =
-  "Hi! I'm the Botlify assistant. Ask me anything about the platform, pricing or how it all connects — or pick a question below.";
+  "Hi! I'm the Botlify assistant. Ask me anything about channel sync, AI guest messaging, pricing or setup — or pick a question below.";

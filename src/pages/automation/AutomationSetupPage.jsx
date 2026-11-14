@@ -11,9 +11,7 @@ import {
   Save,
   Plus,
   Trash2,
-  Hash,
   MessageCircle,
-  Heart,
   Clock,
   CircleDot,
   AlertTriangle,
@@ -28,54 +26,24 @@ import { ArrowLeft } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SlidingTabs } from "@/components/fx";
 
-// Each tab declares which channel(s) it applies to. Only automations backed by
-// a real Zernio webhook event are listed (welcome/DM/comment/story/share/
-// fallback/hours) — provider-unsupported triggers have been removed.
+// Quick automations for guest messages (welcome, keywords, fallback, hours,
+// holiday). They apply to every guest message the engine handles.
 const ALL_TABS = [
   {
     id: "welcome",
-    label: "Welcome DM",
+    label: "Welcome message",
     desc: "Send an instant reply when someone messages you for the first time.",
     category: "popular",
     icon: MessageCircle,
     plan: "ig_starter",
-    channels: ["instagram"],
-  },
-  {
-    id: "comment_kw",
-    label: "Comment to DM",
-    desc: "When someone comments a keyword on your post, send them a DM automatically — great for \"RATES\" or \"BOOK\".",
-    category: "popular",
-    icon: Hash,
-    plan: "ig_starter",
-    channels: ["instagram"],
   },
   {
     id: "dm_kw",
-    label: "DM keywords",
+    label: "Keyword replies",
     desc: "Reply automatically when a guest sends a specific word or phrase.",
     category: "popular",
     icon: MessageCircle,
     plan: "ig_starter",
-    channels: ["instagram"],
-  },
-  {
-    id: "story_reply",
-    label: "Story replies",
-    desc: "Respond when someone replies to your Instagram story.",
-    category: "engagement",
-    icon: Heart,
-    plan: "ig_pro",
-    channels: ["instagram"],
-  },
-  {
-    id: "story_mention",
-    label: "Story mentions",
-    desc: "Reply when your hotel is mentioned in a guest's story.",
-    category: "engagement",
-    icon: Heart,
-    plan: "ig_pro",
-    channels: ["instagram"],
   },
   {
     id: "fallback",
@@ -84,7 +52,6 @@ const ALL_TABS = [
     category: "settings",
     icon: CircleDot,
     plan: "ig_starter",
-    channels: ["instagram"],
   },
   {
     id: "hours",
@@ -93,7 +60,6 @@ const ALL_TABS = [
     category: "settings",
     icon: Clock,
     plan: "ig_pro",
-    channels: ["instagram"],
   },
   {
     id: "holiday",
@@ -102,7 +68,6 @@ const ALL_TABS = [
     category: "settings",
     icon: LifeBuoy,
     plan: "ig_starter",
-    channels: ["instagram"],
   },
 ];
 
@@ -113,14 +78,8 @@ const ALL_TABS = [
 const EXAMPLES = {
   welcome:
     "Hey {first_name}! 👋 Thanks so much for reaching out. How can we help you today?",
-  commentReply:
-    "Thanks for commenting, {first_name}! 🙌 Here's the info you asked for 👇",
   dmReply:
     "Great question, {first_name}! Here's everything you need to know 👇",
-  storyReply:
-    "Thanks for replying to our story, {first_name}! 🙌 Want to know more? Just ask!",
-  storyMention:
-    "Thank you so much for the mention, {first_name}! 💛 It means a lot. Anything we can help with?",
   fallback:
     "Thanks for your message, {first_name}! 🙏 A team member will get back to you shortly. Meanwhile, is there something specific we can help with?",
   away:
@@ -166,7 +125,7 @@ export default function AutomationSetupPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const TABS = ALL_TABS.filter((t) => t.channels.includes("instagram"));
+  const TABS = ALL_TABS;
 
   const tabParam = searchParams.get("tab");
   const isGallery = !tabParam || !TABS.some((x) => x.id === tabParam);
@@ -271,7 +230,7 @@ export default function AutomationSetupPage() {
   const activeTab = TABS.find((t) => t.id === tab);
 
   const headerSubtitle = isGallery
-    ? "Set up Instagram automations — quick replies, story triggers, keywords and more."
+    ? "Instant replies for guest messages — welcome, keywords, fallback, hours and more."
     : activeTab?.desc || "Configure this automation.";
 
   return (
@@ -289,16 +248,16 @@ export default function AutomationSetupPage() {
       <StatHero
         icon={Zap}
         title={
-          isGallery ? "Instagram automations" : activeTab?.label || "Automation"
+          isGallery ? "Automations" : activeTab?.label || "Automation"
         }
         subtitle={headerSubtitle}
         help={{
-          title: "Instagram automations",
+          title: "Automations",
           tips: [
-            "These reply to Instagram DMs, comments and story interactions instantly, without anyone at the desk.",
-            "Pick a type: welcome DMs, comment-to-DM, DM keywords, story replies or a catch-all default reply.",
+            "These reply to guest messages instantly, without anyone at the desk.",
+            "Pick a type: welcome message, keyword replies, business hours or a catch-all default reply.",
             "Toggle any automation on or off, and add your own message or use the one-click example.",
-            "Connect Instagram under Settings → Channels first, or nothing will fire.",
+            "Connect WhatsApp under Channels first, or nothing will fire.",
             "The default reply is the safety net when nothing else matches — your AI concierge handles the rest.",
           ],
         }}
@@ -330,9 +289,9 @@ export default function AutomationSetupPage() {
           <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <PlanGate
@@ -349,22 +308,8 @@ export default function AutomationSetupPage() {
                   setCfg={setCfg}
                 />
               )}
-              {tab === "comment_kw" && (
-                <CommentKwTab
-                  cfg={cfg}
-                  setCfg={setCfg}
-                  workspace={activeWorkspace}
-                  reload={reload}
-                />
-              )}
               {tab === "dm_kw" && (
                 <DmKwTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
-              {tab === "story_reply" && (
-                <StoryReplyTab cfg={cfg} save={save} setCfg={setCfg} />
-              )}
-              {tab === "story_mention" && (
-                <StoryMentionTab cfg={cfg} save={save} setCfg={setCfg} />
               )}
               {tab === "fallback" && (
                 <FallbackTab cfg={cfg} save={save} setCfg={setCfg} />
@@ -406,8 +351,8 @@ function WelcomeTab({ cfg, save, saving, setCfg }) {
   const enabled = m.enabled !== false;
   return (
     <Card
-      title="Welcome DM"
-      desc="The very first message someone gets when they DM you for the first time."
+      title="Welcome message"
+      desc="The very first message a guest gets when they write to you for the first time."
     >
       <label className="flex items-center gap-3">
         <label className="toggle">
@@ -424,7 +369,7 @@ function WelcomeTab({ cfg, save, saving, setCfg }) {
           <span className="slider" />
         </label>
         <span className="text-sm text-ink-700">
-          {enabled ? "On — welcome DM will be sent" : "Off — no welcome DM"}
+          {enabled ? "On — welcome message will be sent" : "Off — no welcome message"}
         </span>
       </label>
       <label className="label">Greeting message</label>
@@ -448,117 +393,11 @@ function WelcomeTab({ cfg, save, saving, setCfg }) {
       </p>
       <button
         disabled={saving}
-        onClick={() => save("/dm-messages", cfg.dmMessages, "Welcome DM saved")}
+        onClick={() => save("/dm-messages", cfg.dmMessages, "Welcome message saved")}
         className="btn-primary mt-2"
       >
         <Save className="w-4 h-4" /> Save
       </button>
-    </Card>
-  );
-}
-
-function CommentKwTab({ cfg, setCfg, workspace, reload }) {
-  const list = cfg.keywordTriggers || [];
-  const add = () =>
-    setCfg({
-      ...cfg,
-      keywordTriggers: [
-        ...list,
-        { keyword: "", replyMessage: "", matchType: "contains", enabled: true },
-      ],
-    });
-  const update = (i, patch) =>
-    setCfg({
-      ...cfg,
-      keywordTriggers: list.map((x, j) => (i === j ? { ...x, ...patch } : x)),
-    });
-  const remove = (i) =>
-    setCfg({ ...cfg, keywordTriggers: list.filter((_, j) => j !== i) });
-  const saveAll = async () => {
-    try {
-      await api.put(`/workspaces/${workspace}/keyword-triggers`, {
-        keywordTriggers: list,
-      });
-      toast.success("Comment keywords saved");
-      reload();
-    } catch {
-      toast.error("Save failed");
-    }
-  };
-  return (
-    <Card
-      title="Comment keywords"
-      desc="Someone comments a word like ‘info’ on your post → you auto-DM them the details. Classic ManyChat-style magic."
-    >
-      {list.length === 0 && (
-        <p className="text-sm text-ink-400">No triggers yet. Click Add.</p>
-      )}
-      {list.map((k, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 8, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 420, damping: 32 }}
-          className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] p-3 space-y-2 transition-colors hover:bg-white/85"
-        >
-          <div className="flex items-center justify-between pb-2 border-b border-ink-900/[0.06]">
-            <label className="flex items-center gap-2 text-xs font-medium">
-              <label className="toggle">
-                <input
-                  type="checkbox"
-                  checked={k.enabled !== false}
-                  onChange={(e) => update(i, { enabled: e.target.checked })}
-                />
-                <span className="slider" />
-              </label>
-              <span
-                className={
-                  k.enabled !== false ? "text-emerald-600" : "text-ink-400"
-                }
-              >
-                {k.enabled !== false ? "Active" : "Paused"}
-              </span>
-            </label>
-            <button
-              onClick={() => remove(i)}
-              className="btn-ghost group/del text-rose-500 hover:text-rose-600 hover:bg-rose-50"
-            >
-              <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/del:rotate-[-12deg]" />
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <input
-              className="input"
-              placeholder="keyword"
-              value={k.keyword}
-              onChange={(e) => update(i, { keyword: e.target.value })}
-            />
-            <select
-              className="input max-w-[120px] sm:max-w-[140px]"
-              value={k.matchType}
-              onChange={(e) => update(i, { matchType: e.target.value })}
-            >
-              <option value="contains">contains</option>
-              <option value="exact">exact</option>
-              <option value="starts_with">starts with</option>
-            </select>
-          </div>
-          <textarea
-            className="textarea"
-            placeholder="DM reply message..."
-            value={k.replyMessage}
-            onChange={(e) => update(i, { replyMessage: e.target.value })}
-          />
-        </motion.div>
-      ))}
-      <div className="flex flex-wrap gap-2 justify-between">
-        <button onClick={add} className="btn-secondary group/add">
-          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/add:rotate-90" /> Add trigger
-        </button>
-        <button onClick={saveAll} className="btn-primary">
-          <Save className="w-4 h-4" /> Save all
-        </button>
-      </div>
     </Card>
   );
 }
@@ -582,8 +421,8 @@ function DmKwTab({ cfg, save, setCfg }) {
     setCfg({ ...cfg, dmKeywordTriggers: list.filter((_, j) => j !== i) });
   return (
     <Card
-      title="DM keywords"
-      desc="Someone sends you a DM containing a word like ‘price’ → instant auto-reply. Perfect for FAQs."
+      title="Keyword replies"
+      desc="A guest sends a message containing a word like ‘price’ → instant auto-reply. Perfect for FAQs."
     >
       {list.map((k, i) => (
         <motion.div
@@ -652,7 +491,7 @@ function DmKwTab({ cfg, save, setCfg }) {
             save(
               "/dm-keyword-triggers",
               { dmKeywordTriggers: list },
-              "DM keywords saved",
+              "Keyword replies saved",
             )
           }
           className="btn-primary"
@@ -664,87 +503,6 @@ function DmKwTab({ cfg, save, setCfg }) {
   );
 }
 
-function EnableReplyCard({
-  title,
-  desc,
-  trig,
-  setTrig,
-  onSave,
-  example,
-  placeholder,
-}) {
-  return (
-    <Card title={title} desc={desc}>
-      <label className="flex items-center gap-3">
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={!!trig.enabled}
-            onChange={(e) => setTrig({ ...trig, enabled: e.target.checked })}
-          />
-          <span className="slider" />
-        </label>
-        <span className="text-sm text-ink-700">
-          {trig.enabled ? "On — auto-reply will be sent" : "Off"}
-        </span>
-      </label>
-      <label className="label">Reply message</label>
-      <textarea
-        className="textarea min-h-[100px]"
-        placeholder={placeholder || "Write your reply…"}
-        value={trig.replyMessage || ""}
-        onChange={(e) => setTrig({ ...trig, replyMessage: e.target.value })}
-      />
-      <EmptyWarn show={!!trig.enabled && !trig.replyMessage?.trim()} />
-      {example && (
-        <ExampleRow
-          text={example}
-          onUse={(t) => setTrig({ ...trig, replyMessage: t })}
-        />
-      )}
-      <button className="btn-primary mt-2" onClick={onSave}>
-        <Save className="w-4 h-4" /> Save
-      </button>
-    </Card>
-  );
-}
-
-function StoryReplyTab({ cfg, save, setCfg }) {
-  const t = cfg.storyReplyTrigger || {};
-  return (
-    <EnableReplyCard
-      title="Story replies"
-      desc="Whenever someone replies to your story, send them a DM automatically."
-      trig={t}
-      setTrig={(v) => setCfg({ ...cfg, storyReplyTrigger: v })}
-      onSave={() =>
-        save("/story-reply-trigger", cfg.storyReplyTrigger, "Story reply saved")
-      }
-      example={EXAMPLES.storyReply}
-      placeholder="Thanks for replying to our story, {first_name}! 🙌"
-    />
-  );
-}
-function StoryMentionTab({ cfg, save, setCfg }) {
-  const t = cfg.storyMentionTrigger || {};
-  return (
-    <EnableReplyCard
-      title="Story mentions"
-      desc="When someone tags you in their story, send them a thank-you or offer DM."
-      trig={t}
-      setTrig={(v) => setCfg({ ...cfg, storyMentionTrigger: v })}
-      onSave={() =>
-        save(
-          "/story-mention-trigger",
-          cfg.storyMentionTrigger,
-          "Story mention reply saved",
-        )
-      }
-      example={EXAMPLES.storyMention}
-      placeholder="Thank you for the mention, {first_name}! 💛"
-    />
-  );
-}
 function FallbackTab({ cfg, save, setCfg }) {
   const f = cfg.fallbackReply || {
     enabled: false,
@@ -948,61 +706,6 @@ function HoursTab({ cfg, save, setCfg }) {
           <Save className="w-4 h-4" /> Save away
         </button>
       </Card>
-    </div>
-  );
-}
-
-/* ─── Automation type showcase card ─── */
-function AutomationTypeCard({ tone, title, items }) {
-  const isWa = tone === "wa";
-  return (
-    <div
-      className={`card ring-1 ${
-        isWa ? "ring-emerald-200/60" : "ring-sunset-flame/15"
-      } p-4`}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <div
-          className={`w-8 h-8 rounded-xl grid place-items-center ${
-            isWa ? "bg-emerald-500" : "bg-sunset"
-          }`}
-        >
-          {isWa ? (
-            <svg
-              viewBox="0 0 24 24"
-              className="w-4 h-4 text-white"
-              aria-hidden="true"
-            >
-              <path
-                fill="currentColor"
-                d="M19.05 4.91A10 10 0 0 0 4.94 19.04L4 23l4.06-1.06a10 10 0 0 0 14.94-9A9.94 9.94 0 0 0 19.05 4.91zM12 21.02a8 8 0 0 1-4.08-1.12l-.29-.17l-2.41.63l.65-2.35l-.19-.3A8 8 0 1 1 20.02 13a7.94 7.94 0 0 1-8.02 8.02zm4.61-5.83c-.25-.13-1.49-.74-1.72-.82c-.23-.08-.4-.13-.57.13c-.17.25-.65.82-.8 1c-.15.17-.3.19-.55.06c-.25-.13-1.06-.39-2.02-1.24a7.6 7.6 0 0 1-1.4-1.74c-.15-.25 0-.39.11-.51c.11-.11.25-.3.38-.45c.13-.15.17-.25.25-.42c.08-.17 0-.32-.04-.45c-.06-.13-.57-1.38-.78-1.89c-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.45.06-.69.32c-.23.25-.9.88-.9 2.15c0 1.27.92 2.5 1.05 2.67c.13.17 1.81 2.77 4.39 3.88c.61.26 1.09.42 1.46.54c.61.19 1.17.17 1.61.1c.49-.07 1.49-.61 1.7-1.2c.21-.6.21-1.11.15-1.21c-.06-.1-.23-.16-.48-.29z"
-              />
-            </svg>
-          ) : (
-            <svg
-              viewBox="0 0 24 24"
-              className="w-4 h-4 text-white"
-              aria-hidden="true"
-            >
-              <path
-                fill="currentColor"
-                d="M12 2.16c3.2 0 3.58 0 4.85.07c1.17.05 1.8.25 2.23.41c.56.22.96.48 1.38.9c.42.42.68.82.9 1.38c.16.42.36 1.06.41 2.23c.07 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23a3.7 3.7 0 0 1-.9 1.38a3.7 3.7 0 0 1-1.38.9c-.42.16-1.06.36-2.23.41c-1.27.07-1.65.07-4.85.07s-3.58 0-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9a3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23c-.07-1.27-.07-1.65-.07-4.85s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23c.22-.56.48-.96.9-1.38c.42-.42.82-.68 1.38-.9c.42-.16 1.06-.36 2.23-.41c1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07a8.94 8.94 0 0 0-2.96.57a5.96 5.96 0 0 0-2.16 1.4A5.96 5.96 0 0 0 .54 4.2a8.94 8.94 0 0 0-.57 2.95C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95a8.94 8.94 0 0 0 .57 2.96a5.96 5.96 0 0 0 1.4 2.16a5.96 5.96 0 0 0 2.16 1.4a8.94 8.94 0 0 0 2.95.57C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07a8.94 8.94 0 0 0 2.96-.57a6.22 6.22 0 0 0 3.56-3.56a8.94 8.94 0 0 0 .57-2.95c.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95a8.94 8.94 0 0 0-.57-2.96a5.96 5.96 0 0 0-1.4-2.16a5.96 5.96 0 0 0-2.16-1.4a8.94 8.94 0 0 0-2.95-.57C15.67.01 15.26 0 12 0m0 5.84A6.16 6.16 0 1 0 18.16 12A6.16 6.16 0 0 0 12 5.84M12 16a4 4 0 1 1 4-4a4 4 0 0 1-4 4m6.41-11.85a1.44 1.44 0 1 0 1.44 1.44a1.44 1.44 0 0 0-1.44-1.44"
-              />
-            </svg>
-          )}
-        </div>
-        <p className="font-display text-sm font-semibold text-ink-900">{title}</p>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {items.map((it, i) => (
-          <span
-            key={i}
-            className={isWa ? "badge-green" : "badge-brand"}
-          >
-            {it}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }

@@ -179,9 +179,9 @@ export function ReadinessModal({ open, readiness, categories = [], onFill, onClo
             role="dialog"
             aria-modal="true"
             aria-labelledby="readiness-title"
-            initial={{ opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(4px)" }}
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, y: 24, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className="relative w-full sm:max-w-md glass-strong rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden"
           >

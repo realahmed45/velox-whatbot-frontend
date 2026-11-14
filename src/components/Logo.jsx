@@ -1,9 +1,7 @@
 import BotlifyMark from "@/components/BotlifyMark";
 
 /**
- * Botlify logo — sunrise-bubble mark + lowercase wordmark ending in a glowing
- * sunset dot. The dot is the brand's signature detail: it breathes slowly, and
- * the mark lifts on hover.
+ * Botlify logo — the b-bubble mark + lowercase wordmark ending in a sunset dot.
  *
  * Props:
  *  - size: sm | md | lg | xl | 2xl
@@ -30,7 +28,7 @@ export default function Logo({
   return (
     <div className={`group/logo inline-flex items-center ${s.gap} ${className}`}>
       <span
-        className={`relative inline-flex shrink-0 transition-transform duration-500 ease-spring group-hover/logo:-translate-y-0.5 group-hover/logo:rotate-[-6deg] ${
+        className={`relative inline-flex shrink-0 transition-transform duration-500 ease-spring group-hover/logo:-translate-y-0.5 group-hover/logo:rotate-[-4deg] ${
           animated ? "animate-float" : ""
         }`}
       >
@@ -45,8 +43,8 @@ export default function Logo({
           botlify
           <span
             aria-hidden
-            className={`ml-[0.08em] inline-block rounded-full bg-sunset ${s.dot} animate-pulse-soft`}
-            style={{ boxShadow: "0 0 12px rgba(255,61,119,0.6)" }}
+            className={`ml-[0.08em] inline-block rounded-full bg-sunset ${s.dot}`}
+            
           />
         </span>
       )}

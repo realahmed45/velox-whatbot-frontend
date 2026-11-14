@@ -1,41 +1,34 @@
 /**
- * Botlify — landing page (2026 "Bali sunset" redesign).
+ * Botlify — landing page.
  *
- * Night canvas, drifting sunset aurora, film grain, liquid-glass panels, and a
- * custom cursor. Every block is interactive: the hero phone plays a live
- * WhatsApp booking, the bento cards follow the pointer, the "night shift"
- * section scrolls sideways through a real night at a hotel, and the agent card
- * types its own commands.
+ * Pitch (and nothing else): Botlify is the AI channel manager for hotels. It
+ * syncs rooms, rates and availability across Airbnb, Booking.com and Expedia,
+ * and its AI answers every guest message inside those OTA inboxes and on
+ * WhatsApp — replacing the human work of guest messaging.
  *
- * Honest-claims rule (see data/otaChannels.js): only Booking.com, Airbnb and
- * Expedia are named as live OTA syncs; everything else is "coming".
+ * Light, airy, fast. Motion is opacity/transform only (no animated blur, no
+ * scroll-jacking, no custom cursor) so scrolling stays smooth on any laptop.
+ * Honest claims: Booking.com, Airbnb and Expedia are named as live; the rest
+ * are "coming".
  */
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  ArrowUpRight,
   BedDouble,
   CalendarDays,
   Check,
   ChevronDown,
-  Globe,
+  Clock,
+  Globe2,
+  Hand,
+  Languages,
   Menu,
-  MessageCircle,
-  Moon,
-  Plane,
+  MessageSquareText,
+  RefreshCw,
+  ShieldCheck,
   Sparkles,
-  Star,
-  Sun,
-  TrendingUp,
-  Wand2,
   X,
   Zap,
 } from "lucide-react";
@@ -44,29 +37,17 @@ import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
 import SupportChat from "@/components/SupportChat";
 import OtaLogo from "@/components/OtaLogo";
-import { WhatsAppMark, InstagramMark } from "@/components/ChannelMarks";
-import { LIVE_OTA_CHANNELS } from "@/data/otaChannels";
-import {
-  Aurora,
-  CursorAura,
-  Magnetic,
-  Marquee,
-  NumberTicker,
-  PulseDot,
-  Reveal,
-  SlidingTabs,
-  Spotlight,
-  Tilt,
-} from "@/components/fx";
+import { WhatsAppMark } from "@/components/ChannelMarks";
+import { Aurora, NumberTicker, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 
 const EASE = [0.16, 1, 0.3, 1];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Nav — a floating glass pill that tightens once you scroll
+// Nav
 // ─────────────────────────────────────────────────────────────────────────────
 const LINKS = [
-  { label: "Product", href: "#product" },
-  { label: "Night shift", href: "#night" },
+  { label: "How it works", href: "#how" },
+  { label: "Features", href: "#features" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
   { label: "Guide", to: "/guide" },
@@ -77,7 +58,7 @@ function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 24);
+    const on = () => setScrolled(window.scrollY > 12);
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
@@ -95,73 +76,65 @@ function Nav() {
     );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-4">
-      <motion.nav
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: EASE }}
-        className={`mx-auto flex items-center justify-between gap-4 rounded-2xl px-3 py-2 transition-all duration-500 ease-out-expo sm:px-4 ${
-          scrolled
-            ? "max-w-5xl bg-night-900/70 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] ring-1 ring-white/10 backdrop-blur-2xl"
-            : "max-w-7xl bg-transparent"
-        }`}
-      >
+    <header
+      className={`sticky top-0 z-50 transition-colors duration-300 ${
+        scrolled ? "border-b border-ink-900/[0.06] bg-white/80 backdrop-blur-lg" : "bg-transparent"
+      }`}
+    >
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-[72px] sm:px-6">
         <Link to="/" aria-label="Botlify home" className="shrink-0">
-          <Logo size="sm" dark />
+          <Logo size="sm" />
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => (
             <Item
               key={l.label}
               l={l}
-              className="relative rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
+              className="rounded-lg px-3.5 py-2 text-[14px] font-medium text-ink-600 transition-colors hover:bg-ink-900/[0.04] hover:text-ink-950"
             />
           ))}
         </div>
         <div className="hidden items-center gap-2 md:flex">
           {isAuthed ? (
-            <Magnetic>
-              <Link to="/dashboard" className="btn-primary px-4 py-2">
-                Open dashboard <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Magnetic>
+            <Link to="/dashboard" className="btn-primary px-4 py-2">
+              Open dashboard <ArrowRight className="h-4 w-4" />
+            </Link>
           ) : (
             <>
-              <Link to="/login" className="rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-white/70 transition hover:text-white">
+              <Link to="/login" className="rounded-lg px-3.5 py-2 text-[14px] font-medium text-ink-700 hover:text-ink-950">
                 Sign in
               </Link>
-              <Magnetic>
-                <Link to="/register" className="btn-primary px-4 py-2">
-                  Start free <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Magnetic>
+              <Link to="/register" className="btn-primary px-4 py-2">
+                Start free <ArrowRight className="h-4 w-4" />
+              </Link>
             </>
           )}
         </div>
         <button
-          className="btn-glass-dark p-2 md:hidden"
+          className="btn-secondary p-2 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-      </motion.nav>
+      </nav>
 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.97, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(6px)" }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className="card-dark mx-auto mt-2 max-w-7xl p-3 md:hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="border-t border-ink-900/[0.06] bg-white px-4 pb-4 pt-2 shadow-lg md:hidden"
           >
             {LINKS.map((l) => (
               <Item
                 key={l.label}
                 l={l}
                 onClick={() => setOpen(false)}
-                className="block rounded-xl px-3 py-3 text-[15px] font-medium text-white/80 hover:bg-white/[0.06]"
+                className="block rounded-lg px-3 py-3 text-[15px] font-medium text-ink-800 hover:bg-ink-900/[0.04]"
               />
             ))}
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -169,7 +142,7 @@ function Nav() {
                 <Link to="/dashboard" className="btn-primary col-span-2">Open dashboard</Link>
               ) : (
                 <>
-                  <Link to="/login" className="btn-glass-dark">Sign in</Link>
+                  <Link to="/login" className="btn-secondary">Sign in</Link>
                   <Link to="/register" className="btn-primary">Start free</Link>
                 </>
               )}
@@ -184,602 +157,405 @@ function Nav() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────────────────────────────────────
-const HEADLINE = ["The", "front", "desk"];
-
 function Hero() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
   return (
-    <section ref={ref} className="relative isolate overflow-hidden pt-32 sm:pt-40">
-      <Aurora variant="dark" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b opacity-60" />
-      {/* the sun on the horizon */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[62%] -z-10 h-[46rem] w-[46rem] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
-        style={{ background: "radial-gradient(circle, #FF6A2B 0%, #FF3D77 35%, transparent 70%)" }}
-      />
+    <section className="relative isolate overflow-hidden">
+      <Aurora />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-dot-grid opacity-50 mask-fade-b" />
 
-      <motion.div style={{ y, opacity: fade }} className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid items-center gap-14 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <motion.a
-              href="#night"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 0.1 }}
-              className="group inline-flex items-center gap-2.5 rounded-full bg-white/[0.06] py-1.5 pl-2 pr-4 text-[12.5px] font-medium text-white/75 ring-1 ring-white/10 backdrop-blur transition hover:bg-white/[0.1] hover:text-white"
-            >
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-sunset px-2 py-0.5 text-[11px] font-semibold text-white">
-                <Sparkles className="h-3 w-3" /> New
-              </span>
-              AI concierge for hotels in Bali &amp; beyond
-              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 ease-spring group-hover:translate-x-1" />
-            </motion.a>
+      <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 pb-20 pt-12 sm:px-6 sm:pt-20 lg:grid-cols-12 lg:pb-28">
+        <div className="lg:col-span-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[12.5px] font-medium text-ink-700 shadow-sm ring-1 ring-ink-900/[0.07]"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-sunset-flame" />
+            The AI channel manager for hotels
+          </motion.div>
 
-            <h1 className="mt-7 font-display text-[2.6rem] font-semibold leading-[0.95] min-[400px]:text-[3.1rem] tracking-[-0.055em] text-white sm:text-7xl lg:text-[6.4rem]">
-              {HEADLINE.map((w, i) => (
-                <motion.span
-                  key={w}
-                  className="mr-[0.22em] inline-block"
-                  initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.9, ease: EASE, delay: 0.15 + i * 0.07 }}
-                >
-                  {w}
-                </motion.span>
-              ))}
-              <br />
-              <motion.span
-                className="mr-[0.22em] inline-block"
-                initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.9, ease: EASE, delay: 0.38 }}
-              >
-                that
-              </motion.span>
-              <motion.span
-                className="inline-block pr-2 font-serif font-normal italic tracking-[-0.02em] text-sunset"
-                initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 1, ease: EASE, delay: 0.5 }}
-              >
-                never sleeps.
-              </motion.span>
-            </h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.05 }}
+            className="mt-6 font-display text-[2.6rem] font-semibold leading-[1] tracking-[-0.045em] text-ink-950 min-[400px]:text-5xl sm:text-6xl lg:text-[4.4rem]"
+          >
+            Your guests message on Airbnb.{" "}
+            <span className="font-serif font-normal italic tracking-[-0.02em] text-sunset">Botlify answers.</span>
+          </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 0.7 }}
-              className="mt-7 max-w-xl text-lg leading-relaxed text-white/60 sm:text-xl"
-            >
-              Botlify answers your guests on WhatsApp and Instagram in seconds, books the room,
-              and keeps Booking.com, Airbnb and Expedia on one calendar. You wake up to
-              reservations, not a full inbox.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 0.85 }}
-              className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
-            >
-              <Magnetic strength={0.25}>
-                <Link to="/register" data-cursor="Go" className="btn-primary px-7 py-4 text-[15px]">
-                  Start free — no card <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Magnetic>
-              <a href="#product" className="btn-glass-dark px-6 py-4 text-[15px]">
-                See how it works
-              </a>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 1.1 }}
-              className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-white/50"
-            >
-              {["Set up in 10 minutes", "0% commission on OTA bookings", "Cancel anytime"].map((t) => (
-                <span key={t} className="inline-flex items-center gap-2">
-                  <span className="grid h-4 w-4 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
-                    <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                  </span>
-                  {t}
-                </span>
-              ))}
-            </motion.div>
-          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.12 }}
+            className="mt-6 max-w-xl text-lg leading-relaxed text-ink-600"
+          >
+            Botlify keeps Airbnb, Booking.com and Expedia in sync on one calendar — and its AI replies to
+            every guest inside those inboxes and on WhatsApp. Instantly, in their language, around the
+            clock. No more front-desk hours spent answering the same questions.
+          </motion.p>
 
           <motion.div
-            className="relative lg:col-span-5"
-            initial={{ opacity: 0, y: 50, rotate: 4 }}
-            animate={{ opacity: 1, y: 0, rotate: 0 }}
-            transition={{ duration: 1.2, ease: EASE, delay: 0.35 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.18 }}
+            className="mt-8 flex flex-col gap-3 sm:flex-row"
           >
-            <HeroPhone />
+            <Link to="/register" className="btn-primary px-6 py-3.5 text-[15px]">
+              Start free — no card <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a href="#how" className="btn-secondary px-6 py-3.5 text-[15px]">
+              See how it works
+            </a>
           </motion.div>
-        </div>
-      </motion.div>
 
-      <ChannelStrip />
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-ink-500">
+            {["Set up in 10 minutes", "0% commission on OTA bookings", "You approve anything sensitive"].map((t) => (
+              <span key={t} className="inline-flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-emerald-500" strokeWidth={2.5} />
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <motion.div
+          className="lg:col-span-6"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
+        >
+          <UnifiedInbox />
+        </motion.div>
+      </div>
     </section>
   );
 }
 
-// A WhatsApp booking that plays itself, on a loop.
-const SCRIPT = [
-  { from: "guest", text: "Hi! Any room for 2 this Fri–Sun? 🌴", at: 600 },
-  { from: "bot", text: "Hi Sofia! Yes — the Ocean Deluxe is free Fri 21 → Sun 23. $120/night, breakfast included.", at: 2400 },
-  { from: "guest", text: "Perfect. Airport pickup too?", at: 4600 },
-  { from: "bot", text: "Done ✈️ Pickup at DPS 3:40pm, $18. Shall I confirm both for $258?", at: 6400 },
-  { from: "guest", text: "Yes please!", at: 8400 },
-  { from: "card", at: 9600 },
+// The product in one picture: guests on three channels, one AI answering.
+const THREADS = [
+  {
+    channel: "airbnb",
+    label: "Airbnb",
+    guest: "Maya · arriving Fri",
+    q: "Hi! What time can we check in? We land at 11am 🙏",
+    a: "Hi Maya! Check-in is from 2pm, but your room is free that morning — I've noted early check-in from 12pm at no charge. See you Friday!",
+  },
+  {
+    channel: "booking",
+    label: "Booking.com",
+    guest: "Lukas · 3 nights",
+    q: "Is breakfast included in my booking? And is there parking?",
+    a: "Breakfast is included, served 7–10:30am by the pool. Free parking is right at the entrance — no need to reserve.",
+  },
+  {
+    channel: "whatsapp",
+    label: "WhatsApp",
+    guest: "Sofia · new enquiry",
+    q: "Any room for 2 this weekend? How much?",
+    a: "Yes! The Ocean Deluxe is free Fri–Sun at $120/night with breakfast. Want me to book it for you?",
+  },
 ];
 
-function HeroPhone() {
+function ChannelIcon({ channel, size = 22 }) {
+  if (channel === "whatsapp") {
+    return (
+      <span className="grid shrink-0 place-items-center rounded-full bg-[#25D366]" style={{ width: size, height: size }}>
+        <WhatsAppMark className="h-[60%] w-[60%] text-white" />
+      </span>
+    );
+  }
+  return <OtaLogo channelKey={channel} size={size} />;
+}
+
+function UnifiedInbox() {
   const reduce = useReducedMotion();
-  const [step, setStep] = useState(reduce ? SCRIPT.length : 0);
-  const [typing, setTyping] = useState(false);
+  const [active, setActive] = useState(0);
+  const [replied, setReplied] = useState(!!reduce);
 
   useEffect(() => {
     if (reduce) return;
-    let timers = [];
-    const run = () => {
-      setStep(0);
-      SCRIPT.forEach((m, i) => {
-        if (m.from === "bot") timers.push(setTimeout(() => setTyping(true), m.at - 1100));
-        timers.push(
-          setTimeout(() => {
-            setTyping(false);
-            setStep(i + 1);
-          }, m.at),
-        );
-      });
-      timers.push(setTimeout(run, 14500));
+    setReplied(false);
+    const t1 = setTimeout(() => setReplied(true), 1400);
+    const t2 = setTimeout(() => setActive((i) => (i + 1) % THREADS.length), 6200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
-    run();
-    return () => timers.forEach(clearTimeout);
-  }, [reduce]);
+  }, [active, reduce]);
 
+  const t = THREADS[active];
   return (
-    <div className="relative mx-auto w-full max-w-[380px]">
-      {/* orbiting proof chips */}
-      <FloatChip className="-left-10 top-16 hidden sm:flex" delay={1.4} icon={CalendarDays} tone="text-sky-300">
-        Airbnb synced · just now
-      </FloatChip>
-      <FloatChip className="-right-8 top-[44%] hidden sm:flex" delay={1.8} icon={TrendingUp} tone="text-emerald-300">
-        Rate +12% approved
-      </FloatChip>
-      <FloatChip className="-left-6 bottom-20 hidden sm:flex" delay={2.2} icon={Moon} tone="text-sunset-gold">
-        Booked at 2:14 am
-      </FloatChip>
+    <div className="relative mx-auto max-w-[560px]">
+      <div className="card overflow-hidden rounded-3xl shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
+        <div className="flex items-center gap-2 border-b border-ink-900/[0.06] bg-ink-50/70 px-4 py-3">
+          <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+          <span className="ml-3 text-xs font-medium text-ink-500">Botlify · Guest messages</span>
+          <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> AI on
+          </span>
+        </div>
 
-      <Tilt max={7} className="rounded-[2.6rem]">
-        <div className="relative rounded-[2.6rem] bg-gradient-to-b from-white/20 to-white/5 p-[1.5px] shadow-[0_50px_120px_-30px_rgba(255,61,119,0.55)]">
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-night-900">
-            {/* status + chat header */}
-            <div className="flex items-center gap-3 border-b border-white/[0.07] bg-white/[0.03] px-5 pb-3 pt-5">
-              <div className="relative">
-                <BotlifyMark size={36} />
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-night-900" />
+        <div className="grid sm:grid-cols-[180px_1fr]">
+          <div className="hidden border-r border-ink-900/[0.06] bg-white/60 p-2 sm:block">
+            {THREADS.map((th, i) => (
+              <button
+                key={th.channel}
+                onClick={() => setActive(i)}
+                className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors ${
+                  i === active ? "bg-white shadow-sm ring-1 ring-ink-900/[0.06]" : "hover:bg-white/70"
+                }`}
+              >
+                <ChannelIcon channel={th.channel} />
+                <span className="min-w-0">
+                  <span className="block truncate text-[13px] font-semibold text-ink-900">{th.guest.split(" · ")[0]}</span>
+                  <span className="block truncate text-[11px] text-ink-500">{th.label}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex min-h-[340px] flex-col p-5">
+            <div className="flex items-center gap-2.5">
+              <ChannelIcon channel={t.channel} size={26} />
+              <div>
+                <p className="text-sm font-semibold text-ink-900">{t.guest}</p>
+                <p className="text-[11px] text-ink-500">via {t.label} inbox</p>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">Villa Senja · Uluwatu</p>
-                <p className="text-[11px] text-emerald-300/90">{typing ? "typing…" : "online · replies instantly"}</p>
-              </div>
-              <WhatsAppMark className="h-5 w-5 opacity-90" />
             </div>
 
-            <div className="flex h-[440px] flex-col justify-end gap-2.5 bg-[radial-gradient(circle_at_30%_0%,rgba(255,106,43,0.10),transparent_60%)] px-4 py-5">
-              <AnimatePresence initial={false}>
-                {SCRIPT.slice(0, step).map((m, i) =>
-                  m.from === "card" ? (
-                    <motion.div
-                      key={`card-${i}`}
-                      layout
-                      initial={{ opacity: 0, scale: 0.85, y: 20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                      className="mx-auto mt-1 w-[88%] overflow-hidden rounded-2xl bg-white/[0.06] p-3.5 ring-1 ring-emerald-400/30"
-                    >
-                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-300">
-                        <Check className="h-3.5 w-3.5" strokeWidth={3} /> Booking confirmed
-                      </div>
-                      <p className="mt-1.5 text-sm font-semibold text-white">Ocean Deluxe · 2 nights + pickup</p>
-                      <div className="mt-2 flex items-center justify-between text-xs text-white/55">
-                        <span>BK-7Q2F · Fri 21 → Sun 23</span>
-                        <span className="font-semibold text-white">$258</span>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key={i}
-                      layout
-                      initial={{ opacity: 0, y: 14, scale: 0.92 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                      className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-snug ${
-                        m.from === "guest"
-                          ? "self-end rounded-br-md bg-white/[0.09] text-white ring-1 ring-white/10"
-                          : "self-start rounded-bl-md bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-8px_rgba(255,61,119,0.6)]"
-                      }`}
-                    >
-                      {m.text}
-                    </motion.div>
-                  ),
-                )}
-                {typing && (
+            {/* Keyed on the thread so header and messages always switch together. */}
+            <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-5 flex flex-1 flex-col gap-3"
+              >
+                <div className="max-w-[85%] self-start rounded-2xl rounded-tl-md bg-ink-100 px-3.5 py-2.5 text-[14px] text-ink-800">
+                  {t.q}
+                </div>
+                {replied ? (
                   <motion.div
-                    key="typing"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex w-14 items-center justify-center gap-1 self-start rounded-2xl rounded-bl-md bg-white/[0.08] py-3"
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                    className="max-w-[88%] self-end"
                   >
+                    <div className="rounded-2xl rounded-tr-md bg-sunset px-3.5 py-2.5 text-[14px] leading-snug text-white shadow-[0_8px_20px_-10px_rgba(255,61,119,0.6)]">
+                      {t.a}
+                    </div>
+                    <p className="mt-1.5 flex items-center justify-end gap-1 text-[11px] text-ink-400">
+                      <BotlifyMark size={12} /> Replied by Botlify AI · 4s
+                    </p>
+                  </motion.div>
+                ) : (
+                  <div className="flex w-16 items-center justify-center gap-1 self-end rounded-2xl bg-ink-100 py-3">
                     {[0, 1, 2].map((d) => (
                       <motion.span
                         key={d}
-                        className="h-1.5 w-1.5 rounded-full bg-white/70"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 0.8, repeat: Infinity, delay: d * 0.15 }}
+                        className="h-1.5 w-1.5 rounded-full bg-ink-400"
+                        animate={reduce ? undefined : { y: [0, -3, 0] }}
+                        transition={{ duration: 0.7, repeat: Infinity, delay: d * 0.12 }}
                       />
                     ))}
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
-
-            <div className="flex items-center gap-2 border-t border-white/[0.07] px-4 py-3">
-              <div className="flex-1 rounded-full bg-white/[0.06] px-4 py-2 text-xs text-white/35">Message</div>
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-sunset">
-                <ArrowUpRight className="h-4 w-4 text-white" />
-              </div>
-            </div>
+              </motion.div>
           </div>
         </div>
-      </Tilt>
-    </div>
-  );
-}
+      </div>
 
-function FloatChip({ children, className = "", delay = 0, icon: Icon, tone = "" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1, y: [0, -8, 0] }}
-      transition={{
-        opacity: { delay, duration: 0.6 },
-        scale: { delay, type: "spring", stiffness: 260, damping: 18 },
-        y: { delay: delay + 0.6, duration: 5, repeat: Infinity, ease: "easeInOut" },
-      }}
-      className={`absolute z-10 items-center gap-2 rounded-2xl bg-night-800/70 px-3 py-2 text-[12px] font-medium text-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/10 backdrop-blur-xl ${className}`}
-    >
-      <Icon className={`h-3.5 w-3.5 ${tone}`} />
-      {children}
-    </motion.div>
+      <div className="absolute -bottom-5 left-4 hidden items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5 text-[13px] font-medium text-ink-800 shadow-[0_12px_30px_-12px_rgba(15,23,42,0.3)] ring-1 ring-ink-900/[0.06] sm:flex">
+        <RefreshCw className="h-4 w-4 text-sunset-flame" /> Room sold on Airbnb · closed on Booking.com &amp; Expedia
+      </div>
+    </div>
   );
 }
 
 function ChannelStrip() {
   const items = [
-    ...LIVE_OTA_CHANNELS.map((c) => ({ key: c.key, name: c.name, logo: <OtaLogo channelKey={c.key} name={c.name} size={26} /> })),
-    { key: "wa", name: "WhatsApp", logo: <WhatsAppMark className="h-5 w-5 text-[#25D366]" /> },
-    { key: "ig", name: "Instagram", logo: <InstagramMark className="h-5 w-5 text-[#E1306C]" /> },
-    { key: "web", name: "Your direct booking page", logo: <Globe className="h-6 w-6 text-sunset-gold" /> },
+    { key: "airbnb", name: "Airbnb" },
+    { key: "booking", name: "Booking.com" },
+    { key: "expedia", name: "Expedia" },
+    { key: "whatsapp", name: "WhatsApp" },
   ];
   return (
-    <div className="relative mt-24 border-y border-white/[0.06] bg-white/[0.015] py-6 sm:mt-32">
-      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-white/35">
-        One calendar · every channel your guests use
-      </p>
-      <Marquee speed={36}>
-        {[...items, ...items].map((it, i) => (
-          <span
-            key={`${it.key}-${i}`}
-            className="inline-flex items-center gap-3 whitespace-nowrap rounded-full bg-white/[0.04] py-2 pl-2 pr-5 text-sm font-medium text-white/70 ring-1 ring-white/[0.07]"
-          >
-            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-white">{it.logo}</span>
-            {it.name}
-          </span>
-        ))}
-      </Marquee>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Product — bento of interactive glass cards
-// ─────────────────────────────────────────────────────────────────────────────
-function SectionHead({ eyebrow, title, accent, sub, center = true }) {
-  return (
-    <div className={center ? "mx-auto max-w-3xl text-center" : "max-w-2xl"}>
-      <Reveal>
-        <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-white/45">
-          <span className="h-px w-6 bg-sunset" /> {eyebrow}
-        </span>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <h2 className="mt-5 font-display text-4xl font-semibold leading-[1] tracking-[-0.045em] text-white sm:text-6xl">
-          {title} <span className="font-serif font-normal italic text-sunset">{accent}</span>
-        </h2>
-      </Reveal>
-      {sub && (
-        <Reveal delay={0.1}>
-          <p className="mt-5 text-lg leading-relaxed text-white/55">{sub}</p>
-        </Reveal>
-      )}
-    </div>
-  );
-}
-
-function Bento({ className = "", children, delay = 0 }) {
-  return (
-    <Reveal delay={delay} className={className}>
-      <Spotlight className="card-dark group h-full overflow-hidden p-6 transition-transform duration-500 ease-spring hover:-translate-y-1 sm:p-7">
-        {children}
-      </Spotlight>
-    </Reveal>
-  );
-}
-
-function IconTile({ icon: Icon }) {
-  return (
-    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10 transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg]">
-      <Icon className="h-5 w-5 text-sunset-gold" strokeWidth={1.8} />
-    </span>
-  );
-}
-
-function Product() {
-  return (
-    <section id="product" className="relative py-28 sm:py-40">
-      <SectionHead
-        eyebrow="The platform"
-        title="Everything a hotel runs on,"
-        accent="in one place."
-        sub="A concierge that sells, a calendar that never double-books, and an agent you simply tell what to do."
-      />
-
-      <div className="mx-auto mt-16 grid max-w-7xl gap-4 px-4 sm:px-6 md:grid-cols-6">
-        <Bento className="md:col-span-4" delay={0}>
-          <div className="flex h-full flex-col gap-8 lg:flex-row">
-            <div className="lg:w-1/2">
-              <IconTile icon={MessageCircle} />
-              <h3 className="mt-5 font-display text-2xl font-semibold tracking-tight text-white">An AI concierge on WhatsApp &amp; Instagram</h3>
-              <p className="mt-3 text-white/55">
-                It reads your live calendar, quotes real prices, books the room, arranges the airport
-                pickup and sells breakfast. Your team can take over any chat mid-way.
-              </p>
-            </div>
-            <div className="flex flex-1 flex-col justify-center gap-2.5">
-              {[
-                ["Guest", "Is the pool open at night?", false],
-                ["Botlify", "Until 10pm, with towels at the bar 🌙", true],
-                ["Guest", "And late checkout Sunday?", false],
-                ["Botlify", "Yes — until 2pm for $25. Add it?", true],
-              ].map(([who, t, bot], i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: bot ? -20 : 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + i * 0.25, type: "spring", stiffness: 260, damping: 22 }}
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] ${
-                    bot ? "self-start bg-sunset text-white" : "self-end bg-white/[0.08] text-white/85 ring-1 ring-white/10"
-                  }`}
-                >
-                  {t}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </Bento>
-
-        <Bento className="md:col-span-2" delay={0.08}>
-          <IconTile icon={Zap} />
-          <p className="mt-6 font-display text-6xl font-semibold tracking-[-0.05em] text-white">
-            <NumberTicker value={4} suffix="s" />
-          </p>
-          <p className="mt-2 text-white/55">Average reply time, 24 hours a day. Guests book before they check another hotel.</p>
-        </Bento>
-
-        <Bento className="md:col-span-2" delay={0.12}>
-          <IconTile icon={CalendarDays} />
-          <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-white">One calendar. Zero double-bookings.</h3>
-          <p className="mt-2 text-sm text-white/55">A room sells anywhere, availability drops everywhere — instantly.</p>
-          <div className="mt-5 grid grid-cols-7 gap-1">
-            {Array.from({ length: 21 }).map((_, i) => {
-              const tone = [2, 3, 4, 9, 10, 15, 16, 17].includes(i)
-                ? "bg-sunset"
-                : [6, 12, 13].includes(i)
-                  ? "bg-sky-400/60"
-                  : "bg-white/[0.06]";
-              return (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.4 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.025, type: "spring", stiffness: 400, damping: 20 }}
-                  className={`aspect-square rounded-md ${tone}`}
-                />
-              );
-            })}
-          </div>
-        </Bento>
-
-        <Bento className="md:col-span-2" delay={0.16}>
-          <IconTile icon={TrendingUp} />
-          <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-white">An AI revenue manager</h3>
-          <p className="mt-2 text-sm text-white/55">
-            “Sep 3–5 is 30% booked, usually 70% by now — drop to $85?” Nothing changes until you tap approve.
-          </p>
-          <div className="mt-5 flex h-20 items-end gap-1.5">
-            {[38, 52, 44, 66, 58, 80, 72, 94].map((h, i) => (
-              <motion.span
-                key={i}
-                className="flex-1 rounded-t-md bg-gradient-to-t from-sunset-magenta/40 to-sunset-gold"
-                initial={{ height: 0 }}
-                whileInView={{ height: `${h}%` }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 + i * 0.06, duration: 0.9, ease: EASE }}
-              />
-            ))}
-          </div>
-        </Bento>
-
-        <Bento className="md:col-span-2" delay={0.2}>
-          <IconTile icon={Globe} />
-          <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-white">Your own booking page</h3>
-          <p className="mt-2 text-sm text-white/55">
-            /book/your-hotel with your photos and live availability. Link it from Instagram — those bookings are commission-free.
-          </p>
-          <div className="mt-5 rounded-xl bg-white/[0.04] px-3 py-2.5 font-mono text-[12px] text-white/60 ring-1 ring-white/[0.07]">
-            botlify.app/book/<span className="text-sunset-gold">villa-senja</span>
-          </div>
-        </Bento>
-
-        <Bento className="md:col-span-3" delay={0.08}>
-          <AgentTyper />
-        </Bento>
-
-        <Bento className="md:col-span-3" delay={0.12}>
-          <IconTile icon={BedDouble} />
-          <h3 className="mt-5 font-display text-2xl font-semibold tracking-tight text-white">A front desk in your pocket</h3>
-          <p className="mt-3 text-white/55">
-            Check-in and check-out, room assignment, a housekeeping board and a folio for breakfast, minibar and late check-out.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {[
-              ["Clean", "bg-emerald-400/15 text-emerald-300"],
-              ["Dirty", "bg-rose-400/15 text-rose-300"],
-              ["Inspected", "bg-sky-400/15 text-sky-300"],
-              ["Arriving 2pm", "bg-amber-400/15 text-amber-300"],
-            ].map(([t, c]) => (
-              <span key={t} className={`rounded-full px-3 py-1 text-xs font-medium ${c} transition-transform duration-300 ease-spring hover:-translate-y-0.5`}>
-                {t}
-              </span>
-            ))}
-          </div>
-        </Bento>
+    <section className="border-y border-ink-900/[0.06] bg-white/70 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <p className="text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+          Answers guests and syncs rooms on
+        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+          {items.map((it) => (
+            <span key={it.key} className="inline-flex items-center gap-2.5 text-[15px] font-semibold text-ink-700">
+              <ChannelIcon channel={it.key} size={28} />
+              {it.name}
+            </span>
+          ))}
+          <span className="text-sm text-ink-400">Agoda &amp; Traveloka coming soon</span>
+        </div>
       </div>
     </section>
   );
 }
 
-const COMMANDS = [
-  "Change Deluxe to $95 next weekend",
-  "Who checks in today?",
-  "Block room 3 tomorrow",
-  "How did we do last month?",
-];
-
-function AgentTyper() {
-  const reduce = useReducedMotion();
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState(reduce ? COMMANDS[0] : "");
-  useEffect(() => {
-    if (reduce) return;
-    const full = COMMANDS[idx];
-    let i = 0;
-    let erase;
-    const type = setInterval(() => {
-      i++;
-      setText(full.slice(0, i));
-      if (i >= full.length) {
-        clearInterval(type);
-        erase = setTimeout(() => setIdx((v) => (v + 1) % COMMANDS.length), 1800);
-      }
-    }, 45);
-    return () => {
-      clearInterval(type);
-      clearTimeout(erase);
-    };
-  }, [idx, reduce]);
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared section heading
+// ─────────────────────────────────────────────────────────────────────────────
+function SectionHead({ eyebrow, title, accent, sub, center = true }) {
   return (
-    <div className="flex h-full flex-col">
-      <IconTile icon={Wand2} />
-      <h3 className="mt-5 font-display text-2xl font-semibold tracking-tight text-white">The Botlify Agent — run your hotel by typing</h3>
-      <p className="mt-3 text-white/55">Plain language in, done out. Anything that touches money or availability asks you first.</p>
-      <div className="mt-6 flex items-center gap-3 rounded-2xl bg-night-950/60 p-3 ring-1 ring-white/10">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-sunset">
-          <Sparkles className="h-4 w-4 text-white" />
-        </span>
-        <span className="min-h-[1.25rem] flex-1 truncate font-mono text-[13px] text-white/85">
-          {text}
-          <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-sunset-gold" />
-        </span>
-        <span className="hidden rounded-lg bg-white/[0.06] px-2 py-1 font-mono text-[10px] text-white/40 sm:inline">↵</span>
-      </div>
-    </div>
+    <Reveal className={center ? "mx-auto max-w-3xl px-4 text-center sm:px-6" : "max-w-2xl"}>
+      <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-sunset-flame">{eyebrow}</span>
+      <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-ink-950 sm:text-5xl">
+        {title} {accent && <span className="font-serif font-normal italic text-sunset">{accent}</span>}
+      </h2>
+      {sub && <p className="mt-4 text-lg leading-relaxed text-ink-600">{sub}</p>}
+    </Reveal>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Night shift — a horizontal, scroll-driven night at a hotel
+// How it works
 // ─────────────────────────────────────────────────────────────────────────────
-const NIGHT = [
-  { time: "18:40", icon: Sun, title: "Sunset rush", text: "Four guests ask about tonight on Instagram. Each gets an answer — and two book dinner." },
-  { time: "21:15", icon: CalendarDays, title: "Airbnb booking lands", text: "The room drops off Booking.com and Expedia the same second. No double-booking, no phone call." },
-  { time: "23:50", icon: Plane, title: "Flight delayed", text: "A guest messages from Doha. The pickup moves to 4:10am and the driver is told." },
-  { time: "02:14", icon: Moon, title: "A booking while you sleep", text: "A couple in Sydney books 5 nights over WhatsApp. $640, confirmed in under two minutes." },
-  { time: "07:00", icon: TrendingUp, title: "Your morning brief", text: "Two arrivals, one departure, and a rate suggestion for next weekend waiting for one tap." },
+function HowItWorks() {
+  const steps = [
+    {
+      icon: Globe2,
+      title: "Connect your booking sites",
+      text: "Link Airbnb, Booking.com and Expedia, plus your WhatsApp number. Rooms, rates and availability sync onto one calendar.",
+    },
+    {
+      icon: BedDouble,
+      title: "Teach Botlify your hotel",
+      text: "Check-in times, breakfast, parking, house rules, the spa menu. Answer once — the AI uses it in every reply.",
+    },
+    {
+      icon: MessageSquareText,
+      title: "The AI handles your guests",
+      text: "Every message in your OTA inboxes and WhatsApp gets an accurate answer in seconds. Your team steps in only when it matters.",
+    },
+  ];
+  return (
+    <section id="how" className="relative scroll-mt-20 py-24 sm:py-32">
+      <SectionHead
+        eyebrow="How it works"
+        title="Live in ten minutes."
+        accent="Answering forever."
+        sub="No new inbox to watch. Botlify works inside the channels your guests already use."
+      />
+      <div className="mx-auto mt-14 grid max-w-6xl gap-5 px-4 sm:px-6 md:grid-cols-3">
+        {steps.map((s, i) => (
+          <Reveal key={s.title} delay={i * 0.06}>
+            <div className="card-hover group h-full p-7">
+              <div className="flex items-center justify-between">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sunset-soft text-sunset-flame transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <s.icon className="h-6 w-6" strokeWidth={1.8} />
+                </span>
+                <span className="font-display text-5xl font-semibold tracking-tight text-ink-900/[0.07]">0{i + 1}</span>
+              </div>
+              <h3 className="mt-6 font-display text-xl font-semibold tracking-tight text-ink-950">{s.title}</h3>
+              <p className="mt-2 leading-relaxed text-ink-600">{s.text}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Before / after — the human work it replaces
+// ─────────────────────────────────────────────────────────────────────────────
+function Replaces() {
+  const before = [
+    "Staff refreshing three extranets and a phone",
+    "Guests waiting hours for “what time is check-in?”",
+    "Night messages answered the next morning",
+    "Double-bookings when a calendar isn't updated",
+  ];
+  const after = [
+    "One AI answering Airbnb, Booking.com, Expedia & WhatsApp",
+    "Accurate replies in seconds, in the guest's language",
+    "24/7 — 2am questions answered at 2am",
+    "Every sale closes the room on every other channel",
+  ];
+  return (
+    <section className="relative py-24 sm:py-32">
+      <SectionHead eyebrow="What it replaces" title="The hours your team spends" accent="typing the same answers." />
+      <div className="mx-auto mt-14 grid max-w-5xl gap-5 px-4 sm:px-6 md:grid-cols-2">
+        <Reveal>
+          <div className="h-full rounded-2xl bg-ink-50 p-7 ring-1 ring-ink-900/[0.06]">
+            <p className="text-sm font-semibold uppercase tracking-wider text-ink-400">Without Botlify</p>
+            <ul className="mt-5 space-y-4">
+              {before.map((b) => (
+                <li key={b} className="flex items-start gap-3 text-ink-600">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-ink-200 text-ink-500">
+                    <X className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <div className="relative h-full overflow-hidden rounded-2xl bg-white p-7 shadow-[0_20px_50px_-25px_rgba(255,61,119,0.45)] ring-1 ring-sunset-flame/25">
+            <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-sunset" />
+            <p className="text-sm font-semibold uppercase tracking-wider text-sunset-flame">With Botlify</p>
+            <ul className="mt-5 space-y-4">
+              {after.map((a) => (
+                <li key={a} className="flex items-start gap-3 font-medium text-ink-800">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sunset text-white">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  {a}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Features
+// ─────────────────────────────────────────────────────────────────────────────
+const FEATURES = [
+  { icon: MessageSquareText, title: "AI replies inside OTA inboxes", text: "Answers guests directly in Airbnb, Booking.com and Expedia messaging — where they already are." },
+  { icon: Zap, title: "WhatsApp concierge", text: "Takes enquiries, quotes live prices and books the room on WhatsApp, commission-free." },
+  { icon: CalendarDays, title: "Channel manager built in", text: "Rooms, rates and availability sync two-way. A room sells anywhere, it closes everywhere." },
+  { icon: Languages, title: "Every guest's language", text: "Replies in the language the guest writes in — English, Bahasa, German, Chinese and more." },
+  { icon: Hand, title: "Human handoff", text: "Complaints, refunds or anything unusual are flagged to your team, who can take over any chat." },
+  { icon: ShieldCheck, title: "Only true answers", text: "The AI reads your live calendar and your own hotel facts. It never invents prices or availability." },
 ];
 
-function NightShift() {
-  const ref = useRef(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-62%"]);
-  const sun = useTransform(scrollYProgress, [0, 0.5, 1], ["10%", "85%", "10%"]);
-  const sky = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    ["rgba(255,106,43,0.25)", "rgba(75,59,255,0.18)", "rgba(255,181,71,0.28)"],
-  );
-
+function Features() {
   return (
-    <section id="night" ref={ref} className={`relative ${reduce ? "" : "h-[320vh]"}`}>
-      <div className={`${reduce ? "" : "sticky top-0 h-screen"} flex flex-col justify-center overflow-hidden py-20`}>
-        <motion.div aria-hidden className="absolute inset-0 -z-10" style={{ background: useTransform(sky, (c) => `radial-gradient(ellipse at 50% 120%, ${c}, transparent 65%)`) }} />
-        <motion.div
-          aria-hidden
-          className="absolute left-1/2 -z-10 h-40 w-40 -translate-x-1/2 rounded-full bg-sunset opacity-60 blur-2xl"
-          style={{ top: sun }}
-        />
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-          <SectionHead
-            center={false}
-            eyebrow="The night shift"
-            title="While you sleep,"
-            accent="Botlify works."
-            sub="Scroll through one ordinary night at a 12-room villa in Uluwatu."
-          />
-        </div>
-        <motion.div style={reduce ? undefined : { x }} className={`mt-14 flex gap-5 pl-4 sm:pl-6 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] ${reduce ? "flex-wrap pr-4" : ""}`}>
-          {NIGHT.map((n, i) => (
-            <Spotlight
-              key={n.time}
-              className="card-dark group w-[78vw] shrink-0 p-7 transition-transform duration-500 ease-spring hover:-translate-y-1.5 sm:w-[420px]"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-sm text-white/40">{String(i + 1).padStart(2, "0")}</span>
-                <span className="font-display text-5xl font-semibold tracking-[-0.05em] text-white sm:text-6xl">{n.time}</span>
-              </div>
-              <div className="mt-10 flex items-center gap-3">
-                <IconTile icon={n.icon} />
-                <h3 className="font-display text-2xl font-semibold tracking-tight text-white">{n.title}</h3>
-              </div>
-              <p className="mt-4 text-[15px] leading-relaxed text-white/55">{n.text}</p>
+    <section id="features" className="relative scroll-mt-20 bg-white/60 py-24 sm:py-32">
+      <SectionHead
+        eyebrow="Features"
+        title="A channel manager"
+        accent="that talks back."
+        sub="Everything a hotel needs to stop answering messages by hand."
+      />
+      <div className="mx-auto mt-14 grid max-w-6xl gap-5 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+        {FEATURES.map((f, i) => (
+          <Reveal key={f.title} delay={(i % 3) * 0.05}>
+            <Spotlight className="card group h-full p-6 transition-transform duration-300 hover:-translate-y-1">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+                <f.icon className="h-5 w-5" strokeWidth={1.8} />
+              </span>
+              <h3 className="mt-5 font-display text-lg font-semibold tracking-tight text-ink-950">{f.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{f.text}</p>
             </Spotlight>
-          ))}
-        </motion.div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
@@ -790,21 +566,21 @@ function NightShift() {
 // ─────────────────────────────────────────────────────────────────────────────
 function Numbers() {
   const stats = [
+    { v: 24, suf: "/7", l: "Guests answered, day and night" },
+    { v: 10, pre: "<", suf: "s", l: "Typical AI reply time" },
     { v: 0, suf: "%", l: "Commission on OTA bookings" },
-    { v: 24, suf: "/7", l: "Answering, in every language" },
-    { v: 10, suf: " min", l: "From sign-up to live" },
     { v: 49, pre: "$", l: "Flat per month — not per room" },
   ];
   return (
-    <section className="relative border-y border-white/[0.06] py-20">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 sm:px-6 lg:grid-cols-4">
-        {stats.map((s, i) => (
-          <Reveal key={s.l} delay={i * 0.06} className="text-center lg:text-left">
-            <p className="font-display text-5xl font-semibold tracking-[-0.05em] text-white sm:text-7xl">
+    <section className="px-4 py-20 sm:px-6">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-ink-900/[0.06] sm:p-12 lg:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.l} className="text-center lg:text-left">
+            <p className="font-display text-4xl font-semibold tracking-[-0.04em] text-ink-950 sm:text-6xl">
               <NumberTicker value={s.v} prefix={s.pre || ""} suffix={s.suf || ""} />
             </p>
-            <p className="mt-2 text-sm text-white/50">{s.l}</p>
-          </Reveal>
+            <p className="mt-2 text-sm text-ink-500">{s.l}</p>
+          </div>
         ))}
       </div>
     </section>
@@ -820,14 +596,13 @@ const PLANS = [
     tag: "Free",
     monthly: 0,
     annual: 0,
-    desc: "Get your channels synced and start taking bookings.",
+    desc: "Sync your channels and let the AI start answering.",
     features: [
       "Channel sync — Booking.com, Airbnb, Expedia",
       "0% commission on OTA bookings",
-      "Your direct booking page",
+      "AI replies on WhatsApp",
       "One calendar, 1 property, unlimited rooms",
-      "Front desk: check-in, check-out, folio",
-      "AI concierge on WhatsApp",
+      "Your direct booking page",
       "10% only on bookings the AI closes",
     ],
     cta: "Start free",
@@ -837,17 +612,16 @@ const PLANS = [
     tag: "Most hotels",
     monthly: 49,
     annual: 490,
-    desc: "The whole platform — flat, per month.",
+    desc: "The full AI channel manager — flat, per month.",
     features: [
       "Everything in Launch",
+      "AI replies inside Airbnb, Booking.com & Expedia inboxes",
+      "Human handoff & team inbox",
       "AI revenue manager & rate approvals",
-      "The Botlify Agent — run it by typing",
-      "AI concierge on WhatsApp & Instagram",
-      "Guest CRM across every channel",
+      "Guest profiles across every channel",
       "Reviews with AI-drafted replies",
       "Airport transfers & upsells",
-      "Broadcasts, team access & priority support",
-      "3-day free trial",
+      "Priority support · 3-day free trial",
     ],
     cta: "Start 3-day trial",
     highlight: true,
@@ -858,16 +632,15 @@ function Pricing() {
   const [cycle, setCycle] = useState("monthly");
   const yearly = cycle === "annual";
   return (
-    <section id="pricing" className="relative py-28 sm:py-40">
+    <section id="pricing" className="relative scroll-mt-20 py-24 sm:py-32">
       <SectionHead
         eyebrow="Pricing"
-        title="One price for"
-        accent="the whole stack."
-        sub="Flat monthly — not per room, not per channel. 0% on OTA bookings; 10% only on bookings the AI closes for you."
+        title="One flat price."
+        accent="No per-room fees."
+        sub="0% on OTA bookings. 10% only on bookings the AI closes for you in chat."
       />
-      <Reveal delay={0.1} className="mt-10 flex justify-center">
+      <div className="mt-8 flex justify-center px-4">
         <SlidingTabs
-          dark
           value={cycle}
           onChange={setCycle}
           items={[
@@ -875,77 +648,58 @@ function Pricing() {
             { value: "annual", label: "Yearly · 2 months free" },
           ]}
         />
-      </Reveal>
-
-      <div className="mx-auto mt-12 grid max-w-5xl gap-5 px-4 sm:px-6 md:grid-cols-2">
-        {PLANS.map((p, i) => {
-          const price = yearly ? p.annual : p.monthly;
-          return (
-            <Reveal key={p.name} delay={i * 0.08}>
-              <div className={`relative h-full rounded-[1.75rem] p-[1.5px] ${p.highlight ? "" : "bg-white/[0.08]"}`}>
-                {p.highlight && (
-                  <div aria-hidden className="absolute inset-0 overflow-hidden rounded-[1.75rem]">
-                    <div className="absolute left-1/2 top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 animate-border-spin bg-sunset-conic" />
-                  </div>
-                )}
-                <Spotlight
-                  className={`relative flex h-full flex-col rounded-[1.7rem] p-7 sm:p-9 ${
-                    p.highlight ? "bg-night-900" : "bg-night-900/90"
+      </div>
+      <div className="mx-auto mt-10 grid max-w-5xl gap-5 px-4 sm:px-6 md:grid-cols-2">
+        {PLANS.map((p, i) => (
+          <Reveal key={p.name} delay={i * 0.06}>
+            <div
+              className={`relative flex h-full flex-col rounded-3xl bg-white p-7 sm:p-9 ${
+                p.highlight
+                  ? "shadow-[0_30px_70px_-30px_rgba(255,61,119,0.5)] ring-2 ring-sunset-flame/40"
+                  : "ring-1 ring-ink-900/[0.08]"
+              }`}
+            >
+              {p.highlight && <div aria-hidden className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-sunset" />}
+              <div className="flex items-center justify-between">
+                <p className="font-display text-xl font-semibold text-ink-950">{p.name}</p>
+                <span
+                  className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                    p.highlight ? "bg-sunset text-white" : "bg-ink-100 text-ink-600"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="font-display text-xl font-semibold text-white">{p.name}</p>
+                  {p.tag}
+                </span>
+              </div>
+              <div className="mt-6 flex items-end gap-2">
+                <span className="font-display text-6xl font-semibold tracking-[-0.05em] text-ink-950">
+                  ${yearly ? p.annual : p.monthly}
+                </span>
+                <span className="mb-2 text-sm text-ink-500">{yearly ? "/ year" : "/ month"}</span>
+              </div>
+              <p className="mt-2 text-sm text-ink-500">{yearly && p.annual ? "Billed yearly — 2 months free" : p.desc}</p>
+              <ul className="mt-7 flex-1 space-y-3">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-[14.5px] text-ink-700">
                     <span
-                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-                        p.highlight ? "bg-sunset text-white" : "bg-white/[0.07] text-white/70"
+                      className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
+                        p.highlight ? "bg-sunset text-white" : "bg-ink-100 text-ink-600"
                       }`}
                     >
-                      {p.tag}
+                      <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
-                  </div>
-                  <div className="mt-6 flex items-end gap-2">
-                    <AnimatePresence mode="popLayout">
-                      <motion.span
-                        key={`${p.name}-${cycle}`}
-                        initial={{ y: 20, opacity: 0, filter: "blur(6px)" }}
-                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                        exit={{ y: -20, opacity: 0, filter: "blur(6px)" }}
-                        transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                        className="font-display text-6xl font-semibold tracking-[-0.05em] text-white"
-                      >
-                        ${price}
-                      </motion.span>
-                    </AnimatePresence>
-                    <span className="mb-2 text-sm text-white/45">{yearly ? "/ year" : "/ month"}</span>
-                  </div>
-                  <p className="mt-2 text-sm text-white/55">
-                    {yearly && p.annual ? "Billed yearly — 2 months free" : p.desc}
-                  </p>
-                  <ul className="mt-7 flex-1 space-y-3">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-[14px] text-white/75">
-                        <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${p.highlight ? "bg-sunset" : "bg-white/[0.08]"}`}>
-                          <Check className="h-3 w-3 text-white" strokeWidth={3} />
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    to="/register"
-                    className={`mt-9 w-full py-3.5 text-[15px] ${p.highlight ? "btn-primary" : "btn-glass-dark"}`}
-                  >
-                    {p.cta} <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Spotlight>
-              </div>
-            </Reveal>
-          );
-        })}
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register" className={`mt-9 w-full py-3.5 text-[15px] ${p.highlight ? "btn-primary" : "btn-secondary"}`}>
+                {p.cta} <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </Reveal>
+        ))}
       </div>
-      <p className="mt-8 text-center text-sm text-white/40">
-        Need details?{" "}
-        <Link to="/pricing" className="text-white/70 underline-offset-4 hover:text-white hover:underline">
+      <p className="mt-8 text-center text-sm text-ink-500">
+        <Link to="/pricing" className="font-medium text-ink-700 underline-offset-4 hover:underline">
           Full pricing &amp; plan comparison
         </Link>
       </p>
@@ -959,94 +713,81 @@ function Pricing() {
 const FAQS = [
   {
     q: "What exactly is Botlify?",
-    a: "An operating platform for a hotel: channel sync on one calendar, your own direct-booking page, an AI revenue manager you approve, a front desk (check-in, check-out, housekeeping, folio), a guest CRM and reviews — plus an AI concierge on WhatsApp and Instagram and an agent you simply give instructions to. One login, one calendar, one bill.",
+    a: "An AI channel manager for hotels. It syncs your rooms, rates and availability across Airbnb, Booking.com and Expedia on one calendar, and its AI replies to your guests inside those platforms' inboxes and on WhatsApp — so your team no longer answers messages by hand.",
   },
   {
-    q: "Which booking sites do you connect to?",
-    a: "Booking.com, Airbnb and Expedia sync two-way today: rooms, rates and availability stay in step on every connected channel, at 0% commission. Agoda, Traveloka and Tiket.com are next on our list — we'll say so here the day they're live.",
+    q: "Does the AI really reply inside Airbnb and Booking.com?",
+    a: "Yes — that's the point. Guests keep messaging where they booked; Botlify reads the message through our connectivity partner and replies in the same thread, using your live calendar and the hotel facts you've taught it.",
   },
   {
-    q: "Do I need a separate booking engine for my website?",
-    a: "No. Every property gets a public booking page at /book/your-hotel with your real photos, live availability from the same calendar, and instant confirmation. Link it from your website, your Instagram bio or a WhatsApp reply — those bookings are commission-free.",
+    q: "What if a guest asks something the AI shouldn't handle?",
+    a: "Complaints, refund requests and anything unusual are flagged to your team straight away, and anyone on your team can take over a conversation at any moment. Anything that changes money or availability needs your approval.",
+  },
+  {
+    q: "Which booking sites do you connect?",
+    a: "Booking.com, Airbnb and Expedia today, plus WhatsApp. Agoda and Traveloka are next — we'll list them here the day they're live.",
+  },
+  {
+    q: "Do I still need a separate channel manager?",
+    a: "No. Botlify is the channel manager: a room sold on any connected site closes on all the others instantly, so you never double-book.",
   },
   {
     q: "What does it cost?",
-    a: "$49 a month, flat — not per room and not per channel. 0% commission on OTA bookings, and 10% only on bookings the AI closes for you in chat, well below the 15–18% an OTA takes for the same reservation. Start on the free plan today; the paid plan has a 3-day free trial.",
-  },
-  {
-    q: "Where does the AI concierge work?",
-    a: "WhatsApp and Instagram. It reads the same live calendar as the rest of the platform, so it only quotes availability that's true — then books the room, arranges an airport transfer and sells extras. Your front desk can take over any conversation mid-way.",
-  },
-  {
-    q: "What is the Botlify Agent?",
-    a: "Your hotel's command line, in plain language. Type “change Deluxe to $95 next weekend”, “who checks in today?” or “block room 3 tomorrow” and it does it. Anything that changes a rate, availability or a booking asks you to confirm first.",
-  },
-  {
-    q: "Will it double-book my rooms?",
-    a: "No. Every channel writes to one calendar, availability syncs two-way with your OTAs, and both the booking page and the AI check live availability before confirming anything.",
+    a: "$49 a month, flat — not per room and not per channel. 0% commission on OTA bookings, and 10% only on bookings the AI closes for you in chat. Start free; the paid plan has a 3-day trial.",
   },
   {
     q: "How long does setup take?",
-    a: "About 10 minutes. Connect your channels, import your rooms and rates (or add them by hand), and your calendar, booking page and front desk are live. No migration project, no setup fee.",
+    a: "About 10 minutes: connect your sites and WhatsApp, answer a few questions about your hotel, and the AI starts replying.",
   },
   {
     q: "Can I cancel anytime?",
-    a: "Anytime, in one click from the Billing page. You keep access until the end of your current period.",
+    a: "Anytime, in one click from Billing. You keep access until the end of your current period.",
   },
 ];
 
 function FAQ() {
   const [open, setOpen] = useState(0);
   return (
-    <section id="faq" className="relative py-28 sm:py-36">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12">
+    <section id="faq" className="relative scroll-mt-20 bg-white/60 py-24 sm:py-32">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <SectionHead center={false} eyebrow="FAQ" title="Questions," accent="answered." />
-          <Reveal delay={0.15}>
-            <p className="mt-6 text-white/50">
-              Still curious? The chat in the corner is Botlify itself — ask it anything.
-            </p>
-          </Reveal>
+          <p className="mt-5 text-ink-600">Still curious? The chat in the corner is Botlify itself — ask it anything.</p>
         </div>
         <div className="space-y-3 lg:col-span-8">
           {FAQS.map((f, i) => {
             const isOpen = open === i;
             return (
-              <Reveal key={f.q} delay={i * 0.03}>
-                <div
-                  className={`rounded-2xl ring-1 transition-colors duration-300 ${
-                    isOpen ? "bg-white/[0.06] ring-white/15" : "bg-white/[0.025] ring-white/[0.07] hover:bg-white/[0.04]"
-                  }`}
+              <div
+                key={f.q}
+                className={`rounded-2xl bg-white ring-1 transition-shadow duration-200 ${
+                  isOpen ? "shadow-md ring-ink-900/[0.08]" : "ring-ink-900/[0.06] hover:shadow-sm"
+                }`}
+              >
+                <button
+                  onClick={() => setOpen(isOpen ? -1 : i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left"
                 >
-                  <button
-                    onClick={() => setOpen(isOpen ? -1 : i)}
-                    aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left"
-                  >
-                    <span className="font-display text-[17px] font-medium tracking-tight text-white">{f.q}</span>
-                    <motion.span
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${isOpen ? "bg-sunset" : "bg-white/[0.06]"}`}
+                  <span className="font-display text-[17px] font-semibold tracking-tight text-ink-950">{f.q}</span>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-ink-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-sunset-flame" : ""}`}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: EASE }}
+                      className="overflow-hidden"
                     >
-                      <ChevronDown className="h-4 w-4 text-white" />
-                    </motion.span>
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.4, ease: EASE }}
-                        className="overflow-hidden"
-                      >
-                        <p className="px-6 pb-6 leading-relaxed text-white/60">{f.a}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </Reveal>
+                      <p className="px-6 pb-6 leading-relaxed text-ink-600">{f.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             );
           })}
         </div>
@@ -1060,49 +801,35 @@ function FAQ() {
 // ─────────────────────────────────────────────────────────────────────────────
 function FinalCTA() {
   return (
-    <section className="relative isolate overflow-hidden px-4 py-32 sm:px-6 sm:py-44">
-      <div
-        aria-hidden
-        className="absolute bottom-[-40%] left-1/2 -z-10 h-[60rem] w-[60rem] -translate-x-1/2 rounded-full opacity-70 blur-3xl"
-        style={{ background: "radial-gradient(circle, #FF6A2B 0%, #FF3D77 30%, #7C5CFF 55%, transparent 72%)" }}
-      />
-      <div className="mx-auto max-w-5xl text-center">
-        <Reveal>
-          <div className="mx-auto mb-8 w-fit">
-            <BotlifyMark size={72} glow />
+    <section className="px-4 py-24 sm:px-6">
+      <Reveal>
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-sunset px-6 py-16 text-center text-white shadow-[0_40px_90px_-40px_rgba(255,61,119,0.7)] sm:px-12 sm:py-20">
+          <div aria-hidden className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/15 blur-3xl" />
+          <div aria-hidden className="absolute -bottom-28 -left-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+          <div className="relative">
+            <span className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-white shadow-lg">
+              <BotlifyMark size={40} />
+            </span>
+            <h2 className="mx-auto max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-[-0.04em] sm:text-6xl">
+              Let Botlify answer your guests <span className="font-serif font-normal italic">tonight.</span>
+            </h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg text-white/85">
+              Ten minutes to set up. Every Airbnb, Booking.com and WhatsApp message answered from then on.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                to="/register"
+                className="btn bg-white px-7 py-3.5 text-[15px] text-ink-950 shadow-lg hover:-translate-y-0.5 hover:shadow-xl"
+              >
+                Start free — no card <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/guide" className="btn px-7 py-3.5 text-[15px] text-white ring-1 ring-white/50 hover:bg-white/10">
+                Read the guide
+              </Link>
+            </div>
           </div>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <h2 className="font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-white sm:text-8xl">
-            Let the sun set.
-            <br />
-            <span className="font-serif font-normal italic tracking-[-0.02em] text-sunset">Botlify&apos;s awake.</span>
-          </h2>
-        </Reveal>
-        <Reveal delay={0.12}>
-          <p className="mx-auto mt-7 max-w-xl text-lg text-white/60">
-            Ten minutes to set up. Tonight, your guests get answers — and you get bookings.
-          </p>
-        </Reveal>
-        <Reveal delay={0.18} className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Magnetic strength={0.3}>
-            <Link to="/register" data-cursor="Start" className="btn-primary px-8 py-4 text-base">
-              Start free — no card <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Magnetic>
-          <Link to="/guide" className="btn-glass-dark px-7 py-4 text-base">
-            Read the guide
-          </Link>
-        </Reveal>
-        <Reveal delay={0.24}>
-          <div className="mt-10 flex items-center justify-center gap-1 text-sunset-gold">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-4 w-4 fill-current" />
-            ))}
-            <span className="ml-2 text-sm text-white/50">Built with hoteliers in Bali</span>
-          </div>
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -1112,8 +839,8 @@ function SiteFooter() {
     {
       t: "Product",
       l: [
-        { label: "Platform", href: "#product" },
-        { label: "Night shift", href: "#night" },
+        { label: "How it works", href: "#how" },
+        { label: "Features", href: "#features" },
         { label: "Pricing", to: "/pricing" },
         { label: "Guide", to: "/guide" },
       ],
@@ -1135,29 +862,30 @@ function SiteFooter() {
     },
   ];
   return (
-    <footer className="relative border-t border-white/[0.06] px-4 pb-10 pt-16 sm:px-6">
-      <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-12">
+    <footer className="border-t border-ink-900/[0.06] bg-white px-4 pb-10 pt-14 sm:px-6">
+      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-12">
         <div className="md:col-span-5">
-          <Logo size="md" dark />
-          <p className="mt-5 max-w-sm text-white/45">
-            The AI concierge and booking platform for independent hotels and villas.
+          <Logo size="md" />
+          <p className="mt-4 max-w-sm text-ink-500">
+            The AI channel manager for hotels. Syncs your booking sites and answers every guest — on Airbnb,
+            Booking.com, Expedia and WhatsApp.
           </p>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3 py-1.5 text-xs text-white/50 ring-1 ring-white/[0.07]">
-            <PulseDot /> All systems answering
-          </div>
+          <p className="mt-4 inline-flex items-center gap-2 text-sm text-ink-500">
+            <Clock className="h-4 w-4 text-emerald-500" /> Answering guests 24/7
+          </p>
         </div>
         {cols.map((c) => (
           <div key={c.t} className="md:col-span-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/35">{c.t}</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-ink-400">{c.t}</p>
             <ul className="mt-4 space-y-2.5">
               {c.l.map((l) => (
                 <li key={l.label}>
                   {l.to ? (
-                    <Link to={l.to} className="text-sm text-white/60 transition-colors hover:text-white">
+                    <Link to={l.to} className="text-sm text-ink-600 transition-colors hover:text-ink-950">
                       {l.label}
                     </Link>
                   ) : (
-                    <a href={l.href} className="text-sm text-white/60 transition-colors hover:text-white">
+                    <a href={l.href} className="text-sm text-ink-600 transition-colors hover:text-ink-950">
                       {l.label}
                     </a>
                   )}
@@ -1167,18 +895,9 @@ function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="mx-auto mt-16 max-w-7xl overflow-hidden">
-        <p
-          aria-hidden
-          className="select-none text-center font-display text-[22vw] font-bold leading-[0.8] tracking-[-0.07em] text-transparent md:text-[15rem]"
-          style={{ WebkitTextStroke: "1px rgba(255,255,255,0.08)" }}
-        >
-          botlify
-        </p>
-      </div>
-      <div className="mx-auto mt-6 flex max-w-7xl flex-col items-center justify-between gap-3 text-xs text-white/35 sm:flex-row">
-        <span>© {new Date().getFullYear()} Botlify. Made under a Bali sunset.</span>
-        <span>Every booking, one place.</span>
+      <div className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-ink-900/[0.06] pt-6 text-xs text-ink-400 sm:flex-row">
+        <span>© {new Date().getFullYear()} Botlify</span>
+        <span>The AI channel manager for hotels</span>
       </div>
     </footer>
   );
@@ -1187,16 +906,17 @@ function SiteFooter() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   useEffect(() => {
-    document.title = "Botlify — The front desk that never sleeps";
+    document.title = "Botlify — The AI channel manager for hotels";
   }, []);
   return (
-    <div className="grain relative min-h-screen overflow-x-clip bg-night-950 text-white selection:bg-sunset-magenta/40">
-      <CursorAura />
+    <div className="min-h-screen bg-[#FBFAF8] text-ink-900">
       <Nav />
       <main>
         <Hero />
-        <Product />
-        <NightShift />
+        <ChannelStrip />
+        <HowItWorks />
+        <Replaces />
+        <Features />
         <Numbers />
         <Pricing />
         <FAQ />

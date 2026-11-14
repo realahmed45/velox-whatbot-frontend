@@ -121,9 +121,9 @@ export default function CommandPalette({ open, onClose }) {
           <div className="absolute inset-0 bg-night-950/40 backdrop-blur-md" />
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.96, y: -10, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.97, y: -6, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.96, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.97, y: -6 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className="glass-strong relative w-full max-w-xl overflow-hidden rounded-3xl"
           >

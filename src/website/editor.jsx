@@ -14,9 +14,9 @@ import { MAX_PHOTO_MB, websiteApi } from "./api";
 
 const spring = { type: "spring", stiffness: 420, damping: 30 };
 const pop = {
-  initial: { opacity: 0, scale: 0.92, filter: "blur(4px)" },
-  animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, scale: 0.9, filter: "blur(4px)" },
+  initial: { opacity: 0, scale: 0.92 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.9 },
   transition: spring,
 };
 const chipBtn =
@@ -229,7 +229,7 @@ export function ListEditor({ items = [], onChange, fields, blank, max = 6, addLa
     <div className="space-y-3">
       <AnimatePresence initial={false}>
       {items.map((it, i) => (
-        <motion.div layout key={i} initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }} transition={spring} className="relative rounded-xl bg-white/60 p-3 pr-11 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff]">
+        <motion.div layout key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={spring} className="relative rounded-xl bg-white/60 p-3 pr-11 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff]">
           <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))} className="absolute right-1.5 top-1.5 grid h-9 w-9 place-items-center rounded-lg text-ink-400 transition-[transform,background-color,color] duration-300 ease-spring hover:rotate-90 hover:bg-rose-50 hover:text-rose-600 active:scale-90" aria-label="Remove"><X className="h-4 w-4" /></button>
           <div className="space-y-2">
             {fields.map((f) =>

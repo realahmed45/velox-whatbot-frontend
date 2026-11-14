@@ -7,7 +7,7 @@
  *
  * Answers are friendly, editable starting points — most contain a [bracketed
  * placeholder] to swap for the property's real details. Kept short so they read
- * well in a WhatsApp, Instagram, Messenger or Telegram message.
+ * well in an OTA inbox (Airbnb, Booking.com, Expedia) or a WhatsApp message.
  *
  * Shape is unchanged from the previous library (FAQ_CATEGORIES,
  * FAQ_TEMPLATES, TEMPLATES_BY_CATEGORY, FAQ_TEMPLATE_COUNT) so the AI

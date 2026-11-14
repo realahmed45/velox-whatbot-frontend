@@ -12,7 +12,7 @@
  * Props
  *  variant   "card" (bordered white card w/ heading) | "bare" (chips only)
  *  size      "full" (default chips) | "compact" (smaller, no initial bubble)
- *  showMore  render the trailing "and 50 more" chip (default true)
+ *  showMore  render the trailing "more coming soon" chip (default true)
  *  title     heading text for the card variant
  *  subtitle  optional line under the chips
  *  icon      lucide icon for the card heading (default Globe2)
@@ -25,6 +25,7 @@ import {
   OTA_CHANNELS,
   MORE_CHANNELS_LABEL,
   CHANNEL_TOTAL_LABEL,
+  LIVE_OTA_CHANNELS,
 } from "@/data/otaChannels";
 
 function Chip({ channel, size, dark }) {
@@ -98,7 +99,7 @@ export default function ChannelWall({
         align === "center" ? "justify-center" : ""
       }`}
     >
-      {OTA_CHANNELS.map((c) => (
+      {LIVE_OTA_CHANNELS.map((c) => (
         <Chip key={c.key} channel={c} size={size} dark={dark} />
       ))}
       {showMore && <MoreChip size={size} dark={dark} />}

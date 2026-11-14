@@ -2,29 +2,29 @@
  * Botlify Help & Resources Page
  * Comprehensive help center with guides, tutorials, and documentation
  */
-import { Book, Zap, Instagram, Bot, ArrowRight, LifeBuoy } from "lucide-react";
+import { Book, Zap, Bot, ArrowRight, LifeBuoy, CalendarSync, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Aurora, Magnetic, Reveal, Spotlight } from "@/components/fx";
 
 const tile =
-  "h-11 w-11 rounded-xl grid place-items-center ring-1 ring-white/10 transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg]";
+  "h-11 w-11 rounded-xl grid place-items-center transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg]";
 
 const quickStart = [
   {
     to: "/guide",
-    icon: Instagram,
-    title: "Connect Instagram",
-    body: "Step-by-step guide to connect your Instagram account and start automating.",
+    icon: CalendarSync,
+    title: "Connect your OTAs",
+    body: "Link Booking.com, Airbnb and Expedia so rooms, rates and availability sync on one calendar.",
   },
   {
     icon: Bot,
-    title: "Set Up AI Bot",
-    body: "Configure your AI bot to auto-reply to customer messages 24/7.",
+    title: "Train your AI concierge",
+    body: "Teach it your rooms, policies and local tips so it answers every guest message, 24/7.",
   },
   {
-    icon: Zap,
-    title: "Create Your First Flow",
-    body: "Build automated workflows to save time and grow your business.",
+    icon: MessageCircle,
+    title: "Turn on guest messaging",
+    body: "Let the AI reply inside your OTA inboxes and on WhatsApp — no more manual guest replies.",
   },
 ];
 
@@ -33,59 +33,59 @@ const topics = [
     title: "Getting Started",
     items: [
       "How to sign up",
-      "Connecting Instagram",
+      "Adding your property & rooms",
       "Understanding plans & pricing",
-      "First automation setup",
+      "Your first synced calendar",
     ],
   },
   {
-    title: "AI Bot",
+    title: "Channel Manager",
     items: [
-      "Configuring AI personality",
-      "Adding FAQs",
-      "Training with website content",
-      "When to hand off to human",
+      "Connecting Booking.com",
+      "Connecting Airbnb",
+      "Connecting Expedia",
+      "Rates & availability sync",
     ],
   },
   {
-    title: "Automation",
+    title: "AI Guest Messaging",
     items: [
-      "Building flows",
-      "Keyword triggers",
-      "Broadcasting messages",
-      "Drip campaigns",
+      "Replies in OTA inboxes",
+      "Connecting WhatsApp",
+      "Training with your hotel info",
+      "When to hand off to staff",
     ],
   },
   {
-    title: "Integrations",
+    title: "Bookings & Guests",
     items: [
-      "Webhooks (Zapier, Make, n8n)",
-      "Make.com webhooks",
-      "Zapier integration",
-      "Custom webhooks",
+      "Bookings the AI closes",
+      "Guest profiles",
+      "Airport transfers",
+      "Your direct booking site",
     ],
   },
 ];
 
 export default function HelpPage() {
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-night-950 text-white grain">
-      <Aurora variant="dark" />
-      <div className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b" aria-hidden />
+    <div className="relative isolate min-h-screen overflow-hidden bg-[#FBFAF8] text-ink-950">
+      <Aurora />
+      <div className="absolute inset-0 -z-10 bg-dot-grid mask-fade-b opacity-50" aria-hidden />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
         {/* Header */}
         <Reveal className="text-center mb-14 sm:mb-20">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/70 ring-1 ring-white/10">
-            <LifeBuoy className="h-3.5 w-3.5 text-sunset-gold" strokeWidth={1.8} />
+          <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-ink-600 ring-1 ring-ink-900/[0.08] shadow-sm">
+            <LifeBuoy className="h-3.5 w-3.5 text-sunset-flame" strokeWidth={1.8} />
             Help center
           </span>
           <h1 className="mt-5 font-display text-4xl sm:text-6xl font-semibold tracking-[-0.04em] leading-[1] mb-5">
             Help &amp;{" "}
             <span className="font-serif italic font-normal text-sunset">Resources</span>
           </h1>
-          <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto">
-            Everything you need to get started with Botlify and automate your
-            Instagram like a pro.
+          <p className="text-base sm:text-lg text-ink-600 max-w-2xl mx-auto">
+            Everything you need to run Botlify — the AI channel manager that syncs
+            Booking.com, Airbnb and Expedia and answers every guest message for you.
           </p>
         </Reveal>
 
@@ -102,7 +102,7 @@ export default function HelpPage() {
               const inner = (
                 <>
                   <div className={`${tile} bg-sunset-soft mb-5`}>
-                    <Icon className="w-5 h-5 text-sunset-gold" strokeWidth={1.8} />
+                    <Icon className="w-5 h-5 text-sunset-flame" strokeWidth={1.8} />
                   </div>
                   <h3 className="font-display text-lg font-semibold tracking-[-0.02em] mb-2 flex items-center gap-2">
                     {q.title}
@@ -110,7 +110,7 @@ export default function HelpPage() {
                       <ArrowRight className="h-4 w-4 opacity-0 -translate-x-1 transition-all duration-500 ease-spring group-hover:opacity-100 group-hover:translate-x-0" />
                     )}
                   </h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{q.body}</p>
+                  <p className="text-ink-600 text-sm leading-relaxed">{q.body}</p>
                 </>
               );
               return (
@@ -119,12 +119,12 @@ export default function HelpPage() {
                     <Spotlight
                       as={Link}
                       to={q.to}
-                      className="card-dark group block h-full p-6 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
+                      className="card group block h-full p-6 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
                     >
                       {inner}
                     </Spotlight>
                   ) : (
-                    <Spotlight className="card-dark group h-full p-6">{inner}</Spotlight>
+                    <Spotlight className="card group h-full p-6">{inner}</Spotlight>
                   )}
                 </Reveal>
               );
@@ -141,20 +141,20 @@ export default function HelpPage() {
           </Reveal>
           <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
             <Reveal>
-              <Spotlight className="card-dark group h-full p-6 sm:p-8">
+              <Spotlight className="card group h-full p-6 sm:p-8">
                 <div className="flex items-start gap-4">
-                  <div className={`${tile} bg-emerald-400/10`}>
-                    <Book className="w-5 h-5 text-emerald-300" strokeWidth={1.8} />
+                  <div className={`${tile} bg-emerald-500/10`}>
+                    <Book className="w-5 h-5 text-emerald-600" strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-display text-lg font-semibold tracking-[-0.02em] mb-2">
                       Documentation
                     </h3>
-                    <p className="text-white/60 text-sm mb-5">
+                    <p className="text-ink-600 text-sm mb-5">
                       Detailed documentation covering every feature and API
                       endpoint.
                     </p>
-                    <Link to="/docs" className="btn-glass-dark text-sm">
+                    <Link to="/docs" className="btn-secondary text-sm">
                       Read Docs
                       <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
                     </Link>
@@ -164,7 +164,7 @@ export default function HelpPage() {
             </Reveal>
 
             <Reveal delay={0.07}>
-              <Spotlight className="card-dark group h-full p-6 sm:p-8">
+              <Spotlight className="card group h-full p-6 sm:p-8">
                 <div className="flex items-start gap-4">
                   <div className={`${tile} bg-sunset-soft`}>
                     <Zap className="w-5 h-5 text-sunset-flame" strokeWidth={1.8} />
@@ -173,11 +173,11 @@ export default function HelpPage() {
                     <h3 className="font-display text-lg font-semibold tracking-[-0.02em] mb-2">
                       Setup Guide
                     </h3>
-                    <p className="text-white/60 text-sm mb-5">
-                      A step-by-step walkthrough — from connecting Instagram to
-                      your first automated DM.
+                    <p className="text-ink-600 text-sm mb-5">
+                      A step-by-step walkthrough — from connecting your first OTA
+                      to the AI answering its first guest.
                     </p>
-                    <Link to="/guide" className="btn-glass-dark text-sm">
+                    <Link to="/guide" className="btn-secondary text-sm">
                       Open the guide
                       <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
                     </Link>
@@ -190,7 +190,7 @@ export default function HelpPage() {
 
         {/* Common Topics */}
         <Reveal>
-          <div className="card-dark p-6 sm:p-10">
+          <div className="card p-6 sm:p-10">
             <h2 className="font-display text-2xl font-semibold tracking-[-0.03em] mb-8">
               Common Topics
             </h2>
@@ -198,7 +198,7 @@ export default function HelpPage() {
             <div className="grid sm:grid-cols-2 gap-x-10 gap-y-8">
               {topics.map((t) => (
                 <div key={t.title}>
-                  <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-white/45 mb-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500 mb-3">
                     {t.title}
                   </h3>
                   <ul className="space-y-1 text-sm">
@@ -206,9 +206,9 @@ export default function HelpPage() {
                       <li key={item}>
                         <a
                           href="#"
-                          className="group -mx-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-white/70 transition-all duration-300 ease-spring hover:bg-white/[0.06] hover:text-white hover:translate-x-1"
+                          className="group -mx-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-ink-700 transition-all duration-300 ease-spring hover:bg-ink-900/[0.04] hover:text-ink-950 hover:translate-x-1"
                         >
-                          <span className="h-1 w-1 rounded-full bg-white/30 transition-colors group-hover:bg-sunset-flame" />
+                          <span className="h-1 w-1 rounded-full bg-ink-300 transition-colors group-hover:bg-sunset-flame" />
                           {item}
                         </a>
                       </li>
@@ -222,7 +222,7 @@ export default function HelpPage() {
 
         {/* Still Need Help */}
         <Reveal className="mt-16 text-center">
-          <p className="text-white/60 mb-5">Can't find what you're looking for?</p>
+          <p className="text-ink-600 mb-5">Can't find what you're looking for?</p>
           <Magnetic>
             <Link to="/contact" className="btn-primary px-7 py-3">
               Contact Support

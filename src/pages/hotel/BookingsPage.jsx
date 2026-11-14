@@ -57,7 +57,6 @@ const SOURCE_META = {
   booking_com: { label: "Booking.com", cls: "bg-blue-500/10 text-blue-700 ring-blue-500/20" },
   airbnb: { label: "Airbnb", cls: "bg-rose-500/10 text-rose-600 ring-rose-500/20" },
   whatsapp: { label: "WhatsApp", cls: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20" },
-  instagram: { label: "Instagram", cls: "bg-purple-500/10 text-purple-700 ring-purple-500/20" },
   tiktok: { label: "TikTok", cls: "bg-ink-900 text-white ring-ink-900" },
   direct: { label: "Direct", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
   manual: { label: "Manual", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
@@ -325,7 +324,6 @@ function BookingsTable() {
           <option value="booking_com">Booking.com</option>
           <option value="airbnb">Airbnb</option>
           <option value="whatsapp">WhatsApp</option>
-          <option value="instagram">Instagram</option>
           <option value="tiktok">TikTok</option>
           <option value="direct">Direct</option>
           <option value="manual">Manual</option>
@@ -371,7 +369,7 @@ function BookingsTable() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <thead>
-                  <tr className="border-b border-ink-900/[0.06] bg-white/70 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400 backdrop-blur">
+                  <tr className="border-b border-ink-900/[0.06] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400">
                     <th className="px-4 py-3">Guest</th>
                     <th className="px-4 py-3">Room</th>
                     <th className="px-4 py-3">Check-in → out</th>
@@ -774,8 +772,8 @@ function NewBookingModal({ open, onClose, onCreated }) {
           </span>
           <motion.span
             key={totalPreview}
-            initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className="whitespace-nowrap font-display text-base font-semibold tabular-nums text-ink-900"
           >

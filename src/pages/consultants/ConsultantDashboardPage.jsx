@@ -332,8 +332,8 @@ function ApprovedDashboard({ me, hotels, onChanged }) {
       {/* Referral code hero */}
       <Reveal y={18}>
       <Spotlight className="relative isolate overflow-hidden rounded-3xl bg-night-950 text-white p-6 sm:p-8 shadow-[0_30px_60px_-30px_rgba(124,92,255,0.55),inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/10 grain">
-        <div className="pointer-events-none absolute -top-20 -right-16 w-64 h-64 rounded-full bg-sunset-magenta/40 blur-3xl animate-drift-a" />
-        <div className="pointer-events-none absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-sunset-violet/35 blur-3xl animate-drift-b" />
+        <div className="pointer-events-none absolute -top-20 -right-16 w-64 h-64 rounded-full bg-sunset-magenta/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-sunset-violet/35 blur-3xl" />
         <div className="pointer-events-none absolute inset-0 bg-dot-grid-dark opacity-60 mask-fade-b" />
         <p className="relative text-[11px] font-semibold uppercase tracking-[0.18em] text-sunset-gold">
           Your referral code

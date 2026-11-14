@@ -142,8 +142,8 @@ export default function Sidebar({ onNavigate }) {
     >
       {/* sunset glow + grain — the sidebar is a little window onto the brand */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-28 -left-16 h-64 w-64 rounded-full bg-sunset-flame/25 blur-[70px] animate-drift-a" />
-        <div className="absolute top-10 -right-24 h-56 w-56 rounded-full bg-sunset-violet/25 blur-[80px] animate-drift-b" />
+        <div className="absolute -top-28 -left-16 h-64 w-64 rounded-full bg-sunset-flame/25 blur-[70px]" />
+        <div className="absolute top-10 -right-24 h-56 w-56 rounded-full bg-sunset-violet/25 blur-[80px]" />
         <div className="absolute bottom-0 left-0 h-48 w-full bg-gradient-to-t from-sunset-magenta/[0.07] to-transparent" />
         <div className="absolute inset-0 bg-dot-grid-dark opacity-40 mask-fade-b" />
       </div>
@@ -167,7 +167,7 @@ export default function Sidebar({ onNavigate }) {
                 <span className="ml-[2px] inline-block h-[6px] w-[6px] rounded-full bg-sunset shadow-[0_0_10px_rgba(255,61,119,0.8)]" />
               </span>
               <span className="mt-1 font-serif text-[12.5px] italic text-white/45">
-                every booking, one place
+                AI channel manager
               </span>
             </div>
           )}

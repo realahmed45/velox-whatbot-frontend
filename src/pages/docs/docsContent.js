@@ -24,331 +24,213 @@ export const DOC_GROUPS = [
       {
         id: "overview",
         title: "What is Botlify",
-        summary: "Instagram DM automation — replies, automations, and a dashboard on autopilot.",
+        summary: "The AI channel manager for hotels — channel sync plus AI guest messaging.",
         blocks: [
           {
-            p: "Botlify turns your Instagram into a 24/7 sales and support machine. It replies to DMs, comments and story mentions in your brand voice, runs keyword automations, schedules content, and gives you one dashboard for everything — no code required.",
+            p: "Botlify is the AI channel manager for hotels. It syncs your rooms, rates and availability across **Booking.com, Airbnb and Expedia** on one calendar — and its AI answers every guest message **inside those OTA inboxes and on WhatsApp**, 24/7, in the guest's language. It replaces the manual work of guest messaging.",
+          },
+          { h: "What you get" },
+          {
+            list: [
+              "**Channel sync** — two-way rates, availability and reservations with Booking.com, Airbnb and Expedia. More OTAs are coming.",
+              "**AI guest messaging** — instant, accurate replies in every connected OTA inbox and on WhatsApp, and bookings closed for you.",
+              "**One calendar** — every sale, wherever it happens, drops availability everywhere else.",
+              "**Around it** — a commission-free direct booking page, guest profiles, airport transfers and team access.",
+            ],
           },
           { h: "Who it's for" },
           {
             list: [
-              "Creators and small brands who get more DMs than they can answer.",
-              "Online shops that sell through Instagram DMs.",
-              "Agencies managing Instagram for multiple clients.",
+              "Independent hotels, guesthouses, villas and B&Bs listed on more than one OTA.",
+              "Properties where someone spends hours a day answering the same guest questions.",
+              "Owners who want one tool instead of a channel manager plus a messaging inbox plus a person.",
             ],
-          },
-          {
-            note: "Botlify works with Instagram Business or Creator accounts through the official Instagram API. You connect once — no Meta App Review to complete yourself.",
-            tone: "info",
           },
         ],
       },
       {
         id: "quickstart",
         title: "Quick start",
-        summary: "From sign-up to your first automated DM in under 30 minutes.",
+        summary: "From sign-up to the AI answering its first guest.",
         blocks: [
           { p: "Five focused steps get you fully live:" },
           {
             steps: [
-              "**Create your account** and start your 3-day free trial (card required, cancel anytime).",
-              "**Connect Instagram** — one secure login, no App Review.",
-              "**Teach the AI bot** your business (website, PDF, or a short description) and add a few FAQs.",
-              "**Turn on automations** — Welcome DM, Comment → DM, keyword replies.",
-              "**Test it** in the sandbox, then let it run. You're live.",
+              "**Create your account** — start on the free Launch plan, or the $49/month plan with a 3-day free trial (card required).",
+              "**Name your hotel** — property name, city, timezone and currency.",
+              "**Add your rooms** — by hand, or import types, rates and photos from an existing OTA listing.",
+              "**Connect your channels** — Booking.com, Airbnb and Expedia for sync and inbox replies, plus WhatsApp.",
+              "**Train your AI** — your policies, check-in details and local tips. Then let it answer.",
             ],
           },
           {
-            note: "You can do steps 3–5 in any order. The bot works the moment it has knowledge and Instagram is connected.",
+            note: "Steps 1–3 are the required part. With rooms in the system your calendar, your direct booking page and manual bookings already work; connect channels whenever you're ready.",
             tone: "tip",
-          },
-        ],
-      },
-      {
-        id: "connect-instagram",
-        title: "Connect Instagram",
-        summary: "Link your Instagram Business/Creator account securely.",
-        blocks: [
-          {
-            steps: [
-              "Go to **Dashboard → Connect Instagram** (or the banner on the overview page).",
-              "A secure window opens — log in to Instagram and approve the permissions.",
-              "You're redirected back automatically. Your @handle, profile picture and follower count appear on the dashboard.",
-            ],
-          },
-          { h: "Requirements" },
-          {
-            list: [
-              "A **Business** or **Creator** Instagram account (personal accounts aren't supported by the API).",
-              "You must be able to log in to that account during connect.",
-            ],
-          },
-          {
-            note: "Each Botlify workspace connects one Instagram account. One Instagram account can only be linked to one workspace at a time.",
-            tone: "info",
-          },
-          { h: "Troubleshooting" },
-          {
-            list: [
-              "**Stuck on Instagram after logging in?** Just return to Botlify — the connection completes automatically in the background; the dashboard updates within a few seconds.",
-              '**"Already connected elsewhere"** means that account is linked to another workspace. Disconnect it there first.',
-            ],
           },
         ],
       },
     ],
   },
   {
-    group: "AI Bot",
+    group: "Channel manager",
     sections: [
       {
-        id: "ai-overview",
-        title: "AI Bot overview",
-        summary: "The AI that answers DMs 24/7 in your brand voice.",
+        id: "connect-otas",
+        title: "Connect your OTAs",
+        summary: "Booking.com, Airbnb and Expedia — live today. More coming.",
         blocks: [
           {
-            p: "The AI Bot replies to DMs, comments and story replies automatically. It only answers about **your** business — it never invents prices, links or policies you haven't given it. Replies are short, warm and human, in the language your customer wrote in.",
-          },
-          { h: "How a reply is decided" },
-          {
-            steps: [
-              "It first checks your **FAQs** for an exact match (instant, no AI).",
-              "Then your **knowledge sources** (website, PDFs, catalog).",
-              "Then your **business description**.",
-              "If it genuinely doesn't know, it says so honestly and offers a human follow-up.",
-            ],
-          },
-          {
-            note: "Powered by Google Gemini. The bot remembers the recent conversation and keeps a rolling summary so longer chats stay on track.",
-            tone: "info",
-          },
-        ],
-      },
-      {
-        id: "knowledge",
-        title: "Knowledge base",
-        summary: "Teach the bot from your website, documents, or a description.",
-        blocks: [
-          { p: "Give the bot everything it needs to answer accurately. Add any mix of:" },
-          {
-            list: [
-              "**Website import** — paste your URL. Botlify deep-crawls the whole site in the background and learns it.",
-              "**Documents** — upload a PDF, menu, price list or brochure. Even scanned/image PDFs are read.",
-              "**Written description** — type your business info directly.",
-            ],
-          },
-          {
-            note: "Large sites and scanned PDFs are read in the background — you'll see 'Reading…' then 'Learned · N chars' when it's done. You can keep working meanwhile.",
-            tone: "tip",
-          },
-          { h: "Keeping it fresh" },
-          {
-            p: "Website sources can be re-synced any time so the bot stays current with your latest pages and prices.",
-          },
-        ],
-      },
-      {
-        id: "faqs-catalog",
-        title: "FAQs & Catalog",
-        summary: "Exact answers and real product prices.",
-        blocks: [
-          { h: "FAQs" },
-          {
-            p: "Add question/answer pairs for the things people ask most (returns, sizing, hours). An FAQ match is answered **instantly and verbatim** — no AI guesswork.",
-          },
-          { h: "Product catalog" },
-          {
-            p: "Import your products with prices once. The bot then quotes **exact prices** and can link customers straight to checkout — it never makes a price up.",
-          },
-        ],
-      },
-      {
-        id: "smart-orders",
-        title: "Smart Orders",
-        summary: "Capture orders right inside the DM conversation.",
-        blocks: [
-          {
-            p: "When a customer wants to buy, the bot collects the details — product, quantity, variant, name, address, phone, payment method — confirms the order in a friendly message, and records it for you.",
-          },
-          {
-            list: [
-              "Captured orders appear in your workspace and fire an `order.created` event.",
-              "The contact is tagged **order** so you can find buyers instantly.",
-              "The customer only ever sees the friendly confirmation, never the internal order data.",
-            ],
-          },
-          {
-            note: "Set your catalog and payment instructions in the AI Bot → Catalog tab to enable Smart Orders.",
-            tone: "tip",
-          },
-        ],
-      },
-      {
-        id: "appointments",
-        title: "Appointments",
-        summary: "Let the bot book real, open time slots — with dual confirmations.",
-        blocks: [
-          {
-            p: "If your business takes appointments (clinics, salons, coaches, services), Botlify turns your bot into a booking assistant. It only ever offers **real open slots** based on your working hours, service durations and existing bookings — it never double-books or invents a time.",
-          },
-          {
-            h: "How a booking happens",
+            p: "Botlify connects to OTAs through our certified connectivity partner — the same kind of pipe a traditional channel manager uses. You start it from **Channels** in the dashboard.",
           },
           {
             steps: [
-              "A customer asks to book in a DM.",
-              "The bot offers the nearest open slots and collects their service, time, name and phone.",
-              "It saves the appointment and sends the customer a confirmation.",
-              "You get notified instantly — email, dashboard and webhook — and the booking appears under **Appointments**.",
+              "Open **Channels** and choose Booking.com, Airbnb or Expedia.",
+              "Authorise the channel; we request connectivity for your property.",
+              "**Map** each Botlify room type to the matching room and rate plan on the OTA side.",
+              "Rates and availability push out; reservations and guest messages pull in automatically.",
             ],
           },
           {
-            list: [
-              "Set your **services** (name, duration, price), slot length, buffer, and how far ahead people can book — all under Appointments → Settings.",
-              "Turn on **require approval** so bookings wait for your OK before they're confirmed (recommended for medical practices — it's on by default there).",
-              "Add a **Google Maps link** and location so it's included in every confirmation.",
-              "Bookings fire an `appointment.created` webhook and tag the contact **appointment**.",
-            ],
+            note: "Mapping is the step worth doing carefully — everything downstream depends on it. An unmapped room type has nothing to push to, so it looks frozen.",
+            tone: "warn",
           },
-          {
-            note: "Appointment scheduling switches on automatically for booking-type businesses when you pick your business category during setup. You can toggle it anytime under Appointments → Settings.",
-            tone: "tip",
-          },
-        ],
-      },
-      {
-        id: "test-bot",
-        title: "Test your bot",
-        summary: "Try messages safely before going live.",
-        blocks: [
-          {
-            p: "Use the **Test bot** tab to chat with your AI exactly as a customer would. No real DM is sent and nothing is charged — it's a safe sandbox to tune your persona, knowledge and FAQs.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    group: "Automations",
-    sections: [
-      {
-        id: "automations",
-        title: "Smart Automations",
-        summary: "Trigger-based replies: welcome, comment→DM, keywords, stories.",
-        blocks: [
-          { p: "Automations fire on specific Instagram events. Set each one up in **Dashboard → Smart Automations**." },
           {
             table: {
-              head: ["Automation", "Fires when…"],
+              head: ["OTA", "Status", "Sync", "AI inbox replies"],
               rows: [
-                ["Welcome DM", "Someone messages you for the first time"],
-                ["Comment → DM", "Someone comments your keyword on a post/reel"],
-                ["DM keyword replies", "A message contains a word you chose (e.g. 'price')"],
-                ["Story replies & mentions", "Someone replies to, or mentions, your story"],
-                ["Business hours & away mode", "Inside/outside your hours, or holiday pause"],
-                ["Default reply", "No other automation matches"],
+                ["Booking.com", "Live", "Rates, availability, reservations", "Yes"],
+                ["Airbnb", "Live", "Rates, availability, reservations", "Yes"],
+                ["Expedia", "Live", "Rates, availability, reservations", "Yes"],
+                ["More OTAs", "Coming", "—", "—"],
               ],
             },
           },
+        ],
+      },
+      {
+        id: "sync",
+        title: "Rates & availability sync",
+        summary: "One calendar, synced two ways.",
+        blocks: [
           {
-            note: "If you enable an automation but leave the message blank, Botlify sends a sensible professional default so it never sends nothing.",
-            tone: "info",
+            p: "Every channel — OTAs, your direct page, chat and manual bookings — reads and writes the same calendar. The moment a room sells anywhere, availability drops everywhere else. That's what makes double-bookings stop.",
           },
-          { h: "Order of priority" },
           {
-            p: "On an incoming DM, Botlify runs: holiday mode → active flows → away reply → keyword replies → welcome (first message only) → AI bot → default reply. The first one that matches responds.",
+            list: [
+              "Change a rate once and it pushes to Booking.com, Airbnb, Expedia and your direct page together.",
+              "Override rates for specific dates — a weekend, a local event, a slow midweek stretch.",
+              "The AI and the booking page both re-check live availability in the instant before confirming.",
+            ],
           },
         ],
       },
       {
-        id: "flows",
-        title: "Custom Flows",
-        summary: "Drag-and-drop, multi-step conversation builder.",
+        id: "rooms-rates",
+        title: "Rooms & rates",
+        summary: "Room types, units and the nightly rate.",
         blocks: [
           {
-            p: "Flows let you build branching, multi-step journeys visually — ask a question, wait for a reply, branch on the answer, send an image, assign to a human, and more. No code.",
+            p: "A room type is four things: a **name**, a number of **units**, an **occupancy** and a **nightly rate** — e.g. “Deluxe Double, 4 units, sleeps 2, $79”.",
           },
           {
             list: [
-              "Trigger a flow on a keyword, a first message, or a comment.",
-              "Mix automated steps with a hand-off to a teammate at any point.",
-              "Great for guided buying, bookings, or qualification.",
+              "**Units** is how many physical rooms of that type you have. That number is your availability.",
+              "The **nightly rate** is what the AI quotes, what your direct page shows and what's pushed to every OTA.",
+              "There is no per-room pricing from us — add as many types and units as you actually have.",
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    group: "AI guest messaging",
+    sections: [
+      {
+        id: "ai-overview",
+        title: "How the AI answers",
+        summary: "Replies inside your OTA inboxes and on WhatsApp, 24/7.",
+        blocks: [
+          {
+            p: "The AI answers guest messages wherever they arrive — the **Booking.com, Airbnb and Expedia inboxes** and **WhatsApp** — instantly, in your tone and in the guest's language. It reads the same live calendar as the rest of Botlify, so it only ever quotes rooms and nights that genuinely exist and are free.",
+          },
+          { h: "What it does in a conversation" },
+          {
+            list: [
+              "Answers questions about your property, policies, check-in and directions.",
+              "Quotes real availability and your real nightly rate.",
+              "Books the room and sends a confirmation (on WhatsApp and your direct page).",
+              "Arranges airport transfers and offers extras like breakfast or late check-out.",
+              "Says so honestly when it doesn't know, and flags the conversation for your team.",
+            ],
+          },
+          {
+            note: "Powered by Google Gemini. It never invents a room type, price or policy you haven't given it.",
+            tone: "info",
+          },
+        ],
+      },
+      {
+        id: "ota-inboxes",
+        title: "OTA inboxes",
+        summary: "No extra setup — it comes with the channel connection.",
+        blocks: [
+          {
+            p: "Once an OTA is connected and mapped, its guest messages flow into Botlify and the AI replies inside that OTA's own messaging thread. Your response time stays fast around the clock, without anyone logging into three extranets.",
+          },
+          {
+            note: "Bookings that arrive through an OTA are always 0% commission from Botlify — even when the AI answered the guest in the OTA inbox.",
+            tone: "tip",
+          },
+        ],
+      },
+      {
+        id: "whatsapp",
+        title: "WhatsApp",
+        summary: "Where direct guests ask, negotiate and book.",
+        blocks: [
+          {
+            steps: [
+              "Open **Channels** and choose WhatsApp.",
+              "Authorise your WhatsApp Business number.",
+              "The AI starts answering immediately — and can close bookings for you.",
+            ],
+          },
+          {
+            note: "WhatsApp only allows free-form messages within 24 hours of the guest's last message. Outside that window, use approved templates.",
+            tone: "warn",
+          },
+        ],
+      },
+      {
+        id: "train-ai",
+        title: "Train your AI",
+        summary: "Teach it your hotel once.",
+        blocks: [
+          {
+            p: "Open **Train your AI** and give it everything a great receptionist would know:",
+          },
+          {
+            list: [
+              "Check-in and check-out times, deposit and cancellation policies.",
+              "Room details, amenities, breakfast, parking, pets.",
+              "Directions, airport distance, local tips.",
+              "Answers to the questions you get every day.",
+            ],
+          },
+          {
+            note: "The more specific you are, the fewer conversations need a human. Update it any time — changes apply to the next reply.",
+            tone: "tip",
           },
         ],
       },
       {
         id: "handoff",
         title: "Human handoff",
-        summary: "The bot escalates to you when it should.",
+        summary: "Your team can take over any conversation.",
         blocks: [
           {
-            p: "When a customer needs a human (or asks for one), the bot flags the conversation and **notifies you** — your inbox lights up in real time, you get an email, and an event fires for any integration. Take over from the shared inbox, then hand back.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    group: "Growth & content",
-    sections: [
-      {
-        id: "scheduling",
-        title: "Post scheduling",
-        summary: "Plan & auto-publish posts, carousels, stories and reels.",
-        blocks: [
-          {
-            p: "Schedule content to publish automatically at the perfect time. Supports:",
-          },
-          {
-            list: [
-              "**Feed image** — a single photo.",
-              "**Carousel** — 2 to 10 images in one swipeable post.",
-              "**Story** — a 24-hour story image.",
-              "**Reel** — an MP4 video (with your audio baked in).",
-            ],
-          },
-          { h: "How to schedule" },
-          {
-            steps: [
-              "Open **Dashboard → Scheduled Posts → New post**.",
-              "Pick a type, upload your media (drag multiple images for a carousel).",
-              "Write a caption — or generate one with AI.",
-              "See the **live Instagram preview**, pick a date & time, and schedule.",
-            ],
-          },
-          {
-            note: "Instagram can't attach its licensed catalog music to auto-published reels — bake your audio into the video file before uploading.",
-            tone: "warn",
-          },
-        ],
-      },
-      {
-        id: "broadcasts",
-        title: "Broadcasts & Drip",
-        summary: "Message a segment, or nurture leads over days.",
-        blocks: [
-          { h: "Broadcasts" },
-          {
-            p: "Send a promo or update to a whole segment of your contacts in one go. Botlify sends each message safely paced (about one per second) to respect Instagram's limits.",
-          },
-          {
-            note: "Instagram only allows proactive DMs to people who messaged you recently (a 24-hour window). Broadcast to engaged contacts — not cold lists — to stay safe.",
-            tone: "warn",
-          },
-          { h: "Drip campaigns" },
-          {
-            p: "Automated DM sequences that nurture leads over days — a welcome, a follow-up, an offer — sent hands-free on your schedule.",
-          },
-        ],
-      },
-      {
-        id: "hashtags",
-        title: "Hashtag research",
-        summary: "AI-picked hashtags grouped by reach.",
-        blocks: [
-          {
-            p: "Enter a topic and get hashtags grouped into **big** (high reach), **medium** (balanced), and **niche** (high engagement). Mix all three in every post for the best balance of reach and ranking.",
+            p: "Every conversation, from every channel, lands in **Messages**. Any team member can take over — the AI steps back the moment a human replies, so you never both answer at once — and hand it back when done. You can also switch the AI off per channel.",
           },
         ],
       },
@@ -358,50 +240,37 @@ export const DOC_GROUPS = [
     group: "Operations",
     sections: [
       {
-        id: "inbox-contacts",
-        title: "Inbox & Contacts",
-        summary: "One live inbox and an auto-built audience.",
+        id: "bookings-guests",
+        title: "Bookings & guests",
+        summary: "Every reservation and every guest in one place.",
         blocks: [
-          { h: "Shared inbox" },
+          { h: "Bookings" },
           {
-            p: "Every conversation in one place. See what the bot is handling, jump in to take over, and hand back — with your whole team.",
+            p: "Reservations from every OTA, your direct page, chat and manual entry appear in **Bookings** and on the **Calendar**. The **Today** screen shows who's arriving, who's leaving and which rooms are ready.",
           },
-          { h: "Contacts" },
+          { h: "Guests" },
           {
-            p: "Everyone who messages you is saved automatically, with tags and notes so you can segment your audience for broadcasts and see who your buyers are.",
+            p: "One profile per guest across every channel — the person who messaged on WhatsApp last year and booked on Booking.com in March is a single record, with stay history and notes.",
           },
         ],
       },
       {
-        id: "analytics",
-        title: "Analytics",
-        summary: "Know exactly what's driving replies and sales.",
+        id: "direct-booking",
+        title: "Your direct booking page",
+        summary: "A commission-free channel on the same calendar.",
         blocks: [
           {
-            p: "Track replies, reply rate, AI-vs-manual, contacts and engagement — updated in real time. No spreadsheets, no opening five tabs.",
+            p: "Every property gets a public booking page at `/book/your-hotel`, reading the same live calendar. Link it from your website, your Google profile or a WhatsApp reply. Manage it under **Your website**.",
           },
         ],
       },
       {
         id: "team",
         title: "Team & permissions",
-        summary: "Invite teammates with per-area access.",
+        summary: "Invite your staff with the right access.",
         blocks: [
           {
-            p: "Invite teammates and give each one granular, per-area access to your workspace — so agents can work the inbox without touching billing or settings.",
-          },
-        ],
-      },
-      {
-        id: "webhooks",
-        title: "Webhooks & apps",
-        summary: "Send Botlify events to your other tools.",
-        blocks: [
-          {
-            p: "Connect Botlify to Zapier, Make, or any custom endpoint and receive events as they happen — new lead, order captured, conversation escalated, and more.",
-          },
-          {
-            code: "lead.created · order.created · conversation.escalated · reaction.received · dm.sent · comment.received",
+            p: "Invite teammates and give each one a role, so front-desk staff can work Messages and Bookings without touching rates or billing.",
           },
         ],
       },
@@ -413,25 +282,24 @@ export const DOC_GROUPS = [
       {
         id: "billing",
         title: "Plans & billing",
-        summary: "Basic $9 · Pro $19 · 3-day free trial.",
+        summary: "$49/month flat · free Launch plan · 0% on OTA bookings.",
         blocks: [
           {
             table: {
-              head: ["", "Basic — $9/mo", "Pro — $19/mo"],
+              head: ["", "Launch — free", "Botlify — $49/mo"],
               rows: [
-                ["Instagram accounts", "1", "1"],
-                ["Conversations", "1,000 / month", "Unlimited"],
-                ["AI replies", "200 / day", "Unlimited · premium"],
-                ["Automations", "Core", "All (stories, hours)"],
-                ["Broadcasts & drip", "—", "Yes"],
-                ["Shared team inbox", "—", "Yes (3 seats)"],
-                ["Analytics", "Basic", "Advanced"],
-                ["Remove branding", "—", "Yes"],
+                ["Price", "$0, while we launch", "$49/month per property, or $490/year"],
+                ["Trial", "—", "3-day free trial (card required)"],
+                ["OTA bookings", "0% commission", "0% commission"],
+                ["Bookings the AI closes", "10%", "10%"],
               ],
             },
           },
           {
-            note: "Every paid plan includes a 3-day free trial (card required). Annual billing saves ~17% (2 months free). Cancel anytime from Dashboard → Plan & Billing.",
+            p: "The 10% applies only to bookings the AI closes for you on WhatsApp or your direct page — OTAs charge 15–18% for the same reservation. Commission is tracked in a ledger in your dashboard and settled monthly by statement; Botlify never takes money out of your account or touches guest payments.",
+          },
+          {
+            note: "Cancel anytime from Settings → Billing. You keep access until the end of the period you've paid for.",
             tone: "info",
           },
         ],
@@ -441,21 +309,21 @@ export const DOC_GROUPS = [
         title: "FAQ & troubleshooting",
         summary: "Common questions, answered.",
         blocks: [
-          { h: "The bot replied with a generic 'a teammate will reply' message" },
+          { h: "My Booking.com rooms aren't showing the right availability" },
           {
-            p: "That's the fallback shown when the AI can't answer — usually because it has no knowledge yet. Add a website, PDF or description in **AI Bot → Knowledge**, and make sure the bot is enabled.",
+            p: "Almost always a mapping problem. Open **Channels → Booking.com** and check every room type is mapped to the matching room and rate plan. If mapping is correct, use the manual re-sync and give it a few minutes.",
           },
-          { h: "My follower count looks out of date" },
+          { h: "A guest messaged and got no reply" },
           {
-            p: "It refreshes automatically while you're on the dashboard. Open the dashboard and give it a few seconds.",
+            p: "Check that the channel still shows Connected on the Channels page, that the AI is switched on for that channel, and that the conversation isn't in manual handover.",
           },
-          { h: "A page said 'reload' after an update" },
+          { h: "The AI quoted a room I don't sell any more" },
           {
-            p: "That happens briefly right after we ship an update — the page now refreshes itself automatically to load the new version.",
+            p: "It only reads your Rooms list. Delete or deactivate the old room type and the AI stops offering it immediately.",
           },
-          { h: "Can I message lots of people at once?" },
+          { h: "Which OTAs are supported?" },
           {
-            p: "Use Broadcasts to message a segment. Instagram only allows proactive DMs to people who messaged you within the last 24 hours, so broadcast to engaged contacts rather than cold lists.",
+            p: "Booking.com, Airbnb and Expedia are live today. More OTAs are coming — tell us which one you need.",
           },
           { h: "Still stuck?" },
           {

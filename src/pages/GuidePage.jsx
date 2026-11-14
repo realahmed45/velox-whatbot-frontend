@@ -1,18 +1,18 @@
 /**
  * /guide — "How Botlify works" for hotels.
  *
- * A written, scannable guide to the whole platform: what it is, the real
- * 3-step onboarding, connecting OTAs and messaging, rooms & rates, the AI
- * concierge, the Botlify Agent, the revenue manager, the front desk, guests,
- * pricing & commission, and a troubleshooting FAQ.
+ * A written, scannable guide to Botlify — the AI channel manager for hotels:
+ * the real 3-step onboarding, connecting Booking.com / Airbnb / Expedia, AI
+ * guest messaging in the OTA inboxes and on WhatsApp, rooms & rates, the
+ * Botlify Agent, the revenue manager, the front desk, guests, pricing &
+ * commission, and a troubleshooting FAQ.
  *
  * Rendered both publicly (inside MarketingLayout) and in the dashboard, so it
- * keeps its own max-width and never assumes a surrounding shell. Publicly it
- * paints the dark cinematic canvas; inside /dashboard it switches to the light
- * glass palette (see THEMES).
+ * keeps its own max-width and never assumes a surrounding shell. Both use the
+ * light glass palette (THEME); publicly it paints its own warm canvas.
  */
 import { createContext, useContext, useState, useEffect } from "react";
-import ChannelWall from "@/components/ChannelWall";
+import OtaLogo from "@/components/OtaLogo";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Aurora, Magnetic, NumberTicker, Reveal, Spotlight, PulseDot } from "@/components/fx";
@@ -39,7 +39,6 @@ import {
   PlugZap,
   Receipt,
   RefreshCw,
-  Send,
   Shield,
   SprayCan,
   Terminal,
@@ -52,45 +51,25 @@ import {
 /* ────────────────────────────────────────────────────────────
  * Theme — one set of class tokens per canvas
  * ──────────────────────────────────────────────────────────── */
-const THEMES = {
-  dark: {
-    dark: true,
-    h: "text-white",
-    body: "text-white/65",
-    strong: "text-white",
-    sub: "text-white/50",
-    lead: "text-white/90",
-    card: "card-dark",
-    tile: "bg-sunset-soft text-sunset-gold ring-1 ring-white/10",
-    chip: "bg-white/[0.06] text-white/55 ring-1 ring-white/10",
-    inset: "bg-white/[0.04] ring-1 ring-white/[0.08]",
-    divide: "divide-white/[0.07]",
-    thead: "bg-white/[0.05] text-white/80",
-    eyebrow: "text-sunset-gold",
-    code: "text-white bg-white/[0.08] ring-1 ring-white/10",
-    link: "text-sunset-gold hover:text-white decoration-sunset-gold/40",
-    secondaryBtn: "btn-glass-dark",
-  },
-  light: {
-    dark: false,
-    h: "text-ink-950",
-    body: "text-ink-600",
-    strong: "text-ink-900",
-    sub: "text-ink-500",
-    lead: "text-ink-800",
-    card: "card",
-    tile: "bg-sunset-soft text-sunset-flame",
-    chip: "bg-ink-900/[0.05] text-ink-500 ring-1 ring-ink-900/[0.06]",
-    inset: "bg-ink-900/[0.03] ring-1 ring-ink-900/[0.06]",
-    divide: "divide-ink-900/[0.06]",
-    thead: "bg-white/70 text-ink-700",
-    eyebrow: "text-sunset-flame",
-    code: "text-ink-800 bg-ink-900/[0.06]",
-    link: "text-sunset-flame hover:text-sunset-magenta decoration-sunset-flame/30",
-    secondaryBtn: "btn-secondary",
-  },
+const THEME = {
+  dark: false,
+  h: "text-ink-950",
+  body: "text-ink-600",
+  strong: "text-ink-900",
+  sub: "text-ink-500",
+  lead: "text-ink-800",
+  card: "card",
+  tile: "bg-sunset-soft text-sunset-flame",
+  chip: "bg-ink-900/[0.05] text-ink-500 ring-1 ring-ink-900/[0.06]",
+  inset: "bg-ink-900/[0.03] ring-1 ring-ink-900/[0.06]",
+  divide: "divide-ink-900/[0.06]",
+  thead: "bg-white/70 text-ink-700",
+  eyebrow: "text-sunset-flame",
+  code: "text-ink-800 bg-ink-900/[0.06]",
+  link: "text-sunset-flame hover:text-sunset-magenta decoration-sunset-flame/30",
+  secondaryBtn: "btn-secondary",
 };
-const ThemeCtx = createContext(THEMES.dark);
+const ThemeCtx = createContext(THEME);
 const useT = () => useContext(ThemeCtx);
 
 const hop =
@@ -103,9 +82,9 @@ const SECTIONS = [
   { id: "what-it-is", label: "What Botlify is", icon: Building2 },
   { id: "getting-started", label: "Getting started", icon: UserPlus },
   { id: "channels", label: "Booking channels", icon: RefreshCw },
-  { id: "messaging", label: "Messaging channels", icon: MessageCircle },
+  { id: "messaging", label: "AI guest messaging", icon: MessageCircle },
   { id: "rooms-rates", label: "Rooms & rates", icon: BedDouble },
-  { id: "concierge", label: "The AI concierge", icon: ConciergeBell },
+  { id: "concierge", label: "How the AI answers", icon: ConciergeBell },
   { id: "agent", label: "The Botlify Agent", icon: Terminal },
   { id: "revenue", label: "AI revenue manager", icon: LineChart },
   { id: "front-desk", label: "Front desk", icon: KeyRound },
@@ -158,7 +137,7 @@ function Bullets({ items }) {
           <span className="mt-[3px] grid h-4 w-4 shrink-0 place-items-center rounded-full bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
             <Check className="w-2.5 h-2.5" strokeWidth={3} />
           </span>
-          <span className={t.dark ? "text-white/80" : "text-ink-700"}>{x}</span>
+          <span className="text-ink-700">{x}</span>
         </li>
       ))}
     </ul>
@@ -167,19 +146,13 @@ function Bullets({ items }) {
 
 function Note({ icon: Icon = Info, tone = "brand", title, children }) {
   const t = useT();
-  const tones = t.dark
-    ? {
-        brand: "border-sunset-flame/25 bg-sunset-soft text-sunset-gold",
-        amber: "border-amber-400/25 bg-amber-400/[0.07] text-amber-300",
-        ink: "border-white/10 bg-white/[0.04] text-white/55",
-      }
-    : {
-        brand: "border-sunset-flame/20 bg-sunset-soft text-sunset-flame",
-        amber: "border-amber-200 bg-amber-50/70 text-amber-600",
-        ink: "border-ink-900/[0.08] bg-white/60 text-ink-500",
-      };
+  const tones = {
+    brand: "border-sunset-flame/20 bg-sunset-soft text-sunset-flame",
+    amber: "border-amber-200 bg-amber-50/70 text-amber-600",
+    ink: "border-ink-900/[0.08] bg-white/60 text-ink-500",
+  };
   return (
-    <div className={`rounded-2xl border p-4 sm:p-5 backdrop-blur ${tones[tone]}`}>
+    <div className={`rounded-2xl border p-4 sm:p-5 ${tones[tone]}`}>
       <p className={`flex items-center gap-2 text-sm font-semibold ${t.strong}`}>
         <Icon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> {title}
       </p>
@@ -246,11 +219,7 @@ function GuideNav() {
     <>
       {/* Mobile — a jump menu that stays out of the way */}
       <div
-        className={`lg:hidden sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 backdrop-blur-xl border-b ${
-          t.dark
-            ? "bg-night-950/75 border-white/[0.07]"
-            : "bg-white/70 border-ink-900/[0.06]"
-        }`}
+        className={`lg:hidden sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 backdrop-blur-xl border-b bg-white/70 border-ink-900/[0.06]`}
       >
         <label htmlFor="guide-jump" className="sr-only">
           Jump to a section
@@ -264,11 +233,7 @@ function GuideNav() {
               .getElementById(e.target.value)
               ?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
-          className={
-            t.dark
-              ? "w-full rounded-xl bg-white/[0.06] ring-1 ring-white/10 px-3 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-sunset-flame/60 [&>option]:text-ink-900"
-              : "input font-semibold"
-          }
+          className="input font-semibold"
         >
           {SECTIONS.map((s, i) => (
             <option key={s.id} value={s.id}>
@@ -284,9 +249,7 @@ function GuideNav() {
         className="hidden lg:block sticky top-24 self-start"
       >
         <p
-          className={`text-[11px] font-semibold uppercase tracking-[0.18em] px-3 mb-2 ${
-            t.dark ? "text-white/40" : "text-ink-400"
-          }`}
+          className={`text-[11px] font-semibold uppercase tracking-[0.18em] px-3 mb-2 text-ink-400`}
         >
           On this page
         </p>
@@ -302,22 +265,14 @@ function GuideNav() {
                   aria-current={on ? "true" : undefined}
                   className={`group relative isolate flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-300 ease-spring ${
                     on
-                      ? t.dark
-                        ? "text-white"
-                        : "text-ink-900"
-                      : t.dark
-                        ? "text-white/50 hover:text-white hover:translate-x-0.5"
-                        : "text-ink-500 hover:text-ink-900 hover:translate-x-0.5"
+                      ? "text-ink-900"
+                      : "text-ink-500 hover:text-ink-900 hover:translate-x-0.5"
                   }`}
                 >
                   {on && (
                     <motion.span
-                      layoutId={`guide-nav-${t.dark ? "d" : "l"}`}
-                      className={`absolute inset-0 -z-10 rounded-xl ${
-                        t.dark
-                          ? "bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
-                          : "bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]"
-                      }`}
+                      layoutId="guide-nav-l"
+                      className={`absolute inset-0 -z-10 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]`}
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
                     >
                       <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sunset" />
@@ -327,19 +282,13 @@ function GuideNav() {
                     strokeWidth={1.8}
                     className={`w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:rotate-[-10deg] group-hover:scale-110 ${
                       on
-                        ? t.dark
-                          ? "text-sunset-gold"
-                          : "text-sunset-flame"
-                        : t.dark
-                          ? "text-white/30 group-hover:text-white/60"
-                          : "text-ink-300 group-hover:text-ink-500"
+                        ? "text-sunset-flame"
+                        : "text-ink-300 group-hover:text-ink-500"
                     }`}
                   />
                   <span className="truncate">
                     <span
-                      className={`tabular-nums mr-1.5 ${
-                        t.dark ? "text-white/25" : "text-ink-300"
-                      }`}
+                      className={`tabular-nums mr-1.5 text-ink-300`}
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -394,36 +343,70 @@ const ONBOARD_STEPS = [
 
 const MESSAGING = [
   {
+    logo: "booking",
+    name: "Booking.com inbox",
+    how: "Comes with the channel connection. Once Booking.com is connected, the AI answers guest messages right inside the Booking.com inbox — pre-arrival questions, directions, check-in times.",
+  },
+  {
+    logo: "airbnb",
+    name: "Airbnb inbox",
+    how: "Same as Booking.com: connect Airbnb and the AI replies to guests in Airbnb's own messaging thread, so your response time stays fast around the clock.",
+  },
+  {
+    logo: "expedia",
+    name: "Expedia inbox",
+    how: "Connect Expedia and its guest messages are answered by the AI too — one set of hotel knowledge, every OTA inbox.",
+  },
+  {
     icon: MessageCircle,
     name: "WhatsApp",
     color: "text-emerald-500",
-    how: "Connect from Channels, authorise the number, and the AI starts answering. This is where most guest conversations happen.",
-  },
-  {
-    icon: Send,
-    name: "Instagram",
-    color: "text-brand-500",
-    how: "Connect your Instagram Business or Creator account and authorise messaging. Replies land in DMs like any other message.",
-  },
-  {
-    icon: MessageCircle,
-    name: "Facebook Messenger",
-    color: "text-sky-500",
-    how: "Authorise the Facebook Page your hotel already uses. The AI answers Page messages and the front desk can take over.",
-  },
-  {
-    icon: Send,
-    name: "Telegram",
-    color: "text-sky-600",
-    how: "Different from the others: add our bot to your group or channel as an admin, then send it the short code shown on the Channels page. That code links the group to your property — no authorisation flow.",
+    how: "Connect from Channels, authorise the number, and the AI starts answering. This is where direct guests ask, negotiate and book — and where the AI closes bookings for you.",
     special: true,
   },
 ];
 
+/** Live OTAs today — the rest are on the way. */
+const LIVE_OTAS = [
+  { key: "booking", name: "Booking.com" },
+  { key: "airbnb", name: "Airbnb" },
+  { key: "expedia", name: "Expedia" },
+];
+
+function LiveOtas() {
+  return (
+    <div className="card p-5">
+      <p className="text-sm font-semibold text-ink-900">The channels you can connect</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {LIVE_OTAS.map((o) => (
+          <span
+            key={o.key}
+            className="inline-flex items-center gap-2 rounded-full bg-white pl-1.5 pr-3 py-1.5 text-xs font-semibold text-ink-800 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff]"
+          >
+            <OtaLogo channelKey={o.key} name={o.name} size={22} />
+            {o.name}
+            <span className="ml-0.5 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live
+            </span>
+          </span>
+        ))}
+        <span className="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold text-ink-500 ring-1 ring-dashed ring-ink-900/[0.12] border border-dashed border-ink-900/[0.12]">
+          More OTAs coming
+        </span>
+      </div>
+      <p className="mt-3 text-[13px] leading-snug text-ink-500">
+        Booking.com, Airbnb and Expedia are live today, with more OTAs on the
+        way. Every one of them is 0% commission from us — and the AI answers
+        guest messages inside each of their inboxes.
+      </p>
+    </div>
+  );
+}
+
 const AGENT_EXAMPLES = [
   {
     you: "Change Deluxe Double to $95 for next weekend",
-    bot: "Deluxe Double, Fri–Sun: $79 → $95. This pushes to all 60+ connected channels and your direct page. Confirm?",
+    bot: "Deluxe Double, Fri–Sun: $79 → $95. This pushes to Booking.com, Airbnb, Expedia and your direct page. Confirm?",
     kind: "Needs confirmation",
   },
   {
@@ -454,11 +437,11 @@ const FAQS = [
   },
   {
     q: "A guest messaged and got no reply.",
-    a: "Check three things in order: the channel still shows Connected on the Channels page (tokens can be revoked from the platform's side), the AI is switched on for that channel, and the conversation isn't already in manual handover — once a human replies, the AI steps back so you don't both answer at once. You can hand it back to the AI from the conversation itself.",
+    a: "Check three things in order: the channel still shows Connected on the Channels page (access can be revoked from the platform's side), the AI is switched on for that channel, and the conversation isn't already in manual handover — once a human replies, the AI steps back so you don't both answer at once. You can hand it back to the AI from the conversation itself.",
   },
   {
-    q: "Why can't I connect TikTok?",
-    a: "TikTok does not offer a messaging API to platforms like Botlify, so there is no supported way for us to read or send TikTok DMs on your behalf. We'd rather tell you that plainly than list it and quietly do nothing. WhatsApp, Instagram, Messenger, Telegram and your direct booking page all work.",
+    q: "Which messaging channels does the AI answer on?",
+    a: "Guest messages inside your Booking.com, Airbnb and Expedia inboxes, WhatsApp, and your direct booking page. Botlify focuses on where hotel guests actually message you — more OTA inboxes arrive as more OTAs go live.",
   },
   {
     q: "Can two guests book the same room at the same moment?",
@@ -487,7 +470,7 @@ export default function GuidePage() {
   const active = AGENT_EXAMPLES[agentTurn];
   const { pathname } = useLocation();
   const inDashboard = pathname.startsWith("/dashboard");
-  const t = inDashboard ? THEMES.light : THEMES.dark;
+  const t = THEME;
 
   const hero = (
     <div
@@ -495,11 +478,7 @@ export default function GuidePage() {
     >
       <Reveal>
         <span
-          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ${
-            t.dark
-              ? "bg-white/[0.06] ring-1 ring-white/10 text-white/75"
-              : "bg-white/80 ring-1 ring-ink-900/[0.06] text-ink-600 shadow-[inset_0_1px_0_#fff]"
-          }`}
+          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/80 ring-1 ring-ink-900/[0.06] text-ink-600 shadow-[inset_0_1px_0_#fff]`}
         >
           <Layers className={`w-3.5 h-3.5 ${t.eyebrow}`} strokeWidth={1.8} /> The Botlify guide
         </span>
@@ -509,23 +488,22 @@ export default function GuidePage() {
           className={`mt-6 font-display font-semibold max-w-3xl ${
             inDashboard
               ? "text-3xl sm:text-5xl tracking-[-0.04em] leading-[1.02] text-ink-950"
-              : "text-5xl sm:text-7xl tracking-[-0.05em] leading-[0.95] text-white"
+              : "text-5xl sm:text-7xl tracking-[-0.05em] leading-[0.95] text-ink-950"
           }`}
         >
-          How Botlify runs{" "}
-          <span className="font-serif italic font-normal text-sunset pr-1">your whole hotel</span>.
+          Every guest answered,{" "}
+          <span className="font-serif italic font-normal text-sunset pr-1">every channel</span> in sync.
         </h1>
       </Reveal>
       <Reveal delay={0.12}>
         <p
-          className={`mt-6 text-base sm:text-lg max-w-2xl leading-relaxed ${
-            t.dark ? "text-white/60" : "text-ink-600"
-          }`}
+          className={`mt-6 text-base sm:text-lg max-w-2xl leading-relaxed text-ink-600`}
         >
-          Everything in one place: how to get set up, how your channels and
-          messaging connect, how the AI actually sells rooms, and exactly what
-          it costs. Read it end to end in about ten minutes — or jump to the
-          part you need.
+          Botlify is the AI channel manager for hotels. This guide covers how
+          to get set up, how Booking.com, Airbnb and Expedia sync on one
+          calendar, how the AI answers guests inside those inboxes and on
+          WhatsApp, and exactly what it costs. Read it end to end in about ten
+          minutes — or jump to the part you need.
         </p>
       </Reveal>
       <Reveal delay={0.18}>
@@ -549,7 +527,7 @@ export default function GuidePage() {
       className={
         inDashboard
           ? "text-ink-900"
-          : "relative isolate overflow-x-clip bg-night-950 text-white grain"
+          : "relative isolate overflow-x-clip bg-[#FBFAF8] text-ink-900"
       }
     >
       {/* ── Hero ───────────────────────────────────────────── */}
@@ -563,8 +541,8 @@ export default function GuidePage() {
         </div>
       ) : (
         <section className="relative isolate overflow-hidden">
-          <Aurora variant="dark" />
-          <div className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b" aria-hidden />
+          <Aurora />
+          <div className="absolute inset-0 -z-10 bg-dot-grid mask-fade-b opacity-60" aria-hidden />
           {hero}
         </section>
       )}
@@ -583,10 +561,12 @@ export default function GuidePage() {
               title="What Botlify is"
             >
               <p>
-                Botlify is a complete operating platform for a hotel — not a
-                chatbot bolted onto one. Every part of it reads and writes the
-                same calendar and the same guest list, which is the whole point:
-                your availability can only ever be one number.
+                Botlify is the AI channel manager for hotels. It syncs your
+                rooms, rates and availability across Airbnb, Booking.com and
+                Expedia — and its AI answers every guest message inside those
+                OTA inboxes and on WhatsApp, 24/7, replacing the manual work of
+                guest messaging. Every part of it reads and writes the same
+                calendar, so your availability can only ever be one number.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-3 not-prose">
@@ -594,7 +574,7 @@ export default function GuidePage() {
                   {
                     icon: RefreshCw,
                     t: "Channel manager",
-                    d: "60+ OTA channels — Booking.com, Airbnb, Agoda, Expedia, Traveloka and more — on one calendar, synced two ways.",
+                    d: "Booking.com, Airbnb and Expedia on one calendar, synced two ways. More OTAs coming.",
                   },
                   {
                     icon: Globe,
@@ -608,8 +588,8 @@ export default function GuidePage() {
                   },
                   {
                     icon: ConciergeBell,
-                    t: "AI concierge",
-                    d: "Answers and books on WhatsApp, Instagram, Messenger, Telegram.",
+                    t: "AI guest messaging",
+                    d: "Answers every guest inside the Booking.com, Airbnb and Expedia inboxes and on WhatsApp — 24/7.",
                   },
                   {
                     icon: KeyRound,
@@ -632,9 +612,9 @@ export default function GuidePage() {
                 For most independent properties, Botlify takes the place of a
                 channel-manager subscription, a booking-engine plugin, a pricing
                 tool (or the pricing decisions nobody had time to make), a
-                front-desk system, a guest spreadsheet and a chat widget that
-                could never see real availability. One login, one calendar, one
-                bill.
+                front-desk system, a guest spreadsheet — and the hours someone
+                spends answering the same guest questions in every OTA inbox and
+                on WhatsApp. One login, one calendar, one bill.
               </p>
               <p>
                 On top of all of it sits the{" "}
@@ -666,7 +646,7 @@ export default function GuidePage() {
                           <span className="w-10 h-10 rounded-xl bg-sunset text-white font-display font-semibold tabular-nums flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:scale-110 group-hover:rotate-[-6deg]">
                             {i + 1}
                           </span>
-                          <Icon className={`w-4 h-4 ${t.dark ? "text-white/30" : "text-ink-300"}`} strokeWidth={1.8} />
+                          <Icon className={`w-4 h-4 text-ink-300`} strokeWidth={1.8} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -699,8 +679,8 @@ export default function GuidePage() {
               </div>
 
               <Note icon={Check} title="That's the required part">
-                Connecting your 60+ booking channels and your messaging
-                channels comes next — but none of it blocks you. With rooms in the system, your
+                Connecting Booking.com, Airbnb, Expedia and WhatsApp comes
+                next — but none of it blocks you. With rooms in the system, your
                 calendar, your direct booking page and manual bookings already
                 work.
               </Note>
@@ -714,19 +694,15 @@ export default function GuidePage() {
               title="Connecting your booking channels"
             >
               <p>
-                Botlify connects to <b className={t.strong}>60+ booking
-                channels</b> through our connectivity partner — the same kind of
+                Botlify connects to <b className={t.strong}>Booking.com, Airbnb
+                and Expedia</b> (more OTAs coming) through our connectivity partner — the same kind of
                 certified pipe a traditional channel manager uses. You start it
                 from{" "}
                 <b className={t.strong}>Channels</b> in the dashboard.
               </p>
 
               <div className="not-prose">
-                <ChannelWall
-                  dark={t.dark}
-                  title="The channels you can connect"
-                  subtitle="Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50 more through the same connection. Traveloka and Tiket.com cover Indonesian domestic travellers. Every one of them is 0% commission from us."
-                />
+                <LiveOtas />
               </div>
 
               <p className={`font-semibold ${t.lead}`}>How the connection works</p>
@@ -734,14 +710,14 @@ export default function GuidePage() {
                 items={[
                   "You authorise the channel and we request connectivity for your property.",
                   "You map each Botlify room type to the matching room and rate plan on the OTA side. This is the step worth doing carefully — everything downstream depends on it.",
-                  "Rates and availability push out; reservations pull in automatically.",
+                  "Rates and availability push out; reservations and guest messages pull in automatically.",
                   "A sale anywhere — OTA, direct page, chat or a manual booking — drops availability everywhere else.",
                 ]}
               />
 
               <Note icon={BadgePercent} title="What “0% commission” means">
-                We take <b>nothing</b> from a booking that arrives through any
-                of the 60+ OTA channels. Not a percentage, not a per-reservation
+                We take <b>nothing</b> from a booking that arrives through
+                Booking.com, Airbnb, Expedia or any OTA we add. Not a percentage, not a per-reservation
                 fee. Your OTA still charges you their own commission — that's
                 between you and them and always has been — but Botlify adds
                 nothing on top. OTA sync is included in the flat subscription.
@@ -753,7 +729,7 @@ export default function GuidePage() {
                   /book/your-hotel
                 </code>{" "}
                 reading the same calendar. Link it from your website, your
-                Instagram bio or a WhatsApp reply — no OTA takes a cut of those.
+                Google profile or a WhatsApp reply — no OTA takes a cut of those.
               </Note>
             </Section>
 
@@ -762,12 +738,14 @@ export default function GuidePage() {
               id="messaging"
               icon={MessageCircle}
               eyebrow="04 · Messaging"
-              title="Connecting messaging"
+              title="AI guest messaging"
             >
               <p>
-                This is where the AI concierge lives. Connect the channels your
-                guests already message you on — every conversation, whatever the
-                channel, lands in the same unified inbox.
+                This is the part that replaces the manual work. The AI answers
+                guests where they already message you — inside the OTA inboxes
+                and on WhatsApp — instantly, accurately and in their language.
+                Every conversation, whatever the channel, also lands in the same
+                unified inbox for your team.
               </p>
 
               <div className="space-y-3 not-prose">
@@ -782,16 +760,18 @@ export default function GuidePage() {
                     >
                       <div className="flex items-center gap-2.5">
                         <span
-                          className={`w-9 h-9 rounded-xl grid place-items-center shrink-0 ${
-                            t.dark ? "bg-white/[0.06] ring-1 ring-white/10" : "bg-white ring-1 ring-ink-900/[0.06]"
-                          } ${hop}`}
+                          className={`w-9 h-9 rounded-xl grid place-items-center shrink-0 bg-white ring-1 ring-ink-900/[0.06] ${hop}`}
                         >
-                          <Icon className={`w-[18px] h-[18px] ${m.color}`} strokeWidth={1.8} />
+                          {m.logo ? (
+                            <OtaLogo channelKey={m.logo} name={m.name} size={22} />
+                          ) : (
+                            <Icon className={`w-[18px] h-[18px] ${m.color}`} strokeWidth={1.8} />
+                          )}
                         </span>
                         <p className={`font-semibold ${t.strong}`}>{m.name}</p>
                         {m.special && (
                           <span className={`ml-auto text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 bg-sunset-soft ring-1 ring-sunset-flame/30 ${t.eyebrow}`}>
-                            Connects differently
+                            Closes bookings
                           </span>
                         )}
                       </div>
@@ -806,12 +786,11 @@ export default function GuidePage() {
               <Note
                 tone="amber"
                 icon={TriangleAlert}
-                title="TikTok is not supported — and won't quietly pretend to be"
+                title="OTA inboxes follow the channel connection"
               >
-                TikTok does not offer a messaging API to platforms like Botlify.
-                There is no supported way for us to read or send TikTok DMs on
-                your behalf, so we don't list it as a channel. If that ever
-                changes, we'll add it. Everything above works today.
+                The AI can only answer an OTA's guest messages once that OTA is
+                connected and mapped on the Channels page. As more OTAs go live,
+                their inboxes are answered the same way — nothing extra to set up.
               </Note>
 
               <p>
@@ -888,11 +867,11 @@ export default function GuidePage() {
             <Section
               id="concierge"
               icon={ConciergeBell}
-              eyebrow="06 · The AI concierge"
-              title="How the AI concierge works"
+              eyebrow="06 · The AI"
+              title="How the AI answers your guests"
             >
               <p>
-                The concierge is not a scripted FAQ bot. It reads the same live
+                The AI is not a scripted FAQ bot. It reads the same live
                 calendar every other part of the platform uses, which means it
                 can only ever offer rooms and nights that genuinely exist and are
                 genuinely free.
@@ -939,7 +918,8 @@ export default function GuidePage() {
               </div>
 
               <p>
-                It answers in your tone, around the clock, and it works from the
+                It answers in your tone, around the clock — in the Booking.com,
+                Airbnb and Expedia inboxes and on WhatsApp — and it works from the
                 property details, policies and FAQs you set up once. If a
                 conversation needs a human, your front desk takes it over from
                 the inbox with the full history in view.
@@ -959,14 +939,14 @@ export default function GuidePage() {
                 instruction the way you'd say it to a manager.
               </p>
 
-              <div className="not-prose relative overflow-hidden rounded-3xl bg-night-950/90 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_70px_-30px_rgba(124,92,255,0.45)] backdrop-blur-xl">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                  <Terminal className="w-4 h-4 text-sunset-gold" strokeWidth={1.8} />
-                  <span className="text-xs font-semibold text-white">
+              <div className="not-prose card relative overflow-hidden rounded-3xl">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-ink-900/[0.06]">
+                  <Terminal className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
+                  <span className="text-xs font-semibold text-ink-900">
                     Botlify Agent
                   </span>
-                  <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-300">
-                    <PulseDot color="bg-emerald-400" />
+                  <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600">
+                    <PulseDot color="bg-emerald-500" />
                     Online
                   </span>
                 </div>
@@ -975,9 +955,9 @@ export default function GuidePage() {
                   <motion.div
                     key={agentTurn}
                     className="space-y-3"
-                    initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   >
                   <div className="flex justify-end">
@@ -986,14 +966,14 @@ export default function GuidePage() {
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="w-7 h-7 rounded-full bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
-                      <Bot className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} />
+                    <span className="w-7 h-7 rounded-full bg-sunset-soft flex items-center justify-center shrink-0">
+                      <Bot className="w-3.5 h-3.5 text-sunset-flame" strokeWidth={1.8} />
                     </span>
-                    <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white/[0.07] border border-white/10 px-4 py-2.5">
-                      <p className="text-sm text-white/85 leading-snug">
+                    <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-ink-900/[0.04] ring-1 ring-ink-900/[0.06] px-4 py-2.5">
+                      <p className="text-sm text-ink-800 leading-snug">
                         {active.bot}
                       </p>
-                      <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-sunset-gold">
+                      <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-sunset-flame">
                         <Shield className="w-3 h-3" /> {active.kind}
                       </p>
                     </div>
@@ -1001,8 +981,8 @@ export default function GuidePage() {
                   </motion.div>
                   </AnimatePresence>
                 </div>
-                <div className="border-t border-white/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-white/35 mb-2 px-1">
+                <div className="border-t border-ink-900/[0.06] p-3">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-ink-400 mb-2 px-1">
                     Try one
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -1014,12 +994,12 @@ export default function GuidePage() {
                         className={`relative isolate text-left text-[11px] font-medium rounded-lg px-2.5 py-1.5 transition-all duration-300 ease-spring active:scale-95 ${
                           i === agentTurn
                             ? "text-white"
-                            : "bg-white/[0.06] text-white/60 hover:bg-white/10 hover:text-white hover:-translate-y-0.5"
+                            : "bg-ink-900/[0.05] text-ink-600 hover:bg-ink-900/[0.08] hover:text-ink-900 hover:-translate-y-0.5"
                         }`}
                       >
                         {i === agentTurn && (
                           <motion.span
-                            layoutId={`agent-pill-${t.dark ? "d" : "l"}`}
+                            layoutId="agent-pill-l"
                             className="absolute inset-0 -z-10 rounded-lg bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]"
                             transition={{ type: "spring", stiffness: 420, damping: 32 }}
                           />
@@ -1057,7 +1037,7 @@ export default function GuidePage() {
                 <p className={`text-[11px] font-semibold uppercase tracking-wider ${t.sub}`}>
                   Example suggestion
                 </p>
-                <p className={`mt-2 text-sm leading-relaxed ${t.dark ? "text-white/80" : "text-ink-700"}`}>
+                <p className={`mt-2 text-sm leading-relaxed text-ink-700`}>
                   “Sep 3–5 is 30% booked — usually 70% this close to the date.
                   Drop Deluxe Double from $95 to $85?”
                 </p>
@@ -1181,7 +1161,7 @@ export default function GuidePage() {
                     (two months free).
                   </p>
                 </div>
-                <div className={`gradient-border ${t.dark ? "gradient-border-dark" : ""} p-5`}>
+                <div className={`gradient-border  p-5`}>
                   <p className={`text-[11px] font-semibold uppercase tracking-wider ${t.eyebrow}`}>
                     Right now
                   </p>
@@ -1215,19 +1195,19 @@ export default function GuidePage() {
                         OTA channels
                       </td>
                       <td className="px-4 py-3.5 align-top">
-                        <span className={`inline-block rounded-full font-semibold tabular-nums px-2.5 py-1 text-xs ${t.dark ? "bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"}`}>
+                        <span className={`inline-block rounded-full font-semibold tabular-nums px-2.5 py-1 text-xs bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200`}>
                           0%
                         </span>
                       </td>
                       <td className={`px-4 py-3.5 align-top ${t.body}`}>
-                        OTA sync is completely free. You'd have got that booking
+                        OTA sync is completely free — even when the AI answered
+                        the guest in the OTA inbox. You'd have got that booking
                         anyway — we don't charge for carrying it.
                       </td>
                     </tr>
                     <tr>
                       <td className={`px-4 py-3.5 font-semibold align-top ${t.lead}`}>
-                        Closed by the AI — WhatsApp, Instagram, Messenger,
-                        Telegram or your direct page
+                        Closed by the AI — WhatsApp or your direct page
                       </td>
                       <td className="px-4 py-3.5 align-top">
                         <span className="inline-block rounded-full bg-sunset text-white font-semibold tabular-nums px-2.5 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
@@ -1329,9 +1309,7 @@ export default function GuidePage() {
                         className={`w-5 h-5 shrink-0 transition-transform duration-500 ease-spring ${
                           openFaq === i
                             ? `rotate-180 ${t.eyebrow}`
-                            : t.dark
-                              ? "text-white/40"
-                              : "text-ink-400"
+                            : "text-ink-400"
                         }`}
                       />
                     </div>
@@ -1357,17 +1335,17 @@ export default function GuidePage() {
 
             {/* ── Closing CTA ─────────────────────────────── */}
             <Reveal>
-              <section className="relative isolate overflow-hidden rounded-3xl bg-night-950 p-8 sm:p-12 text-center ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_40px_80px_-40px_rgba(255,61,119,0.45)] grain">
-                <Aurora variant="dark" />
+              <section className="card relative isolate overflow-hidden rounded-3xl p-8 sm:p-12 text-center">
+                <Aurora />
                 <div className="relative">
-                  <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] leading-[1] text-white">
+                  <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] leading-[1] text-ink-950">
                     Ready to put it{" "}
                     <span className="font-serif italic font-normal text-sunset pr-1">together</span>?
                   </h2>
-                  <p className="mt-4 text-white/65 text-[15px] max-w-lg mx-auto leading-relaxed">
-                    Create your account, name your hotel, add your rooms. Your
-                    calendar and direct booking page are live before you finish
-                    your coffee.
+                  <p className="mt-4 text-ink-600 text-[15px] max-w-lg mx-auto leading-relaxed">
+                    Create your account, name your hotel, add your rooms. Connect
+                    Booking.com, Airbnb, Expedia and WhatsApp, and the AI starts
+                    answering your guests.
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Magnetic>
@@ -1377,21 +1355,21 @@ export default function GuidePage() {
                     </Magnetic>
                     <a
                       href="mailto:contactus@botlify.site"
-                      className="group btn-glass-dark px-7 py-3.5 text-[15px]"
+                      className="group btn-secondary px-7 py-3.5 text-[15px]"
                     >
                       <Mail className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-10deg]" /> Email us a question
                     </a>
                   </div>
-                  <p className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-white/50">
+                  <p className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-ink-500">
                     <span className="inline-flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-sunset-gold" /> Free Launch plan
+                      <Check className="w-3 h-3 text-sunset-flame" /> Free Launch plan
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-sunset-gold" /> 0% on OTA
+                      <Check className="w-3 h-3 text-sunset-flame" /> 0% on OTA
                       bookings
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-sunset-gold" /> Cancel anytime
+                      <Check className="w-3 h-3 text-sunset-flame" /> Cancel anytime
                     </span>
                   </p>
                 </div>

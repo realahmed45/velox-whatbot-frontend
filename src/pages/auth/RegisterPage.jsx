@@ -20,12 +20,12 @@ import TurnstileWidget, {
 } from "@/components/auth/TurnstileWidget";
 import { checkPassword } from "@/utils/passwordPolicy";
 
-// Dark liquid-glass field — `.input` is the light variant.
+// Shared light form-field classes from index.css.
 const FIELD =
-  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
-const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+  "input";
+const LABEL = "label";
 const ICON =
-  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none";
+  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame pointer-events-none";
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -43,7 +43,7 @@ export default function RegisterPage() {
   const { login, logout } = useAuthStore();
   const navigate = useNavigate();
   const refCode = searchParams.get("ref");
-  const channelHint = searchParams.get("channel"); // whatsapp | instagram | both
+  const channelHint = searchParams.get("channel"); // legacy marketing hint (unused)
   const planHint = searchParams.get("plan"); // wa_starter | ig_starter | bundle_pro | bundle_business
 
   const handleSubmit = async (e) => {
@@ -110,17 +110,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="card-dark p-6 sm:p-8">
+    <div className="card p-6 sm:p-8">
       <Reveal>
-        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-white leading-tight">
+        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-ink-950 leading-tight">
           Create your{" "}
           <span className="font-serif italic font-normal text-sunset">account</span>
         </h2>
-        <p className="text-white/60 text-sm mt-2 mb-7">
+        <p className="text-ink-600 text-sm mt-2 mb-7">
           Already have an account?{" "}
           <Link
             to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
-            className="text-sunset-gold font-semibold underline-offset-4 hover:underline"
+            className="text-sunset-flame font-semibold underline-offset-4 hover:underline"
           >
             Sign in
           </Link>
@@ -128,16 +128,16 @@ export default function RegisterPage() {
       </Reveal>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Reveal delay={0.05}>
-          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-ink-900/[0.08] transition-transform duration-500 ease-spring hover:-translate-y-0.5">
             <GoogleSignInButton label="Sign up with Google" />
           </div>
         </Reveal>
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-ink-900/10 to-transparent"></div>
           </div>
           <div className="relative flex justify-center text-[11px] uppercase tracking-[0.14em]">
-            <span className="px-3 text-white/40 bg-night-950/60 backdrop-blur rounded-full">
+            <span className="px-3 text-ink-400 bg-white rounded-full">
               Or sign up with email
             </span>
           </div>
@@ -177,7 +177,7 @@ export default function RegisterPage() {
           <div className="relative group">
             <Mail strokeWidth={1.8} className={ICON} />
             <input
-              className={`${FIELD} pl-9 ${invitedEmail ? "!bg-white/[0.03] text-white/50 cursor-not-allowed" : ""}`}
+              className={`${FIELD} pl-9 ${invitedEmail ? "!bg-ink-900/[0.04] text-ink-500 cursor-not-allowed" : ""}`}
               type="email"
               placeholder="you@example.com"
               required
@@ -202,7 +202,7 @@ export default function RegisterPage() {
             <button
               type="button"
               aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
               onClick={() => setShow(!show)}
             >
               {show ? (

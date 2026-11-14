@@ -7,7 +7,7 @@
  * box. Keys must stay identical to the backend's — they're stored on member and
  * invite records.
  *
- * Legacy Instagram-era keys (`contacts`, `automations`, `broadcasts`,
+ * Legacy pre-pivot keys (`contacts`, `automations`, `broadcasts`,
  * `content`, `integrations`) still validate server-side so existing staff keep
  * working, but they are deliberately NOT offered for new invites.
  */
@@ -22,7 +22,7 @@ export const PERMISSION_LIST = [
   {
     key: "inbox",
     label: "Guest messages",
-    desc: "Reply to guests on WhatsApp, Instagram, Messenger & Telegram",
+    desc: "Reply to guests in Airbnb, Booking.com, Expedia & WhatsApp",
   },
   {
     key: "calendar",

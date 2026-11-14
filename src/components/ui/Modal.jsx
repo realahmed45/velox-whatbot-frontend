@@ -94,9 +94,9 @@ export default function Modal({
           <motion.div
             ref={dialogRef}
             tabIndex={-1}
-            initial={{ opacity: 0, scale: 0.94, y: 12, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: 8, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
             className={clsx(
               // Flex column capped at 90vh so tall content never pushes the

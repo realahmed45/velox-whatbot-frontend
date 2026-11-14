@@ -10,7 +10,7 @@ import { Magnetic } from "@/components/fx";
  * Shared public marketing header — used on the landing page, pricing, guide,
  * privacy and terms so every public page has identical chrome.
  *
- * A floating night-glass pill: blur + specular edge, tightens as you scroll,
+ * A floating light-glass pill: blur + specular edge, tightens as you scroll,
  * hover highlight glides between links, and the CTA leans toward the pointer.
  *
  * Anchor links point at "/#section" so they work from any page (navigate home
@@ -56,16 +56,16 @@ export default function PublicHeader() {
   return (
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
       <div
-        className={`relative mx-auto max-w-6xl rounded-[22px] bg-night-900/60 ring-1 ring-white/10 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-500 ease-out-expo ${
+        className={`relative mx-auto max-w-6xl rounded-[22px] bg-white/80 ring-1 ring-ink-900/[0.07] backdrop-blur-xl transition-all duration-500 ease-out-expo ${
           scrolled
-            ? "shadow-[0_20px_50px_-20px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.1)]"
-            : "shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            ? "shadow-[0_16px_40px_-18px_rgba(15,23,42,0.25),inset_0_1px_0_#fff]"
+            : "shadow-[0_4px_16px_-10px_rgba(15,23,42,0.15),inset_0_1px_0_#fff]"
         }`}
       >
         {/* sunset filament along the top edge */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-sunset-flame/70 to-transparent"
+          className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-sunset-flame/50 to-transparent"
         />
         <div
           className={`flex items-center justify-between pl-4 pr-2 transition-[height] duration-500 ease-out-expo sm:pl-5 ${
@@ -74,12 +74,12 @@ export default function PublicHeader() {
         >
           <Link to="/" className="group flex items-center">
             <span className="transition-transform duration-500 ease-spring group-hover:scale-[1.04]">
-              <Logo size="md" dark />
+              <Logo size="md" />
             </span>
           </Link>
 
           <nav
-            className="hidden items-center text-sm font-medium text-white/60 md:flex"
+            className="hidden items-center text-sm font-medium text-ink-600 md:flex"
             onMouseLeave={() => setHovered(null)}
           >
             {NAV_LINKS.map((l) => {
@@ -89,7 +89,7 @@ export default function PublicHeader() {
                   {hovered === l.label && (
                     <motion.span
                       layoutId="public-nav-hover"
-                      className="absolute inset-0 -z-10 rounded-full bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                      className="absolute inset-0 -z-10 rounded-full bg-ink-900/[0.05]"
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
                     />
                   )}
@@ -104,7 +104,7 @@ export default function PublicHeader() {
                   key={l.label}
                   href={l.href}
                   onMouseEnter={() => setHovered(l.label)}
-                  className={`${linkCls} hover:text-white`}
+                  className={`${linkCls} hover:text-ink-950`}
                 >
                   {inner}
                 </a>
@@ -113,7 +113,7 @@ export default function PublicHeader() {
                   key={l.label}
                   to={l.to}
                   onMouseEnter={() => setHovered(l.label)}
-                  className={`${linkCls} ${active ? "text-white" : "hover:text-white"}`}
+                  className={`${linkCls} ${active ? "text-ink-950" : "hover:text-ink-950"}`}
                 >
                   {inner}
                 </Link>
@@ -132,7 +132,7 @@ export default function PublicHeader() {
               <>
                 <Link
                   to="/login"
-                  className="hidden rounded-full px-4 py-2.5 text-sm font-semibold text-white/70 transition hover:bg-white/[0.08] hover:text-white sm:inline-flex"
+                  className="hidden rounded-full px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-ink-900/[0.05] hover:text-ink-950 sm:inline-flex"
                 >
                   Sign in
                 </Link>
@@ -145,7 +145,7 @@ export default function PublicHeader() {
               </>
             )}
             <button
-              className="ml-0.5 grid h-10 w-10 place-items-center rounded-full text-white/70 transition hover:bg-white/[0.08] hover:text-white active:scale-90 md:hidden"
+              className="ml-0.5 grid h-10 w-10 place-items-center rounded-full text-ink-700 transition hover:bg-ink-900/[0.05] hover:text-ink-950 active:scale-90 md:hidden"
               onClick={() => setOpen(!open)}
               aria-label="menu"
               aria-expanded={open}
@@ -165,10 +165,10 @@ export default function PublicHeader() {
               transition={{ type: "spring", stiffness: 380, damping: 34 }}
               className="overflow-hidden md:hidden"
             >
-              <div className="mx-3 space-y-0.5 border-t border-white/[0.08] py-3 text-sm font-medium text-white/75">
+              <div className="mx-3 space-y-0.5 border-t border-ink-900/[0.07] py-3 text-sm font-medium text-ink-700">
                 {NAV_LINKS.map((l, i) => {
                   const cls =
-                    "flex items-center justify-between rounded-xl px-3 py-2.5 transition hover:bg-white/[0.06] hover:text-white";
+                    "flex items-center justify-between rounded-xl px-3 py-2.5 transition hover:bg-ink-900/[0.04] hover:text-ink-950";
                   const body = (
                     <motion.span
                       className="flex w-full items-center justify-between"
@@ -177,7 +177,7 @@ export default function PublicHeader() {
                       transition={{ delay: 0.04 * i, type: "spring", stiffness: 420, damping: 30 }}
                     >
                       {l.label}
-                      <ArrowUpRight className="h-4 w-4 text-white/30" />
+                      <ArrowUpRight className="h-4 w-4 text-ink-400" />
                     </motion.span>
                   );
                   return l.anchor ? (
