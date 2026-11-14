@@ -53,6 +53,16 @@ import {
   FAQ_TEMPLATE_COUNT,
 } from "@/data/faqTemplates";
 import { usePropertyStore } from "@/store/propertyStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { PulseDot, Reveal, SlidingTabs } from "@/components/fx";
+
+// Shared pop for popovers + modal panels (design system spring).
+const pop = {
+  initial: { opacity: 0, y: 8, scale: 0.96, filter: "blur(4px)" },
+  animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, y: 6, scale: 0.97, filter: "blur(4px)" },
+  transition: { type: "spring", stiffness: 420, damping: 30 },
+};
 
 const DEFAULTS = {
   enabled: true,
@@ -278,104 +288,114 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
   };
 
   return (
-    <div className="relative min-h-full bg-ink-50/60">
-      <div className="relative max-w-6xl mx-auto p-4 sm:p-6 pb-24 space-y-6">
-        {/* ── Hero — slim strip, not a slab ──────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-ink-950 text-white px-4 py-3.5 sm:px-5">
-          <div className="pointer-events-none absolute -top-24 right-12 w-56 h-56 rounded-full bg-brand-500/10 blur-[90px]" />
-
-          <div className="relative flex flex-wrap items-center gap-x-4 gap-y-3">
-            <div className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0">
-              <Bot className="w-4.5 h-4.5 text-brand-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base font-semibold tracking-tight">
-                  AI Assistant
-                </h1>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-md bg-white/[0.07] text-white/55">
-                  <Sparkles className="w-2.5 h-2.5" /> AI
-                </span>
-                <AiBotHelp />
+    <div className="relative min-h-full">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-24 space-y-6">
+        {/* ── Page header ────────────────────────────────────────── */}
+        <Reveal>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-4">
+            <div className="group flex items-center gap-3.5 flex-1 min-w-0">
+              <div className="relative shrink-0">
+                <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-30 blur-xl" />
+                <div className="relative w-11 h-11 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                  <Bot className="w-5 h-5" strokeWidth={1.8} />
+                </div>
               </div>
-              <p className="text-xs text-white/50 mt-0.5 truncate">
-                Knows your property, rooms and policies. Answers guests 24/7 — in
-                your voice.
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+                    AI{" "}
+                    <span className="font-serif italic font-normal">Assistant</span>
+                  </h1>
+                  <span className="badge-brand inline-flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                    <Sparkles className="w-2.5 h-2.5" /> AI
+                  </span>
+                  <AiBotHelp />
+                </div>
+                <p className="text-sm text-ink-500 mt-1">
+                  Knows your property, rooms and policies. Answers guests 24/7 — in
+                  your voice.
+                </p>
+              </div>
             </div>
 
-            {/* Readiness + master toggle — compact */}
-            <div className="shrink-0 flex items-center gap-4 ml-auto">
+            {/* Readiness + master toggle — compact glass chip */}
+            <div className="card shrink-0 flex items-center gap-4 ml-auto px-3.5 py-2.5">
               <div className="hidden sm:flex items-center gap-2">
-                <div className="h-1 w-20 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-400 transition-all duration-500"
-                    style={{ width: `${readiness}%` }}
+                <div className="h-1.5 w-24 rounded-full bg-ink-900/[0.07] overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-sunset"
+                    initial={false}
+                    animate={{ width: `${readiness}%` }}
+                    transition={{ type: "spring", stiffness: 120, damping: 20 }}
                   />
                 </div>
-                <span className="text-[11px] font-semibold text-white/70 tabular-nums">
+                <span className="text-[12px] font-semibold text-ink-700 tabular-nums">
                   {readiness}%
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => set({ enabled: !cfg.enabled })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                    cfg.enabled ? "bg-emerald-500" : "bg-white/20"
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 active:scale-95 ${
+                    cfg.enabled ? "bg-emerald-500" : "bg-ink-900/15"
                   }`}
                   aria-label="Toggle AI assistant"
                 >
                   <span
-                    className={`inline-block h-4.5 w-4.5 transform rounded-full bg-white transition ${
+                    className={`inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-sm transition-transform duration-500 ease-spring ${
                       cfg.enabled ? "translate-x-[1.375rem]" : "translate-x-1"
                     }`}
                   />
                 </button>
                 <span
-                  className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
-                    cfg.enabled ? "text-emerald-300" : "text-white/50"
+                  className={`inline-flex items-center gap-1.5 text-[12px] font-medium ${
+                    cfg.enabled ? "text-emerald-700" : "text-ink-500"
                   }`}
                 >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      cfg.enabled ? "bg-emerald-400 animate-pulse" : "bg-white/40"
-                    }`}
-                  />
+                  {cfg.enabled ? (
+                    <PulseDot color="bg-emerald-500" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-ink-300" />
+                  )}
                   {cfg.enabled ? "Live" : "Paused"}
                 </span>
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* ── Tab bar (no endless scroll — jump to any section) ───── */}
-        <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-1.5 bg-ink-50/80 backdrop-blur-xl border-b border-ink-100/80">
-          <div className="flex gap-0.5 overflow-x-auto no-scrollbar">
-            {TABS.map((t) => {
-              const TabIcon = t.icon;
-              const done = t.ready?.(cfg);
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition ${
-                    tab === t.id
-                      ? "bg-ink-900 text-white"
-                      : "text-ink-500 hover:text-ink-900 hover:bg-ink-100"
-                  }`}
-                >
-                  <TabIcon className="w-3.5 h-3.5" />
-                  {t.label}
-                  {done && (
-                    <Check
-                      className={`w-3 h-3 ${tab === t.id ? "text-emerald-300" : "text-emerald-500"}`}
-                    />
-                  )}
-                </button>
-              );
-            })}
+        <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-[#F7F5F2]/70 backdrop-blur-xl">
+          <div className="overflow-x-auto no-scrollbar">
+            <SlidingTabs
+              size="sm"
+              className="whitespace-nowrap"
+              value={tab}
+              onChange={setTab}
+              items={TABS.map((t) => ({
+                value: t.id,
+                icon: t.icon,
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    {t.label}
+                    {t.ready?.(cfg) && (
+                      <Check className="w-3 h-3 text-emerald-500" />
+                    )}
+                  </span>
+                ),
+              }))}
+            />
           </div>
         </div>
+
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
 
         {/* ── What it knows tab ──────────────────────────────────── */}
         {tab === "knows" && (
@@ -386,23 +406,34 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
             subtitle="Everything below is already in your property record — typed in Property & Rooms or synced from the OTAs you connected. Your assistant reads it live, so you never have to repeat it here."
           >
             {loadingKnows ? (
-              <div className="flex items-center gap-2 text-sm text-ink-400 py-6">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Reading your property…
+              <div className="space-y-4 py-2">
+                <span className="sr-only">Reading your property…</span>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-3 w-32 rounded-md bg-ink-900/[0.06] animate-pulse" />
+                    <div className="h-3 w-full max-w-md rounded-md bg-ink-900/[0.06] animate-pulse" />
+                    <div className="h-3 w-2/3 max-w-sm rounded-md bg-ink-900/[0.06] animate-pulse" />
+                  </div>
+                ))}
               </div>
             ) : !property ? (
-              <div className="rounded-xl border border-dashed border-ink-200 bg-ink-50/60 p-5 text-center">
-                <Hotel className="w-6 h-6 text-ink-300 mx-auto" />
-                <p className="text-sm font-semibold text-ink-800 mt-2">
+              <div className="py-8 text-center">
+                <div className="relative mx-auto w-12 h-12">
+                  <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+                  <div className="relative w-12 h-12 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center">
+                    <Hotel className="w-6 h-6" strokeWidth={1.8} />
+                  </div>
+                </div>
+                <p className="font-display text-base font-semibold text-ink-900 mt-3">
                   No property yet
                 </p>
-                <p className="text-xs text-ink-500 mt-1 max-w-sm mx-auto">
+                <p className="text-sm text-ink-500 mt-1 max-w-sm mx-auto">
                   Add your property and rooms once — your assistant picks it all
                   up automatically from there.
                 </p>
                 <a
                   href="/dashboard/settings?tab=property"
-                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-brand-600 hover:text-brand-700"
+                  className="btn-primary inline-flex items-center gap-1.5 mt-4"
                 >
                   Add your property <ExternalLink className="w-3.5 h-3.5" />
                 </a>
@@ -439,7 +470,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                         {(property.amenities || []).map((a) => (
                           <span
                             key={a}
-                            className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-ink-50 border border-ink-100 text-ink-600"
+                            className="text-[11px] font-normal px-2 py-0.5 rounded-lg bg-white/70 ring-1 ring-ink-900/[0.06] text-ink-600"
                           >
                             {a}
                           </span>
@@ -474,7 +505,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                       {rooms.map((r) => (
                         <div
                           key={r._id}
-                          className="flex items-start justify-between gap-3 rounded-lg border border-ink-100 px-3 py-2"
+                          className="flex items-start justify-between gap-3 rounded-xl bg-white/60 ring-1 ring-ink-900/[0.06] px-3 py-2 transition-colors hover:bg-white/90"
                         >
                           <div className="min-w-0">
                             <p className="text-[13px] font-medium text-ink-900 truncate">
@@ -502,7 +533,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                             </p>
                           </div>
                           {r.baseRate > 0 && (
-                            <span className="text-[13px] font-semibold text-ink-900 shrink-0">
+                            <span className="text-[13px] font-semibold text-ink-900 shrink-0 tabular-nums">
                               {r.currency || property.currency} {r.baseRate}
                               <span className="text-[10px] font-medium text-ink-400">
                                 /night
@@ -538,7 +569,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                           {on.map((k) => (
                             <span
                               key={k}
-                              className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700"
+                              className="badge-green text-[11px] font-normal"
                             >
                               {labels[k]}
                             </span>
@@ -575,7 +606,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                           {bits.map((b) => (
                             <span
                               key={b}
-                              className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-ink-100 text-ink-600"
+                              className="badge-gray text-[11px] font-medium"
                             >
                               {b}
                             </span>
@@ -593,10 +624,10 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
 
                 <a
                   href="/dashboard/settings?tab=property"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700"
+                  className="group inline-flex items-center gap-1.5 text-xs font-semibold text-sunset-flame hover:text-sunset-magenta transition-colors"
                 >
                   Edit in Property &amp; Rooms
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </a>
               </div>
             )}
@@ -619,13 +650,13 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                   <button
                     key={v.id}
                     onClick={() => set({ brandVoice: on ? "" : v.text })}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-medium ring-1 transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-[0.96] ${
                       on
-                        ? "bg-brand-50 border-brand-300 text-brand-700"
-                        : "bg-white border-ink-200 text-ink-600 hover:border-brand-300"
+                        ? "bg-sunset-soft ring-sunset-flame/40 text-ink-900 shadow-[0_8px_20px_-12px_rgba(255,106,43,0.6)]"
+                        : "bg-white/70 ring-ink-900/[0.08] text-ink-600 hover:bg-white hover:ring-sunset-flame/30"
                     }`}
                   >
-                    {on && <Check className="w-3.5 h-3.5" />}
+                    {on && <Check className="w-3.5 h-3.5 text-sunset-flame" />}
                     {v.label}
                   </button>
                 );
@@ -671,10 +702,10 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           {/* Browse the template library */}
           <button
             onClick={() => setShowTemplates(true)}
-            className="w-full mb-3 rounded-xl border border-ink-100 bg-white p-3 flex items-center gap-3 text-left hover:border-brand-300 hover:bg-brand-50/30 transition group"
+            className="card-hover w-full mb-3 p-3 flex items-center gap-3 text-left group/tpl active:scale-[0.99]"
           >
-            <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4" />
+            <span className="w-9 h-9 rounded-xl bg-sunset-soft text-sunset-flame grid place-items-center shrink-0 transition-transform duration-500 ease-spring group-hover/tpl:-translate-y-0.5 group-hover/tpl:rotate-[-8deg]">
+              <Sparkles className="w-4 h-4" strokeWidth={1.8} />
             </span>
             <span className="min-w-0">
               <span className="block text-[13px] font-semibold text-ink-900">
@@ -685,15 +716,21 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                 fit your property.
               </span>
             </span>
-            <Plus className="w-4 h-4 text-brand-500 ml-auto shrink-0 group-hover:scale-110 transition" />
+            <Plus className="w-4 h-4 text-sunset-flame ml-auto shrink-0 transition-transform duration-500 ease-spring group-hover/tpl:scale-125 group-hover/tpl:rotate-90" />
           </button>
 
           {(cfg.faqs?.length || 0) > 0 && (
             <div className="space-y-2 mb-3">
+              <AnimatePresence initial={false}>
               {(cfg.faqs || []).map((f, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="rounded-xl border border-ink-100 p-3"
+                  layout
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.06] p-3 transition-colors hover:bg-white/90"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-[13px] font-semibold text-ink-900">
@@ -701,20 +738,21 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                     </p>
                     <button
                       onClick={() => removeFaq(i)}
-                      className="text-ink-300 hover:text-red-500 transition shrink-0"
+                      className="group/del -m-1.5 p-1.5 rounded-lg text-ink-300 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition-all duration-300 ease-spring shrink-0"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/del:rotate-[-12deg]" />
                     </button>
                   </div>
                   <p className="text-[13px] text-ink-500 mt-1 leading-relaxed">{f.answer}</p>
-                </div>
+                </motion.div>
               ))}
+              </AnimatePresence>
             </div>
           )}
 
-          <div className="rounded-xl border border-dashed border-ink-200 p-3 space-y-2.5">
+          <div className="rounded-2xl border border-dashed border-ink-900/[0.12] bg-white/40 p-3 space-y-2.5">
             <input
-              className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none"
+              className="input w-full"
               value={newFaq.question}
               onChange={(e) =>
                 setNewFaq((v) => ({ ...v, question: e.target.value }))
@@ -722,7 +760,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
               placeholder="Question — e.g. Do you offer cash on delivery?"
             />
             <textarea
-              className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none min-h-[60px]"
+              className="textarea w-full min-h-[60px]"
               value={newFaq.answer}
               onChange={(e) =>
                 setNewFaq((v) => ({ ...v, answer: e.target.value }))
@@ -731,9 +769,9 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
             />
             <button
               onClick={addFaq}
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-3 py-2 transition"
+              className="btn-secondary group/add inline-flex items-center gap-1.5 text-sm"
             >
-              <Plus className="w-4 h-4" /> Add FAQ
+              <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/add:rotate-90" /> Add FAQ
             </button>
           </div>
         </Section>
@@ -747,10 +785,16 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           subtitle="If a guest's message contains any of these words, your assistant stops replying and flags the conversation for your team."
         >
           <div className="flex flex-wrap gap-1.5 mb-3">
+            <AnimatePresence initial={false}>
             {(cfg.handoffKeywords || []).map((k, i) => (
-              <span
+              <motion.span
                 key={`${k}-${i}`}
-                className="inline-flex items-center gap-1.5 text-[13px] font-normal px-2.5 py-1 rounded-lg bg-ink-50 border border-ink-100 text-ink-700"
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 500, damping: 28 }}
+                className="inline-flex items-center gap-1.5 text-[13px] font-normal pl-2.5 pr-1.5 py-1 rounded-xl bg-white/80 ring-1 ring-ink-900/[0.07] text-ink-700 shadow-[inset_0_1px_0_#fff]"
               >
                 {k}
                 <button
@@ -761,13 +805,14 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                       ),
                     })
                   }
-                  className="text-ink-400 hover:text-rose-600 transition"
+                  className="p-0.5 rounded-md text-ink-400 hover:text-rose-600 hover:bg-rose-50 hover:rotate-90 active:scale-90 transition-all duration-300 ease-spring"
                   aria-label={`Remove ${k}`}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-              </span>
+              </motion.span>
             ))}
+            </AnimatePresence>
             {(cfg.handoffKeywords || []).length === 0 && (
               <p className="text-xs text-ink-400">
                 No keywords — your assistant will handle every message itself.
@@ -789,7 +834,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
               set({ handoffKeywords: [...(cfg.handoffKeywords || []), v] });
               e.target.value = "";
             }}
-            className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
+            className="input w-full"
           />
           <p className="text-[11px] text-ink-400 mt-1.5">
             Press Enter to add. Matching is case-insensitive.
@@ -801,9 +846,9 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         {tab === "test" && (
           <div className="space-y-6">
             <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
-            <div className="rounded-2xl border border-ink-100 bg-white p-4 flex items-start gap-2.5">
-              <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="card p-4 flex items-start gap-3">
+              <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 grid place-items-center shrink-0">
+                <ShieldCheck className="w-4 h-4" strokeWidth={1.8} />
               </span>
               <div className="text-[13px] text-ink-500 leading-relaxed">
                 <span className="font-semibold text-ink-900">How replies work: </span>
@@ -812,19 +857,26 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                 policies. It never makes up prices or policies you haven't
                 given it.
                 <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-400">
-                  <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-sunset-flame" />
                   Powered by Google Gemini
                 </div>
               </div>
             </div>
           </div>
         )}
+        </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ── Sticky save bar (stays inside the content column) ──── */}
-      <div className="sticky bottom-0 z-20 border-t border-ink-100 bg-white/90 backdrop-blur-xl">
+      <div className="sticky bottom-0 z-20 border-t border-white/70 bg-white/60 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_-1px_0_rgba(15,23,42,0.05),0_-12px_30px_-20px_rgba(15,23,42,0.18)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
-          <p className="text-xs text-ink-500 hidden sm:block">
+          <p className="text-xs text-ink-500 hidden sm:flex items-center gap-2">
+            {cfg.enabled ? (
+              <PulseDot color="bg-emerald-500" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-ink-300" />
+            )}
             {cfg.enabled
               ? "Bot is live — it replies automatically to new messages."
               : "Bot is paused — turn it on above when you're ready."}
@@ -845,14 +897,17 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         </div>
       </div>
 
-      {showTemplates && (
-        <TemplatesModal
-          isOn={isTemplateOn}
-          onToggle={toggleTemplate}
-          onAddCategory={addWholeCategory}
-          onClose={() => setShowTemplates(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showTemplates && (
+          <TemplatesModal
+            key="faq-templates"
+            isOn={isTemplateOn}
+            onToggle={toggleTemplate}
+            onAddCategory={addWholeCategory}
+            onClose={() => setShowTemplates(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -866,22 +921,27 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
     TEMPLATES_BY_CATEGORY[0];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink-950/50 backdrop-blur-sm"
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-night-950/40 backdrop-blur-md"
       onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div
-        className="w-full max-w-4xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      <motion.div
+        {...pop}
+        className="glass-strong w-full max-w-4xl max-h-[88vh] rounded-3xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-100">
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-ink-900/[0.06]">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4" />
+            <span className="w-9 h-9 rounded-xl bg-sunset text-white grid place-items-center shrink-0">
+              <Sparkles className="w-4 h-4" strokeWidth={1.8} />
             </span>
             <div className="min-w-0">
-              <h3 className="font-semibold text-ink-900 leading-snug">
+              <h3 className="font-display font-semibold tracking-[-0.02em] text-ink-900 leading-snug">
                 FAQ template library
               </h3>
               <p className="text-xs text-ink-500">
@@ -891,7 +951,8 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-400 shrink-0"
+            className="w-10 h-10 rounded-xl hover:bg-ink-900/[0.05] grid place-items-center text-ink-400 hover:text-ink-700 hover:rotate-90 active:scale-90 transition-all duration-300 ease-spring shrink-0"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -899,20 +960,27 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
 
         <div className="flex flex-1 min-h-0">
           {/* category rail */}
-          <div className="w-40 sm:w-52 shrink-0 border-r border-ink-100 overflow-y-auto py-2 bg-ink-50/40">
+          <div className="w-32 sm:w-52 shrink-0 border-r border-ink-900/[0.06] overflow-y-auto p-1.5 sm:p-2 bg-white/30 space-y-0.5">
             {TEMPLATES_BY_CATEGORY.map((c) => (
               <button
                 key={c.key}
                 onClick={() => setActiveCat(c.key)}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${
+                className={`relative isolate w-full text-left px-2.5 sm:px-3 py-2 rounded-xl text-[13px] sm:text-sm flex items-center gap-2 transition-colors ${
                   c.key === activeCat
-                    ? "bg-brand-50 text-brand-700 font-bold border-r-2 border-brand-500"
-                    : "text-ink-600 hover:bg-ink-100"
+                    ? "text-ink-900 font-semibold"
+                    : "text-ink-600 hover:bg-white/70"
                 }`}
               >
+                {c.key === activeCat && (
+                  <motion.span
+                    layoutId="faq-cat-pill"
+                    className="absolute inset-0 -z-10 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff] ring-1 ring-sunset-flame/20"
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  />
+                )}
                 <span>{c.emoji}</span>
                 <span className="truncate">{c.label}</span>
-                <span className="ml-auto text-[10px] text-ink-400">
+                <span className="ml-auto text-[10px] text-ink-400 tabular-nums">
                   {c.items.length}
                 </span>
               </button>
@@ -920,36 +988,42 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
           </div>
 
           {/* template list */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-ink-800">
+          <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <p className="text-sm font-semibold text-ink-800 min-w-0 truncate">
                 {cat.emoji} {cat.label}
               </p>
               <button
                 onClick={() => onAddCategory(cat.items)}
-                className="text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg px-2.5 py-1.5 transition"
+                className="btn-secondary shrink-0 text-xs px-2.5 py-1.5"
               >
                 Add all
               </button>
             </div>
-            <div className="space-y-2">
+            <motion.div
+              key={cat.key}
+              className="space-y-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
               {cat.items.map((tpl, i) => {
                 const on = isOn(tpl);
                 return (
                   <button
                     key={i}
                     onClick={() => onToggle(tpl)}
-                    className={`w-full text-left rounded-xl border p-3 transition flex items-start gap-3 ${
+                    className={`w-full text-left rounded-xl ring-1 p-3 flex items-start gap-3 transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-[0.99] ${
                       on
-                        ? "border-brand-300 bg-brand-50/60"
-                        : "border-ink-100 bg-white hover:border-ink-200"
+                        ? "ring-sunset-flame/35 bg-sunset-soft shadow-[0_10px_24px_-16px_rgba(255,106,43,0.6)]"
+                        : "ring-ink-900/[0.07] bg-white/70 hover:bg-white hover:ring-ink-900/[0.12]"
                     }`}
                   >
                     <span
-                      className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center shrink-0 border ${
+                      className={`mt-0.5 w-5 h-5 rounded-md grid place-items-center shrink-0 transition-all duration-300 ease-spring ${
                         on
-                          ? "bg-brand-500 border-brand-500 text-white"
-                          : "border-ink-300 text-transparent"
+                          ? "bg-sunset text-white scale-100"
+                          : "ring-1 ring-inset ring-ink-300 text-transparent scale-95"
                       }`}
                     >
                       <Check className="w-3.5 h-3.5" />
@@ -965,21 +1039,21 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
                   </button>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </div>
 
         {/* footer */}
-        <div className="px-5 py-3 border-t border-ink-100 flex items-center justify-between gap-3">
+        <div className="px-4 sm:px-5 py-3 border-t border-ink-900/[0.06] flex items-center justify-between gap-3">
           <p className="text-xs text-ink-500">
             Remember to <b>Save changes</b> after you've picked your FAQs.
           </p>
-          <button onClick={onClose} className="btn-primary px-4 py-2 text-sm">
+          <button onClick={onClose} className="btn-primary shrink-0 px-4 py-2 text-sm">
             Done
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -991,9 +1065,9 @@ function TemplatesModal({ isOn, onToggle, onAddCategory, onClose }) {
  */
 function KnowsCard({ icon: Icon, title, children }) {
   return (
-    <section className="border-t border-ink-100 pt-4 first:border-t-0 first:pt-0">
+    <section className="border-t border-ink-900/[0.06] pt-4 first:border-t-0 first:pt-0">
       <div className="flex items-center gap-2 mb-2.5">
-        <Icon className="w-3.5 h-3.5 text-ink-400 shrink-0" />
+        <Icon className="w-3.5 h-3.5 text-sunset-flame shrink-0" strokeWidth={1.8} />
         <h4 className="text-[11px] uppercase tracking-wider font-semibold text-ink-400">
           {title}
         </h4>
@@ -1036,10 +1110,8 @@ function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, dan
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm leading-relaxed outline-none transition focus:ring-2 ${
-          danger
-            ? "border-rose-200 focus:border-rose-400 focus:ring-rose-100"
-            : "border-ink-200 focus:border-brand-400 focus:ring-brand-100"
+        className={`textarea w-full leading-relaxed ${
+          danger ? "!border-rose-200 focus:!border-rose-400" : ""
         }`}
       />
     </div>
@@ -1098,14 +1170,14 @@ function Playground({ workspaceId, enabled }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-100">
-        <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-lg bg-ink-900 text-white flex items-center justify-center shrink-0">
-            <MessageSquare className="w-4 h-4" />
+    <div className="card overflow-hidden">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-900/[0.06]">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-9 h-9 rounded-xl bg-sunset text-white grid place-items-center shrink-0">
+            <MessageSquare className="w-4 h-4" strokeWidth={1.8} />
           </span>
-          <div>
-            <h2 className="font-semibold text-ink-900 text-[14px] leading-snug">
+          <div className="min-w-0">
+            <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-[15px] leading-snug">
               Test your bot
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
@@ -1117,7 +1189,7 @@ function Playground({ workspaceId, enabled }) {
         {msgs.length > 0 && (
           <button
             onClick={() => setMsgs([])}
-            className="text-xs font-semibold text-ink-400 hover:text-ink-700 transition"
+            className="btn-ghost shrink-0 text-xs px-2.5 py-1.5"
           >
             Clear
           </button>
@@ -1127,14 +1199,17 @@ function Playground({ workspaceId, enabled }) {
       {/* chat window */}
       <div
         ref={scrollRef}
-        className="h-72 overflow-y-auto px-4 py-4 bg-ink-50/40 space-y-2.5"
+        className="h-72 overflow-y-auto px-3 sm:px-4 py-4 bg-ink-900/[0.02] space-y-2.5"
       >
         {msgs.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center px-6">
-            <div className="w-12 h-12 rounded-2xl bg-white border border-ink-100 flex items-center justify-center mb-3">
-              <Bot className="w-6 h-6 text-brand-500" />
+            <div className="relative mb-3">
+              <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+              <div className="relative w-12 h-12 rounded-2xl bg-white ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] grid place-items-center animate-float">
+                <Bot className="w-6 h-6 text-sunset-flame" strokeWidth={1.8} />
+              </div>
             </div>
-            <p className="text-sm font-semibold text-ink-700">
+            <p className="font-display text-sm font-semibold text-ink-800">
               Say hi to your bot 👋
             </p>
             <p className="text-xs text-ink-400 mt-1 max-w-xs">
@@ -1144,17 +1219,21 @@ function Playground({ workspaceId, enabled }) {
           </div>
         )}
         {msgs.map((m, i) => (
-          <div
+          <motion.div
             key={i}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            style={{ originX: m.role === "user" ? 1 : 0 }}
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
                 m.role === "user"
-                  ? "bg-brand-500 text-white rounded-br-sm"
+                  ? "bg-sunset text-white rounded-br-md shadow-[0_8px_20px_-12px_rgba(255,61,119,0.6)]"
                   : m.error
-                    ? "bg-rose-50 text-rose-700 border border-rose-200 rounded-bl-sm"
-                    : "bg-white text-ink-800 border border-ink-100 rounded-bl-sm"
+                    ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200 rounded-bl-md"
+                    : "bg-white/90 text-ink-800 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] rounded-bl-md"
               }`}
             >
               {m.escalate && (
@@ -1164,11 +1243,11 @@ function Playground({ workspaceId, enabled }) {
               )}
               {m.content}
             </div>
-          </div>
+          </motion.div>
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-white border border-ink-100 rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-white/90 ring-1 ring-ink-900/[0.06] rounded-2xl rounded-bl-md px-4 py-3">
               <span className="flex gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-ink-300 animate-bounce" style={{ animationDelay: "0ms" }} />
                 <span className="w-1.5 h-1.5 rounded-full bg-ink-300 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -1180,20 +1259,21 @@ function Playground({ workspaceId, enabled }) {
       </div>
 
       {/* input */}
-      <div className="p-3 border-t border-ink-100 flex items-center gap-2">
+      <div className="p-3 border-t border-ink-900/[0.06] flex items-center gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
           placeholder="Type a test message…"
-          className="flex-1 rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          className="input flex-1 min-w-0"
         />
         <button
           onClick={send}
           disabled={sending || !input.trim()}
-          className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 disabled:opacity-40 transition shrink-0"
+          className="group w-10 h-10 rounded-xl bg-sunset text-white grid place-items-center shadow-[0_8px_20px_-10px_rgba(255,61,119,0.7)] hover:-translate-y-0.5 active:scale-90 disabled:opacity-40 disabled:hover:translate-y-0 transition-all duration-300 ease-spring shrink-0"
+          aria-label="Send"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </button>
       </div>
       {!enabled && (
@@ -1208,13 +1288,13 @@ function Playground({ workspaceId, enabled }) {
 
 function Section({ title, subtitle, icon: Icon, children }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-4 sm:p-5">
-      <div className="flex items-start gap-2.5 mb-4">
-        <span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4" />
+    <div className="card p-4 sm:p-5">
+      <div className="flex items-start gap-3 mb-4">
+        <span className="w-10 h-10 rounded-xl bg-sunset-soft text-sunset-flame grid place-items-center shrink-0">
+          <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
         </span>
         <div className="min-w-0">
-          <h2 className="font-semibold text-ink-900 text-[14px] leading-snug">
+          <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-[15px] leading-snug">
             {title}
           </h2>
           {subtitle && (
@@ -1259,13 +1339,19 @@ function AiBotHelp() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 rounded-lg bg-white/10 border border-white/15 px-2 py-0.5 text-[11px] font-semibold text-white/85 hover:bg-white/15 transition"
+        className="group/help inline-flex items-center gap-1 rounded-lg bg-white/70 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] px-2 py-0.5 text-[11px] font-semibold text-ink-600 hover:bg-white hover:text-ink-900 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 ease-spring"
         aria-label="Help"
+        aria-expanded={open}
       >
-        <HelpCircle className="w-3.5 h-3.5" /> Help
+        <HelpCircle className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/help:rotate-[-12deg]" /> Help
       </button>
+      <AnimatePresence>
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-72 sm:w-80 rounded-xl border border-ink-100 bg-white shadow-card-lg p-4 text-left">
+        <motion.div
+          {...pop}
+          style={{ originX: 0, originY: 0 }}
+          className="glass-strong absolute left-0 top-full z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-80 rounded-2xl p-4 text-left"
+        >
           <p className="text-[13px] font-semibold text-ink-900 mb-2">AI Assistant</p>
           <ul className="space-y-2">
             {tips.map((t, i) => (
@@ -1273,13 +1359,14 @@ function AiBotHelp() {
                 key={i}
                 className="flex items-start gap-2 text-[13px] text-ink-600 leading-snug"
               >
-                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-sunset shrink-0" />
                 <span>{t}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

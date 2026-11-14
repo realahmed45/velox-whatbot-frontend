@@ -21,6 +21,11 @@ import IntegrationsTabs from "./IntegrationsTabs";
 import StatHero from "@/components/ui/StatHero";
 import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, PulseDot, Reveal, Spotlight } from "@/components/fx";
+
+const actBtn =
+  "group/act flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-90";
 
 const EVENTS = [
   { key: "dm.received", label: "DM received" },
@@ -147,7 +152,7 @@ export default function IntegrationsPage() {
   return (
     <div>
       <IntegrationsTabs />
-      <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 pt-5 pb-10 max-w-7xl mx-auto">
         <StatHero
           icon={Plug}
           title="Webhooks"
@@ -161,19 +166,22 @@ export default function IntegrationsPage() {
               : undefined
           }
         >
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition"
-          >
-            <Plus className="w-4 h-4" /> New webhook
-          </button>
+          <Magnetic strength={0.25}>
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary group/nw text-sm px-3 sm:px-4 py-2"
+            >
+              <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/nw:rotate-90" />
+              New webhook
+            </button>
+          </Magnetic>
         </StatHero>
 
         {/* How it works strip */}
         {!loading && list.length > 0 && (
-          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-ink-100 bg-white px-4 py-3.5 shadow-sm">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-              <Zap className="h-4 w-4" />
+          <Reveal className="card mb-5 flex items-start gap-3 px-4 py-3.5">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sunset-soft text-sunset-flame">
+              <Zap className="h-4 w-4" strokeWidth={1.8} />
             </div>
             <p className="text-[13px] leading-relaxed text-ink-600">
               We POST a JSON payload to your URL whenever these events happen —
@@ -184,7 +192,7 @@ export default function IntegrationsPage() {
               own server. Every request is signed with your secret so you can
               verify it came from Botlify.
             </p>
-          </div>
+          </Reveal>
         )}
 
         {loading ? (
@@ -201,17 +209,24 @@ export default function IntegrationsPage() {
             action={
               <button
                 onClick={() => setShowModal(true)}
-                className="btn-primary gap-2"
+                className="btn-primary group/af gap-2"
               >
-                <Plus className="w-4 h-4" /> Add your first
+                <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/af:rotate-90" /> Add your first
               </button>
             }
           />
         ) : (
           <div className="grid gap-3">
-            {list.map((i) => (
-              <WebhookCard
+            <AnimatePresence initial={false}>
+            {list.map((i, idx) => (
+              <motion.div
                 key={i._id}
+                layout
+                initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { delay: Math.min(idx, 8) * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
+                exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.2 } }}
+              >
+              <WebhookCard
                 i={i}
                 copiedId={copiedId}
                 revealed={!!revealed[i._id]}
@@ -223,13 +238,17 @@ export default function IntegrationsPage() {
                 onToggle={() => toggle(i)}
                 onRemove={() => remove(i._id)}
               />
+              </motion.div>
             ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
 
+      <AnimatePresence>
       {showModal && (
         <CreateModal
+          key="create-webhook"
           form={form}
           setForm={setForm}
           saving={saving}
@@ -238,6 +257,7 @@ export default function IntegrationsPage() {
           onToggleEvent={toggleEvent}
         />
       )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -260,48 +280,46 @@ function WebhookCard({
   const urlCopyId = `url-${i._id}`;
 
   return (
-    <div className="group rounded-2xl border border-ink-100 bg-white p-5 shadow-sm transition-all hover:border-ink-200 hover:shadow-md">
-      <div className="flex items-start gap-4">
+    <Spotlight className="card group p-4 sm:p-5 transition-shadow duration-300 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.18),0_16px_36px_-18px_rgba(255,61,119,0.3)]">
+      <div className="flex items-start gap-3 sm:gap-4">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+          className={`hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
             i.enabled
-              ? "bg-brand-50 text-brand-600"
-              : "bg-ink-50 text-ink-400"
+              ? "bg-sunset-soft text-sunset-flame"
+              : "bg-ink-900/[0.05] text-ink-400"
           }`}
         >
-          <Plug className="h-5 w-5" />
+          <Plug className="h-5 w-5" strokeWidth={1.8} />
         </div>
 
         <div className="min-w-0 flex-1">
           {/* name + status */}
-          <div className="flex items-center gap-2">
-            <h3 className="truncate font-semibold text-ink-900">{i.name}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate font-display font-semibold tracking-[-0.01em] text-ink-900">{i.name}</h3>
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                i.enabled
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-ink-100 text-ink-500"
+              className={`inline-flex items-center gap-1.5 ${
+                i.enabled ? "badge-green" : "badge-gray"
               }`}
             >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  i.enabled ? "bg-emerald-500" : "bg-ink-400"
-                }`}
-              />
+              {i.enabled ? (
+                <PulseDot color="bg-emerald-500" className="!h-1.5 !w-1.5 [&>span]:!h-1.5 [&>span]:!w-1.5" />
+              ) : (
+                <span className="h-1.5 w-1.5 rounded-full bg-ink-400" />
+              )}
               {i.enabled ? "Active" : "Paused"}
             </span>
           </div>
 
           {/* URL pill */}
           <div className="mt-2.5 flex items-center gap-2">
-            <div className="flex min-w-0 items-center gap-2 rounded-lg border border-ink-100 bg-ink-50/70 px-2.5 py-1.5">
+            <div className="flex min-w-0 items-center gap-2 rounded-xl bg-white/60 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] px-2.5 py-1.5">
               <span className="truncate font-mono text-xs text-ink-600">
                 {i.url}
               </span>
               <button
                 onClick={() => onCopy(i.url, urlCopyId)}
                 title="Copy URL"
-                className="shrink-0 text-ink-400 transition hover:text-brand-600"
+                className="shrink-0 rounded-md p-0.5 text-ink-400 transition-all duration-300 ease-spring hover:text-sunset-flame hover:scale-110 active:scale-90"
               >
                 {copiedId === urlCopyId ? (
                   <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -318,7 +336,7 @@ function WebhookCard({
               <span
                 key={ev}
                 title={ev}
-                className="inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700"
+                className="badge-brand text-[11px] font-medium"
               >
                 {EVENT_LABELS[ev] || ev}
               </span>
@@ -331,7 +349,7 @@ function WebhookCard({
               <span className="text-[11px] font-medium uppercase tracking-wide text-ink-400">
                 Signing secret
               </span>
-              <code className="rounded-md bg-ink-50 px-2 py-1 font-mono text-xs text-ink-700">
+              <code className="rounded-lg bg-ink-900/[0.04] ring-1 ring-ink-900/[0.05] px-2 py-1 font-mono text-xs text-ink-700 break-all">
                 {revealed
                   ? i.secret
                   : `${i.secret.slice(0, 6)}${"•".repeat(12)}`}
@@ -339,7 +357,7 @@ function WebhookCard({
               <button
                 onClick={onToggleReveal}
                 title={revealed ? "Hide secret" : "Reveal secret"}
-                className="rounded-md p-1 text-ink-400 transition hover:bg-ink-50 hover:text-ink-700"
+                className="rounded-lg p-1.5 text-ink-400 transition-all duration-300 ease-spring hover:bg-white hover:text-ink-700 active:scale-90"
               >
                 {revealed ? (
                   <EyeOff className="h-3.5 w-3.5" />
@@ -350,7 +368,7 @@ function WebhookCard({
               <button
                 onClick={() => onCopy(i.secret, secretCopyId)}
                 title="Copy secret"
-                className="rounded-md p-1 text-ink-400 transition hover:bg-ink-50 hover:text-brand-600"
+                className="rounded-lg p-1.5 text-ink-400 transition-all duration-300 ease-spring hover:bg-white hover:text-sunset-flame active:scale-90"
               >
                 {copiedId === secretCopyId ? (
                   <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -363,35 +381,35 @@ function WebhookCard({
         </div>
 
         {/* actions */}
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 flex-col sm:flex-row items-center gap-0.5 sm:gap-1">
           <button
             onClick={onTest}
             title="Send test event"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-brand-600 transition hover:bg-brand-50"
+            className={`${actBtn} text-sunset-flame hover:bg-sunset-soft`}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
           </button>
           <button
             onClick={onToggle}
             title={i.enabled ? "Pause webhook" : "Resume webhook"}
-            className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
+            className={`${actBtn} ${
               i.enabled
-                ? "text-ink-500 hover:bg-ink-100 hover:text-ink-700"
+                ? "text-ink-500 hover:bg-ink-900/[0.05] hover:text-ink-700"
                 : "text-emerald-600 hover:bg-emerald-50"
             }`}
           >
-            <Power className="h-4 w-4" />
+            <Power className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/act:rotate-[20deg]" />
           </button>
           <button
             onClick={onRemove}
             title="Delete webhook"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition hover:bg-red-50 hover:text-red-600"
+            className={`${actBtn} text-ink-400 hover:bg-rose-50 hover:text-rose-600`}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/act:rotate-[-12deg]" />
           </button>
         </div>
       </div>
-    </div>
+    </Spotlight>
   );
 }
 
@@ -401,25 +419,25 @@ function WebhookCard({
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+    <div className="card p-4 sm:p-5">
       <div className="flex items-start gap-4">
-        <div className="h-11 w-11 shrink-0 animate-pulse rounded-xl bg-ink-100" />
+        <div className="hidden sm:block h-11 w-11 shrink-0 animate-pulse rounded-xl bg-ink-900/[0.06]" />
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="h-4 w-40 animate-pulse rounded bg-ink-100" />
-            <div className="h-4 w-16 animate-pulse rounded-full bg-ink-100" />
+            <div className="h-4 w-40 animate-pulse rounded bg-ink-900/[0.06]" />
+            <div className="h-4 w-16 animate-pulse rounded-full bg-ink-900/[0.06]" />
           </div>
-          <div className="h-7 w-72 max-w-full animate-pulse rounded-lg bg-ink-100" />
+          <div className="h-7 w-72 max-w-full animate-pulse rounded-lg bg-ink-900/[0.06]" />
           <div className="flex gap-1.5">
-            <div className="h-5 w-24 animate-pulse rounded-md bg-ink-100" />
-            <div className="h-5 w-20 animate-pulse rounded-md bg-ink-100" />
-            <div className="h-5 w-28 animate-pulse rounded-md bg-ink-100" />
+            <div className="h-5 w-24 animate-pulse rounded-md bg-ink-900/[0.06]" />
+            <div className="h-5 w-20 animate-pulse rounded-md bg-ink-900/[0.06]" />
+            <div className="h-5 w-28 animate-pulse rounded-md bg-ink-900/[0.06]" />
           </div>
         </div>
-        <div className="flex gap-1">
-          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-100" />
-          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-100" />
-          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-100" />
+        <div className="hidden sm:flex gap-1">
+          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-900/[0.06]" />
+          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-900/[0.06]" />
+          <div className="h-9 w-9 animate-pulse rounded-lg bg-ink-900/[0.06]" />
         </div>
       </div>
     </div>
@@ -448,22 +466,30 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
   }, [onClose]);
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 p-4 backdrop-blur-sm"
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-night-950/40 p-3 sm:p-4 backdrop-blur-md"
       onMouseDown={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div
-        className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      <motion.div
+        className="glass-strong flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl"
         onMouseDown={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 12, scale: 0.96, filter: "blur(4px)" }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: 8, scale: 0.97, filter: "blur(4px)" }}
+        transition={{ type: "spring", stiffness: 420, damping: 30 }}
       >
         {/* sticky header */}
-        <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-              <Plug className="h-5 w-5" />
+        <div className="flex items-start justify-between gap-4 border-b border-ink-900/[0.06] px-4 sm:px-6 py-5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.7)]">
+              <Plug className="h-5 w-5" strokeWidth={1.8} />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-ink-900">
+            <div className="min-w-0">
+              <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
                 New webhook integration
               </h2>
               <p className="text-xs text-ink-500">
@@ -473,16 +499,17 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-400 transition-all duration-300 ease-spring hover:bg-ink-900/[0.05] hover:text-ink-700 hover:rotate-90 active:scale-90"
+            aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* scrollable body */}
-        <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+        <div className="flex-1 space-y-5 overflow-y-auto px-4 sm:px-6 py-5">
           {/* helper */}
-          <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3">
+          <div className="rounded-xl bg-sunset-soft ring-1 ring-sunset-flame/15 px-4 py-3">
             <p className="text-[13px] leading-relaxed text-ink-700">
               We POST a JSON payload to your URL whenever these events happen —
               use it with{" "}
@@ -521,22 +548,22 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
                 return (
                   <label
                     key={e.key}
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 transition ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl ring-1 px-3.5 py-2.5 transition-all duration-300 ease-spring active:scale-[0.99] ${
                       checked
-                        ? "border-brand-200 bg-brand-50/50"
-                        : "border-ink-100 bg-white hover:border-ink-200 hover:bg-ink-50/50"
+                        ? "ring-sunset-flame/30 bg-sunset-soft"
+                        : "ring-ink-900/[0.07] bg-white/70 hover:bg-white hover:ring-ink-900/[0.12]"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => onToggleEvent(e.key)}
-                      className="h-4 w-4 rounded border-ink-300 text-brand-500 focus:ring-2 focus:ring-brand-100"
+                      className="h-4 w-4 rounded border-ink-300 accent-[#FF6A2B] text-sunset-flame focus:ring-2 focus:ring-sunset-flame/20"
                     />
-                    <span className="flex-1 text-sm font-medium text-ink-800">
+                    <span className="flex-1 min-w-0 text-sm font-medium text-ink-800">
                       {e.label}
                     </span>
-                    <code className="font-mono text-[10px] text-ink-400">
+                    <code className="hidden sm:inline font-mono text-[10px] text-ink-400">
                       {e.key}
                     </code>
                   </label>
@@ -546,29 +573,41 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
           </div>
 
           {/* payload example */}
-          <div className="overflow-hidden rounded-xl border border-ink-100">
+          <div className="overflow-hidden rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07]">
             <button
               type="button"
               onClick={() => setShowPayload((s) => !s)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-semibold text-ink-700 transition hover:bg-ink-50"
+              aria-expanded={showPayload}
+              className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-semibold text-ink-700 transition-colors hover:bg-white"
             >
               <span>Example payload you'll receive</span>
               <ChevronDown
-                className={`h-4 w-4 text-ink-400 transition-transform ${
+                className={`h-4 w-4 text-ink-400 transition-transform duration-500 ease-spring ${
                   showPayload ? "rotate-180" : ""
                 }`}
               />
             </button>
+            <AnimatePresence initial={false}>
             {showPayload && (
-              <pre className="overflow-x-auto border-t border-ink-100 bg-ink-900 px-4 py-3.5 font-mono text-[11px] leading-relaxed text-ink-100">
-                {PAYLOAD_EXAMPLE}
-              </pre>
+              <motion.div
+                key="payload"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 420, damping: 36 }}
+                className="overflow-hidden"
+              >
+                <pre className="overflow-x-auto border-t border-ink-900/[0.06] bg-night-900 px-4 py-3.5 font-mono text-[11px] leading-relaxed text-white/80">
+                  {PAYLOAD_EXAMPLE}
+                </pre>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* sticky footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-ink-100 px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-ink-900/[0.06] px-4 sm:px-6 py-4">
           <button onClick={onClose} className="btn btn-secondary">
             Cancel
           </button>
@@ -586,8 +625,8 @@ function CreateModal({ form, setForm, saving, onClose, onSave, onToggleEvent }) 
             )}
           </button>
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body,
   );
 }

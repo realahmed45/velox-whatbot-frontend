@@ -5,7 +5,9 @@ import {
   useNavigate,
   Link,
 } from "react-router-dom";
-import { Mail, Loader } from "lucide-react";
+import { motion } from "framer-motion";
+import { Mail, Loader, RotateCw } from "lucide-react";
+import { Reveal } from "@/components/fx";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
@@ -108,26 +110,44 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="text-center">
-      <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        {submitting ? (
-          <Loader className="w-8 h-8 text-brand-600 animate-spin" />
-        ) : (
-          <Mail className="w-8 h-8 text-brand-600" />
-        )}
-      </div>
-      <h2 className="text-2xl font-bold text-ink-900 mb-2">Verify your email</h2>
-      <p className="text-ink-500 text-sm mb-6">
-        We sent a 4-digit code to{" "}
-        <strong className="text-ink-700">{email}</strong>.
-      </p>
+    <div className="card-dark p-6 sm:p-8 text-center">
+      <Reveal>
+        <div className="relative w-16 h-16 mx-auto mb-5">
+          <div
+            aria-hidden
+            className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl"
+          />
+          <motion.div
+            animate={submitting ? { scale: [1, 1.06, 1] } : { y: [0, -4, 0] }}
+            transition={{
+              duration: submitting ? 1 : 3.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="relative w-16 h-16 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_36px_-12px_rgba(255,61,119,0.8)]"
+          >
+            {submitting ? (
+              <Loader className="w-7 h-7 animate-spin" />
+            ) : (
+              <Mail className="w-7 h-7" strokeWidth={1.8} />
+            )}
+          </motion.div>
+        </div>
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-2">
+          Verify your <span className="font-serif italic font-normal">email</span>
+        </h2>
+        <p className="text-white/60 text-sm mb-7">
+          We sent a 4-digit code to{" "}
+          <strong className="text-white font-semibold break-all">{email}</strong>.
+        </p>
+      </Reveal>
 
       <div
-        className="flex justify-center gap-3 mb-6"
+        className="flex justify-center gap-2.5 sm:gap-3 mb-7"
         onPaste={handlePaste}
       >
         {digits.map((d, i) => (
-          <input
+          <motion.input
             key={i}
             ref={(el) => (inputsRef.current[i] = el)}
             inputMode="numeric"
@@ -136,23 +156,46 @@ export default function VerifyEmailPage() {
             disabled={submitting}
             onChange={(e) => setDigit(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
-            className="w-14 h-16 text-center text-2xl font-bold rounded-xl border border-ink-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition disabled:opacity-50"
+            initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              scale: d ? [1, 1.08, 1] : 1,
+            }}
+            transition={{
+              delay: 0.08 + i * 0.06,
+              type: "spring",
+              stiffness: 420,
+              damping: 26,
+            }}
+            className={`w-14 h-16 text-center text-2xl font-bold font-display tabular-nums text-white rounded-xl outline-none transition-[box-shadow,background-color] duration-300 disabled:opacity-50 focus:ring-2 focus:ring-sunset-flame/70 focus:bg-white/[0.1] focus:shadow-[0_0_0_5px_rgba(255,106,43,0.14),0_10px_28px_-12px_rgba(255,61,119,0.7)] ${
+              d
+                ? "bg-white/[0.1] ring-1 ring-sunset-gold/50"
+                : "bg-white/[0.06] ring-1 ring-white/10 hover:ring-white/20"
+            }`}
           />
         ))}
       </div>
 
-      <p className="text-xs text-ink-400">
+      <p className="text-xs text-white/45">
         Didn't get it?{" "}
         <button
           type="button"
           onClick={resend}
           disabled={resendIn > 0}
-          className="text-brand-600 font-semibold hover:underline disabled:text-ink-400 disabled:no-underline"
+          className="inline-flex items-center gap-1 text-sunset-gold font-semibold hover:underline underline-offset-4 disabled:text-white/40 disabled:no-underline tabular-nums"
         >
+          <RotateCw
+            className={`w-3 h-3 ${resendIn > 0 ? "" : "transition-transform duration-500 ease-spring hover:rotate-180"}`}
+          />
           {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
         </button>
         {" · "}
-        <Link to="/login" className="text-brand-600 hover:underline">
+        <Link
+          to="/login"
+          className="text-white/70 hover:text-white hover:underline underline-offset-4"
+        >
           Back to login
         </Link>
       </p>

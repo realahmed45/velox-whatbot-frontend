@@ -33,6 +33,15 @@ import FlowHelpPanel from "./components/FlowHelpPanel";
 import StarterGallery from "./components/StarterGallery";
 import { NODE_TYPES_MAP, NODE_LABELS, nodeCategory } from "./nodeTypes";
 import EmptyState from "@/components/ui/EmptyState";
+import { AnimatePresence, motion } from "framer-motion";
+
+// Sunset edge colour (flame stop) — solid so smoothstep segments that are
+// perfectly vertical/horizontal never lose their stroke.
+const EDGE = "#FF6A2B";
+const toolBtn =
+  "btn-secondary group/tb text-xs gap-1 px-2.5 sm:px-3 py-1.5 shrink-0";
+const toolIcon =
+  "w-3.5 h-3.5 transition-transform duration-500 ease-spring";
 
 let nodeIdCounter = 1;
 const getId = () => `node_${Date.now()}_${nodeIdCounter++}`;
@@ -123,8 +132,8 @@ function FlowBuilderInner() {
           ...params,
           type: "smoothstep",
           animated: true,
-          style: { stroke: "#ff5722", strokeWidth: 2.5 },
-          markerEnd: { type: MarkerType.ArrowClosed, color: "#ff5722" },
+          style: { stroke: EDGE, strokeWidth: 2.5 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: EDGE },
         },
         eds,
       ),
@@ -135,8 +144,8 @@ function FlowBuilderInner() {
   const defaultEdgeOptions = {
     type: "smoothstep",
     animated: true,
-    style: { stroke: "#ff5722", strokeWidth: 2.5 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#ff5722" },
+    style: { stroke: EDGE, strokeWidth: 2.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: EDGE },
   };
 
   const onNodeClick = useCallback((_, node) => setSelectedNode(node), []);
@@ -312,7 +321,7 @@ function FlowBuilderInner() {
   );
 
   return (
-    <div className="flex h-full">
+    <div className="relative flex h-full">
       <FlowListSidebar
         flows={flows}
         currentFlowId={currentFlow?._id}
@@ -323,52 +332,59 @@ function FlowBuilderInner() {
       <div className="flex-1 flex flex-col relative" ref={reactFlowWrapper}>
         {currentFlow ? (
           <>
-            <div className="h-12 bg-white/80 backdrop-blur-xl border-b border-ink-100 flex items-center justify-between px-4 gap-3 z-10">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="min-h-[3rem] py-1.5 bg-white/55 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/70 shadow-[0_1px_0_rgba(15,23,42,0.05)] flex flex-wrap items-center justify-between px-2 sm:px-4 gap-x-3 gap-y-1.5 z-10">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                 <button
                   onClick={() => navigate("/dashboard/automation")}
-                  className="btn-ghost p-1.5 flex-shrink-0"
+                  className="btn-ghost group/back p-1.5 flex-shrink-0"
+                  aria-label="Back"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/back:-translate-x-0.5" />
                 </button>
                 <input
                   value={flowName}
                   onChange={(e) => setFlowName(e.target.value)}
-                  className="font-semibold text-ink-800 text-sm bg-transparent border-0 focus:ring-0 focus:outline-none focus:bg-ink-50 rounded px-1.5 py-0.5 min-w-0 max-w-[220px]"
+                  className="font-display font-semibold tracking-[-0.01em] text-ink-900 text-sm bg-transparent border-0 rounded-lg px-2 py-1 min-w-0 w-full max-w-[220px] ring-1 ring-transparent hover:bg-white/60 focus:ring-sunset-flame/40 focus:bg-white focus:outline-none focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12)] transition-all"
                   placeholder="Flow name"
                 />
                 <span
-                  className={`badge flex-shrink-0 ${currentFlow.status === "active" ? "badge-green" : "badge-gray"}`}
+                  className={`badge flex-shrink-0 inline-flex items-center gap-1.5 ${currentFlow.status === "active" ? "badge-green" : "badge-gray"}`}
                 >
+                  {currentFlow.status === "active" && (
+                    <span className="relative inline-flex h-1.5 w-1.5">
+                      <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping-soft" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    </span>
+                  )}
                   {currentFlow.status}
                 </span>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 max-w-full overflow-x-auto no-scrollbar">
                 <button
                   onClick={() => setShowStarters(true)}
-                  className="btn-secondary text-xs gap-1"
+                  className={toolBtn}
                   title="Start from a ready-made template"
                 >
-                  <Sparkles className="w-3 h-3" />
-                  Templates
+                  <Sparkles className={`${toolIcon} group-hover/tb:rotate-[-12deg] group-hover/tb:scale-110`} />
+                  <span className="hidden lg:inline">Templates</span>
                 </button>
                 <button
                   onClick={() => {
                     setShowHelp((v) => !v);
                     setSelectedNode(null);
                   }}
-                  className="btn-secondary text-xs gap-1"
+                  className={`${toolBtn} ${showHelp ? "!ring-sunset-flame/40 !text-ink-900" : ""}`}
                   title="How to build a flow"
                 >
-                  <HelpCircle className="w-3 h-3" />
-                  Help
+                  <HelpCircle className={`${toolIcon} group-hover/tb:rotate-[-12deg]`} />
+                  <span className="hidden lg:inline">Help</span>
                 </button>
                 <button
                   onClick={() => setShowPalette(!showPalette)}
-                  className="btn-secondary text-xs gap-1"
+                  className={toolBtn}
                 >
-                  <Plus className="w-3 h-3" />
-                  {showPalette ? "Hide nodes" : "Add Node"}
+                  <Plus className={`${toolIcon} ${showPalette ? "rotate-45" : ""} group-hover/tb:scale-110`} />
+                  <span className="hidden sm:inline">{showPalette ? "Hide nodes" : "Add Node"}</span>
                 </button>
                 <button
                   onClick={toggleActive}
@@ -378,41 +394,54 @@ function FlowBuilderInner() {
                       ? "Add a trigger node before activating"
                       : undefined
                   }
-                  className={`btn text-xs gap-1 disabled:opacity-50 ${currentFlow.status === "active" ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100" : "btn-secondary"}`}
+                  className={`btn group/tb text-xs gap-1 px-2.5 sm:px-3 py-1.5 shrink-0 disabled:opacity-50 ${currentFlow.status === "active" ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100 hover:-translate-y-0.5" : "btn-secondary"}`}
                 >
                   {currentFlow.status === "active" ? (
                     <>
-                      <Pause className="w-3 h-3" /> Deactivate
+                      <Pause className={`${toolIcon} group-hover/tb:scale-110`} /> Deactivate
                     </>
                   ) : (
                     <>
-                      <Play className="w-3 h-3" /> Activate
+                      <Play className={`${toolIcon} group-hover/tb:translate-x-0.5 group-hover/tb:scale-110`} /> Activate
                     </>
                   )}
                 </button>
                 <button
                   onClick={saveFlow}
-                  className="btn-primary text-xs gap-1"
+                  className="btn-primary group/tb text-xs gap-1 px-3 py-1.5 shrink-0"
                   disabled={saving}
                 >
-                  <Save className="w-3 h-3" />
+                  <Save className={`${toolIcon} group-hover/tb:-translate-y-0.5`} />
                   {saving ? "Saving…" : "Save"}
                 </button>
               </div>
             </div>
 
+            <AnimatePresence initial={false}>
             {!hasTrigger && (
-              <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-800 flex items-center gap-2">
-                <Workflow className="w-3.5 h-3.5 flex-shrink-0" />
-                Add a <b>Trigger</b> node (Add Node → Triggers) so this flow knows
-                when to run.
-              </div>
+              <motion.div
+                key="no-trigger"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 420, damping: 36 }}
+                className="overflow-hidden"
+              >
+                <div className="px-4 py-2 bg-amber-50/80 backdrop-blur border-b border-amber-200/60 text-xs text-amber-800 flex items-center gap-2">
+                  <Workflow className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>
+                    Add a <b>Trigger</b> node (Add Node → Triggers) so this flow knows
+                    when to run.
+                  </span>
+                </div>
+              </motion.div>
             )}
+            </AnimatePresence>
 
             {/* Palette is a real sidebar (NOT a ReactFlow Panel) — a Panel sits
                 on top of the canvas and swallows the drop, which is why
                 drag-and-drop used to do nothing. */}
-            <div className="flex-1 min-h-0 flex">
+            <div className="relative flex-1 min-h-0 flex">
               {showPalette && (
                 <NodePalette
                   onClose={() => setShowPalette(false)}
@@ -435,37 +464,55 @@ function FlowBuilderInner() {
                   onPaneClick={onPaneClick}
                   nodeTypes={NODE_TYPES_MAP}
                   defaultEdgeOptions={defaultEdgeOptions}
-                  connectionLineStyle={{ stroke: "#ff5722", strokeWidth: 2.5 }}
+                  connectionLineStyle={{ stroke: EDGE, strokeWidth: 2.5 }}
                   fitView
                   fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
                   proOptions={{ hideAttribution: true }}
-                  className="bg-white"
+                  className="!bg-[#F7F5F2]/60"
                 >
                   <Background
-                    color="#e2e8f0"
+                    color="#d9d3cc"
                     gap={22}
                     size={1.5}
                     variant="dots"
                   />
                   <Controls
                     showInteractive={false}
-                    className="!shadow-lg !border !border-ink-100 !rounded-xl overflow-hidden"
+                    className="!bg-white/70 !backdrop-blur-xl !border !border-white/80 !rounded-xl overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
                   />
                   <MiniMap
                     pannable
                     zoomable
-                    className="!rounded-xl !border !border-ink-100"
-                    nodeColor="#ff7d3e"
-                    maskColor="rgba(15,23,42,0.05)"
+                    className="!hidden sm:!block !bg-white/70 !backdrop-blur-xl !rounded-2xl !border !border-white/80 overflow-hidden !shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_10px_24px_-12px_rgba(15,23,42,0.25)]"
+                    nodeColor="#FF6A2B"
+                    maskColor="rgba(247,245,242,0.6)"
                   />
                 </ReactFlow>
 
                 {/* First-run hint when the canvas has only the trigger */}
+                <AnimatePresence>
                 {nodes.length <= 1 && (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="pointer-events-auto text-center max-w-xs rounded-2xl bg-white/95 backdrop-blur border border-ink-100 shadow-lg p-5">
-                      <Workflow className="w-8 h-8 text-brand-500 mx-auto mb-2" />
-                      <p className="font-bold text-ink-900 text-sm">
+                  <motion.div
+                    key="first-run"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center p-4"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, y: 12, scale: 0.96, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: 8, scale: 0.97, filter: "blur(4px)" }}
+                      transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                      className="glass-strong pointer-events-auto text-center max-w-xs rounded-3xl p-5"
+                    >
+                      <div className="relative mx-auto w-12 h-12 mb-3">
+                        <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-25 blur-2xl" />
+                        <div className="relative w-12 h-12 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center animate-float">
+                          <Workflow className="w-6 h-6" strokeWidth={1.8} />
+                        </div>
+                      </div>
+                      <p className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-[15px]">
                         Add your first step
                       </p>
                       <p className="text-xs text-ink-500 mt-1 leading-relaxed">
@@ -474,18 +521,19 @@ function FlowBuilderInner() {
                       </p>
                       <button
                         onClick={() => setShowStarters(true)}
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 transition"
+                        className="btn-primary group/tpl mt-4 text-xs px-3 py-1.5"
                       >
-                        <Sparkles className="w-3.5 h-3.5" /> Or use a template
+                        <Sparkles className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/tpl:rotate-[-12deg]" /> Or use a template
                       </button>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
             <EmptyState
               className="max-w-lg w-full"
               icon={Workflow}
@@ -495,13 +543,13 @@ function FlowBuilderInner() {
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                   <button
                     onClick={() => setShowStarters(true)}
-                    className="btn-primary gap-2"
+                    className="btn-primary group/b gap-2"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/b:rotate-[-12deg]" />
                     Browse templates
                   </button>
-                  <button onClick={createNewFlow} className="btn-secondary gap-2">
-                    <Plus className="w-4 h-4" />
+                  <button onClick={createNewFlow} className="btn-secondary group/n gap-2">
+                    <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/n:rotate-90" />
                     Blank flow
                   </button>
                 </div>

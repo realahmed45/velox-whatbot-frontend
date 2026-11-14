@@ -42,7 +42,7 @@ function PageAvatar({ page }) {
     );
   }
   return (
-    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 font-black flex items-center justify-center flex-shrink-0">
+    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 font-display font-semibold tracking-[-0.02em] flex items-center justify-center flex-shrink-0">
       {initial}
     </div>
   );
@@ -145,7 +145,7 @@ export default function FacebookPagePicker({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink-950/50 p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-night-950/40 backdrop-blur-md p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="fb-pick-title"
@@ -154,14 +154,14 @@ export default function FacebookPagePicker({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl outline-none max-h-[90vh] flex flex-col"
+        className="glass-strong w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 outline-none max-h-[90vh] flex flex-col animate-pop-in"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
             <MessengerMark className="w-6 h-6" />
           </div>
           <div>
-            <h2 id="fb-pick-title" className="text-lg font-black text-ink-900">
+            <h2 id="fb-pick-title" className="text-lg font-display font-semibold tracking-[-0.02em] text-ink-900">
               Choose your Facebook Page
             </h2>
             <p className="text-sm text-ink-500">
@@ -172,7 +172,7 @@ export default function FacebookPagePicker({
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+            <Loader2 className="w-7 h-7 text-sunset-flame animate-spin" />
           </div>
         ) : loadError ? (
           <div className="py-6 text-center">
@@ -184,7 +184,7 @@ export default function FacebookPagePicker({
             <button
               type="button"
               onClick={fetchPages}
-              className="mt-5 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
+              className="btn-primary mt-5 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5"
             >
               <RefreshCw className="w-4 h-4" />
               Try again
@@ -192,7 +192,7 @@ export default function FacebookPagePicker({
             <button
               type="button"
               onClick={() => onCancel?.()}
-              className="mt-2 w-full border border-ink-200 text-ink-700 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50"
+              className="btn-secondary mt-2 w-full text-sm px-4 py-2.5"
             >
               Cancel
             </button>
@@ -207,7 +207,7 @@ export default function FacebookPagePicker({
             <button
               type="button"
               onClick={() => onCancel?.()}
-              className="mt-5 w-full border border-ink-200 text-ink-700 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50"
+              className="btn-secondary mt-5 w-full text-sm px-4 py-2.5"
             >
               Close
             </button>
@@ -248,8 +248,8 @@ export default function FacebookPagePicker({
                     }}
                     className={`w-full flex items-center gap-3 rounded-xl border p-3 text-left transition ${
                       active
-                        ? "border-brand-500 bg-brand-500/5 ring-1 ring-brand-500"
-                        : "border-ink-100 hover:border-ink-200 hover:bg-ink-50"
+                        ? "border-sunset-flame bg-sunset-soft ring-1 ring-sunset-flame"
+                        : "border-ink-900/[0.07] hover:border-ink-200 hover:bg-ink-50"
                     }`}
                   >
                     <PageAvatar page={page} />
@@ -261,7 +261,7 @@ export default function FacebookPagePicker({
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border ${
                         active
-                          ? "bg-brand-500 border-brand-500 text-white"
+                          ? "bg-sunset border-sunset-flame text-white"
                           : "border-ink-200"
                       }`}
                     >
@@ -276,7 +276,7 @@ export default function FacebookPagePicker({
               type="button"
               onClick={submit}
               disabled={!selected || saving}
-              className="mt-5 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition disabled:opacity-60"
+              className="btn-primary mt-5 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5 disabled:opacity-60"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               Connect this Page
@@ -285,7 +285,7 @@ export default function FacebookPagePicker({
               type="button"
               onClick={() => onCancel?.()}
               disabled={saving}
-              className="mt-2 w-full border border-ink-200 text-ink-700 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50 disabled:opacity-60"
+              className="btn-secondary mt-2 w-full text-sm px-4 py-2.5 disabled:opacity-60"
             >
               Cancel
             </button>

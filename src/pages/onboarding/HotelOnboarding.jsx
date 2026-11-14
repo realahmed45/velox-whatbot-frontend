@@ -29,10 +29,13 @@
  * WhatsApp screen — screens are addressed by id, not index, so adding screens
  * never breaks that.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
+  ArrowRight,
   Building2,
   Castle,
   Check,
@@ -47,10 +50,18 @@ import {
   Palmtree,
   PenLine,
   Plus,
+  Sparkles,
   Trash2,
   Users,
 } from "lucide-react";
 import api from "@/services/api";
+import {
+  Magnetic,
+  PulseDot,
+  Reveal,
+  Spotlight,
+  Tilt,
+} from "@/components/fx";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import OtaLogo from "@/components/OtaLogo";
@@ -529,10 +540,28 @@ export default function HotelOnboarding() {
     }
   }, [s, roomsOk, importChoices]);
 
+  // Which way the flow is moving — screens slide in from the right going
+  // forward and from the left going back.
+  const lastIdx = useRef(idx);
+  const dir = idx >= lastIdx.current ? 1 : -1;
+  useEffect(() => {
+    lastIdx.current = idx;
+  }, [idx]);
+
   if (!ready) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      <div className="max-w-2xl mx-auto px-5 sm:px-6 pt-10 sm:pt-16" aria-busy="true">
+        <div className="h-4 w-24 rounded-lg bg-white/[0.06] animate-pulse" />
+        <div className="mt-4 h-10 w-4/5 rounded-xl bg-white/[0.07] animate-pulse" />
+        <div className="mt-3 h-5 w-3/5 rounded-lg bg-white/[0.05] animate-pulse" />
+        <div className="mt-10 grid sm:grid-cols-2 gap-3">
+          <div className="h-32 rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06] animate-pulse" />
+          <div className="h-32 rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06] animate-pulse" />
+        </div>
+        <span className="sr-only">
+          <Loader2 className="w-7 h-7 animate-spin" />
+          Loading
+        </span>
       </div>
     );
   }
@@ -560,8 +589,17 @@ export default function HotelOnboarding() {
   const wide = s.screen === "template";
 
   return (
-    <div className="pb-36">
-      <div className={`${wide ? "max-w-6xl" : "max-w-2xl"} mx-auto px-5 sm:px-6 pt-10 sm:pt-16`}>
+    <div className="pb-40 text-white overflow-x-hidden">
+      <div className={`${wide ? "max-w-6xl" : "max-w-2xl"} mx-auto px-4 sm:px-6 pt-8 sm:pt-16 transition-[max-width] duration-500`}>
+        <AnimatePresence mode="wait" initial={false} custom={dir}>
+          <motion.div
+            key={screen.id}
+            custom={dir}
+            variants={SLIDE}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
         {screen.id === "welcome" && <Welcome />}
         {screen.intro && <PhaseIntro phase={screen.phase} />}
 
@@ -576,14 +614,14 @@ export default function HotelOnboarding() {
                 onClick={() => set({ path: "import" })}
                 title="Yes — import my listing"
                 body="The fastest way. Takes about a minute."
-                icon={<CloudDownload className="w-6 h-6 text-ink-800" />}
+                icon={<CloudDownload className="w-6 h-6" strokeWidth={1.8} />}
               />
               <Choice
                 active={s.path === "manual"}
                 onClick={() => set({ path: "manual", otas: {} })}
                 title="No, I'll set it up"
                 body="A few quick questions about your place."
-                icon={<PenLine className="w-6 h-6 text-ink-800" />}
+                icon={<PenLine className="w-6 h-6" strokeWidth={1.8} />}
               />
             </div>
           </Question>
@@ -598,53 +636,65 @@ export default function HotelOnboarding() {
               <OtaPicker otas={s.otas} onChange={(otas) => set({ otas })} />
             ) : (
               <div>
-                <p className="font-bold text-ink-900">Which of these is yours?</p>
-                <p className="text-sm text-ink-500 mt-1">
+                <p className="font-display font-semibold text-white">Which of these is yours?</p>
+                <p className="text-sm text-white/55 mt-1">
                   We couldn't match that ID automatically — pick your property and we'll bring it across.
                 </p>
                 <div className="mt-4 space-y-2">
-                  {importChoices.map((c) => (
-                    <button
+                  {importChoices.map((c, i) => (
+                    <motion.button
                       key={c.providerPropertyId}
                       type="button"
                       disabled={busy}
                       onClick={() => doImport(c.providerPropertyId)}
-                      className="w-full text-left rounded-2xl border-2 border-ink-200 hover:border-ink-900 p-4 transition disabled:opacity-60"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05, ...SPRING }}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full text-left card-dark p-4 transition-shadow duration-500 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,106,43,0.45),0_18px_40px_-18px_rgba(255,61,119,0.55)] disabled:opacity-60"
                     >
-                      <p className="font-bold text-ink-900">{c.name}</p>
-                      <p className="text-sm text-ink-500">
+                      <p className="font-semibold text-white">{c.name}</p>
+                      <p className="text-sm text-white/55">
                         {[c.city, c.country].filter(Boolean).join(", ")}
                         {c.rooms !== undefined ? ` · ${c.rooms} room types` : ""}
                       </p>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-                <button type="button" onClick={() => setImportChoices(null)} className="mt-4 text-sm font-bold underline text-ink-600">
+                <button type="button" onClick={() => setImportChoices(null)} className="mt-4 min-h-[40px] text-sm font-semibold underline underline-offset-4 text-white/70 hover:text-white">
                   Try a different ID
                 </button>
               </div>
             )}
-            {importError && (
-              <div className="mt-5 rounded-2xl bg-amber-50 border-2 border-amber-200 p-4">
-                <p className="font-bold text-ink-900">We couldn't import it automatically</p>
-                <p className="text-sm text-ink-600 mt-1">
-                  {importError} We've noted where you're listed and will connect those channels for you —
-                  meanwhile, set up your place in two minutes.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImportError("");
-                    setImportChoices(null);
-                    set({ path: "manual" });
-                    go("type");
-                  }}
-                  className="mt-3 inline-flex items-center gap-2 bg-ink-900 text-white font-bold rounded-xl px-4 py-2.5 text-sm"
+            <AnimatePresence>
+              {importError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                  className="mt-5 rounded-2xl bg-amber-400/10 ring-1 ring-amber-300/25 backdrop-blur-xl p-4"
                 >
-                  Set it up manually
-                </button>
-              </div>
-            )}
+                  <p className="font-semibold text-amber-100">We couldn't import it automatically</p>
+                  <p className="text-sm text-white/65 mt-1">
+                    {importError} We've noted where you're listed and will connect those channels for you —
+                    meanwhile, set up your place in two minutes.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportError("");
+                      setImportChoices(null);
+                      set({ path: "manual" });
+                      go("type");
+                    }}
+                    className="btn-glass-dark mt-3 text-sm"
+                  >
+                    Set it up manually
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Question>
         )}
 
@@ -653,31 +703,31 @@ export default function HotelOnboarding() {
             title="Here's what we found"
             sub="Check it over — change anything that's not right, or just continue."
           >
-            <div className="rounded-2xl border-2 border-ink-200 divide-y-2 divide-ink-200 overflow-hidden">
+            <div className={FIELD_GROUP}>
               <Field label="Name">
-                <input value={s.name} onChange={(e) => set({ name: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent font-bold" maxLength={80} />
+                <input value={s.name} onChange={(e) => set({ name: e.target.value })} className={`${FIELD_INPUT} font-semibold`} maxLength={80} />
               </Field>
               <Field label="Type">
-                <select value={s.type || "hotel"} onChange={(e) => set({ type: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent">
-                  {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                <select value={s.type || "hotel"} onChange={(e) => set({ type: e.target.value })} className={FIELD_INPUT}>
+                  {TYPES.map((t) => <option key={t.value} value={t.value} className="text-ink-900">{t.label}</option>)}
                 </select>
               </Field>
               <Field label="Street address">
-                <input value={s.address} onChange={(e) => set({ address: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+                <input value={s.address} onChange={(e) => set({ address: e.target.value })} className={FIELD_INPUT} />
               </Field>
-              <div className="grid grid-cols-2 divide-x-2 divide-ink-200">
+              <div className="grid grid-cols-2 divide-x divide-white/[0.08]">
                 <Field label="City">
-                  <input value={s.city} onChange={(e) => set({ city: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+                  <input value={s.city} onChange={(e) => set({ city: e.target.value })} className={FIELD_INPUT} />
                 </Field>
                 <Field label="Country">
-                  <input value={s.country} onChange={(e) => set({ country: e.target.value })} className="w-full outline-none text-ink-900 bg-transparent" />
+                  <input value={s.country} onChange={(e) => set({ country: e.target.value })} className={FIELD_INPUT} />
                 </Field>
               </div>
             </div>
-            <p className="mt-8 mb-3 font-bold text-ink-900">Rooms &amp; nightly prices</p>
+            <p className="mt-8 mb-3 font-display font-semibold text-white">Rooms &amp; nightly prices</p>
             <RoomsEditor s={s} set={set} />
             {!roomsOk && (
-              <p className="mt-3 text-sm font-semibold text-amber-700">
+              <p className="mt-3 text-sm font-medium text-amber-200">
                 Add a nightly price for every room — your AI quotes these to guests.
               </p>
             )}
@@ -686,22 +736,34 @@ export default function HotelOnboarding() {
 
         {screen.id === "type" && (
           <Question title="Which of these best describes your place?">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {TYPES.map(({ value, label, Icon }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => set({ type: value })}
-                  className={`text-left rounded-2xl border-2 p-4 h-28 flex flex-col justify-between transition ${
-                    s.type === value
-                      ? "border-ink-900 bg-ink-50"
-                      : "border-ink-200 hover:border-ink-400"
-                  }`}
-                >
-                  <Icon className="w-7 h-7 text-ink-800" />
-                  <span className="font-bold text-ink-900">{label}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
+              {TYPES.map(({ value, label, Icon }, i) => {
+                const active = s.type === value;
+                return (
+                  <motion.button
+                    key={value}
+                    type="button"
+                    onClick={() => set({ type: value })}
+                    initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{ delay: 0.05 + i * 0.04, ...SPRING }}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.96 }}
+                    aria-pressed={active}
+                    className={`group relative text-left rounded-2xl p-4 h-28 flex flex-col justify-between ${choiceCls(active)}`}
+                  >
+                    <span
+                      className={`h-10 w-10 rounded-xl grid place-items-center transition-[transform,background-color,color] duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                        active ? "bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.8)]" : "bg-white/[0.07] text-white/80"
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" strokeWidth={1.8} />
+                    </span>
+                    <span className="font-semibold text-white">{label}</span>
+                    <SelectedTick show={active} />
+                  </motion.button>
+                );
+              })}
             </div>
           </Question>
         )}
@@ -717,7 +779,7 @@ export default function HotelOnboarding() {
               onChange={(e) => set({ name: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && canNext && onNext()}
               placeholder="e.g. Sunset Beach Resort"
-              className="w-full text-2xl font-bold border-2 border-ink-200 focus:border-ink-900 rounded-2xl px-5 py-4 outline-none transition"
+              className="w-full font-display text-xl sm:text-2xl font-semibold tracking-[-0.02em] text-white placeholder:text-white/25 bg-white/[0.05] ring-1 ring-white/10 hover:ring-white/20 focus:ring-2 focus:ring-sunset-flame/60 focus:bg-white/[0.08] focus:shadow-[0_0_0_6px_rgba(255,106,43,0.1),0_16px_40px_-18px_rgba(255,61,119,0.6)] rounded-2xl px-5 py-4 outline-none transition-[box-shadow,background-color] duration-300 backdrop-blur-xl"
               maxLength={80}
             />
           </Question>
@@ -728,13 +790,13 @@ export default function HotelOnboarding() {
             title="Where's your place located?"
             sub="Shown on your website map, and shared with guests once they've booked."
           >
-            <div className="rounded-2xl border-2 border-ink-200 divide-y-2 divide-ink-200 overflow-hidden">
+            <div className={FIELD_GROUP}>
               <Field label="Street address (optional)">
                 <input
                   value={s.address}
                   onChange={(e) => set({ address: e.target.value })}
                   placeholder="Jl. Kayu Aya No. 12"
-                  className="w-full outline-none text-ink-900 bg-transparent"
+                  className={FIELD_INPUT}
                 />
               </Field>
               <Field label="City">
@@ -743,7 +805,7 @@ export default function HotelOnboarding() {
                   value={s.city}
                   onChange={(e) => set({ city: e.target.value })}
                   placeholder="Seminyak"
-                  className="w-full outline-none text-ink-900 bg-transparent"
+                  className={FIELD_INPUT}
                 />
               </Field>
               <Field label="Country">
@@ -751,7 +813,7 @@ export default function HotelOnboarding() {
                   value={s.country}
                   onChange={(e) => set({ country: e.target.value })}
                   placeholder="Indonesia"
-                  className="w-full outline-none text-ink-900 bg-transparent"
+                  className={FIELD_INPUT}
                 />
               </Field>
             </div>
@@ -786,28 +848,38 @@ export default function HotelOnboarding() {
                 body="We find one for you. Nothing to set up."
               />
             </div>
-            {s.ownTaxi === true && (
-              <div className="mt-4 rounded-2xl border-2 border-ink-200 divide-y-2 divide-ink-200 overflow-hidden">
-                <Field label="Driver's name">
-                  <input
-                    autoFocus
-                    value={s.driver.name}
-                    onChange={(e) => set({ driver: { ...s.driver, name: e.target.value } })}
-                    placeholder="Wayan"
-                    className="w-full outline-none text-ink-900 bg-transparent"
-                  />
-                </Field>
-                <Field label="Driver's WhatsApp number">
-                  <input
-                    type="tel"
-                    value={s.driver.phone}
-                    onChange={(e) => set({ driver: { ...s.driver, phone: e.target.value } })}
-                    placeholder="+62 812 3456 7890"
-                    className="w-full outline-none text-ink-900 bg-transparent"
-                  />
-                </Field>
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {s.ownTaxi === true && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, height: "auto", filter: "blur(0px)" }}
+                  exit={{ opacity: 0, height: 0, filter: "blur(4px)" }}
+                  transition={SPRING}
+                  className="overflow-hidden"
+                >
+                  <div className={`mt-4 ${FIELD_GROUP}`}>
+                    <Field label="Driver's name">
+                      <input
+                        autoFocus
+                        value={s.driver.name}
+                        onChange={(e) => set({ driver: { ...s.driver, name: e.target.value } })}
+                        placeholder="Wayan"
+                        className={FIELD_INPUT}
+                      />
+                    </Field>
+                    <Field label="Driver's WhatsApp number">
+                      <input
+                        type="tel"
+                        value={s.driver.phone}
+                        onChange={(e) => set({ driver: { ...s.driver, phone: e.target.value } })}
+                        placeholder="+62 812 3456 7890"
+                        className={FIELD_INPUT}
+                      />
+                    </Field>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Question>
         )}
 
@@ -816,11 +888,18 @@ export default function HotelOnboarding() {
             title="Choose your website design"
             sub="Your hotel gets its own website, free. Every design below is already filled with your details — tap Preview to click through all five pages on desktop or phone."
           >
-            {choosing && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700">
-                <Loader2 className="h-4 w-4 animate-spin" /> Building your website…
-              </div>
-            )}
+            <AnimatePresence>
+              {choosing && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="mb-4 flex items-center gap-2 rounded-xl bg-white/[0.06] ring-1 ring-white/10 backdrop-blur-xl px-4 py-3 text-sm font-medium text-white/80"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin text-sunset-gold" /> Building your website…
+                </motion.div>
+              )}
+            </AnimatePresence>
             <TemplateGallery
               site={previewSite}
               currentId={s.templateId}
@@ -835,7 +914,7 @@ export default function HotelOnboarding() {
             title="Which WhatsApp number should guests message?"
             sub="Every 'Book on WhatsApp' button on your website opens a chat with this number."
           >
-            <div className="rounded-2xl border-2 border-ink-200 overflow-hidden">
+            <div className={FIELD_GROUP}>
               <Field label="WhatsApp number, with country code">
                 <input
                   autoFocus
@@ -844,11 +923,11 @@ export default function HotelOnboarding() {
                   onChange={(e) => set({ whatsapp: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && canNext && onNext()}
                   placeholder="+62 812 3456 7890"
-                  className="w-full outline-none text-ink-900 bg-transparent text-xl font-bold"
+                  className={`${FIELD_INPUT} text-xl font-semibold font-display tabular-nums`}
                 />
               </Field>
             </div>
-            <p className="text-xs text-ink-400 mt-3">
+            <p className="text-xs text-white/45 mt-3">
               A local number like 0812… works too — we add your country code.
             </p>
           </Question>
@@ -859,7 +938,10 @@ export default function HotelOnboarding() {
             title="Add photos of your place"
             sub="Upload photos or paste links. Short on time? Skip — we'll use beautiful stock photos for now, and you can swap them any time in Manage your website."
           >
-            <GalleryManager photos={s.photos || []} onChange={(photos) => set({ photos })} max={24} />
+            {/* The gallery manager is a light surface — give it a bright glass sheet. */}
+            <div className="glass-strong rounded-3xl p-3 sm:p-5 text-ink-900">
+              <GalleryManager photos={s.photos || []} onChange={(photos) => set({ photos })} max={24} />
+            </div>
           </Question>
         )}
 
@@ -873,31 +955,41 @@ export default function HotelOnboarding() {
             sub="Where most guests message you. It replies 24/7, in any language, and books rooms for you."
           >
             {waConnected ? (
-              <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                  <Check className="w-5 h-5" />
+              <motion.div
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={SPRING}
+                className="rounded-2xl bg-emerald-400/10 ring-1 ring-emerald-300/30 backdrop-blur-xl p-5 flex items-center gap-3"
+              >
+                <span className="relative w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                  <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-30" />
+                  <Check className="relative w-5 h-5" />
                 </span>
                 <div>
-                  <p className="font-bold text-ink-900">WhatsApp is connected</p>
-                  <p className="text-sm text-ink-600">Your AI is answering guests there now.</p>
+                  <p className="font-semibold text-white">WhatsApp is connected</p>
+                  <p className="text-sm text-white/60">Your AI is answering guests there now.</p>
                 </div>
-              </div>
+              </motion.div>
             ) : (
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setWaOpen(true)}
-                className="w-full rounded-2xl border-2 border-ink-200 hover:border-ink-900 p-5 flex items-center gap-4 text-left transition"
+                whileHover={{ y: -3 }}
+                whileTap={{ scale: 0.98 }}
+                transition={SPRING}
+                className="group w-full card-dark p-5 flex items-center gap-4 text-left transition-shadow duration-500 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.45),0_20px_50px_-20px_rgba(16,185,129,0.5)]"
               >
-                <span className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                <span className="w-12 h-12 rounded-xl bg-emerald-400/15 ring-1 ring-emerald-300/25 flex items-center justify-center text-2xl shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
                   💬
                 </span>
-                <div className="flex-1">
-                  <p className="font-bold text-ink-900 text-[17px]">Connect WhatsApp</p>
-                  <p className="text-sm text-ink-500">About a minute. You keep your number.</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-semibold text-white text-[17px]">Connect WhatsApp</p>
+                  <p className="text-sm text-white/55">About a minute. You keep your number.</p>
                 </div>
-              </button>
+                <ArrowRight className="w-5 h-5 text-white/40 shrink-0 transition-all duration-500 ease-spring group-hover:translate-x-1 group-hover:text-emerald-300" />
+              </motion.button>
             )}
-            <p className="text-xs text-ink-400 mt-4">
+            <p className="text-xs text-white/45 mt-4">
               Instagram, Messenger and Telegram can be added any time in Settings.
             </p>
           </Question>
@@ -905,23 +997,34 @@ export default function HotelOnboarding() {
 
         {screen.id === "done" && (
           <div className="text-center pt-6">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto">
-              <Check className="w-9 h-9" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-ink-900 mt-6">
-              {s.name || "Your hotel"} is ready
+            <motion.div
+              initial={{ scale: 0.3, rotate: -25, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 380, damping: 14, delay: 0.1 }}
+              className="relative w-16 h-16 mx-auto"
+            >
+              <div aria-hidden className="absolute -inset-5 rounded-full bg-sunset opacity-35 blur-2xl" />
+              <div className="relative w-16 h-16 rounded-2xl bg-sunset text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_16px_40px_-12px_rgba(255,61,119,0.8)]">
+                <Check className="w-9 h-9" />
+              </div>
+            </motion.div>
+            <h1 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] text-white mt-7 leading-[1.05] break-words">
+              {s.name || "Your hotel"} is{" "}
+              <span className="font-serif italic font-normal text-sunset pr-1">ready</span>
             </h1>
-            <p className="text-lg text-ink-500 mt-3 max-w-md mx-auto">
+            <p className="text-base sm:text-lg text-white/60 mt-4 max-w-md mx-auto">
               Your calendar and website are live, and your AI knows your rooms and prices.
               Everything else can be fine-tuned in Settings.
             </p>
-            <div className="mt-8 grid sm:grid-cols-3 gap-3 text-left">
-              <Summary label="Rooms" value={`${s.rooms.reduce((n, r) => n + (Number(r.units) || 0), 0)} across ${s.rooms.length} type${s.rooms.length === 1 ? "" : "s"}`} />
+            <div className="mt-9 grid sm:grid-cols-3 gap-3 text-left">
+              <Summary i={0} label="Rooms" value={`${s.rooms.reduce((n, r) => n + (Number(r.units) || 0), 0)} across ${s.rooms.length} type${s.rooms.length === 1 ? "" : "s"}`} />
               <Summary
+                i={1}
                 label="Website"
                 value={s.siteSlug ? `${SITE_HOST}/${s.siteSlug}` : "Not set up yet"}
               />
               <Summary
+                i={2}
                 label="Booking channels"
                 value={
                   Object.keys(s.otas).length
@@ -932,32 +1035,42 @@ export default function HotelOnboarding() {
             </div>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ── Fixed footer: progress, Back, Next ──────────────────────── */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-ink-100 z-30">
+      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-night-950/70 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
         <ProgressBar screenIndex={idx} />
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between gap-3">
           {idx > 0 && s.screen !== "done" ? (
             <button
               type="button"
               onClick={back}
-              className="font-bold text-ink-900 underline underline-offset-4 hover:text-ink-600"
+              className="group inline-flex items-center gap-1.5 min-h-[44px] px-2 -ml-2 rounded-xl font-semibold text-white/75 hover:text-white transition-colors"
             >
+              <ArrowLeft className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-1" />
               Back
             </button>
           ) : (
             <span />
           )}
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!canNext || busy}
-            className="inline-flex items-center gap-2 bg-ink-900 hover:bg-black text-white font-bold rounded-xl px-7 py-3.5 transition disabled:bg-ink-200 disabled:text-ink-400"
-          >
-            {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-            {nextLabel}
-          </button>
+          <Magnetic strength={0.15}>
+            <motion.button
+              type="button"
+              onClick={onNext}
+              disabled={!canNext || busy}
+              whileTap={!canNext || busy ? undefined : { scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 500, damping: 20 }}
+              className="btn-primary group h-12 px-5 sm:px-7 text-[15px] max-w-[64vw] sm:max-w-none disabled:opacity-40 disabled:saturate-50"
+            >
+              {busy && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
+              <span className="truncate">{nextLabel}</span>
+              {!busy && (
+                <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+              )}
+            </motion.button>
+          </Magnetic>
         </div>
       </footer>
 
@@ -977,6 +1090,58 @@ export default function HotelOnboarding() {
   );
 }
 
+/* ── Motion + style tokens ───────────────────────────────────────────── */
+
+const SPRING = { type: "spring", stiffness: 380, damping: 30 };
+
+// Screen transition: slide + blur, direction-aware.
+const SLIDE = {
+  enter: (d) => ({ opacity: 0, x: d * 48, filter: "blur(10px)" }),
+  center: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 260, damping: 30, mass: 0.9 },
+  },
+  exit: (d) => ({
+    opacity: 0,
+    x: d * -48,
+    filter: "blur(10px)",
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+  }),
+};
+
+const FIELD_GROUP =
+  "rounded-2xl overflow-hidden divide-y divide-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,255,255,0.09)]";
+const FIELD_INPUT =
+  "w-full outline-none text-white placeholder:text-white/30 bg-transparent";
+
+/** Choice-card surface: lifts on hover, glows with a sunset edge when picked. */
+const choiceCls = (active) =>
+  `backdrop-blur-xl transition-[background-color,box-shadow] duration-500 ${
+    active
+      ? "bg-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1.5px_rgba(255,106,43,0.75),0_20px_44px_-18px_rgba(255,61,119,0.65)]"
+      : "bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,255,255,0.09)] hover:bg-white/[0.07] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_0_1px_rgba(255,255,255,0.18)]"
+  }`;
+
+function SelectedTick({ show }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.span
+          initial={{ scale: 0, rotate: -45 }}
+          animate={{ scale: 1, rotate: 0 }}
+          exit={{ scale: 0, rotate: 45 }}
+          transition={{ type: "spring", stiffness: 520, damping: 18 }}
+          className="absolute top-3 right-3 h-6 w-6 rounded-full bg-sunset grid place-items-center shadow-[0_6px_16px_-6px_rgba(255,61,119,0.9)]"
+        >
+          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+        </motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /* ── Pieces ──────────────────────────────────────────────────────────── */
 
 function Welcome() {
@@ -987,18 +1152,28 @@ function Welcome() {
   ];
   return (
     <div>
-      <h1 className="text-4xl sm:text-5xl font-black text-ink-900 leading-tight">
-        It's easy to get started on Botlify
-      </h1>
-      <div className="mt-10 divide-y divide-ink-100">
+      <Reveal>
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] ring-1 ring-white/10 backdrop-blur text-xs font-semibold text-white/75">
+          <Sparkles className="w-3.5 h-3.5 text-sunset-gold" /> About 5 minutes
+        </span>
+        <h1 className="mt-5 font-display text-[40px] sm:text-6xl font-semibold tracking-[-0.045em] text-white leading-[0.98]">
+          It's easy to get started on{" "}
+          <span className="font-serif italic font-normal text-sunset pr-1">Botlify</span>
+        </h1>
+      </Reveal>
+      <div className="mt-10 space-y-3">
         {steps.map(([title, body], i) => (
-          <div key={title} className="flex gap-5 py-6">
-            <span className="text-2xl font-black text-ink-900 w-6">{i + 1}</span>
-            <div>
-              <p className="text-xl font-bold text-ink-900">{title}</p>
-              <p className="text-ink-500 mt-1">{body}</p>
+          <Reveal key={title} delay={0.1 + i * 0.08}>
+            <div className="group card-dark flex gap-4 sm:gap-5 p-4 sm:p-5 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+              <span className="h-10 w-10 shrink-0 rounded-xl grid place-items-center bg-sunset-soft ring-1 ring-white/10 font-display text-lg font-semibold text-sunset-gold tabular-nums transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="font-display text-lg sm:text-xl font-semibold tracking-[-0.02em] text-white">{title}</p>
+                <p className="text-white/55 mt-1 text-[15px]">{body}</p>
+              </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -1020,15 +1195,29 @@ const PHASES = {
   },
 };
 
+const PHASE_ICONS = { 1: Hotel, 2: Sparkles, 3: Globe };
+
 function PhaseIntro({ phase }) {
   const p = PHASES[phase];
+  const Icon = PHASE_ICONS[phase] || Sparkles;
   return (
-    <div className="pt-6">
-      <p className="text-sm font-bold text-ink-500">Step {phase}</p>
-      <h1 className="text-4xl sm:text-5xl font-black text-ink-900 mt-2 leading-tight">
+    <div className="pt-4 sm:pt-6">
+      <motion.div
+        initial={{ scale: 0.5, rotate: -20, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 16, delay: 0.08 }}
+        className="relative h-14 w-14 mb-6"
+      >
+        <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-30 blur-2xl" />
+        <div className="relative h-14 w-14 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_36px_-12px_rgba(255,61,119,0.8)]">
+          <Icon className="w-7 h-7" strokeWidth={1.8} />
+        </div>
+      </motion.div>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sunset-gold">Step {phase}</p>
+      <h1 className="font-display text-4xl sm:text-6xl font-semibold tracking-[-0.045em] text-white mt-3 leading-[0.98]">
         {p.title}
       </h1>
-      <p className="text-lg text-ink-500 mt-5 leading-relaxed">{p.body}</p>
+      <p className="text-base sm:text-lg text-white/60 mt-5 leading-relaxed">{p.body}</p>
     </div>
   );
 }
@@ -1036,10 +1225,10 @@ function PhaseIntro({ phase }) {
 function Question({ title, sub, children }) {
   return (
     <div>
-      <h1 className="text-3xl sm:text-[34px] font-black text-ink-900 leading-tight">
+      <h1 className="font-display text-[28px] sm:text-[38px] font-semibold tracking-[-0.035em] text-white leading-[1.08]">
         {title}
       </h1>
-      {sub && <p className="text-ink-500 mt-2 text-[17px]">{sub}</p>}
+      {sub && <p className="text-white/60 mt-3 text-[15px] sm:text-[17px]">{sub}</p>}
       <div className="mt-8">{children}</div>
     </div>
   );
@@ -1047,8 +1236,8 @@ function Question({ title, sub, children }) {
 
 function Field({ label, children }) {
   return (
-    <label className="block px-4 py-3 bg-white">
-      <span className="block text-xs text-ink-500">{label}</span>
+    <label className="block px-4 py-3 transition-colors duration-300 hover:bg-white/[0.03] focus-within:bg-white/[0.06] focus-within:shadow-[inset_2px_0_0_#FF6A2B]">
+      <span className="block text-xs text-white/50">{label}</span>
       <div className="mt-0.5 text-[17px]">{children}</div>
     </label>
   );
@@ -1056,17 +1245,28 @@ function Field({ label, children }) {
 
 function Choice({ active, onClick, title, body, icon }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
-      className={`text-left rounded-2xl border-2 p-5 transition ${
-        active ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
-      }`}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.97 }}
+      transition={SPRING}
+      aria-pressed={active}
+      className={`group relative text-left rounded-2xl p-5 ${choiceCls(active)}`}
     >
-      {icon && <span className="block mb-3">{icon}</span>}
-      <p className="font-bold text-ink-900 text-[17px]">{title}</p>
-      <p className="text-sm text-ink-500 mt-1">{body}</p>
-    </button>
+      {icon && (
+        <span
+          className={`mb-4 h-11 w-11 rounded-xl grid place-items-center transition-[transform,background-color,color] duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+            active ? "bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.8)]" : "bg-white/[0.07] text-white/80"
+          }`}
+        >
+          {icon}
+        </span>
+      )}
+      <p className="font-display font-semibold text-white text-[17px] pr-7">{title}</p>
+      <p className="text-sm text-white/55 mt-1">{body}</p>
+      <SelectedTick show={active} />
+    </motion.button>
   );
 }
 
@@ -1074,14 +1274,16 @@ function Choice({ active, onClick, title, body, icon }) {
 function OtaPicker({ otas, onChange }) {
   return (
     <div className="space-y-3">
-      {LIVE_OTA_CHANNELS.map((c) => {
+      {LIVE_OTA_CHANNELS.map((c, i) => {
         const on = c.key in otas;
         return (
-          <div
+          <motion.div
             key={c.key}
-            className={`rounded-2xl border-2 transition ${
-              on ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
-            }`}
+            layout
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(i * 0.04, 0.3), ...SPRING }}
+            className={`rounded-2xl overflow-hidden ${choiceCls(on)}`}
           >
             <button
               type="button"
@@ -1091,31 +1293,43 @@ function OtaPicker({ otas, onChange }) {
                 else nextOtas[c.key] = "";
                 onChange(nextOtas);
               }}
-              className="w-full flex items-center gap-3.5 p-4 text-left"
+              className="group w-full flex items-center gap-3.5 p-4 text-left active:scale-[0.99] transition-transform"
             >
-              <OtaLogo channelKey={c.key} name={c.name} size={36} />
-              <span className="flex-1 font-bold text-ink-900 text-[17px]">{c.name}</span>
+              <span className="rounded-xl bg-white p-1 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-6deg]">
+                <OtaLogo channelKey={c.key} name={c.name} size={32} />
+              </span>
+              <span className="flex-1 min-w-0 font-semibold text-white text-[17px] truncate">{c.name}</span>
               <span
-                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${
-                  on ? "bg-ink-900 border-ink-900" : "border-ink-300"
+                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 ease-spring ${
+                  on ? "bg-sunset scale-110 shadow-[0_6px_16px_-6px_rgba(255,61,119,0.9)]" : "ring-1 ring-white/25"
                 }`}
               >
-                {on && <Check className="w-4 h-4 text-white" />}
+                {on && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
               </span>
             </button>
-            {on && (
-              <div className="px-4 pb-4">
-                <input
-                  autoFocus
-                  value={otas[c.key]}
-                  onChange={(e) => onChange({ ...otas, [c.key]: e.target.value })}
-                  placeholder={`Your ${c.name} property ID`}
-                  className="w-full border-2 border-ink-200 focus:border-ink-900 rounded-xl px-3.5 py-2.5 outline-none bg-white"
-                />
-                <p className="text-xs text-ink-500 mt-1.5">{ID_HINT[c.key]}</p>
-              </div>
-            )}
-          </div>
+            <AnimatePresence initial={false}>
+              {on && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={SPRING}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-4">
+                    <input
+                      autoFocus
+                      value={otas[c.key]}
+                      onChange={(e) => onChange({ ...otas, [c.key]: e.target.value })}
+                      placeholder={`Your ${c.name} property ID`}
+                      className="w-full rounded-xl px-3.5 py-2.5 text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none font-mono transition-[box-shadow,background-color] duration-300 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60"
+                    />
+                    <p className="text-xs text-white/45 mt-1.5">{ID_HINT[c.key]}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         );
       })}
     </div>
@@ -1127,76 +1341,86 @@ function RoomsEditor({ s, set }) {
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold text-ink-600">Prices in</span>
+        <span className="text-sm font-medium text-white/60">Prices in</span>
         <select
           value={s.currency}
           onChange={(e) => set({ currency: e.target.value })}
-          className="border-2 border-ink-200 rounded-xl px-3 py-1.5 text-sm font-bold outline-none focus:border-ink-900"
+          className="rounded-xl px-3 py-1.5 text-sm font-semibold text-white bg-white/[0.06] ring-1 ring-white/10 outline-none focus:ring-2 focus:ring-sunset-flame/60 transition"
         >
           {[...new Set([s.currency, ...CURRENCIES])].map((c) => (
-            <option key={c}>{c}</option>
+            <option key={c} className="text-ink-900">{c}</option>
           ))}
         </select>
       </div>
 
       <div className="space-y-3">
-        {s.rooms.map((r, i) => {
-          const update = (fields) =>
-            set({
-              rooms: s.rooms.map((x, j) => (j === i ? { ...x, ...fields } : x)),
-            });
-          return (
-            <div key={i} className="rounded-2xl border-2 border-ink-200 p-4">
-              <div className="flex items-center gap-2">
-                <input
-                  value={r.name}
-                  onChange={(e) => update({ name: e.target.value })}
-                  placeholder="Room name, e.g. Deluxe Double"
-                  className="flex-1 font-bold text-ink-900 outline-none text-[17px] bg-transparent"
-                />
-                {s.rooms.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => set({ rooms: s.rooms.filter((_, j) => j !== i) })}
-                    className="p-1.5 text-ink-400 hover:text-rose-600"
-                    aria-label="Remove room"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              <div className="mt-3 pt-3 border-t border-ink-100 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-ink-600">How many</span>
-                  <Stepper value={r.units} onChange={(units) => update({ units })} />
-                </div>
+          {s.rooms.map((r, i) => {
+            const update = (fields) =>
+              set({
+                rooms: s.rooms.map((x, j) => (j === i ? { ...x, ...fields } : x)),
+              });
+            return (
+              <motion.div
+                key={i}
+                layout
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={SPRING}
+                className="card-dark p-4 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_0_1px_rgba(255,106,43,0.4),0_20px_50px_-24px_rgba(255,61,119,0.5)] transition-shadow duration-500"
+              >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-ink-600">Per night</span>
-                  <div className="flex items-center border-2 border-ink-200 focus-within:border-ink-900 rounded-xl px-3 py-1.5">
-                    <span className="text-xs font-bold text-ink-400 mr-1.5">{s.currency}</span>
-                    <input
-                      inputMode="numeric"
-                      value={r.price}
-                      onChange={(e) => update({ price: e.target.value.replace(/[^0-9.]/g, "") })}
-                      placeholder="0"
-                      className="w-24 outline-none font-bold text-ink-900 bg-transparent"
-                    />
+                  <input
+                    value={r.name}
+                    onChange={(e) => update({ name: e.target.value })}
+                    placeholder="Room name, e.g. Deluxe Double"
+                    className="flex-1 min-w-0 font-semibold text-white placeholder:text-white/30 outline-none text-[17px] bg-transparent"
+                  />
+                  {s.rooms.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => set({ rooms: s.rooms.filter((_, j) => j !== i) })}
+                      className="h-9 w-9 grid place-items-center rounded-lg text-white/40 hover:text-rose-300 hover:bg-rose-500/15 active:scale-90 transition duration-300 ease-spring"
+                      aria-label="Remove room"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="mt-3 pt-3 border-t border-white/[0.07] flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-white/55">How many</span>
+                    <Stepper value={r.units} onChange={(units) => update({ units })} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-white/55">Per night</span>
+                    <div className="flex items-center rounded-xl px-3 py-1.5 bg-white/[0.06] ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-sunset-flame/60 transition">
+                      <span className="text-xs font-semibold text-white/40 mr-1.5">{s.currency}</span>
+                      <input
+                        inputMode="numeric"
+                        value={r.price}
+                        onChange={(e) => update({ price: e.target.value.replace(/[^0-9.]/g, "") })}
+                        placeholder="0"
+                        className="w-24 outline-none font-semibold text-white placeholder:text-white/30 bg-transparent tabular-nums"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
       </div>
 
-      <button
+      <motion.button
         type="button"
         onClick={() => set({ rooms: [...s.rooms, blankRoom()] })}
-        className="mt-3 w-full rounded-2xl border-2 border-dashed border-ink-300 hover:border-ink-500 py-3.5 font-bold text-ink-700 inline-flex items-center justify-center gap-1.5 transition"
+        whileHover={{ y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={SPRING}
+        className="group mt-3 w-full rounded-2xl border border-dashed border-white/20 hover:border-sunset-flame/50 hover:bg-white/[0.03] py-3.5 font-semibold text-white/80 inline-flex items-center justify-center gap-1.5 transition-colors"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-4 h-4 text-sunset-gold transition-transform duration-500 ease-spring group-hover:rotate-90" />
         Add another room
-      </button>
+      </motion.button>
     </>
   );
 }
@@ -1206,23 +1430,35 @@ function SiteLive({ slug, site, templateId }) {
   const url = slug ? siteUrl(slug) : null;
   return (
     <div className="text-center pt-2">
-      <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto">
-        <Globe className="w-8 h-8" />
-      </div>
-      <h1 className="text-3xl sm:text-4xl font-black text-ink-900 mt-6">Your website is live</h1>
-      <p className="text-lg text-ink-500 mt-3">
+      <motion.div
+        initial={{ scale: 0.3, rotate: -25, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 14, delay: 0.1 }}
+        className="relative w-16 h-16 mx-auto"
+      >
+        <div aria-hidden className="absolute -inset-5 rounded-full bg-emerald-400 opacity-30 blur-2xl" />
+        <div className="relative w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+          <Globe className="w-8 h-8" strokeWidth={1.8} />
+        </div>
+      </motion.div>
+      <h1 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] text-white mt-7">
+        Your website is{" "}
+        <span className="font-serif italic font-normal text-sunset pr-1">live</span>
+      </h1>
+      <p className="text-base sm:text-lg text-white/60 mt-3">
         Share it anywhere — guests can see your rooms and book with you on WhatsApp.
       </p>
       {slug && (
-        <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border-2 border-ink-200 bg-white pl-4 pr-2 py-2">
-          <span className="font-bold text-ink-900 text-[17px]">{SITE_HOST}/{slug}</span>
+        <div className="mt-6 inline-flex max-w-full items-center gap-2 rounded-2xl bg-white/[0.06] ring-1 ring-white/10 backdrop-blur-xl pl-4 pr-2 py-2">
+          <PulseDot color="bg-emerald-400" />
+          <span className="font-semibold font-mono text-white text-[15px] sm:text-[17px] truncate">{SITE_HOST}/{slug}</span>
           <button
             type="button"
             onClick={() => {
               navigator.clipboard?.writeText(url);
               toast.success("Link copied");
             }}
-            className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+            className="h-9 w-9 shrink-0 grid place-items-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
             aria-label="Copy link"
           >
             <Copy className="w-4 h-4" />
@@ -1230,20 +1466,22 @@ function SiteLive({ slug, site, templateId }) {
         </div>
       )}
       {site && (
-        <a
-          href={url || undefined}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-8 block overflow-hidden rounded-2xl border-2 border-ink-100 shadow-lg text-left"
-        >
-          <div className="flex items-center gap-1.5 border-b border-ink-100 bg-ink-50 px-3 py-2">
-            <span className="h-2 w-2 rounded-full bg-rose-300" />
-            <span className="h-2 w-2 rounded-full bg-amber-300" />
-            <span className="h-2 w-2 rounded-full bg-emerald-300" />
-            <span className="ml-3 text-xs font-semibold text-ink-500">{SITE_HOST}/{slug}</span>
-          </div>
-          <SiteRenderer site={site} templateId={templateId} mode="thumb" className="aspect-[16/10] w-full" />
-        </a>
+        <Tilt max={5} className="mt-8 block">
+          <a
+            href={url || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block overflow-hidden rounded-2xl bg-white text-left ring-1 ring-white/15 shadow-[0_40px_100px_-40px_rgba(255,61,119,0.6)]"
+          >
+            <div className="flex items-center gap-1.5 border-b border-ink-900/[0.06] bg-white/80 px-3 py-2">
+              <span className="h-2 w-2 rounded-full bg-[#FF5F57]" />
+              <span className="h-2 w-2 rounded-full bg-[#FEBC2E]" />
+              <span className="h-2 w-2 rounded-full bg-[#28C840]" />
+              <span className="ml-3 text-xs font-medium text-ink-500 truncate">{SITE_HOST}/{slug}</span>
+            </div>
+            <SiteRenderer site={site} templateId={templateId} mode="thumb" className="aspect-[16/10] w-full" />
+          </a>
+        </Tilt>
       )}
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         {url && (
@@ -1251,15 +1489,16 @@ function SiteLive({ slug, site, templateId }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-ink-900 px-5 py-3 font-bold text-ink-900 hover:bg-ink-50"
+            className="btn-glass-dark group"
           >
-            Open website <ExternalLink className="w-4 h-4" />
+            Open website{" "}
+            <ExternalLink className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </a>
         )}
       </div>
-      <p className="text-sm text-ink-400 mt-4">
+      <p className="text-sm text-white/45 mt-4">
         {templateId ? `${templateById(templateId).name} design. ` : ""}
-        Change the design, text and photos any time in <b>Manage your website</b>.
+        Change the design, text and photos any time in <b className="text-white/75">Manage your website</b>.
       </p>
     </div>
   );
@@ -1268,22 +1507,35 @@ function SiteLive({ slug, site, templateId }) {
 function Stepper({ value, onChange, min = 1, max = 500 }) {
   const n = Number(value) || min;
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={() => onChange(Math.max(min, n - 1))}
         disabled={n <= min}
-        className="w-8 h-8 rounded-full border border-ink-300 flex items-center justify-center text-ink-700 hover:border-ink-900 disabled:opacity-30"
+        className="w-9 h-9 rounded-full bg-white/[0.06] ring-1 ring-white/15 flex items-center justify-center text-white/80 hover:bg-white/[0.12] hover:ring-white/30 active:scale-90 transition duration-300 ease-spring disabled:opacity-30 disabled:active:scale-100"
         aria-label="Fewer"
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
-      <span className="w-6 text-center font-bold text-ink-900">{n}</span>
+      <span className="relative w-8 h-6 overflow-hidden text-center font-display font-semibold text-white tabular-nums">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={n}
+            initial={{ y: 14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -14, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            className="absolute inset-0"
+          >
+            {n}
+          </motion.span>
+        </AnimatePresence>
+      </span>
       <button
         type="button"
         onClick={() => onChange(Math.min(max, n + 1))}
         disabled={n >= max}
-        className="w-8 h-8 rounded-full border border-ink-300 flex items-center justify-center text-ink-700 hover:border-ink-900 disabled:opacity-30"
+        className="w-9 h-9 rounded-full bg-white/[0.06] ring-1 ring-white/15 flex items-center justify-center text-white/80 hover:bg-white/[0.12] hover:ring-white/30 active:scale-90 transition duration-300 ease-spring disabled:opacity-30 disabled:active:scale-100"
         aria-label="More"
       >
         <Plus className="w-3.5 h-3.5" />
@@ -1292,12 +1544,14 @@ function Stepper({ value, onChange, min = 1, max = 500 }) {
   );
 }
 
-function Summary({ label, value }) {
+function Summary({ label, value, i = 0 }) {
   return (
-    <div className="rounded-2xl border border-ink-200 p-4">
-      <p className="text-xs font-bold text-ink-500">{label}</p>
-      <p className="font-bold text-ink-900 mt-1 break-words">{value}</p>
-    </div>
+    <Reveal delay={0.25 + i * 0.07} className="h-full">
+      <Spotlight className="card-dark h-full p-4">
+        <p className="text-xs font-medium text-white/50">{label}</p>
+        <p className="font-semibold text-white mt-1 break-words">{value}</p>
+      </Spotlight>
+    </Reveal>
   );
 }
 
@@ -1316,11 +1570,17 @@ function ProgressBar({ screenIndex }) {
   return (
     <div className="flex gap-1.5">
       {segments.map((fill, i) => (
-        <div key={i} className="flex-1 h-1.5 bg-ink-100 overflow-hidden">
-          <div
-            className="h-full bg-ink-900 transition-all duration-500"
-            style={{ width: `${fill * 100}%` }}
-          />
+        <div key={i} className="relative flex-1 h-1.5 bg-white/[0.08] overflow-hidden">
+          <motion.div
+            className="h-full bg-sunset relative"
+            initial={false}
+            animate={{ width: `${fill * 100}%` }}
+            transition={{ type: "spring", stiffness: 140, damping: 24 }}
+          >
+            {fill > 0 && fill < 1 && (
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-sunset-magenta blur-[6px]" />
+            )}
+          </motion.div>
         </div>
       ))}
     </div>

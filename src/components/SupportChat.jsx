@@ -16,6 +16,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { MessageCircle, X, Send, Mail, Sparkles } from "lucide-react";
 import BotlifyMark from "@/components/BotlifyMark";
+import { PulseDot } from "@/components/fx";
 import {
   BOTLIFY_FAQ,
   SUGGESTED_TOPIC_IDS,
@@ -44,7 +45,7 @@ function AnswerBody({ text }) {
             <ul key={bi} className="space-y-1">
               {lines.map((line, li) => (
                 <li key={li} className="flex gap-1.5">
-                  <span className="text-brand-500 shrink-0">
+                  <span className="shrink-0 text-sunset-flame">
                     {line.trim().startsWith("•") ? "•" : line.trim().slice(0, 2)}
                   </span>
                   <span>{line.replace(/^\s*(•|\d+\.)\s*/, "")}</span>
@@ -141,18 +142,20 @@ export default function SupportChat() {
         aria-label={open ? "Close Botlify assistant" : "Open Botlify assistant"}
         aria-expanded={open}
         aria-controls="botlify-support-chat"
-        className={`fixed bottom-5 right-5 z-[60] w-14 h-14 rounded-full flex items-center justify-center text-white shadow-glow-lg transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
-          open ? "bg-ink-900 hover:bg-ink-800" : "bg-brand-500 hover:bg-brand-600"
+        className={`group fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full text-white transition-all duration-500 ease-spring hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame focus-visible:ring-offset-2 ${
+          open
+            ? "bg-night-900 shadow-[0_14px_34px_-10px_rgba(6,5,10,0.7),inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-white/10"
+            : "bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_14px_34px_-10px_rgba(255,61,119,0.7),0_4px_12px_-2px_rgba(124,92,255,0.4)]"
         }`}
       >
         {open ? (
-          <X className="w-6 h-6" />
+          <X className="h-6 w-6 transition-transform duration-500 ease-spring group-hover:rotate-90" />
         ) : (
           <>
-            <MessageCircle className="w-6 h-6" />
-            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-accent-500" />
+            <MessageCircle className="h-6 w-6 transition-transform duration-500 ease-spring group-hover:-rotate-12 group-hover:scale-110" strokeWidth={1.9} />
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sunset-gold opacity-75" />
+              <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-sunset-gold ring-2 ring-white" />
             </span>
           </>
         )}
@@ -166,23 +169,25 @@ export default function SupportChat() {
           role="dialog"
           aria-modal="false"
           aria-label="Botlify assistant"
-          className="fixed z-[59] bg-white shadow-2xl border border-ink-100 flex flex-col overflow-hidden animate-slide-up
-                     inset-x-0 bottom-0 top-auto h-[85vh] rounded-t-2xl
-                     sm:inset-auto sm:bottom-24 sm:right-5 sm:w-[24rem] sm:h-[min(34rem,calc(100vh-8rem))] sm:rounded-2xl"
+          className="glass-strong fixed z-[59] flex flex-col overflow-hidden animate-pop-in origin-bottom-right
+                     inset-x-0 bottom-0 top-auto h-[85vh] rounded-t-3xl
+                     sm:inset-auto sm:bottom-24 sm:right-5 sm:w-[24rem] sm:h-[min(34rem,calc(100vh-8rem))] sm:rounded-3xl"
         >
           {/* Header */}
-          <div className="relative shrink-0 bg-ink-950 text-white px-4 py-3.5 flex items-center gap-3 overflow-hidden">
+          <div className="relative flex shrink-0 items-center gap-3 overflow-hidden bg-night-900 px-4 py-3.5 text-white">
+            <div aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-32 w-32 rounded-full bg-sunset-violet/30 blur-3xl" />
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-sunset opacity-70" />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -top-16 -right-10 w-40 h-40 rounded-full bg-brand-500/30 blur-3xl"
+              className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full bg-sunset-flame/35 blur-3xl animate-drift-a"
             />
-            <div className="relative w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] ring-1 ring-white/15">
               <BotlifyMark size={22} />
             </div>
             <div className="relative min-w-0 flex-1">
-              <p className="text-sm font-black leading-tight">Botlify assistant</p>
+              <p className="font-display text-sm font-semibold leading-tight tracking-[-0.01em]">Botlify assistant</p>
               <p className="text-[11px] text-white/60 leading-tight inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <PulseDot color="bg-emerald-400" className="scale-75" />
                 Answers instantly · no waiting
               </p>
             </div>
@@ -190,38 +195,38 @@ export default function SupportChat() {
               type="button"
               onClick={close}
               aria-label="Close assistant"
-              className="relative p-1.5 -mr-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+              className="group/x relative -mr-1 grid h-9 w-9 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5 transition-transform duration-500 ease-spring group-hover/x:rotate-90" />
             </button>
           </div>
 
           {/* Thread */}
           <div
-            className="flex-1 overflow-y-auto px-3.5 py-4 space-y-3 bg-ink-50/40"
+            className="flex-1 space-y-3 overflow-y-auto bg-white/30 px-3.5 py-4"
             aria-live="polite"
           >
             {messages.map((m) =>
               m.from === "user" ? (
                 <div key={m.id} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-br-md bg-brand-500 text-white text-[13px] leading-relaxed px-3.5 py-2.5">
+                  <div className="max-w-[85%] animate-pop-in origin-bottom-right rounded-2xl rounded-br-md bg-sunset px-3.5 py-2.5 text-[13px] leading-relaxed text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-10px_rgba(255,61,119,0.6)]">
                     {m.text}
                   </div>
                 </div>
               ) : (
                 <div key={m.id} className="flex items-start gap-2">
-                  <span className="w-7 h-7 rounded-full bg-white border border-ink-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_4px_10px_-4px_rgba(255,61,119,0.35)]">
                     <BotlifyMark size={17} />
                   </span>
                   <div className="min-w-0 max-w-[88%] space-y-2">
-                    <div className="rounded-2xl rounded-bl-md bg-white border border-ink-100 text-[13px] leading-relaxed text-ink-700 px-3.5 py-2.5 shadow-card">
+                    <div className="animate-pop-in origin-bottom-left rounded-2xl rounded-bl-md bg-white/90 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-700 shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_6px_16px_-10px_rgba(15,23,42,0.2)]">
                       <AnswerBody text={m.text} />
                     </div>
 
                     {m.showContact && (
                       <a
                         href={`mailto:${SUPPORT_EMAIL}`}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-brand-600 hover:text-brand-700 transition"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#E2541C] transition hover:text-sunset-magenta"
                       >
                         <Mail className="w-3.5 h-3.5" /> {SUPPORT_EMAIL}
                       </a>
@@ -234,7 +239,7 @@ export default function SupportChat() {
                             key={c.id}
                             type="button"
                             onClick={() => ask(c.question, c)}
-                            className="text-left text-[12px] font-semibold rounded-full border border-brand-200 bg-brand-50/60 text-brand-700 px-3 py-1.5 hover:bg-brand-100 hover:border-brand-300 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                            className="rounded-full bg-white/80 px-3 py-1.5 text-left text-[12px] font-semibold text-ink-700 shadow-[inset_0_1px_0_#fff] ring-1 ring-sunset-flame/20 transition duration-300 ease-spring hover:-translate-y-0.5 hover:bg-white hover:text-[#E2541C] hover:ring-sunset-flame/40 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame"
                           >
                             {c.chip || c.question}
                           </button>
@@ -251,7 +256,7 @@ export default function SupportChat() {
           {/* Composer */}
           <form
             onSubmit={onSubmit}
-            className="shrink-0 border-t border-ink-100 bg-white px-3 py-3"
+            className="shrink-0 border-t border-ink-900/[0.06] bg-white/60 px-3 py-3"
           >
             <div className="flex items-center gap-2">
               <label htmlFor="botlify-chat-input" className="sr-only">
@@ -264,24 +269,24 @@ export default function SupportChat() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about pricing, channels, setup…"
                 autoComplete="off"
-                className="flex-1 min-w-0 rounded-full border border-ink-200 bg-ink-50/60 px-4 py-2.5 text-[13px] text-ink-800 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                className="min-w-0 flex-1 rounded-full border border-ink-900/10 bg-white/80 px-4 py-2.5 text-[13px] text-ink-800 transition placeholder:text-ink-400 focus:border-sunset-flame/60 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sunset-flame/10"
               />
               <button
                 type="submit"
                 disabled={!input.trim()}
                 aria-label="Send question"
-                className="w-10 h-10 shrink-0 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+                className="group/send grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_18px_-8px_rgba(255,61,119,0.7)] transition duration-300 ease-spring hover:scale-110 active:scale-90 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame focus-visible:ring-offset-2"
               >
-                <Send className="w-4 h-4" />
+                <Send className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/send:-translate-y-0.5 group-hover/send:translate-x-0.5" />
               </button>
             </div>
             <p className="mt-2 px-1 text-[10.5px] text-ink-400 leading-snug">
-              <Sparkles className="w-3 h-3 inline -mt-0.5 mr-0.5 text-brand-400" />
+              <Sparkles className="-mt-0.5 mr-0.5 inline h-3 w-3 text-sunset-flame" />
               Answers come from our {BOTLIFY_FAQ.length}-topic help library. For
               anything else, email{" "}
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="font-semibold text-ink-500 hover:text-brand-600 underline decoration-ink-200 underline-offset-2"
+                className="font-semibold text-ink-500 underline decoration-ink-200 underline-offset-2 hover:text-[#E2541C]"
               >
                 {SUPPORT_EMAIL}
               </a>{" "}
@@ -289,7 +294,7 @@ export default function SupportChat() {
               <Link
                 to="/contact"
                 onClick={close}
-                className="font-semibold text-ink-500 hover:text-brand-600 underline decoration-ink-200 underline-offset-2"
+                className="font-semibold text-ink-500 underline decoration-ink-200 underline-offset-2 hover:text-[#E2541C]"
               >
                 Contact
               </Link>

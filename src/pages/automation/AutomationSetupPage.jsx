@@ -25,6 +25,8 @@ import HolidayModeCard from "@/components/HolidayModeCard";
 import AutomationsHubGallery from "./AutomationsHubGallery";
 import { clsx } from "clsx";
 import { ArrowLeft } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { SlidingTabs } from "@/components/fx";
 
 // Each tab declares which channel(s) it applies to. Only automations backed by
 // a real Zernio webhook event are listed (welcome/DM/comment/story/share/
@@ -128,15 +130,15 @@ const EXAMPLES = {
 // Small helper: shows an example line with a one-click "Use this" button.
 function ExampleRow({ text, onUse }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg bg-brand-50/60 border border-brand-100 px-3 py-2 mt-1.5">
-      <p className="text-xs text-ink-600 leading-relaxed flex-1">
-        <span className="font-semibold text-brand-700">Example: </span>
+    <div className="flex items-start gap-2 rounded-xl bg-sunset-soft ring-1 ring-sunset-flame/15 px-3 py-2 mt-1.5">
+      <p className="text-xs text-ink-600 leading-relaxed flex-1 min-w-0">
+        <span className="font-semibold text-sunset-flame">Example: </span>
         {text}
       </p>
       <button
         type="button"
         onClick={() => onUse(text)}
-        className="shrink-0 text-[11px] font-bold text-brand-700 hover:text-brand-900 underline underline-offset-2"
+        className="shrink-0 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-semibold text-ink-800 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] hover:-translate-y-0.5 hover:bg-white active:scale-95 transition-all duration-300 ease-spring"
       >
         Use this
       </button>
@@ -148,7 +150,7 @@ function ExampleRow({ text, onUse }) {
 function EmptyWarn({ show }) {
   if (!show) return null;
   return (
-    <p className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-1.5">
+    <p className="flex items-center gap-1.5 text-xs text-amber-800 bg-amber-50/80 ring-1 ring-amber-200/80 rounded-xl px-2.5 py-1.5 mt-1.5">
       <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
       This is on but the message is empty — we'll send a friendly default until
       you add your own.
@@ -249,8 +251,19 @@ export default function AutomationSetupPage() {
 
   if (loading || !cfg) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+      <div className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 max-w-6xl mx-auto space-y-6" aria-busy="true">
+        <span className="sr-only">Loading automations…</span>
+        <div className="h-24 rounded-3xl bg-ink-900/[0.06] animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="card p-5 space-y-3">
+              <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-3.5 w-1/2 rounded-md bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-3 w-full rounded-md bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-3 w-3/4 rounded-md bg-ink-900/[0.06] animate-pulse" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -262,14 +275,14 @@ export default function AutomationSetupPage() {
     : activeTab?.desc || "Configure this automation.";
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10 max-w-6xl mx-auto">
       {!isGallery && (
         <button
           type="button"
           onClick={backToGallery}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500 hover:text-ink-800 mb-4"
+          className="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-xs font-semibold text-ink-500 hover:text-ink-900 hover:bg-white/70 active:scale-95 transition-all duration-300 ease-spring mb-4"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> All automations
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-1" /> All automations
         </button>
       )}
 
@@ -300,30 +313,28 @@ export default function AutomationSetupPage() {
         />
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap gap-2">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const active = tab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => openTab(t.id)}
-                  className={clsx(
-                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold border transition",
-                    active
-                      ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/30"
-                      : "bg-white text-ink-600 border-ink-200 hover:border-brand-300 hover:text-brand-700",
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {t.label}
-                </button>
-              );
-            })}
+          <div className={clsx("mb-5 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar")}>
+            <SlidingTabs
+              size="sm"
+              className="whitespace-nowrap"
+              value={tab}
+              onChange={openTab}
+              items={TABS.map((t) => ({
+                value: t.id,
+                label: t.label,
+                icon: t.icon,
+              }))}
+            />
           </div>
 
-          <div>
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          >
             <PlanGate
               currentPlan={plan}
               requiredPlan={activeTab.plan}
@@ -368,7 +379,8 @@ export default function AutomationSetupPage() {
                 />
               )}
             </PlanGate>
-          </div>
+          </motion.div>
+          </AnimatePresence>
         </>
       )}
     </div>
@@ -379,8 +391,8 @@ export default function AutomationSetupPage() {
 
 function Card({ title, desc, children }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6 shadow-sm">
-      <h2 className="text-base font-black text-ink-900">{title}</h2>
+    <div className="card p-5 sm:p-6">
+      <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">{title}</h2>
       {desc && (
         <p className="text-sm text-ink-500 mt-1 leading-relaxed">{desc}</p>
       )}
@@ -482,8 +494,14 @@ function CommentKwTab({ cfg, setCfg, workspace, reload }) {
         <p className="text-sm text-ink-400">No triggers yet. Click Add.</p>
       )}
       {list.map((k, i) => (
-        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
-          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+          className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] p-3 space-y-2 transition-colors hover:bg-white/85"
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-ink-900/[0.06]">
             <label className="flex items-center gap-2 text-xs font-medium">
               <label className="toggle">
                 <input
@@ -503,9 +521,9 @@ function CommentKwTab({ cfg, setCfg, workspace, reload }) {
             </label>
             <button
               onClick={() => remove(i)}
-              className="btn-ghost text-red-500"
+              className="btn-ghost group/del text-rose-500 hover:text-rose-600 hover:bg-rose-50"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/del:rotate-[-12deg]" />
             </button>
           </div>
           <div className="flex gap-2">
@@ -516,7 +534,7 @@ function CommentKwTab({ cfg, setCfg, workspace, reload }) {
               onChange={(e) => update(i, { keyword: e.target.value })}
             />
             <select
-              className="input max-w-[140px]"
+              className="input max-w-[120px] sm:max-w-[140px]"
               value={k.matchType}
               onChange={(e) => update(i, { matchType: e.target.value })}
             >
@@ -531,11 +549,11 @@ function CommentKwTab({ cfg, setCfg, workspace, reload }) {
             value={k.replyMessage}
             onChange={(e) => update(i, { replyMessage: e.target.value })}
           />
-        </div>
+        </motion.div>
       ))}
-      <div className="flex justify-between">
-        <button onClick={add} className="btn-secondary">
-          <Plus className="w-4 h-4" /> Add trigger
+      <div className="flex flex-wrap gap-2 justify-between">
+        <button onClick={add} className="btn-secondary group/add">
+          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/add:rotate-90" /> Add trigger
         </button>
         <button onClick={saveAll} className="btn-primary">
           <Save className="w-4 h-4" /> Save all
@@ -568,8 +586,14 @@ function DmKwTab({ cfg, save, setCfg }) {
       desc="Someone sends you a DM containing a word like ‘price’ → instant auto-reply. Perfect for FAQs."
     >
       {list.map((k, i) => (
-        <div key={i} className="border border-ink-200 rounded-lg p-3 space-y-2">
-          <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+          className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] p-3 space-y-2 transition-colors hover:bg-white/85"
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-ink-900/[0.06]">
             <label className="flex items-center gap-2 text-xs font-medium">
               <label className="toggle">
                 <input
@@ -589,9 +613,9 @@ function DmKwTab({ cfg, save, setCfg }) {
             </label>
             <button
               onClick={() => remove(i)}
-              className="btn-ghost text-red-500"
+              className="btn-ghost group/del text-rose-500 hover:text-rose-600 hover:bg-rose-50"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/del:rotate-[-12deg]" />
             </button>
           </div>
           <div className="flex gap-2">
@@ -602,7 +626,7 @@ function DmKwTab({ cfg, save, setCfg }) {
               onChange={(e) => update(i, { keyword: e.target.value })}
             />
             <select
-              className="input max-w-[140px]"
+              className="input max-w-[120px] sm:max-w-[140px]"
               value={k.matchType}
               onChange={(e) => update(i, { matchType: e.target.value })}
             >
@@ -617,11 +641,11 @@ function DmKwTab({ cfg, save, setCfg }) {
             value={k.replyMessage}
             onChange={(e) => update(i, { replyMessage: e.target.value })}
           />
-        </div>
+        </motion.div>
       ))}
-      <div className="flex justify-between">
-        <button onClick={add} className="btn-secondary">
-          <Plus className="w-4 h-4" /> Add
+      <div className="flex flex-wrap gap-2 justify-between">
+        <button onClick={add} className="btn-secondary group/add">
+          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/add:rotate-90" /> Add
         </button>
         <button
           onClick={() =>
@@ -763,7 +787,7 @@ function FallbackTab({ cfg, save, setCfg }) {
         max="168"
         value={f.cooldownHours || 24}
         onChange={(e) => update({ cooldownHours: Number(e.target.value) })}
-        className="w-full"
+        className="w-full accent-[#FF6A2B]"
       />
       <button
         onClick={() => save("/fallback-reply", cfg.fallbackReply, "Saved")}
@@ -844,7 +868,7 @@ function HoursTab({ cfg, save, setCfg }) {
             return (
               <div
                 key={k}
-                className="flex items-center gap-3 rounded-md border border-ink-200 bg-white px-3 py-2"
+                className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] px-3 py-2 transition-colors hover:bg-white/85"
               >
                 <label className="toggle">
                   <input
@@ -854,10 +878,10 @@ function HoursTab({ cfg, save, setCfg }) {
                   />
                   <span className="slider" />
                 </label>
-                <span className="text-sm text-ink-700 w-24">{l}</span>
+                <span className="text-sm font-medium text-ink-700 w-20 sm:w-24">{l}</span>
                 <input
                   type="time"
-                  className="input flex-1"
+                  className="input flex-1 min-w-[6.5rem]"
                   value={d.start || "09:00"}
                   disabled={!d.enabled}
                   onChange={(e) => setDay(k, { start: e.target.value })}
@@ -865,7 +889,7 @@ function HoursTab({ cfg, save, setCfg }) {
                 <span className="text-ink-400 text-xs">to</span>
                 <input
                   type="time"
-                  className="input flex-1"
+                  className="input flex-1 min-w-[6.5rem]"
                   value={d.end || "18:00"}
                   disabled={!d.enabled}
                   onChange={(e) => setDay(k, { end: e.target.value })}
@@ -933,18 +957,14 @@ function AutomationTypeCard({ tone, title, items }) {
   const isWa = tone === "wa";
   return (
     <div
-      className={`rounded-xl border ${
-        isWa
-          ? "border-emerald-100 bg-emerald-50/30"
-          : "border-brand-100 bg-brand-50/30"
+      className={`card ring-1 ${
+        isWa ? "ring-emerald-200/60" : "ring-sunset-flame/15"
       } p-4`}
     >
       <div className="flex items-center gap-2 mb-3">
         <div
-          className={`w-7 h-7 rounded-md flex items-center justify-center ${
-            isWa
-              ? "bg-emerald-500"
-              : "bg-gradient-to-br from-brand-500 via-brand-600 to-accent-500"
+          className={`w-8 h-8 rounded-xl grid place-items-center ${
+            isWa ? "bg-emerald-500" : "bg-sunset"
           }`}
         >
           {isWa ? (
@@ -971,17 +991,13 @@ function AutomationTypeCard({ tone, title, items }) {
             </svg>
           )}
         </div>
-        <p className="text-sm font-bold text-ink-900">{title}</p>
+        <p className="font-display text-sm font-semibold text-ink-900">{title}</p>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {items.map((it, i) => (
           <span
             key={i}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-              isWa
-                ? "bg-white border-emerald-200 text-emerald-800"
-                : "bg-white border-brand-200 text-brand-800"
-            }`}
+            className={isWa ? "badge-green" : "badge-brand"}
           >
             {it}
           </span>

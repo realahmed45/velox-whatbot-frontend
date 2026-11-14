@@ -26,7 +26,6 @@ import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
-  CheckCircle2,
   CloudDownload,
   Clock,
   Loader2,
@@ -37,6 +36,8 @@ import {
 import { clsx } from "clsx";
 import toast from "react-hot-toast";
 import api from "@/services/api";
+import { Spotlight, PulseDot } from "@/components/fx";
+import Skeleton from "@/components/ui/Skeleton";
 
 /** How often to re-ask while something is still moving. */
 const POLL_MS = 20000;
@@ -149,11 +150,11 @@ function present(conn) {
 }
 
 const TONES = {
-  brand: { chip: "bg-brand-50 text-brand-600", ring: "border-brand-200" },
-  emerald: { chip: "bg-emerald-50 text-emerald-600", ring: "border-emerald-200" },
-  amber: { chip: "bg-amber-50 text-amber-600", ring: "border-amber-200" },
-  rose: { chip: "bg-rose-50 text-rose-600", ring: "border-rose-200" },
-  ink: { chip: "bg-ink-100 text-ink-500", ring: "border-ink-100" },
+  brand: { chip: "bg-sunset-soft text-sunset-flame ring-sunset-flame/15", glow: "bg-sunset", edge: "bg-sunset" },
+  emerald: { chip: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/15", glow: "bg-emerald-400", edge: "bg-emerald-500" },
+  amber: { chip: "bg-amber-500/10 text-amber-600 ring-amber-500/15", glow: "bg-amber-400", edge: "bg-amber-500" },
+  rose: { chip: "bg-rose-500/10 text-rose-600 ring-rose-500/15", glow: "bg-rose-400", edge: "bg-rose-500" },
+  ink: { chip: "bg-ink-900/[0.05] text-ink-500 ring-ink-900/[0.06]", glow: "", edge: "" },
 };
 
 /** One OTA's real status — never a blanket badge over channels we can't see. */
@@ -162,20 +163,20 @@ function OtaRow({ entry }) {
   const failed = entry.status === "error";
   return (
     <li className="flex items-center justify-between gap-3 py-2">
-      <span className="text-sm font-semibold text-ink-800 truncate">
+      <span className="truncate text-sm font-medium text-ink-800">
         {prettyOta(entry.ota)}
       </span>
       <span
         className={clsx(
-          "inline-flex items-center gap-1.5 text-[11px] font-bold rounded-full px-2.5 py-1 shrink-0",
-          live && "bg-emerald-50 text-emerald-700",
-          failed && "bg-rose-50 text-rose-700",
-          !live && !failed && "bg-amber-50 text-amber-700",
+          "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset",
+          live && "bg-emerald-50 text-emerald-700 ring-emerald-600/15",
+          failed && "bg-rose-50 text-rose-700 ring-rose-600/15",
+          !live && !failed && "bg-amber-50 text-amber-700 ring-amber-600/20",
         )}
       >
         {live ? (
           <>
-            <CheckCircle2 className="w-3 h-3" /> Syncing
+            <PulseDot color="bg-emerald-500" className="scale-75" /> Syncing
           </>
         ) : failed ? (
           <>
@@ -199,9 +200,11 @@ function OtaRow({ entry }) {
 function Blockers({ blockers, fixHref }) {
   if (!blockers?.length) return null;
   return (
-    <div className="mt-4 rounded-xl border border-ink-200 bg-ink-50/70 p-4">
-      <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
-        <ShieldCheck className="w-4 h-4 text-brand-500 shrink-0" />
+    <div className="mt-4 rounded-2xl bg-white/60 p-4 ring-1 ring-inset ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+      <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-sunset-soft">
+          <ShieldCheck className="h-3.5 w-3.5 text-sunset-flame" strokeWidth={2} />
+        </span>
         We're holding the switch-over until these are set
       </p>
       <p className="text-xs text-ink-500 mt-1">
@@ -214,13 +217,13 @@ function Blockers({ blockers, fixHref }) {
           <li key={b}>
             <Link
               to={fixHref}
-              className="group flex items-start gap-2 text-sm text-ink-700 hover:text-brand-700 transition"
+              className="group flex items-start gap-2 rounded-lg px-1 py-0.5 text-sm text-ink-700 transition hover:text-ink-900"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0 mt-[7px]" />
-              <span className="underline decoration-ink-300 underline-offset-2 group-hover:decoration-brand-400">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" />
+              <span className="underline decoration-ink-300 underline-offset-2 transition-colors group-hover:decoration-sunset-flame">
                 {b}
               </span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition" />
+              <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 -translate-x-1 text-sunset-flame opacity-0 transition-all duration-500 ease-spring group-hover:translate-x-0 group-hover:opacity-100" />
             </Link>
           </li>
         ))}
@@ -324,9 +327,14 @@ export default function ConnectionStatus({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-ink-100 bg-white p-5 animate-pulse">
-        <div className="h-4 w-40 bg-ink-100 rounded" />
-        <div className="h-3 w-full bg-ink-50 rounded mt-3" />
+      <div className="card p-5">
+        <div className="flex items-start gap-3">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <div className="flex-1">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="mt-3 h-3 w-full" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -342,35 +350,49 @@ export default function ConnectionStatus({
   const otaRows = (conn.otaStatus || []).filter((o) => o.ota);
 
   return (
-    <div
+    <Spotlight
       className={clsx(
-        "rounded-2xl border bg-white shadow-card",
-        tone.ring,
+        "card group overflow-hidden",
         compact ? "p-4 sm:p-5" : "p-5 sm:p-6",
       )}
     >
-      <div className="flex items-start gap-3">
+      {tone.glow && (
+        <div
+          aria-hidden
+          className={clsx(
+            "pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full opacity-[0.14] blur-2xl",
+            tone.glow,
+          )}
+        />
+      )}
+      {tone.edge && (
+        <div aria-hidden className={clsx("pointer-events-none absolute inset-y-4 left-0 w-[3px] rounded-full", tone.edge)} />
+      )}
+      <div className="relative flex items-start gap-3">
         <span
           className={clsx(
-            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+            "grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ring-inset transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]",
             tone.chip,
           )}
         >
-          <Icon className={clsx("w-5 h-5", view.spin && "animate-spin")} />
+          <Icon className={clsx("h-5 w-5", view.spin && "animate-spin")} strokeWidth={1.8} />
         </span>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <p className="font-bold text-ink-900 leading-tight">{view.title}</p>
+            <p className="font-display font-semibold leading-tight tracking-[-0.02em] text-ink-900">{view.title}</p>
             {conn.providerConfigured && (
               <button
                 type="button"
                 onClick={refresh}
                 disabled={refreshing}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500 hover:text-ink-800 transition disabled:opacity-50 shrink-0"
+                className="group/r inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-ink-500 transition hover:bg-ink-900/[0.05] hover:text-ink-800 active:scale-95 disabled:opacity-50"
               >
                 <RefreshCw
-                  className={clsx("w-3.5 h-3.5", refreshing && "animate-spin")}
+                  className={clsx(
+                    "h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover/r:rotate-180",
+                    refreshing && "animate-spin",
+                  )}
                 />
                 Check again
               </button>
@@ -382,7 +404,7 @@ export default function ConnectionStatus({
               about a named channel — an empty list says nothing rather than
               implying everything is fine. */}
           {otaRows.length > 0 && (
-            <ul className="mt-3 divide-y divide-ink-100 border-t border-ink-100">
+            <ul className="mt-3 divide-y divide-ink-900/[0.06] border-t border-ink-900/[0.06]">
               {otaRows.map((o) => (
                 <OtaRow key={o.ota} entry={o} />
               ))}
@@ -398,7 +420,7 @@ export default function ConnectionStatus({
             <button
               type="button"
               onClick={onConnect}
-              className="mt-3 inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-lg px-3.5 py-2 transition"
+              className="btn-primary mt-3 px-3.5 py-2 text-xs"
             >
               <CloudDownload className="w-3.5 h-3.5" />
               Connect a booking channel
@@ -409,13 +431,13 @@ export default function ConnectionStatus({
               exactly when the OTA side isn't finished yet. */}
           {(conn.state === "awaiting_ota_approval" ||
             conn.state === "imported") && (
-            <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
+              <PulseDot color="bg-emerald-500" />
               Your AI concierge is live and taking bookings right now
             </p>
           )}
         </div>
       </div>
-    </div>
+    </Spotlight>
   );
 }

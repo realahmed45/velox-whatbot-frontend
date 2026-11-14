@@ -32,6 +32,24 @@ export default {
           800: "#92400e",
           900: "#78350f",
         },
+        // Bali sunset — the 2026 brand system. One gradient, four stops:
+        // gold → flame → magenta → twilight violet.
+        sunset: {
+          gold: "#FFB547",
+          flame: "#FF6A2B",
+          coral: "#FF4D5E",
+          magenta: "#FF3D77",
+          violet: "#7C5CFF",
+          indigo: "#4B3BFF",
+        },
+        // Night canvas for marketing + dark glass (sidebar, modals on dark).
+        night: {
+          600: "#2A2640",
+          700: "#1D1A2B",
+          800: "#14121F",
+          900: "#0B0A12",
+          950: "#06050A",
+        },
         ink: {
           50: "#f8fafc",
           100: "#f1f5f9",
@@ -54,7 +72,15 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Inter", "system-ui", "sans-serif"],
+        // Headlines: tight, confident, Framer-grade.
+        display: ["'Inter Tight'", "Inter", "system-ui", "sans-serif"],
+        // Editorial accent: one or two italic words per headline, never body.
+        serif: ["'Instrument Serif'", "Georgia", "serif"],
+        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+      },
+      transitionTimingFunction: {
+        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(255,87,34,0.12), 0 12px 40px -10px rgba(255,87,34,0.35)",
@@ -85,9 +111,17 @@ export default {
         2000: "2000px",
       },
       backgroundImage: {
-        // Signature gradient — amber → orange → deep flame
+        // THE signature gradient — Bali sunset. Use for primary actions, the
+        // logo, and at most one hero word per screen.
+        sunset:
+          "linear-gradient(115deg, #FFB547 0%, #FF6A2B 28%, #FF3D77 62%, #7C5CFF 100%)",
+        "sunset-soft":
+          "linear-gradient(115deg, rgba(255,181,71,0.16) 0%, rgba(255,106,43,0.14) 30%, rgba(255,61,119,0.12) 65%, rgba(124,92,255,0.14) 100%)",
+        "sunset-conic":
+          "conic-gradient(from 0deg, #FFB547, #FF6A2B, #FF3D77, #7C5CFF, #4B3BFF, #FFB547)",
+        // Kept for older call sites — now resolves to the sunset family.
         "brand-gradient":
-          "linear-gradient(135deg, #ff7d3e 0%, #ff5722 50%, #f2440c 100%)",
+          "linear-gradient(115deg, #FF8A3D 0%, #FF6A2B 40%, #FF3D77 100%)",
         "brand-gradient-r":
           "linear-gradient(135deg, #f2440c 0%, #ff5722 50%, #ff7d3e 100%)",
         "brand-gradient-soft":
@@ -128,6 +162,13 @@ export default {
         marquee: "marquee 32s linear infinite",
         aurora: "aurora 14s ease infinite",
         shine: "shine 3.5s linear infinite",
+        "drift-a": "driftA 22s ease-in-out infinite",
+        "drift-b": "driftB 28s ease-in-out infinite",
+        "drift-c": "driftC 34s ease-in-out infinite",
+        "border-spin": "spin 6s linear infinite",
+        "pop-in": "popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both",
+        "rise-in": "riseIn 0.8s cubic-bezier(0.16,1,0.3,1) both",
+        "ping-soft": "pingSoft 2.4s cubic-bezier(0,0,0.2,1) infinite",
       },
       keyframes: {
         fadeIn: { "0%": { opacity: 0 }, "100%": { opacity: 1 } },
@@ -177,6 +218,30 @@ export default {
         shine: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        driftA: {
+          "0%,100%": { transform: "translate3d(0,0,0) scale(1)" },
+          "50%": { transform: "translate3d(8%,6%,0) scale(1.15)" },
+        },
+        driftB: {
+          "0%,100%": { transform: "translate3d(0,0,0) scale(1.05)" },
+          "50%": { transform: "translate3d(-10%,-4%,0) scale(0.9)" },
+        },
+        driftC: {
+          "0%,100%": { transform: "translate3d(0,0,0) rotate(0deg)" },
+          "50%": { transform: "translate3d(4%,-8%,0) rotate(25deg)" },
+        },
+        popIn: {
+          "0%": { opacity: 0, transform: "scale(0.9) translateY(6px)" },
+          "100%": { opacity: 1, transform: "scale(1) translateY(0)" },
+        },
+        riseIn: {
+          "0%": { opacity: 0, transform: "translateY(24px)", filter: "blur(8px)" },
+          "100%": { opacity: 1, transform: "translateY(0)", filter: "blur(0)" },
+        },
+        pingSoft: {
+          "0%": { transform: "scale(1)", opacity: 0.55 },
+          "80%,100%": { transform: "scale(2.2)", opacity: 0 },
         },
       },
     },

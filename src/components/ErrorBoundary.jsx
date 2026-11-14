@@ -34,12 +34,20 @@ export default class ErrorBoundary extends Component {
   render() {
     if (!this.state.hasError) return this.props.children;
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-ink-50">
-        <div className="card max-w-md text-center p-8">
-          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <AlertTriangle className="w-7 h-7 text-white" />
+      <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden p-6" style={{ background: "var(--canvas)" }}>
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sunset-gold/25 blur-[100px]" />
+          <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-sunset-magenta/20 blur-[100px]" />
+          <div className="absolute inset-0 bg-dot-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+        </div>
+        <div className="glass-strong relative max-w-md rounded-3xl p-8 text-center animate-pop-in">
+          <div className="relative mx-auto mb-5 h-14 w-14">
+            <div aria-hidden className="absolute -inset-4 rounded-full bg-rose-400/30 blur-2xl" />
+            <div className="relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-rose-500 to-sunset-magenta shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_12px_28px_-10px_rgba(225,29,72,0.6)]">
+              <AlertTriangle className="h-7 w-7 text-white" strokeWidth={1.8} />
+            </div>
           </div>
-          <h1 className="text-xl font-bold text-ink-900 mb-1">
+          <h1 className="mb-1.5 font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900">
             Something broke
           </h1>
           <p className="text-sm text-ink-500 mb-5">
@@ -47,7 +55,7 @@ export default class ErrorBoundary extends Component {
             our team will see it.
           </p>
           {import.meta.env.DEV && this.state.error && (
-            <pre className="text-[11px] text-left bg-ink-100 text-ink-700 p-2 rounded mb-4 overflow-auto max-h-40">
+            <pre className="mb-4 max-h-40 overflow-auto rounded-xl bg-night-900 p-3 text-left font-mono text-[11px] text-rose-200">
               {String(this.state.error?.message || this.state.error)}
             </pre>
           )}

@@ -2,123 +2,132 @@ import { Outlet, Link } from "react-router-dom";
 import { Sparkles, Shield, Check, Zap, ArrowLeft } from "lucide-react";
 import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
+import { Aurora, Reveal } from "@/components/fx";
 
 const POINTS = [
-  "60+ channels connected — every booking in one calendar",
+  "Booking.com, Airbnb & Expedia — every booking in one calendar",
   "WhatsApp & Instagram in one inbox",
   "Auto-books guests and answers them like a human",
   "Airport transfers for your guests",
 ];
 
+/**
+ * Auth shell — dark cinematic canvas (night + aurora + grain). The brand
+ * story sits on the left; the form floats on the right in a pane of light
+ * liquid glass so every form control keeps full contrast.
+ */
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen flex bg-white relative overflow-hidden">
-      {/* ── Left brand panel (dark + orange accents) ───────────────── */}
-      <div className="hidden lg:flex w-[44%] xl:w-2/5 relative bg-ink-950 flex-col justify-center items-center text-center p-10 xl:p-14 text-white overflow-hidden">
-        {/* glow + texture */}
-        <div className="absolute -top-32 -left-24 w-[26rem] h-[26rem] rounded-full bg-brand-500/30 blur-[120px] animate-blob" />
-        <div
-          className="absolute -bottom-32 -right-24 w-[22rem] h-[22rem] rounded-full bg-amber-500/20 blur-[120px] animate-blob"
-          style={{ animationDelay: "5s" }}
-        />
-        <div className="absolute inset-0 bg-grid-dark bg-grid-48 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+    <div className="grain relative isolate flex min-h-screen overflow-hidden bg-night-950 text-white">
+      <Aurora variant="dark" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
+      />
 
+      {/* ── Left brand panel ───────────────────────────────────────── */}
+      <div className="relative hidden w-[44%] flex-col items-center justify-center p-10 text-center lg:flex xl:w-2/5 xl:p-14">
         {/* large centered animated logo lockup */}
-        <Link
-          to="/"
-          className="relative flex flex-col items-center gap-4 group"
-        >
+        <Link to="/" className="group relative flex flex-col items-center gap-5">
+          <span aria-hidden className="absolute top-6 h-36 w-36 rounded-full bg-sunset opacity-30 blur-3xl animate-glow-pulse" />
           <BotlifyMark
-            size={128}
-            className="animate-float drop-shadow-2xl transition-transform group-hover:scale-105"
+            size={120}
+            glow
+            className="relative animate-float drop-shadow-2xl transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105"
           />
-          <span className="text-5xl xl:text-6xl font-black tracking-tight">
-            Botl<span className="text-brand-500">ify</span>
+          <span className="relative inline-flex items-baseline font-display text-5xl font-bold tracking-[-0.05em] xl:text-6xl">
+            botlify
+            <span className="ml-1 inline-block h-2.5 w-2.5 rounded-full bg-sunset shadow-[0_0_14px_rgba(255,61,119,0.8)]" />
           </span>
         </Link>
 
         {/* copy */}
-        <div className="relative mt-9 max-w-sm">
-          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-semibold text-brand-200">
-            <Sparkles className="w-3 h-3" /> Every channel, one place
-          </span>
-          <h1 className="mt-5 text-3xl xl:text-4xl font-black tracking-tighter leading-[1.08]">
-            One place.{" "}
-            <span className="text-brand-500">Every booking channel.</span>
-          </h1>
-          <ul className="mt-7 space-y-3 text-left inline-block mx-auto">
-            {POINTS.map((p) => (
-              <li key={p} className="flex items-start gap-3 text-sm text-ink-200">
-                <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-brand-500/15 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-brand-400" />
+        <div className="relative mt-10 max-w-sm">
+          <Reveal delay={0.05}>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1 text-[11px] font-semibold text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/10 backdrop-blur">
+              <Sparkles className="h-3 w-3 text-sunset-gold" /> Every channel, one place
+            </span>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <h1 className="mt-5 font-display text-3xl font-semibold leading-[1.02] tracking-[-0.045em] xl:text-[2.6rem]">
+              One place.{" "}
+              <span className="font-serif font-normal italic tracking-[-0.02em] text-white/85">Every</span>{" "}
+              <span className="text-sunset">booking channel.</span>
+            </h1>
+          </Reveal>
+          <ul className="mx-auto mt-8 inline-block space-y-3 text-left">
+            {POINTS.map((p, i) => (
+              <Reveal as="li" key={p} delay={0.2 + i * 0.06} y={12}>
+                <span className="flex items-start gap-3 text-sm text-white/65">
+                  <span className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-sunset shadow-[0_4px_12px_-4px_rgba(255,61,119,0.7)]">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  </span>
+                  <span>{p}</span>
                 </span>
-                <span>{p}</span>
-              </li>
+              </Reveal>
             ))}
           </ul>
         </div>
 
         {/* trust row */}
-        <div className="relative mt-9 flex items-center justify-center gap-5 text-[11px] text-ink-400">
+        <div className="relative mt-10 flex items-center justify-center gap-5 text-[11px] text-white/45">
           <span className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-brand-400" /> Meta-approved API
+            <Shield className="h-3.5 w-3.5 text-sunset-gold" /> Meta-approved API
           </span>
+          <span className="h-3 w-px bg-white/15" aria-hidden />
           <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-brand-400" /> Replies in seconds
+            <Zap className="h-3.5 w-3.5 text-sunset-gold" /> Replies in seconds
           </span>
         </div>
       </div>
 
       {/* ── Right form panel ───────────── */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative bg-white">
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand-100/50 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-amber-100/40 blur-3xl pointer-events-none" />
-
+      <div className="relative flex flex-1 items-center justify-center p-4 py-8 sm:p-10">
         <div className="relative w-full max-w-md">
           {/* mobile header */}
-          <div className="lg:hidden flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between lg:hidden">
             <Link to="/">
-              <Logo size="lg" />
+              <Logo size="lg" dark />
             </Link>
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 hover:text-brand-600 transition"
+              className="group inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-white/60 transition hover:bg-white/[0.08] hover:text-white"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Home
+              <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" /> Home
             </Link>
           </div>
 
-          <div className="bg-white border border-ink-100 rounded-2xl p-6 sm:p-8 shadow-card-lg">
-            <div className="hidden lg:flex items-center justify-end mb-1">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-400 hover:text-brand-600 transition"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" /> Back home
-              </Link>
+          <div className="relative animate-rise-in">
+            {/* sunset halo bleeding out from behind the glass */}
+            <div aria-hidden className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] bg-sunset opacity-[0.18] blur-3xl" />
+            {/* The auth pages draw their own dark glass card (Login, Register…),
+                so this is just a positioning shell on the night canvas. */}
+            <div className="relative text-white">
+              <div className="mb-2 hidden items-center justify-end lg:flex">
+                <Link
+                  to="/"
+                  className="group inline-flex items-center gap-1.5 text-xs font-medium text-white/45 transition hover:text-white"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" /> Back home
+                </Link>
+              </div>
+              <Outlet />
             </div>
-            <Outlet />
           </div>
 
-          <p className="mt-5 text-center text-[11px] text-ink-400">
+          <p className="mt-6 text-center text-[11px] text-white/45">
             By continuing you agree to our{" "}
-            <Link
-              to="/terms"
-              className="text-ink-500 hover:text-brand-600 underline-offset-2 hover:underline"
-            >
+            <Link to="/terms" className="text-white/70 underline-offset-2 hover:text-white hover:underline">
               Terms
             </Link>{" "}
             &{" "}
-            <Link
-              to="/privacy"
-              className="text-ink-500 hover:text-brand-600 underline-offset-2 hover:underline"
-            >
+            <Link to="/privacy" className="text-white/70 underline-offset-2 hover:text-white hover:underline">
               Privacy
             </Link>
             .
           </p>
 
-          <p className="mt-3 text-center text-[11px] text-ink-300">
+          <p className="mt-3 text-center text-[11px] text-white/30">
             © {new Date().getFullYear()} Botlify. All rights reserved.
           </p>
         </div>

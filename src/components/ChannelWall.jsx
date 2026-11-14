@@ -33,7 +33,7 @@ function Chip({ channel, size, dark }) {
   if (dark) {
     return (
       <span
-        className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 font-semibold text-white/80 ${
+        className={`inline-flex items-center gap-2 rounded-full bg-white/[0.06] font-semibold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/10 backdrop-blur transition duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/[0.1] hover:text-white ${
           compact ? "pl-1 pr-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
         }`}
       >
@@ -49,7 +49,7 @@ function Chip({ channel, size, dark }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border font-semibold ${channel.tint} ${
+      className={`inline-flex items-center gap-2 rounded-full border font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition duration-500 ease-spring hover:-translate-y-0.5 ${channel.tint} ${
         compact ? "pl-1 pr-2.5 py-1 text-[11px]" : "pl-1.5 pr-3 py-1.5 text-xs"
       }`}
     >
@@ -72,8 +72,8 @@ function MoreChip({ size, dark }) {
     <span
       className={`inline-flex items-center rounded-full border font-semibold ${base} ${
         dark
-          ? "border-white/10 bg-white/5 text-white/60"
-          : "border-ink-200 bg-ink-50 text-ink-500"
+          ? "border-white/10 bg-white/[0.04] text-white/60 border-dashed"
+          : "border-dashed border-ink-900/15 bg-white/60 text-ink-500"
       }`}
     >
       {MORE_CHANNELS_LABEL}
@@ -126,11 +126,7 @@ export default function ChannelWall({
 
   return (
     <div
-      className={`rounded-2xl border p-5 sm:p-6 ${
-        dark
-          ? "border-white/10 bg-white/5"
-          : "border-ink-100 bg-white shadow-card"
-      } ${className}`}
+      className={`p-5 sm:p-6 ${dark ? "card-dark" : "card"} ${className}`}
     >
       {title && (
         <div
@@ -138,11 +134,15 @@ export default function ChannelWall({
             align === "center" ? "justify-center" : ""
           }`}
         >
-          <Icon
-            className={`w-4 h-4 ${dark ? "text-brand-300" : "text-brand-500"}`}
-          />
+          <span
+            className={`grid h-7 w-7 place-items-center rounded-lg ${
+              dark ? "bg-white/[0.08] text-sunset-gold" : "bg-sunset-soft text-sunset-flame"
+            }`}
+          >
+            <Icon className="h-4 w-4" strokeWidth={1.8} />
+          </span>
           <p
-            className={`text-sm font-black ${
+            className={`font-display text-sm font-semibold tracking-[-0.01em] ${
               dark ? "text-white" : "text-ink-900"
             }`}
           >

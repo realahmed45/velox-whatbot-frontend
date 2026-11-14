@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, Check, Mail } from "lucide-react";
+import { Aurora, Reveal } from "@/components/fx";
 
 const SECTIONS = [
   {
@@ -96,90 +97,111 @@ export default function PrivacyPage() {
 /* ── Shared polished legal-page shell ─────────────────────────── */
 export function LegalShell({ icon: Icon, eyebrow, title, updated, sections }) {
   return (
-    <div className="relative py-14 sm:py-20 px-4 overflow-hidden">
-      <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand-100/40 blur-3xl pointer-events-none" />
+    <div className="relative isolate overflow-hidden bg-night-950 text-white grain py-16 sm:py-24 px-4">
+      <Aurora variant="dark" />
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[70vh] bg-dot-grid-dark mask-fade-b opacity-60" />
       <div className="relative max-w-3xl mx-auto">
         {/* header */}
         <div className="text-center">
-          <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 text-brand-500 mb-5">
-            <Icon className="w-7 h-7" />
-          </span>
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600">
-            {eyebrow}
-          </p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
-            {title}
-          </h1>
-          <p className="mt-3 text-sm text-ink-400">Last updated {updated}</p>
+          <Reveal>
+            <span className="group relative mx-auto mb-6 grid h-14 w-14 place-items-center">
+              <span aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-40 blur-xl" />
+              <span className="relative grid h-14 w-14 place-items-center rounded-2xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-transform duration-500 ease-spring hover:-translate-y-1 hover:rotate-[-8deg]">
+                <Icon className="w-7 h-7" strokeWidth={1.8} />
+              </span>
+            </span>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">
+              {eyebrow}
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h1 className="mt-3 font-display text-4xl sm:text-6xl font-semibold tracking-[-0.05em] leading-[0.98] text-white">
+              {title}
+            </h1>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/[0.05] px-3 py-1 text-xs text-white/50 ring-1 ring-white/10">
+              <span className="h-1.5 w-1.5 rounded-full bg-sunset-gold" />
+              Last updated {updated}
+            </p>
+          </Reveal>
         </div>
 
         {/* card */}
-        <div className="mt-10 bg-white rounded-2xl border border-ink-100 shadow-card-lg p-6 sm:p-10">
-          <div className="space-y-8">
-            {sections.map((s, i) => (
-              <section
-                key={i}
-                className={
-                  i > 0 ? "pt-8 border-t border-ink-100" : ""
-                }
-              >
-                <h2 className="flex items-center gap-2.5 text-lg font-black text-ink-900">
-                  <span className="w-1.5 h-5 rounded-full bg-brand-500" />
-                  {s.h}
+        <Reveal delay={0.2}>
+          <div className="mt-12 card-dark p-6 sm:p-10">
+            <div className="space-y-9">
+              {sections.map((s, i) => (
+                <Reveal
+                  as="section"
+                  key={i}
+                  y={14}
+                  className={i > 0 ? "pt-9 border-t border-white/[0.07]" : ""}
+                >
+                  <h2 className="group flex items-baseline gap-3 font-display text-lg sm:text-xl font-semibold tracking-[-0.02em] text-white">
+                    <span className="font-mono text-[11px] font-medium tabular-nums text-sunset-gold/80 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {s.h}
+                  </h2>
+                  {s.p && (
+                    <p className="mt-3 text-[15px] text-white/60 leading-relaxed">
+                      {s.p}
+                    </p>
+                  )}
+                  {s.ul && (
+                    <ul className="mt-4 space-y-2.5">
+                      {s.ul.map((li, k) => (
+                        <li
+                          key={k}
+                          className="flex items-start gap-2.5 text-[15px] text-white/60 leading-relaxed"
+                        >
+                          <span className="mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-sunset-flame/15 text-sunset-gold">
+                            <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                          </span>
+                          <span>{li}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Reveal>
+              ))}
+
+              {/* contact */}
+              <section className="pt-9 border-t border-white/[0.07]">
+                <h2 className="flex items-baseline gap-3 font-display text-lg sm:text-xl font-semibold tracking-[-0.02em] text-white">
+                  <span className="font-mono text-[11px] font-medium text-sunset-gold/80">@</span>
+                  Contact
                 </h2>
-                {s.p && (
-                  <p className="mt-3 text-[15px] text-ink-600 leading-relaxed">
-                    {s.p}
-                  </p>
-                )}
-                {s.ul && (
-                  <ul className="mt-4 space-y-2.5">
-                    {s.ul.map((li, k) => (
-                      <li
-                        key={k}
-                        className="flex items-start gap-2.5 text-[15px] text-ink-600"
-                      >
-                        <Check className="w-4 h-4 mt-1 text-brand-500 flex-shrink-0" />
-                        <span>{li}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <a
+                  href="mailto:contactus@botlify.site"
+                  className="group mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl bg-white/[0.05] px-4 py-3 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/[0.09] hover:ring-sunset-flame/40 hover:shadow-[0_14px_34px_-14px_rgba(255,61,119,0.6)] active:scale-[0.97]"
+                >
+                  <span className="w-10 h-10 rounded-xl bg-sunset flex items-center justify-center text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-10deg]">
+                    <Mail className="w-4 h-4" strokeWidth={1.8} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-white">
+                      contactus@botlify.site
+                    </span>
+                    <span className="block text-xs text-white/50">
+                      Questions about this policy? We reply within a few hours.
+                    </span>
+                  </span>
+                </a>
               </section>
-            ))}
-
-            {/* contact */}
-            <section className="pt-8 border-t border-ink-100">
-              <h2 className="flex items-center gap-2.5 text-lg font-black text-ink-900">
-                <span className="w-1.5 h-5 rounded-full bg-brand-500" />
-                Contact
-              </h2>
-              <a
-                href="mailto:contactus@botlify.site"
-                className="mt-4 inline-flex items-center gap-3 rounded-xl border border-ink-100 bg-brand-50/40 px-4 py-3 hover:border-brand-300 hover:shadow-glow transition group"
-              >
-                <span className="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center text-white shrink-0">
-                  <Mail className="w-4 h-4" />
-                </span>
-                <span>
-                  <span className="block text-sm font-bold text-ink-900">
-                    contactus@botlify.site
-                  </span>
-                  <span className="block text-xs text-ink-500">
-                    Questions about this policy? We reply within a few hours.
-                  </span>
-                </span>
-              </a>
-            </section>
+            </div>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 hover:text-brand-600 transition"
+            className="group inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-white/55 transition-colors hover:text-white"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to home
+            <ArrowLeft className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-1" /> Back to home
           </Link>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { HelpCircle, X } from "lucide-react";
 
 /**
@@ -39,44 +40,50 @@ export default function HelpHint({ title = "How this works", tips = [], footer, 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-ink-600 hover:border-brand-300 hover:text-brand-600 transition"
+        className="btn-secondary group gap-1.5 rounded-xl px-2.5 py-1.5 text-xs"
         aria-label="Help"
+        aria-expanded={open}
       >
-        <HelpCircle className="w-3.5 h-3.5" />
+        <HelpCircle className="h-3.5 w-3.5 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-[-12deg] group-hover:scale-110" />
         Help
       </button>
 
-      {open && (
-        <div
-          className={`absolute z-50 mt-2 top-full w-72 sm:w-80 rounded-xl border border-ink-100 bg-white shadow-card-lg p-4 ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <p className="text-sm font-black text-ink-900">{title}</p>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-ink-400 hover:text-ink-700 -mr-1 -mt-0.5"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <ul className="space-y-2">
-            {tips.map((t, i) => (
-              <li key={i} className="flex items-start gap-2 text-[13px] text-ink-600 leading-snug">
-                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-          {footer && (
-            <div className="mt-3 pt-3 border-t border-ink-100 text-[12px] text-ink-500">
-              {footer}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: -4, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            style={{ transformOrigin: align === "right" ? "top right" : "top left" }}
+            className={`glass-strong absolute top-full z-50 mt-2 w-72 rounded-2xl p-4 sm:w-80 ${
+              align === "right" ? "right-0" : "left-0"
+            }`}
+          >
+            <div className="mb-2.5 flex items-start justify-between gap-3">
+              <p className="font-display text-sm font-semibold tracking-[-0.01em] text-ink-900">{title}</p>
+              <button
+                onClick={() => setOpen(false)}
+                className="group -mr-1.5 -mt-1 grid h-7 w-7 place-items-center rounded-lg text-ink-400 transition hover:bg-ink-900/[0.05] hover:text-ink-700"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
+              </button>
             </div>
-          )}
-        </div>
-      )}
+            <ul className="space-y-2">
+              {tips.map((t, i) => (
+                <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-ink-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            {footer && (
+              <div className="mt-3 border-t border-ink-900/[0.06] pt-3 text-[12px] text-ink-500">{footer}</div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

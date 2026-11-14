@@ -7,11 +7,13 @@
  * GET /hotel/bookings client-side before the sync job has first run.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import {
   BedDouble,
   CalendarDays,
+  ChevronRight,
   Moon,
   Phone,
   Search,
@@ -21,6 +23,7 @@ import {
 import Drawer from "@/components/ui/Drawer";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
+import { NumberTicker, Reveal, Spotlight } from "@/components/fx";
 
 const PAGE_SIZE = 100;
 const MAX_PAGES = 10; // up to 1,000 bookings — plenty for one property
@@ -28,21 +31,21 @@ const MAX_PAGES = 10; // up to 1,000 bookings — plenty for one property
 const errMsg = (e, fallback) => e?.response?.data?.message || fallback;
 
 const SOURCE_META = {
-  booking_com: { label: "Booking.com", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  airbnb: { label: "Airbnb", cls: "bg-rose-50 text-rose-600 border-rose-200" },
-  whatsapp: { label: "WhatsApp", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  instagram: { label: "Instagram", cls: "bg-purple-50 text-purple-700 border-purple-200" },
-  tiktok: { label: "TikTok", cls: "bg-ink-900 text-white border-ink-900" },
-  direct: { label: "Direct", cls: "bg-ink-50 text-ink-600 border-ink-200" },
-  manual: { label: "Manual", cls: "bg-ink-50 text-ink-600 border-ink-200" },
-  other_ota: { label: "Other OTA", cls: "bg-sky-50 text-sky-700 border-sky-200" },
+  booking_com: { label: "Booking.com", cls: "bg-blue-500/10 text-blue-700 ring-blue-500/20" },
+  airbnb: { label: "Airbnb", cls: "bg-rose-500/10 text-rose-600 ring-rose-500/20" },
+  whatsapp: { label: "WhatsApp", cls: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20" },
+  instagram: { label: "Instagram", cls: "bg-purple-500/10 text-purple-700 ring-purple-500/20" },
+  tiktok: { label: "TikTok", cls: "bg-ink-900 text-white ring-ink-900" },
+  direct: { label: "Direct", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
+  manual: { label: "Manual", cls: "bg-ink-900/[0.04] text-ink-600 ring-ink-900/10" },
+  other_ota: { label: "Other OTA", cls: "bg-sky-500/10 text-sky-700 ring-sky-500/20" },
 };
 
 function SourceBadge({ source }) {
   const m = SOURCE_META[source] || SOURCE_META.manual;
   return (
     <span
-      className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${m.cls}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${m.cls}`}
     >
       {m.label}
     </span>
@@ -138,40 +141,39 @@ function GuestPanel({ guest, onClose }) {
     <Drawer open={!!guest} onClose={onClose} title={guest?.name || "Guest"}>
       {guest && (
         <div className="space-y-5">
-          <div>
-            {guest.phone && (
-              <p className="text-sm text-ink-600 flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-ink-400" />
-                {guest.phone}
-              </p>
-            )}
-            {guest.email && (
-              <p className="text-sm text-ink-600 mt-1 truncate">{guest.email}</p>
-            )}
+          <div className="flex items-center gap-3.5">
+            <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-sunset font-display text-lg font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+              {(guest.name?.[0] || "G").toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              {guest.phone && (
+                <p className="flex items-center gap-2 text-sm text-ink-600">
+                  <Phone className="h-3.5 w-3.5 text-ink-400" strokeWidth={1.8} />
+                  {guest.phone}
+                </p>
+              )}
+              {guest.email && (
+                <p className="mt-1 truncate text-sm text-ink-600">{guest.email}</p>
+              )}
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg bg-ink-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
-                Stays
-              </p>
-              <p className="text-xl font-bold text-ink-900 mt-0.5">
-                {guest.stays}
+          <div className="grid grid-cols-3 gap-2.5">
+            <div className="rounded-2xl bg-white/80 p-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+              <p className="text-[11px] text-ink-500">Stays</p>
+              <p className="mt-0.5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+                <NumberTicker value={guest.stays} duration={0.8} />
               </p>
             </div>
-            <div className="rounded-lg bg-ink-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
-                Nights
-              </p>
-              <p className="text-xl font-bold text-ink-900 mt-0.5">
-                {guest.nights}
+            <div className="rounded-2xl bg-white/80 p-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+              <p className="text-[11px] text-ink-500">Nights</p>
+              <p className="mt-0.5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+                <NumberTicker value={guest.nights} duration={0.8} />
               </p>
             </div>
-            <div className="rounded-lg bg-ink-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
-                Revenue
-              </p>
-              <p className="text-base font-bold text-ink-900 mt-1 truncate">
+            <div className="rounded-2xl bg-sunset-soft p-3 ring-1 ring-sunset-flame/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <p className="text-[11px] text-ink-500">Revenue</p>
+              <p className="mt-1 truncate font-display text-sm font-semibold tabular-nums text-ink-900 sm:text-base">
                 {money(guest.revenue, guest.currency)}
               </p>
             </div>
@@ -179,7 +181,7 @@ function GuestPanel({ guest, onClose }) {
 
           {guest.tags.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-ink-600 mb-2">Preferences</p>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">Preferences</p>
               <div className="flex flex-wrap gap-1.5">
                 {guest.tags.map((t) => (
                   <span key={t} className="badge-gray">
@@ -191,15 +193,18 @@ function GuestPanel({ guest, onClose }) {
           )}
 
           <div>
-            <p className="text-xs font-bold text-ink-600 mb-2">Stay history</p>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">Stay history</p>
             <div className="space-y-2">
-              {guest.bookings.map((b) => (
-                <div
+              {guest.bookings.map((b, i) => (
+                <motion.div
                   key={b._id}
-                  className="rounded-lg border border-ink-100 p-3 flex items-start justify-between gap-3"
+                  initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 0.5, delay: Math.min(i, 10) * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-start justify-between gap-3 rounded-2xl bg-white/75 p-3.5 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] transition-colors duration-300 hover:bg-white"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ink-900">
+                    <p className="text-sm font-semibold tabular-nums text-ink-900">
                       {fmtDate(b.checkIn)} → {fmtDate(b.checkOut)}
                     </p>
                     <p className="text-xs text-ink-500 mt-0.5 truncate">
@@ -210,15 +215,15 @@ function GuestPanel({ guest, onClose }) {
                       <SourceBadge source={b.source} />
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-ink-900">
+                  <div className="flex-shrink-0 text-right">
+                    <p className="text-sm font-semibold tabular-nums text-ink-900">
                       {money(b.totalAmount, b.currency)}
                     </p>
                     {b.status === "cancelled" && (
                       <span className="badge-red mt-1">Cancelled</span>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -253,6 +258,11 @@ export default function GuestsPage() {
         currency: g.stats?.currency || "USD",
         lastStay: g.stats?.lastStayAt || null,
         channels: [...new Set((g.identities || []).map((i) => i.channel))],
+        // The list keys rows on `key` and reads `sources` / `returning` —
+        // the same fields the booking-folded fallback produces.
+        key: String(g._id),
+        sources: [...new Set((g.identities || []).map((i) => i.channel).filter(Boolean))],
+        returning: (g.stats?.staysCount || 0) > 1,
         preferences: g.preferences || [],
         tags: g.tags || [],
         bookings: [],
@@ -300,37 +310,49 @@ export default function GuestsPage() {
   }, [guests, q]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5 sm:mb-6">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-            <Users className="w-6 h-6 text-brand-500" />
+    <div className="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+      <Reveal className="mb-6 flex flex-wrap items-center justify-between gap-4 sm:mb-8">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+            <Users className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-ink-900 tracking-tight">
+            <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
               Guests
             </h1>
-            <p className="text-sm text-ink-500 mt-0.5">
-              Everyone who has stayed with you.
+            <p className="mt-0.5 text-sm text-ink-500">
+              Everyone who has{" "}
+              <span className="font-serif text-[1.05em] italic text-ink-700">stayed</span> with
+              you.
             </p>
           </div>
         </div>
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" />
+        <div className="group relative w-full sm:w-72">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400 transition-all duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-flame" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name or phone"
-            className="input pl-9 py-2"
+            className="input rounded-2xl py-2.5 pl-10"
             aria-label="Search guests"
           />
         </div>
-      </div>
+      </Reveal>
 
       {loading ? (
-        <div className="space-y-2">
+        <div className="card overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <div
+              key={i}
+              className="flex items-center gap-3 border-b border-ink-900/[0.05] px-4 py-4 last:border-0"
+            >
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-3 w-1/3" />
+                <Skeleton className="h-2.5 w-1/4" />
+              </div>
+              <Skeleton className="hidden h-6 w-40 rounded-lg sm:block" />
+            </div>
           ))}
         </div>
       ) : failed ? (
@@ -357,30 +379,43 @@ export default function GuestsPage() {
           description={`No guest matches "${q}". Try a different name or phone number.`}
         />
       ) : (
-        <div className="card divide-y divide-ink-100">
-          {filtered.map((g) => (
-            <button
+        <Reveal y={16} className="card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-ink-900/[0.06] bg-white/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400 backdrop-blur">
+            <span>
+              <span className="tabular-nums">{filtered.length}</span> guest{filtered.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <div className="divide-y divide-ink-900/[0.05]">
+          {filtered.map((g, i) => (
+            <Spotlight
+              as={motion.button}
               key={g.key}
               type="button"
               onClick={() => setSelected(g)}
-              className="w-full text-left px-4 py-3.5 hover:bg-ink-50/80 transition flex items-center gap-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: Math.min(i, 12) * 0.03, ease: [0.16, 1, 0.3, 1] }}
+              whileTap={{ scale: 0.985 }}
+              className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-300 hover:bg-white/80"
             >
-              <div className="w-9 h-9 rounded-full bg-brand-gradient flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                {(g.name[0] || "G").toUpperCase()}
+              <div className="relative flex-shrink-0">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-sunset font-display text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_6px_14px_-8px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:rotate-[-6deg]">
+                  {(g.name[0] || "G").toUpperCase()}
+                </div>
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-semibold text-ink-900 truncate">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-semibold text-ink-900">
                     {g.name}
                   </p>
                   {g.returning && <span className="badge-brand">Returning</span>}
                 </div>
-                <p className="text-xs text-ink-500 truncate mt-0.5">
+                <p className="mt-0.5 truncate text-xs text-ink-500">
                   {g.phone || g.email || "No contact details"}
                 </p>
                 {g.sources.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
+                  <div className="mt-1.5 flex flex-wrap gap-1">
                     {g.sources.slice(0, 3).map((s) => (
                       <SourceBadge key={s} source={s} />
                     ))}
@@ -388,47 +423,49 @@ export default function GuestsPage() {
                 )}
               </div>
 
-              <div className="hidden sm:flex items-center gap-5 flex-shrink-0 text-right">
+              <div className="hidden flex-shrink-0 items-center gap-5 text-right sm:flex">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-400 flex items-center gap-1 justify-end">
-                    <BedDouble className="w-3 h-3" /> Stays
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                    <BedDouble className="h-3 w-3" strokeWidth={1.8} /> Stays
                   </p>
-                  <p className="text-sm font-bold text-ink-900">{g.stays}</p>
+                  <p className="text-sm font-semibold tabular-nums text-ink-900">{g.stays}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-400 flex items-center gap-1 justify-end">
-                    <Moon className="w-3 h-3" /> Nights
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                    <Moon className="h-3 w-3" strokeWidth={1.8} /> Nights
                   </p>
-                  <p className="text-sm font-bold text-ink-900">{g.nights}</p>
+                  <p className="text-sm font-semibold tabular-nums text-ink-900">{g.nights}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-400 flex items-center gap-1 justify-end">
-                    <Wallet className="w-3 h-3" /> Revenue
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                    <Wallet className="h-3 w-3" strokeWidth={1.8} /> Revenue
                   </p>
-                  <p className="text-sm font-bold text-ink-900">
+                  <p className="text-sm font-semibold tabular-nums text-ink-900">
                     {money(g.revenue, g.currency)}
                   </p>
                 </div>
                 <div className="min-w-[80px]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-400 flex items-center gap-1 justify-end">
-                    <CalendarDays className="w-3 h-3" /> Last
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                    <CalendarDays className="h-3 w-3" strokeWidth={1.8} /> Last
                   </p>
-                  <p className="text-sm font-bold text-ink-900">
+                  <p className="text-sm font-semibold tabular-nums text-ink-900">
                     {fmtDate(g.lastStay)}
                   </p>
                 </div>
+                <ChevronRight className="h-4 w-4 text-ink-300 transition-all duration-500 ease-spring group-hover:translate-x-1 group-hover:text-sunset-flame" />
               </div>
 
               {/* compact summary on phones */}
-              <div className="sm:hidden text-right flex-shrink-0">
-                <p className="text-sm font-bold text-ink-900">{g.stays}</p>
+              <div className="flex-shrink-0 text-right sm:hidden">
+                <p className="text-sm font-semibold tabular-nums text-ink-900">{g.stays}</p>
                 <p className="text-[10px] text-ink-400">
                   stay{g.stays === 1 ? "" : "s"}
                 </p>
               </div>
-            </button>
+            </Spotlight>
           ))}
-        </div>
+          </div>
+        </Reveal>
       )}
 
       <GuestPanel guest={selected} onClose={() => setSelected(null)} />

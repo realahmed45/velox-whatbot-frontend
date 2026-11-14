@@ -21,6 +21,8 @@ import {
 } from "@/services/accounts";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import BotlifyMark from "@/components/BotlifyMark";
+import { motion } from "framer-motion";
+import { Aurora, Reveal } from "@/components/fx";
 
 export default function AccountPickerPage() {
   const navigate = useNavigate();
@@ -107,119 +109,156 @@ export default function AccountPickerPage() {
 
   if (accounts === null) {
     return (
-      <div className="min-h-screen grid place-items-center bg-gradient-to-b from-brand-50/40 to-white">
-        <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+      <div className="relative isolate min-h-screen grid place-items-center bg-night-950 overflow-hidden grain">
+        <Aurora variant="dark" />
+        <div className="w-full max-w-lg px-4 space-y-3" aria-busy="true">
+          <div className="mx-auto mb-8 h-14 w-14 rounded-2xl bg-white/[0.06] animate-pulse" />
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-[88px] rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06] animate-pulse" />
+          ))}
+          <span className="sr-only">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            Loading accounts
+          </span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50/40 via-white to-white flex flex-col items-center px-4 py-14">
+    <div className="relative isolate min-h-screen bg-night-950 text-white flex flex-col items-center px-4 py-14 overflow-hidden grain">
+      <Aurora variant="dark" />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"
+      />
       <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <BotlifyMark size={56} className="mx-auto mb-4" />
-          <h1 className="text-3xl font-black text-ink-900 tracking-tight">
-            Choose an account
+        <Reveal className="text-center mb-9">
+          <div className="relative w-14 h-14 mx-auto mb-5">
+            <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-25 blur-2xl" />
+            <motion.div
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+              className="relative"
+            >
+              <BotlifyMark size={56} className="mx-auto" />
+            </motion.div>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
+            Choose an{" "}
+            <span className="font-serif italic font-normal text-sunset">account</span>
           </h1>
-          <p className="text-ink-500 mt-2">
+          <p className="text-white/60 mt-2 text-[15px]">
             Signed in as{" "}
-            <span className="font-semibold text-ink-700">{user?.email}</span>
+            <span className="font-semibold text-white break-all">{user?.email}</span>
           </p>
-        </div>
+        </Reveal>
 
         <div className="space-y-3">
-          {accounts.map((a) => {
+          {accounts.map((a, i) => {
             const handle = a.instagram?.username
               ? `@${a.instagram.username}`
               : "No Instagram connected";
             const isEntering = entering === a._id;
             return (
-              <button
-                key={a._id}
-                onClick={() => enter(a._id)}
-                disabled={!!entering}
-                className="w-full flex items-center gap-4 bg-white border border-ink-200 hover:border-brand-400 hover:shadow-lg rounded-2xl p-4 transition text-left disabled:opacity-60"
-              >
-                {a.instagram?.profilePicture ? (
-                  <img
-                    src={a.instagram.profilePicture}
-                    alt=""
-                    className="w-14 h-14 rounded-full object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <span className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-lg font-black flex-shrink-0">
-                    {(a.name?.[0] || "A").toUpperCase()}
-                  </span>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-ink-900 truncate">{a.name}</p>
-                  <p className="text-sm text-ink-500 truncate flex items-center gap-1.5">
-                    <Instagram className="w-3.5 h-3.5" /> {handle}
-                  </p>
-                </div>
-                <span
-                  className={`text-[11px] font-bold px-2 py-1 rounded-lg flex-shrink-0 ${
-                    a.lifetime
-                      ? "bg-amber-100 text-amber-700"
-                      : a.subscriptionStatus === "trialing"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-emerald-100 text-emerald-700"
+              <Reveal key={a._id} delay={0.05 + i * 0.06}>
+                <motion.button
+                  onClick={() => enter(a._id)}
+                  disabled={!!entering}
+                  whileHover={entering ? undefined : { y: -3 }}
+                  whileTap={entering ? undefined : { scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                  className={`group card-dark w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 text-left disabled:opacity-60 transition-shadow duration-500 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,106,43,0.35),0_20px_50px_-20px_rgba(255,61,119,0.55)] ${
+                    isEntering ? "ring-1 ring-sunset-flame/60" : ""
                   }`}
                 >
-                  {planBadge(a)}
-                </span>
-                {isEntering ? (
-                  <Loader2 className="w-5 h-5 text-brand-500 animate-spin flex-shrink-0" />
-                ) : (
-                  <Check className="w-5 h-5 text-ink-300 flex-shrink-0" />
-                )}
-                {accounts.length > 1 && (
+                  {a.instagram?.profilePicture ? (
+                    <img
+                      src={a.instagram.profilePicture}
+                      alt=""
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover flex-shrink-0 ring-1 ring-white/15 transition-transform duration-500 ease-spring group-hover:-rotate-3 group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sunset flex items-center justify-center text-white text-lg font-display font-semibold flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105">
+                      {(a.name?.[0] || "A").toUpperCase()}
+                    </span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-semibold text-white truncate">{a.name}</p>
+                    <p className="text-sm text-white/50 truncate flex items-center gap-1.5">
+                      <Instagram className="w-3.5 h-3.5 flex-shrink-0" /> {handle}
+                    </p>
+                  </div>
                   <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => remove(a, e)}
-                    onKeyDown={(e) => e.key === "Enter" && remove(a, e)}
-                    title="Delete account"
-                    className="flex-shrink-0 p-1.5 rounded-lg text-ink-300 hover:text-rose-500 hover:bg-rose-50 transition"
+                    className={`hidden min-[380px]:inline-flex text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 ring-1 ring-inset ${
+                      a.lifetime
+                        ? "bg-amber-400/15 text-amber-200 ring-amber-300/25"
+                        : a.subscriptionStatus === "trialing"
+                          ? "bg-sky-400/15 text-sky-200 ring-sky-300/25"
+                          : "bg-emerald-400/15 text-emerald-200 ring-emerald-300/25"
+                    }`}
                   >
-                    {removing === a._id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
+                    {planBadge(a)}
                   </span>
-                )}
-              </button>
+                  {isEntering ? (
+                    <Loader2 className="w-5 h-5 text-sunset-gold animate-spin flex-shrink-0" />
+                  ) : (
+                    <Check className="w-5 h-5 text-white/25 flex-shrink-0 transition-all duration-500 ease-spring group-hover:text-sunset-gold group-hover:scale-110" />
+                  )}
+                  {accounts.length > 1 && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => remove(a, e)}
+                      onKeyDown={(e) => e.key === "Enter" && remove(a, e)}
+                      title="Delete account"
+                      className="flex-shrink-0 h-9 w-9 grid place-items-center rounded-lg text-white/30 hover:text-rose-300 hover:bg-rose-500/15 active:scale-90 transition duration-300 ease-spring"
+                    >
+                      {removing === a._id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </span>
+                  )}
+                </motion.button>
+              </Reveal>
             );
           })}
 
-          <button
-            onClick={create}
-            disabled={!!entering}
-            className="w-full flex items-center gap-4 border-2 border-dashed border-ink-200 hover:border-brand-400 rounded-2xl p-4 transition text-left text-brand-600 disabled:opacity-60"
-          >
-            <span className="w-14 h-14 rounded-full border-2 border-dashed border-brand-300 flex items-center justify-center flex-shrink-0">
-              {entering === "new" ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Plus className="w-6 h-6" />
-              )}
-            </span>
-            <div>
-              <p className="font-bold">Add another account</p>
-              <p className="text-sm text-brand-500/80">
-                Connect a new Instagram — separate bot &amp; billing
-              </p>
-            </div>
-          </button>
+          <Reveal delay={0.05 + accounts.length * 0.06}>
+            <motion.button
+              onClick={create}
+              disabled={!!entering}
+              whileHover={entering ? undefined : { y: -3 }}
+              whileTap={entering ? undefined : { scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 420, damping: 26 }}
+              className="group w-full flex items-center gap-3 sm:gap-4 border border-dashed border-white/15 hover:border-sunset-flame/50 hover:bg-white/[0.03] rounded-2xl p-3.5 sm:p-4 transition-colors duration-300 text-left text-white disabled:opacity-60"
+            >
+              <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border border-dashed border-sunset-gold/40 bg-sunset-soft flex items-center justify-center flex-shrink-0 text-sunset-gold">
+                {entering === "new" ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Plus className="w-6 h-6 transition-transform duration-500 ease-spring group-hover:rotate-90" />
+                )}
+              </span>
+              <div className="min-w-0">
+                <p className="font-display font-semibold">Add another account</p>
+                <p className="text-sm text-white/50">
+                  Connect a new Instagram — separate bot &amp; billing
+                </p>
+              </div>
+            </motion.button>
+          </Reveal>
         </div>
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-9">
           <button
             onClick={signOut}
-            className="inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-700 transition"
+            className="btn-glass-dark group text-sm"
           >
-            <LogOut className="w-4 h-4" /> Sign out
+            <LogOut className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" />{" "}
+            Sign out
           </button>
         </div>
       </div>

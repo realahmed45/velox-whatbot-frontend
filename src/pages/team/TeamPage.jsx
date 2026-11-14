@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, Reveal, Spotlight } from "@/components/fx";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { useWorkspaceStore } from "@/store/workspaceStore";
@@ -39,7 +41,7 @@ function PermissionGrid({ catalogue, selected, onToggle, onToggleAll }) {
         <button
           type="button"
           onClick={onToggleAll}
-          className="text-[11px] font-bold text-brand-600 hover:underline"
+          className="rounded-lg px-2 py-1 text-[11px] font-semibold text-sunset-flame transition-all duration-300 ease-spring hover:bg-sunset-soft active:scale-95"
         >
           {allOn ? "Clear all" : "Select all"}
         </button>
@@ -52,21 +54,33 @@ function PermissionGrid({ catalogue, selected, onToggle, onToggleAll }) {
               key={p.key}
               type="button"
               onClick={() => onToggle(p.key)}
-              className={`w-full flex items-start gap-3 text-left rounded-xl border p-3 transition ${
+              className={`group w-full flex items-start gap-3 text-left rounded-xl p-3 ring-1 transition-all duration-300 ease-spring active:scale-[0.98] ${
                 on
-                  ? "border-brand-300 bg-brand-50"
-                  : "border-ink-200 hover:border-brand-200"
+                  ? "bg-white ring-sunset-flame/35 shadow-[0_8px_20px_-12px_rgba(255,106,43,0.5),inset_0_1px_0_#fff]"
+                  : "bg-white/60 ring-ink-900/[0.08] hover:bg-white hover:ring-sunset-flame/20 hover:-translate-y-px"
               }`}
             >
               <span
-                className={`mt-0.5 rounded-md border flex items-center justify-center shrink-0 ${
+                className={`mt-0.5 rounded-md flex items-center justify-center shrink-0 transition-all duration-300 ease-spring ${
                   on
-                    ? "bg-brand-500 border-brand-500 text-white"
-                    : "border-ink-300"
+                    ? "bg-sunset text-white scale-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+                    : "ring-1 ring-ink-900/20 bg-white group-hover:scale-110"
                 }`}
                 style={{ width: 18, height: 18 }}
               >
-                {on && <Check className="w-3 h-3" />}
+                <AnimatePresence>
+                  {on && (
+                    <motion.span
+                      initial={{ scale: 0, rotate: -30 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: "spring", stiffness: 600, damping: 22 }}
+                      className="flex"
+                    >
+                      <Check className="w-3 h-3" strokeWidth={3} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </span>
               <span>
                 <span className="block text-sm font-semibold text-ink-900">
@@ -240,10 +254,23 @@ export default function TeamPage() {
     }
   };
 
+  const backdropAnim = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.2 },
+  };
+  const modalPop = {
+    initial: { opacity: 0, y: 16, scale: 0.96, filter: "blur(4px)" },
+    animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+    exit: { opacity: 0, y: 10, scale: 0.97, filter: "blur(4px)" },
+    transition: { type: "spring", stiffness: 420, damping: 30 },
+  };
+
   const seat = (name, email) => (name || email || "?")[0]?.toUpperCase() || "?";
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
+    <div className="px-4 sm:px-8 pt-6 sm:pt-8 pb-10 max-w-4xl mx-auto space-y-6">
       <StatHero
         icon={Users}
         title="Team"
@@ -263,24 +290,33 @@ export default function TeamPage() {
           { label: "Pending", value: invites.length },
         ]}
       >
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition"
-        >
-          <UserPlus className="w-4 h-4" /> Invite staff
-        </button>
+        <Magnetic strength={0.25}>
+          <button
+            onClick={() => setShowModal(true)}
+            className="group btn-primary"
+          >
+            <UserPlus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />{" "}
+            Invite staff
+          </button>
+        </Magnetic>
       </StatHero>
 
       {/* Members */}
-      <section className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
-        <div className="px-5 py-3 border-b border-ink-100">
-          <h2 className="text-sm font-bold text-ink-900">Staff</h2>
+      <Reveal y={16}>
+      <section className="card overflow-hidden">
+        <div className="px-4 sm:px-5 py-3 border-b border-ink-900/[0.06] bg-white/60 backdrop-blur flex items-center gap-2">
+          <Users className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
+          <h2 className="font-display text-sm font-semibold tracking-[-0.01em] text-ink-900">Staff</h2>
         </div>
 
+        <div className="divide-y divide-ink-900/[0.06]">
         {owner && (
-          <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold shadow-sm">
-              {seat(owner.name, owner.email)}
+          <div className="group flex items-center gap-3 px-4 sm:px-5 py-3.5">
+            <div className="relative w-10 h-10 shrink-0">
+              <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-40 blur-md" />
+              <div className="relative w-10 h-10 rounded-full bg-sunset flex items-center justify-center text-white font-bold ring-2 ring-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:scale-110 group-hover:rotate-6">
+                {seat(owner.name, owner.email)}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-ink-900 truncate">
@@ -293,20 +329,23 @@ export default function TeamPage() {
                 </span>
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100 shrink-0">
+            <span className="badge-brand inline-flex items-center gap-1 shrink-0">
               <Shield className="w-3 h-3" /> Owner
             </span>
           </div>
         )}
 
-        {members.map((m) => {
+        {members.map((m, idx) => {
           const u = m.user || {};
           return (
-            <div
+            <motion.div
               key={m.user?._id || m._id}
-              className="flex items-start gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0 hover:bg-ink-50/50 transition"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(idx, 10) * 0.04, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="group flex flex-wrap sm:flex-nowrap items-start gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/80 transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center font-bold text-ink-600 shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ink-100 to-ink-200 ring-2 ring-white flex items-center justify-center font-bold text-ink-600 shrink-0 transition-transform duration-500 ease-spring group-hover:scale-110 group-hover:-rotate-6">
                 {seat(u.name, u.email)}
               </div>
               <div className="flex-1 min-w-0">
@@ -324,7 +363,7 @@ export default function TeamPage() {
                       {m.permissions.map((k) => (
                         <span
                           key={k}
-                          className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ink-50 text-ink-600 border border-ink-100"
+                          className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/80 text-ink-600 ring-1 ring-ink-900/[0.08]"
                         >
                           {permissionLabel(k)}
                         </span>
@@ -332,58 +371,77 @@ export default function TeamPage() {
                     </div>
                   ))}
               </div>
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-ink-100 text-ink-600 shrink-0">
+              <div className="ml-auto flex items-center gap-1 shrink-0">
+              <span className="badge-gray shrink-0 mr-1">
                 {m.role === "agent" ? "Staff" : "Owner"}
               </span>
               {m.role === "agent" && (
                 <button
                   onClick={() => openEdit(m)}
-                  className="p-2 -mt-1 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition shrink-0"
+                  className="group/ic grid h-10 w-10 sm:h-9 sm:w-9 place-items-center -mt-1 rounded-xl text-ink-400 hover:text-sunset-flame hover:bg-sunset-soft transition-all duration-300 ease-spring active:scale-90 shrink-0"
                   title="Edit access"
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
+                  <SlidersHorizontal className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ic:rotate-90" />
                 </button>
               )}
               <button
                 onClick={() => remove(u._id || m.user)}
-                className="p-2 -mt-1 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition shrink-0"
+                className="group/ic grid h-10 w-10 sm:h-9 sm:w-9 place-items-center -mt-1 rounded-xl text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition-all duration-300 ease-spring active:scale-90 shrink-0"
                 title="Remove from team"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ic:-translate-y-0.5 group-hover/ic:rotate-[-12deg]" />
               </button>
-            </div>
+              </div>
+            </motion.div>
           );
         })}
+        </div>
 
         {members.length === 0 && !owner && (
-          <p className="text-center text-ink-400 text-sm py-10">
-            No staff yet — invite your front desk to get started.
-          </p>
+          <div className="flex flex-col items-center text-center px-6 py-12">
+            <div className="relative mb-4">
+              <span aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+              <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-sunset-soft text-sunset-flame">
+                <Users className="w-5 h-5" strokeWidth={1.8} />
+              </span>
+            </div>
+            <p className="text-ink-500 text-sm">
+              No staff yet — invite your front desk to get started.
+            </p>
+          </div>
         )}
       </section>
+      </Reveal>
 
       {/* Pending invites */}
       {invites.length > 0 && (
-        <section className="rounded-2xl border border-ink-100 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-3 border-b border-ink-100 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-bold text-ink-900">
+        <Reveal y={16} delay={0.05}>
+        <section className="card overflow-hidden">
+          <div className="px-4 sm:px-5 py-3 border-b border-ink-900/[0.06] bg-white/60 backdrop-blur flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-500" strokeWidth={1.8} />
+            <h2 className="font-display text-sm font-semibold tracking-[-0.01em] text-ink-900">
               Pending invites ({invites.length})
             </h2>
           </div>
+          <div className="divide-y divide-ink-900/[0.06]">
+          <AnimatePresence initial={false}>
           {invites.map((i) => (
-            <div
+            <motion.div
               key={i.email}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-50 last:border-b-0"
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: 24, transition: { duration: 0.2 } }}
+              className="group flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/80 transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                <Mail className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-full bg-amber-50 ring-1 ring-amber-500/15 flex items-center justify-center text-amber-600 shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-10deg]">
+                <Mail className="w-4 h-4" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-ink-900 truncate">{i.email}</p>
                 <p className="text-xs text-ink-500">
                   {i.expired ? (
-                    <span className="text-red-500 font-medium">Expired</span>
+                    <span className="text-rose-500 font-medium">Expired</span>
                   ) : (
                     "Invite sent · awaiting acceptance"
                   )}{" "}
@@ -392,20 +450,24 @@ export default function TeamPage() {
               </div>
               <button
                 onClick={() => revokeInvite(i.email)}
-                className="text-xs font-bold px-3 py-1.5 rounded-lg border border-ink-200 text-ink-600 hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition"
+                className="shrink-0 text-xs font-semibold px-3 py-2 rounded-xl bg-white/80 ring-1 ring-ink-900/[0.08] text-ink-600 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:ring-rose-500/30 hover:text-rose-600 hover:bg-rose-50 active:scale-95"
               >
                 Revoke
               </button>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
+          </div>
         </section>
+        </Reveal>
       )}
 
       {/* Roles explainer */}
-      <div className="rounded-2xl border border-ink-100 bg-white p-5 text-sm text-ink-600 leading-relaxed">
-        <p className="font-bold text-ink-900 mb-1.5">Roles</p>
+      <Reveal y={16} delay={0.08}>
+      <Spotlight className="card p-5 text-sm text-ink-600 leading-relaxed">
+        <p className="font-display font-semibold tracking-[-0.01em] text-ink-900 mb-1.5">Roles</p>
         <p>
-          <span className="font-semibold text-brand-700">Owner</span> — that's
+          <span className="font-semibold text-sunset-flame">Owner</span> — that's
           you. Everything, always: every booking, the calendar and rates, the
           channel manager, the AI assistant, your team and billing. There's
           nothing to tick.
@@ -419,41 +481,45 @@ export default function TeamPage() {
           usually only needs <span className="font-semibold">Calendar &amp; rates</span>{" "}
           for the housekeeping board.
         </p>
-      </div>
+      </Spotlight>
+      </Reveal>
 
-      {showModal &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[100] bg-ink-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+      {createPortal(
+          <AnimatePresence>
+          {showModal && (
+          <motion.div
+            {...backdropAnim}
+            className="fixed inset-0 z-[100] bg-night-950/40 backdrop-blur-md flex items-end sm:items-center justify-center p-3 sm:p-4"
             onClick={() => setShowModal(false)}
           >
-            <div
+            <motion.div
+              {...modalPop}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 flex flex-col max-h-[90vh] overflow-hidden"
+              className="glass-strong w-full max-w-md rounded-3xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 shrink-0">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-900/[0.06] shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-sunset text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_16px_-6px_rgba(255,61,119,0.55)]">
                     <UserPlus className="w-4 h-4" />
                   </div>
-                  <h2 className="font-black text-ink-900">Invite a staff member</h2>
+                  <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900">Invite a staff member</h2>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100 transition"
+                  className="grid h-9 w-9 place-items-center rounded-xl text-ink-400 hover:text-ink-700 hover:bg-ink-900/[0.05] hover:rotate-90 transition-all duration-300 ease-spring active:scale-90"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1">
                 <div>
-                  <label className="text-xs font-bold text-ink-700">
+                  <label className="label !mb-0">
                     Email address
                   </label>
                   <div className="relative mt-1.5">
                     <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
                     <input
-                      className="w-full rounded-xl border border-ink-200 pl-9 pr-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
+                      className="input pl-9"
                       type="email"
                       placeholder="frontdesk@yourhotel.com"
                       value={form.email}
@@ -477,17 +543,17 @@ export default function TeamPage() {
                   </p>
                 </div>
               </div>
-              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2 shrink-0">
+              <div className="px-5 py-4 border-t border-ink-900/[0.06] flex justify-end gap-2 shrink-0 bg-white/40">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="rounded-xl border border-ink-200 text-ink-700 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={invite}
                   disabled={saving || !form.email.trim()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-4 py-2.5 disabled:opacity-50 transition"
+                  className="btn-primary"
                 >
                   {saving ? (
                     <>
@@ -500,28 +566,33 @@ export default function TeamPage() {
                   )}
                 </button>
               </div>
-            </div>
-          </div>,
+            </motion.div>
+          </motion.div>
+          )}
+          </AnimatePresence>,
           document.body,
         )}
 
-      {editMember &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[100] bg-ink-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+      {createPortal(
+          <AnimatePresence>
+          {editMember && (
+          <motion.div
+            {...backdropAnim}
+            className="fixed inset-0 z-[100] bg-night-950/40 backdrop-blur-md flex items-end sm:items-center justify-center p-3 sm:p-4"
             onClick={() => setEditMember(null)}
           >
-            <div
+            <motion.div
+              {...modalPop}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-ink-100 flex flex-col max-h-[90vh] overflow-hidden"
+              className="glass-strong w-full max-w-md rounded-3xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 shrink-0">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ink-900/[0.06] shrink-0">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-sunset text-white flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_16px_-6px_rgba(255,61,119,0.55)]">
                     <SlidersHorizontal className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-black text-ink-900 truncate">
+                    <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900 truncate">
                       Edit access
                     </h2>
                     <p className="text-xs text-ink-500 truncate">
@@ -531,7 +602,7 @@ export default function TeamPage() {
                 </div>
                 <button
                   onClick={() => setEditMember(null)}
-                  className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100 transition shrink-0"
+                  className="grid h-9 w-9 place-items-center rounded-xl text-ink-400 hover:text-ink-700 hover:bg-ink-900/[0.05] hover:rotate-90 transition-all duration-300 ease-spring active:scale-90 shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -548,17 +619,17 @@ export default function TeamPage() {
                   you tick next time they load Botlify.
                 </p>
               </div>
-              <div className="px-5 py-4 border-t border-ink-100 flex justify-end gap-2 shrink-0">
+              <div className="px-5 py-4 border-t border-ink-900/[0.06] flex justify-end gap-2 shrink-0 bg-white/40">
                 <button
                   onClick={() => setEditMember(null)}
-                  className="rounded-xl border border-ink-200 text-ink-700 font-bold text-sm px-4 py-2.5 hover:bg-ink-50 transition"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveEditPerms}
                   disabled={savingPerms}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-4 py-2.5 disabled:opacity-50 transition"
+                  className="btn-primary"
                 >
                   {savingPerms ? (
                     <>
@@ -571,8 +642,10 @@ export default function TeamPage() {
                   )}
                 </button>
               </div>
-            </div>
-          </div>,
+            </motion.div>
+          </motion.div>
+          )}
+          </AnimatePresence>,
           document.body,
         )}
     </div>

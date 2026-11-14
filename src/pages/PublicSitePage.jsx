@@ -83,8 +83,24 @@ export default function PublicSitePage() {
   if (state.missing) return <NotFoundPage />;
   if (state.loading || !state.site) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <span className="h-8 w-8 animate-spin rounded-full border-2 border-ink-200 border-t-ink-800" />
+      <div
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBFAF8]"
+        role="status"
+        aria-live="polite"
+      >
+        {/* Neutral, hotel-agnostic loader: a soft breathing halo + a thin
+            orbiting ring. No Botlify branding — the guest is visiting a hotel. */}
+        <div aria-hidden className="absolute h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(15,23,42,0.06),transparent_65%)] animate-pulse" />
+        <div className="relative flex flex-col items-center gap-5">
+          <span className="relative grid h-14 w-14 place-items-center rounded-full bg-white/80 shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.06),0_12px_30px_-12px_rgba(15,23,42,0.25)] backdrop-blur-xl">
+            <span className="absolute inset-1.5 animate-spin rounded-full border-[1.5px] border-ink-900/10 border-t-ink-800 [animation-duration:1.1s]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-800" />
+          </span>
+          <span className="h-1.5 w-28 overflow-hidden rounded-full bg-ink-900/[0.06]">
+            <span className="block h-full w-1/2 animate-pulse rounded-full bg-ink-900/20" />
+          </span>
+          <span className="sr-only">Loading</span>
+        </div>
       </div>
     );
   }

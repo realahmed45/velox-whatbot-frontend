@@ -2,133 +2,139 @@
  * Botlify Contact Page
  * Professional contact page with email and support info
  */
-import { Mail, MessageSquare, Instagram } from "lucide-react";
+import { Mail, MessageSquare, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Aurora, Magnetic, Reveal, Spotlight } from "@/components/fx";
 import { Link } from "react-router-dom";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-ink-50/30 to-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
+    <div className="relative isolate min-h-screen overflow-hidden bg-night-950 text-white grain">
+      <Aurora variant="dark" />
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[80vh] bg-dot-grid-dark mask-fade-b opacity-60" />
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-ink-900 mb-4">
-            Get in Touch
-          </h1>
-          <p className="text-xl text-ink-600 max-w-2xl mx-auto">
-            Have questions? Need help? We're here for you. Reach out and we'll
-            get back to you as soon as possible.
-          </p>
+        <div className="text-center mb-14">
+          <Reveal>
+            <h1 className="font-display text-5xl sm:text-7xl font-semibold tracking-[-0.05em] leading-[0.95] text-white mb-5">
+              Get in{" "}
+              <span className="font-serif italic font-normal tracking-[-0.02em] text-sunset pr-1">
+                Touch
+              </span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
+              Have questions? Need help? We're here for you. Reach out and we'll
+              get back to you as soon as possible.
+            </p>
+          </Reveal>
         </div>
 
         {/* Contact Options */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-5 mb-12">
           {/* Email */}
-          <a
-            href="mailto:contactus@botlify.site"
-            className="group p-8 bg-white rounded-2xl border border-ink-200 hover:border-accent hover:shadow-lg transition-all"
-          >
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-accent/10 rounded-xl">
-                <Mail className="w-6 h-6 text-accent" />
+          <Reveal delay={0.1} className="h-full">
+            <Spotlight
+              as="a"
+              href="mailto:contactus@botlify.site"
+              className="card-dark group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
+            >
+              <div className="flex items-start gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
+                  <Mail className="w-5 h-5" strokeWidth={1.8} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mb-1.5">
+                    Email Us
+                  </h3>
+                  <p className="text-sm text-white/60 mb-3">
+                    Send us an email and we'll respond within 24 hours.
+                  </p>
+                  <p className="inline-flex items-center gap-1 break-all text-sm font-semibold text-sunset-gold">
+                    contactus@botlify.site
+                    <ArrowUpRight className="w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-ink-900 mb-2">
-                  Email Us
-                </h3>
-                <p className="text-ink-600 mb-3">
-                  Send us an email and we'll respond within 24 hours.
-                </p>
-                <p className="text-accent font-medium group-hover:underline">
-                  contactus@botlify.site
-                </p>
-              </div>
-            </div>
-          </a>
+            </Spotlight>
+          </Reveal>
 
           {/* Help Center */}
-          <Link
-            to="/help"
-            className="group p-8 bg-white rounded-2xl border border-ink-200 hover:border-accent hover:shadow-lg transition-all"
-          >
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-brand-500/10 rounded-xl">
-                <MessageSquare className="w-6 h-6 text-brand-500" />
+          <Reveal delay={0.16} className="h-full">
+            <Spotlight
+              as={Link}
+              to="/help"
+              className="card-dark group block h-full p-7 sm:p-8 transition-transform duration-500 ease-spring hover:-translate-y-1 active:scale-[0.98]"
+            >
+              <div className="flex items-start gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/[0.07] ring-1 ring-white/10 text-sunset-gold transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-10deg]">
+                  <MessageSquare className="w-5 h-5" strokeWidth={1.8} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mb-1.5">
+                    Help Center
+                  </h3>
+                  <p className="text-sm text-white/60 mb-3">
+                    Browse our guides and tutorials to get started quickly.
+                  </p>
+                  <p className="inline-flex items-center gap-1 text-sm font-semibold text-white/85">
+                    Visit Help Center{" "}
+                    <span className="transition-transform duration-500 ease-spring group-hover:translate-x-1">→</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-ink-900 mb-2">
-                  Help Center
-                </h3>
-                <p className="text-ink-600 mb-3">
-                  Browse our guides and tutorials to get started quickly.
-                </p>
-                <p className="text-brand-500 font-medium group-hover:underline">
-                  Visit Help Center →
-                </p>
-              </div>
-            </div>
-          </Link>
+            </Spotlight>
+          </Reveal>
         </div>
 
         {/* FAQ Section */}
-        <div className="bg-white rounded-2xl border border-ink-200 p-8">
-          <h2 className="text-2xl font-bold text-ink-900 mb-6">
-            Frequently Asked Questions
-          </h2>
+        <Reveal>
+          <div className="card-dark p-6 sm:p-9">
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-7">
+              Frequently Asked{" "}
+              <span className="font-serif italic font-normal">Questions</span>
+            </h2>
 
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-ink-900 mb-2">
-                How quickly will I get a response?
-              </h3>
-              <p className="text-ink-600">
-                We typically respond to all inquiries within 24 hours during
-                business days (Monday-Friday).
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-ink-900 mb-2">
-                What information should I include in my email?
-              </h3>
-              <p className="text-ink-600">
-                Please include your workspace email, a detailed description of
-                your issue or question, and any relevant screenshots if
-                applicable.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-ink-900 mb-2">
-                Do you offer phone support?
-              </h3>
-              <p className="text-ink-600">
-                Currently, we provide support via email. This allows us to give
-                you detailed, documented responses and serve you better.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-ink-900 mb-2">
-                Can I request a new feature?
-              </h3>
-              <p className="text-ink-600">
-                Absolutely! We love hearing from our users. Email us your
-                feature request and we'll review it for our product roadmap.
-              </p>
+            <div className="divide-y divide-white/[0.07]">
+              {[
+                [
+                  "How quickly will I get a response?",
+                  "We typically respond to all inquiries within 24 hours during business days (Monday-Friday).",
+                ],
+                [
+                  "What information should I include in my email?",
+                  "Please include your workspace email, a detailed description of your issue or question, and any relevant screenshots if applicable.",
+                ],
+                [
+                  "Do you offer phone support?",
+                  "Currently, we provide support via email. This allows us to give you detailed, documented responses and serve you better.",
+                ],
+                [
+                  "Can I request a new feature?",
+                  "Absolutely! We love hearing from our users. Email us your feature request and we'll review it for our product roadmap.",
+                ],
+              ].map(([q, a], i) => (
+                <Reveal key={q} delay={i * 0.05} y={12} className="py-5 first:pt-0 last:pb-0">
+                  <h3 className="font-semibold text-white mb-1.5">{q}</h3>
+                  <p className="text-[15px] text-white/60 leading-relaxed">{a}</p>
+                </Reveal>
+              ))}
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* CTA */}
-        <div className="text-center mt-12">
-          <p className="text-ink-600 mb-4">Ready to automate your Instagram?</p>
-          <Link
-            to="/signup"
-            className="inline-flex items-center justify-center px-8 py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent/90 transition"
-          >
-            Get Started Free
-          </Link>
-        </div>
+        <Reveal>
+          <div className="text-center mt-14">
+            <p className="text-white/60 mb-5">Ready to let Botlify answer your guests?</p>
+            <Magnetic strength={0.3}>
+              <Link to="/register" className="group btn-primary px-8 py-3.5 text-[15px]">
+                Get Started Free
+                <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+              </Link>
+            </Magnetic>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

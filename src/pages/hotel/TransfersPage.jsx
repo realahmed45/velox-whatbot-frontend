@@ -23,13 +23,17 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import DriversPanel from "@/components/DriversPanel";
 import AssignDriver from "@/components/AssignDriver";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, PulseDot, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 
 const STATUS_STYLE = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  completed: "bg-ink-100 text-ink-600 border-ink-200",
-  cancelled: "bg-rose-50 text-rose-600 border-rose-200",
+  pending: "badge-yellow",
+  confirmed: "badge-green",
+  completed: "badge-gray",
+  cancelled: "badge-red",
 };
+
+const spring = { type: "spring", stiffness: 420, damping: 30 };
 
 const fmtDT = (d) =>
   d
@@ -117,51 +121,49 @@ export default function TransfersPage() {
   const rows = tab === "upcoming" ? upcoming : past;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
-            <Car className="w-6 h-6 text-brand-500" />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+      <Reveal>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
+          <div className="group flex items-center gap-3.5 min-w-0">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+              <Car className="h-5 w-5" strokeWidth={1.8} />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+                Transfers
+              </h1>
+              <p className="text-sm text-ink-500">
+                Airport pickups and drop-offs for your{" "}
+                <span className="font-serif italic">guests</span>.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-ink-900">Transfers</h1>
-            <p className="text-sm text-ink-500">
-              Airport pickups and drop-offs for your guests.
-            </p>
-          </div>
+          <Magnetic strength={0.25}>
+            <button
+              onClick={() => setShowNew(true)}
+              className="btn-primary group min-h-[44px]"
+            >
+              <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />{" "}
+              Add transfer
+            </button>
+          </Magnetic>
         </div>
-        <button
-          onClick={() => setShowNew(true)}
-          className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
-        >
-          <Plus className="w-4 h-4" /> Add transfer
-        </button>
-      </div>
+      </Reveal>
 
       {/* Tabs + status filter */}
       <div className="flex flex-wrap items-center gap-2 mb-5">
-        <div className="flex gap-1 bg-ink-100 rounded-xl p-1">
-          {[
-            ["upcoming", `Upcoming (${upcoming.length})`],
-            ["past", `Past (${past.length})`],
-          ].map(([key, l]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                tab === key
-                  ? "bg-white text-ink-900 shadow-sm"
-                  : "text-ink-500 hover:text-ink-700"
-              }`}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
+        <SlidingTabs
+          items={[
+            { value: "upcoming", label: `Upcoming (${upcoming.length})`, icon: PlaneLanding },
+            { value: "past", label: `Past (${past.length})` },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="ml-auto rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400 bg-white"
+          className="input ml-auto w-auto min-h-[40px] py-2 pr-8"
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
@@ -172,8 +174,16 @@ export default function TransfersPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+        <div className="space-y-2.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="card flex items-center gap-3 p-4">
+              <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-48 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+                <div className="h-3 w-72 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : rows.length === 0 ? (
         <EmptyState
@@ -183,47 +193,56 @@ export default function TransfersPage() {
           action={
             <button
               onClick={() => setShowNew(true)}
-              className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
+              className="btn-primary group min-h-[44px]"
             >
-              <Plus className="w-4 h-4" /> Add a transfer
+              <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" /> Add a transfer
             </button>
           }
         />
       ) : (
-        <div className="space-y-2.5">
-          {rows.map((t) => {
+        <motion.div layout className="space-y-2.5">
+          <AnimatePresence initial={false}>
+          {rows.map((t, i) => {
             const DirIcon = t.direction === "dropoff" ? PlaneTakeoff : PlaneLanding;
             return (
-              <div
+              <motion.div
                 key={t._id}
-                className="rounded-xl border border-ink-100 bg-white p-4 flex flex-wrap items-center gap-3"
+                layout
+                initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ ...spring, delay: Math.min(i, 8) * 0.04 }}
+              >
+              <Spotlight
+                className="card group p-4 flex flex-wrap items-center gap-3 transition-[transform,box-shadow] duration-500 ease-spring hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.18),0_16px_36px_-18px_rgba(255,61,119,0.35)]"
               >
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  className={`grid h-11 w-11 place-items-center rounded-xl shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
                     t.direction === "dropoff"
-                      ? "bg-sky-50 text-sky-600"
-                      : "bg-brand-50 text-brand-500"
+                      ? "bg-sky-50 text-sky-600 ring-1 ring-sky-500/15"
+                      : "bg-sunset-soft text-sunset-flame"
                   }`}
                 >
-                  <DirIcon className="w-5 h-5" />
+                  <DirIcon className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="flex-1 min-w-[200px]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-ink-900">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-display font-semibold tracking-[-0.01em] text-ink-900">
                       {t.direction === "dropoff"
                         ? "Hotel → Airport"
                         : "Airport → Hotel"}
                     </span>
                     <span
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLE[t.status] || STATUS_STYLE.completed}`}
+                      className={`inline-flex items-center gap-1.5 capitalize ${STATUS_STYLE[t.status] || STATUS_STYLE.completed}`}
                     >
+                      {t.status === "confirmed" && <PulseDot color="bg-emerald-500" />}
                       {t.status}
                     </span>
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                      className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md ring-1 ${
                         t.provider === "mozio"
-                          ? "bg-violet-50 text-violet-600"
-                          : "bg-ink-50 text-ink-500"
+                          ? "bg-violet-50 text-violet-600 ring-violet-500/15"
+                          : "bg-ink-900/[0.04] text-ink-500 ring-ink-900/[0.06]"
                       }`}
                     >
                       {t.provider === "mozio"
@@ -282,19 +301,19 @@ export default function TransfersPage() {
                     />
                   )}
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {t.status === "pending" && (
                     <button
                       onClick={() => setTransferStatus(t, "confirmed")}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1.5 transition"
+                      className="btn group/b min-h-[36px] gap-1 px-3 py-1.5 text-xs text-emerald-700 bg-emerald-50/90 ring-1 ring-emerald-500/20 hover:bg-emerald-100 hover:-translate-y-0.5"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Confirm
+                      <CheckCircle2 className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/b:scale-125" /> Confirm
                     </button>
                   )}
                   {t.status === "confirmed" && (
                     <button
                       onClick={() => setTransferStatus(t, "completed")}
-                      className="text-xs font-semibold text-ink-600 bg-ink-50 hover:bg-ink-100 border border-ink-200 rounded-lg px-2.5 py-1.5 transition"
+                      className="btn-secondary min-h-[36px] px-3 py-1.5 text-xs"
                     >
                       Done
                     </button>
@@ -302,22 +321,27 @@ export default function TransfersPage() {
                   {["pending", "confirmed"].includes(t.status) && (
                     <button
                       onClick={() => setTransferStatus(t, "cancelled")}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg px-2.5 py-1.5 transition"
+                      className="btn group/b min-h-[36px] gap-1 px-3 py-1.5 text-xs text-rose-600 bg-rose-50/90 ring-1 ring-rose-500/20 hover:bg-rose-100 hover:-translate-y-0.5"
                     >
-                      <XCircle className="w-3.5 h-3.5" /> Cancel
+                      <XCircle className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/b:rotate-90" /> Cancel
                     </button>
                   )}
                 </div>
-              </div>
+              </Spotlight>
+              </motion.div>
             );
           })}
-        </div>
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {/* Who actually drives. Sits under the trips because a hotel comes here
           to check a pickup far more often than to edit the roster. */}
-      <div className="mt-10 pt-8 border-t border-ink-100">
-        <DriversPanel scope="hotel" onChange={setDrivers} />
+      <div className="relative mt-12 pt-10">
+        <div className="divider absolute inset-x-0 top-0" />
+        <Reveal>
+          <DriversPanel scope="hotel" onChange={setDrivers} />
+        </Reveal>
       </div>
 
       <NewTransferModal
@@ -344,9 +368,8 @@ function NewTransferModal({ open, onClose, onCreated }) {
   });
   const patch = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const input =
-    "w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none";
-  const label = "block text-xs font-semibold text-ink-600 mb-1";
+  const input = "input";
+  const label = "label";
 
   const submit = async () => {
     if (!form.pickupAt) return toast.error("Pick a pickup time");
@@ -388,14 +411,14 @@ function NewTransferModal({ open, onClose, onCreated }) {
         <>
           <button
             onClick={onClose}
-            className="text-sm font-semibold text-ink-600 hover:text-ink-900 px-4 py-2 rounded-lg transition"
+            className="btn-ghost min-h-[40px]"
           >
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+            className="btn-primary min-h-[40px] disabled:opacity-60"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Add transfer
@@ -409,18 +432,26 @@ function NewTransferModal({ open, onClose, onCreated }) {
             ["pickup", "Airport → Hotel", PlaneLanding],
             ["dropoff", "Hotel → Airport", PlaneTakeoff],
           ].map(([val, l, Icon]) => (
-            <button
+            <motion.button
               key={val}
               type="button"
               onClick={() => patch("direction", val)}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              transition={spring}
+              className={`group flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-[background-color,box-shadow,color] ${
                 form.direction === val
-                  ? "border-brand-500 bg-brand-50/70 text-brand-700"
-                  : "border-ink-200 text-ink-600 hover:border-ink-300"
+                  ? "bg-white text-ink-900 shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.6),0_10px_24px_-12px_rgba(255,61,119,0.45)]"
+                  : "bg-white/60 text-ink-600 ring-1 ring-ink-900/[0.08] hover:bg-white"
               }`}
             >
-              <Icon className="w-4 h-4" /> {l}
-            </button>
+              <Icon
+                className={`w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 ${
+                  form.direction === val ? "text-sunset-flame" : ""
+                }`}
+              />{" "}
+              {l}
+            </motion.button>
           ))}
         </div>
         <div>

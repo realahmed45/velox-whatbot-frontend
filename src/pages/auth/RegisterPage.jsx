@@ -3,13 +3,29 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/services/api";
 import { useAuthStore, REQUIRE_EMAIL_VERIFICATION } from "@/store/authStore";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Mail,
+  Lock,
+  User,
+  Building2,
+} from "lucide-react";
+import { Magnetic, Reveal } from "@/components/fx";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import TurnstileWidget, {
   turnstileEnabled,
 } from "@/components/auth/TurnstileWidget";
 import { checkPassword } from "@/utils/passwordPolicy";
+
+// Dark liquid-glass field — `.input` is the light variant.
+const FIELD =
+  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
+const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+const ICON =
+  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none";
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -94,70 +110,89 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <h2 className="text-3xl font-black text-ink-900 tracking-tighter">
-        Create your <span className="text-brand-500">account</span>
-      </h2>
-      <p className="text-ink-500 text-sm mt-2 mb-7">
-        Already have an account?{" "}
-        <Link
-          to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
-          className="text-brand-600 font-semibold hover:underline"
-        >
-          Sign in
-        </Link>
-      </p>
+    <div className="card-dark p-6 sm:p-8">
+      <Reveal>
+        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-white leading-tight">
+          Create your{" "}
+          <span className="font-serif italic font-normal text-sunset">account</span>
+        </h2>
+        <p className="text-white/60 text-sm mt-2 mb-7">
+          Already have an account?{" "}
+          <Link
+            to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
+            className="text-sunset-gold font-semibold underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
+      </Reveal>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="mb-2">
-          <GoogleSignInButton label="Sign up with Google" />
-        </div>
+        <Reveal delay={0.05}>
+          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+            <GoogleSignInButton label="Sign up with Google" />
+          </div>
+        </Reveal>
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-ink-200"></div>
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-ink-400">
+          <div className="relative flex justify-center text-[11px] uppercase tracking-[0.14em]">
+            <span className="px-3 text-white/40 bg-night-950/60 backdrop-blur rounded-full">
               Or sign up with email
             </span>
           </div>
         </div>
-        <div>
-          <label className="label">Full name</label>
-          <input
-            className="input"
-            placeholder="Ahmad Ali"
-            required
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Reveal delay={0.08}>
+            <label className={LABEL}>Full name</label>
+            <div className="relative group">
+              <User strokeWidth={1.8} className={ICON} />
+              <input
+                className={`${FIELD} pl-9`}
+                placeholder="Ahmad Ali"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+          </Reveal>
+          <Reveal delay={0.11}>
+            <label className={LABEL}>Business name</label>
+            <div className="relative group">
+              <Building2 strokeWidth={1.8} className={ICON} />
+              <input
+                className={`${FIELD} pl-9`}
+                placeholder="e.g. Linen Studio"
+                required
+                value={form.businessName}
+                onChange={(e) =>
+                  setForm({ ...form, businessName: e.target.value })
+                }
+              />
+            </div>
+          </Reveal>
         </div>
-        <div>
-          <label className="label">Business name</label>
-          <input
-            className="input"
-            placeholder="e.g. Linen Studio"
-            required
-            value={form.businessName}
-            onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="label">Email address</label>
-          <input
-            className={`input ${invitedEmail ? "bg-ink-50 text-ink-500 cursor-not-allowed" : ""}`}
-            type="email"
-            placeholder="you@example.com"
-            required
-            readOnly={!!invitedEmail}
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="label">Password</label>
-          <div className="relative">
+        <Reveal delay={0.14}>
+          <label className={LABEL}>Email address</label>
+          <div className="relative group">
+            <Mail strokeWidth={1.8} className={ICON} />
             <input
-              className="input pr-10"
+              className={`${FIELD} pl-9 ${invitedEmail ? "!bg-white/[0.03] text-white/50 cursor-not-allowed" : ""}`}
+              type="email"
+              placeholder="you@example.com"
+              required
+              readOnly={!!invitedEmail}
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
+        </Reveal>
+        <Reveal delay={0.17}>
+          <label className={LABEL}>Password</label>
+          <div className="relative group">
+            <Lock strokeWidth={1.8} className={ICON} />
+            <input
+              className={`${FIELD} pl-9 pr-11`}
               type={show ? "text" : "password"}
               placeholder="Min 8 characters"
               required
@@ -166,7 +201,8 @@ export default function RegisterPage() {
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+              aria-label={show ? "Hide password" : "Show password"}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
               onClick={() => setShow(!show)}
             >
               {show ? (
@@ -181,13 +217,24 @@ export default function RegisterPage() {
             email={form.email}
             name={form.name}
           />
-        </div>
+        </Reveal>
         {turnstileEnabled && (
           <TurnstileWidget onToken={setCaptcha} className="pt-1" />
         )}
-        <button type="submit" className="btn-primary w-full" disabled={loading}>
-          {loading ? "Creating account..." : "Create account"}
-        </button>
+        <Reveal delay={0.2}>
+          <Magnetic strength={0.12} className="w-full">
+            <button
+              type="submit"
+              className="btn-primary w-full group h-11"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create account"}
+              {!loading && (
+                <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+              )}
+            </button>
+          </Magnetic>
+        </Reveal>
       </form>
     </div>
   );

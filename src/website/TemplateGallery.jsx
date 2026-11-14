@@ -14,6 +14,9 @@ import SiteRenderer from "./SiteRenderer";
 import { PAGES } from "./shared";
 import { TEMPLATES } from "./templates";
 import { withDemoFallback } from "./demo";
+import { Magnetic, Reveal, SlidingTabs } from "@/components/fx";
+
+const spring = { type: "spring", stiffness: 420, damping: 30 };
 
 export default function TemplateGallery({ site, currentId, onSelect, busyId, selectLabel = "Use this design" }) {
   const [previewId, setPreviewId] = useState(null);
@@ -21,48 +24,56 @@ export default function TemplateGallery({ site, currentId, onSelect, busyId, sel
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {TEMPLATES.map((t) => {
+      <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
+        {TEMPLATES.map((t, i) => {
           const current = currentId === t.id;
           return (
+            <Reveal key={t.id} delay={i * 0.06} className="h-full">
             <div
-              key={t.id}
-              className={`group overflow-hidden rounded-2xl border-2 bg-white transition ${current ? "border-ink-900" : "border-ink-100 hover:border-ink-300"}`}
+              className={`card group flex h-full flex-col overflow-hidden transition-[transform,box-shadow] duration-500 ease-spring hover:-translate-y-1 ${
+                current
+                  ? "shadow-[inset_0_1px_0_#fff,0_0_0_2px_rgba(255,106,43,0.7),0_20px_44px_-18px_rgba(255,61,119,0.45)]"
+                  : "hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.25),0_22px_48px_-20px_rgba(255,61,119,0.4)]"
+              }`}
             >
-              <button type="button" onClick={() => setPreviewId(t.id)} className="relative block w-full text-left" aria-label={`Preview ${t.name}`}>
-                <div className="flex items-center gap-1.5 border-b border-ink-100 bg-ink-50 px-3 py-2">
-                  <span className="h-2 w-2 rounded-full bg-rose-300" />
-                  <span className="h-2 w-2 rounded-full bg-amber-300" />
-                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+              <button type="button" onClick={() => setPreviewId(t.id)} className="relative block w-full overflow-hidden rounded-t-2xl text-left" aria-label={`Preview ${t.name}`}>
+                <div className="flex items-center gap-1.5 border-b border-ink-900/[0.06] bg-white/70 px-3 py-2 backdrop-blur">
+                  <span className="h-2 w-2 rounded-full bg-[#FF5F57]" />
+                  <span className="h-2 w-2 rounded-full bg-[#FEBC2E]" />
+                  <span className="h-2 w-2 rounded-full bg-[#28C840]" />
                 </div>
-                <SiteRenderer site={{ ...data, templateId: t.id }} templateId={t.id} mode="thumb" className="aspect-[16/11] w-full" />
-                <span className="absolute inset-0 top-7 flex items-center justify-center bg-ink-950/0 opacity-0 transition group-hover:bg-ink-950/35 group-hover:opacity-100">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-ink-900 shadow-lg">
+                <div className="overflow-hidden">
+                  <div className="transition-transform duration-700 ease-out-expo group-hover:scale-[1.035]">
+                    <SiteRenderer site={{ ...data, templateId: t.id }} templateId={t.id} mode="thumb" className="aspect-[16/11] w-full" />
+                  </div>
+                </div>
+                <span className="absolute inset-0 top-7 flex items-center justify-center bg-night-950/0 opacity-0 backdrop-blur-0 transition-all duration-500 group-hover:bg-night-950/30 group-hover:opacity-100 group-hover:backdrop-blur-[2px]">
+                  <span className="inline-flex translate-y-2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-ink-900 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.4)] backdrop-blur transition-transform duration-500 ease-spring group-hover:translate-y-0">
                     <Eye className="h-4 w-4" /> Preview
                   </span>
                 </span>
                 {current && (
-                  <span className="absolute left-3 top-10 inline-flex items-center gap-1 rounded-full bg-ink-900 px-2.5 py-1 text-xs font-bold text-white">
+                  <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={spring} className="absolute left-3 top-10 inline-flex items-center gap-1 rounded-full bg-sunset px-2.5 py-1 text-xs font-semibold text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.6)]">
                     <Check className="h-3.5 w-3.5" /> Your design
-                  </span>
+                  </motion.span>
                 )}
               </button>
-              <div className="p-4">
+              <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-lg font-black text-ink-900">{t.name}</p>
-                  <div className="flex -space-x-1">
-                    {t.swatches.map((c) => (
-                      <span key={c} className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ background: c }} />
+                  <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">{t.name}</p>
+                  <div className="flex -space-x-1 transition-[gap] duration-500">
+                    {t.swatches.map((c, j) => (
+                      <span key={c} className="h-5 w-5 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(15,23,42,0.18)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5" style={{ background: c, transitionDelay: `${j * 40}ms` }} />
                     ))}
                   </div>
                 </div>
                 <p className="mt-1 text-sm text-ink-500">{t.tagline}</p>
-                <p className="mt-1 text-xs font-semibold text-ink-400">Best for: {t.bestFor}</p>
-                <div className="mt-4 flex gap-2">
+                <p className="mt-1 text-xs font-medium text-ink-400">Best for: {t.bestFor}</p>
+                <div className="mt-auto flex gap-2 pt-4">
                   <button
                     type="button"
                     onClick={() => setPreviewId(t.id)}
-                    className="flex-1 rounded-xl border-2 border-ink-200 py-2.5 text-sm font-bold text-ink-800 transition hover:border-ink-900"
+                    className="btn-secondary min-h-[44px] flex-1 justify-center"
                   >
                     Preview
                   </button>
@@ -70,7 +81,7 @@ export default function TemplateGallery({ site, currentId, onSelect, busyId, sel
                     type="button"
                     disabled={!!busyId}
                     onClick={() => onSelect(t.id)}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-ink-900 py-2.5 text-sm font-bold text-white transition hover:bg-black disabled:opacity-60"
+                    className="btn-primary min-h-[44px] flex-1 justify-center disabled:opacity-60"
                   >
                     {busyId === t.id && <Loader2 className="h-4 w-4 animate-spin" />}
                     {current ? "Keep this one" : selectLabel}
@@ -78,6 +89,7 @@ export default function TemplateGallery({ site, currentId, onSelect, busyId, sel
                 </div>
               </div>
             </div>
+            </Reveal>
           );
         })}
       </div>
@@ -125,55 +137,58 @@ export function TemplatePreview({ site, templateId, onClose, onChange, onSelect,
     <AnimatePresence>
       {t && (
         <motion.div
-          className="fixed inset-0 z-[200] flex flex-col bg-ink-950"
+          className="fixed inset-0 z-[200] flex flex-col bg-night-950"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-3 py-2.5 text-white sm:px-5">
-            <button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-white/10" aria-label="Close preview">
+          <div className="flex flex-wrap items-center gap-3 border-b border-white/10 bg-white/[0.03] px-3 py-2.5 text-white backdrop-blur-xl sm:px-5">
+            <motion.button whileHover={{ rotate: 90 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white" aria-label="Close preview">
               <X className="h-5 w-5" />
-            </button>
+            </motion.button>
             {onChange && (
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => step(-1)} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Previous design"><ChevronLeft className="h-5 w-5" /></button>
-                <span className="min-w-[84px] text-center font-black">{t.name}</span>
-                <button type="button" onClick={() => step(1)} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Next design"><ChevronRight className="h-5 w-5" /></button>
+                <motion.button whileHover={{ x: -2 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={() => step(-1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white" aria-label="Previous design"><ChevronLeft className="h-5 w-5" /></motion.button>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span key={t.id} initial={{ opacity: 0, y: 6, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -6, filter: "blur(4px)" }} transition={{ duration: 0.25 }} className="min-w-[84px] text-center font-display font-semibold tracking-[-0.02em]">{t.name}</motion.span>
+                </AnimatePresence>
+                <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={() => step(1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white" aria-label="Next design"><ChevronRight className="h-5 w-5" /></motion.button>
               </div>
             )}
-            <div className="order-last flex w-full gap-1 overflow-x-auto rounded-xl bg-white/5 p-1 md:order-none md:mx-auto md:w-auto">
-              {PAGES.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPage(p.id)}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition ${page === p.id ? "bg-white text-ink-900" : "text-white/70 hover:text-white"}`}
-                >
-                  {p.label}
-                </button>
-              ))}
+            <div className="order-last w-full overflow-x-auto md:order-none md:mx-auto md:w-auto">
+              <SlidingTabs dark size="sm" items={PAGES.map((p) => ({ value: p.id, label: p.label }))} value={page} onChange={setPage} className="whitespace-nowrap" />
             </div>
             <div className="ml-auto flex items-center gap-2 md:ml-0">
-              <div className="hidden rounded-xl bg-white/5 p-1 sm:flex">
-                <button type="button" onClick={() => setDevice("desktop")} className={`rounded-lg p-1.5 ${device === "desktop" ? "bg-white text-ink-900" : "text-white/70"}`} aria-label="Desktop view"><Monitor className="h-4 w-4" /></button>
-                <button type="button" onClick={() => setDevice("mobile")} className={`rounded-lg p-1.5 ${device === "mobile" ? "bg-white text-ink-900" : "text-white/70"}`} aria-label="Phone view"><Smartphone className="h-4 w-4" /></button>
+              <div className="hidden sm:block">
+                <SlidingTabs
+                  dark
+                  size="sm"
+                  items={[
+                    { value: "desktop", label: <span className="sr-only">Desktop view</span>, icon: Monitor },
+                    { value: "mobile", label: <span className="sr-only">Phone view</span>, icon: Smartphone },
+                  ]}
+                  value={device}
+                  onChange={setDevice}
+                />
               </div>
               {onSelect && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => onSelect(t.id)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-black text-ink-900 hover:bg-ink-100 disabled:opacity-60"
-                >
-                  <Check className="h-4 w-4" />
-                  {currentId === t.id ? "Keep this design" : selectLabel}
-                </button>
+                <Magnetic strength={0.25}>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => onSelect(t.id)}
+                    className="btn-primary group min-h-[40px] disabled:opacity-60"
+                  >
+                    <Check className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:scale-125" />
+                    {currentId === t.id ? "Keep this design" : selectLabel}
+                  </button>
+                </Magnetic>
               )}
             </div>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-0 sm:p-4">
             <div
-              className={`h-full overflow-hidden bg-white transition-all duration-500 ${device === "mobile" ? "max-h-[860px] w-[390px] rounded-[38px] border-[10px] border-ink-800 shadow-2xl" : "w-full sm:rounded-xl"}`}
+              className={`h-full overflow-hidden bg-white transition-all duration-500 ease-spring ${device === "mobile" ? "max-h-[860px] w-[390px] max-w-full rounded-[38px] border-[10px] border-white/10 shadow-[0_40px_100px_-30px_rgba(255,61,119,0.45)]" : "w-full sm:rounded-2xl sm:shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]"}`}
             >
               <SiteRenderer
                 key={`${t.id}-${device}`}

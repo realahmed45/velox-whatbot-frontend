@@ -205,12 +205,12 @@ export default function TimezonePicker({ value, onChange, className }) {
             </span>
           )}
         </span>
-        <ChevronDown className="w-4 h-4 text-ink-400" />
+        <ChevronDown className={clsx("h-4 w-4 text-ink-400 transition-transform duration-500 ease-spring", open && "rotate-180 text-sunset-flame")} />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md border border-ink-200 shadow-hero z-50 overflow-hidden">
-          <div className="p-2 border-b border-ink-100 relative">
+        <div className="glass-strong absolute left-0 right-0 top-full z-50 mt-2 origin-top overflow-hidden rounded-2xl animate-pop-in">
+          <div className="p-2 border-b border-ink-900/[0.07] relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-400" />
             <input
               ref={inputRef}
@@ -221,7 +221,7 @@ export default function TimezonePicker({ value, onChange, className }) {
               className="input pl-8 text-sm"
             />
           </div>
-          <div className="max-h-72 overflow-y-auto">
+          <div className="max-h-72 overflow-y-auto p-1">
             {filtered.length === 0 && (
               <p className="py-6 text-center text-sm text-ink-400">
                 No matches
@@ -237,13 +237,13 @@ export default function TimezonePicker({ value, onChange, className }) {
                   setQ("");
                 }}
                 className={clsx(
-                  "w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-brand-50 transition",
-                  o.tz === value && "bg-brand-50",
+                  "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors hover:bg-white",
+                  o.tz === value && "bg-sunset-soft",
                 )}
               >
                 <span className="flex items-center gap-2">
                   {o.tz === value ? (
-                    <Check className="w-3.5 h-3.5 text-brand-600" />
+                    <Check className="h-3.5 w-3.5 text-sunset-flame" strokeWidth={2.5} />
                   ) : (
                     <span className="w-3.5 h-3.5" />
                   )}

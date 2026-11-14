@@ -55,14 +55,15 @@ export default function FlowHelpPanel({ open, onClose, onOpenTemplates }) {
   if (!open) return null;
 
   return (
-    <div className="w-80 bg-white border-l border-ink-100 flex flex-col flex-shrink-0">
-      <div className="h-12 flex items-center justify-between px-4 border-b border-ink-100">
-        <span className="font-bold text-sm text-ink-900">
+    <div className="absolute md:relative inset-y-0 right-0 z-30 w-full max-w-[20rem] md:w-80 bg-white/80 md:bg-white/60 backdrop-blur-2xl backdrop-saturate-150 border-l border-white/70 shadow-[-1px_0_0_rgba(15,23,42,0.05),-12px_0_30px_-20px_rgba(15,23,42,0.25)] flex flex-col flex-shrink-0">
+      <div className="h-12 flex items-center justify-between px-4 border-b border-ink-900/[0.06]">
+        <span className="font-display font-semibold tracking-[-0.01em] text-sm text-ink-900">
           How to build a flow
         </span>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-100"
+          className="w-9 h-9 grid place-items-center rounded-lg text-ink-400 hover:text-ink-700 hover:bg-ink-900/[0.05] hover:rotate-90 active:scale-90 transition-all duration-300 ease-spring"
+          aria-label="Close help"
         >
           <X className="w-4 h-4" />
         </button>
@@ -70,15 +71,15 @@ export default function FlowHelpPanel({ open, onClose, onOpenTemplates }) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Fast path */}
-        <div className="rounded-xl bg-brand-50 border border-brand-100 p-3.5">
-          <p className="text-sm font-bold text-ink-900">In a hurry?</p>
+        <div className="rounded-2xl bg-sunset-soft ring-1 ring-sunset-flame/15 p-3.5">
+          <p className="font-display text-sm font-semibold text-ink-900">In a <span className="font-serif italic font-normal">hurry?</span></p>
           <p className="text-xs text-ink-600 mt-1 leading-relaxed">
             Start from a ready-made template and just change the wording. It's
             the fastest way to get something live.
           </p>
           <button
             onClick={onOpenTemplates}
-            className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 transition"
+            className="btn-primary mt-3 text-xs px-3 py-1.5"
           >
             <Play className="w-3.5 h-3.5" /> Browse templates
           </button>
@@ -86,17 +87,17 @@ export default function FlowHelpPanel({ open, onClose, onOpenTemplates }) {
 
         {/* Steps */}
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400 mb-2">
             The 4 steps
           </p>
           <div className="space-y-3">
             {STEPS.map((s) => (
               <div key={s.n} className="flex gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-ink-900 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-sunset text-white text-[10px] font-semibold tabular-nums grid place-items-center shrink-0 mt-0.5">
                   {s.n}
                 </span>
                 <div>
-                  <p className="text-xs font-bold text-ink-900">{s.title}</p>
+                  <p className="text-xs font-semibold text-ink-900">{s.title}</p>
                   <p className="text-xs text-ink-500 leading-relaxed mt-0.5">
                     {s.body}
                   </p>
@@ -108,18 +109,18 @@ export default function FlowHelpPanel({ open, onClose, onOpenTemplates }) {
 
         {/* Rules worth knowing */}
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400 mb-2">
             Worth knowing
           </p>
           <div className="space-y-3">
             {RULES.map(({ icon: Icon, title, body }) => (
               <div
                 key={title}
-                className="rounded-xl border border-ink-100 p-3 bg-white"
+                className="rounded-xl ring-1 ring-ink-900/[0.06] p-3 bg-white/70 shadow-[inset_0_1px_0_#fff]"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className="w-3.5 h-3.5 text-brand-600" />
-                  <p className="text-xs font-bold text-ink-900">{title}</p>
+                  <Icon className="w-3.5 h-3.5 text-sunset-flame" strokeWidth={1.8} />
+                  <p className="text-xs font-semibold text-ink-900">{title}</p>
                 </div>
                 <p className="text-xs text-ink-500 leading-relaxed">{body}</p>
               </div>
@@ -129,10 +130,10 @@ export default function FlowHelpPanel({ open, onClose, onOpenTemplates }) {
 
         {/* Example */}
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400 mb-2">
             A simple example
           </p>
-          <div className="rounded-xl bg-ink-50 border border-ink-100 p-3 text-xs text-ink-600 leading-relaxed font-mono">
+          <div className="rounded-xl bg-ink-900/[0.03] ring-1 ring-ink-900/[0.06] p-3 text-xs text-ink-600 leading-relaxed font-mono">
             Keyword “price”
             <br />
             ↓<br />

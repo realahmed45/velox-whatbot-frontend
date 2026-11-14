@@ -21,27 +21,30 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import Modal from "@/components/ui/Modal";
+import { PulseDot, Reveal, Spotlight } from "@/components/fx";
 import ConnectionStatus from "@/components/ConnectionStatus";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { usePropertyStore } from "@/store/propertyStore";
 
-const input =
-  "w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none";
-const label = "block text-xs font-semibold text-ink-600 mb-1";
+const input = "input";
+const label = "label";
+const spring = { type: "spring", stiffness: 420, damping: 30 };
+const hop =
+  "transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]";
 
 function Toggle({ checked, onChange }) {
   return (
-    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+    <label className="toggle shrink-0">
       <input
         type="checkbox"
-        className="sr-only peer"
         checked={!!checked}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <div className="w-11 h-6 bg-ink-200 rounded-full peer peer-checked:bg-brand-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition" />
+      <span className="slider" />
     </label>
   );
 }
@@ -110,8 +113,19 @@ export default function PropertyPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8" aria-busy="true">
+        <div className="flex items-center gap-3.5 mb-8">
+          <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-6 w-52 rounded-lg bg-ink-900/[0.06] animate-pulse" />
+            <div className="h-3.5 w-72 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+          </div>
+        </div>
+        <div className="space-y-5">
+          <div className="card h-16 animate-pulse" />
+          <div className="card h-72 animate-pulse" />
+          <div className="card h-40 animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -119,15 +133,15 @@ export default function PropertyPage() {
   const property = properties.find((p) => p._id === activeId) || null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
-            <Hotel className="w-6 h-6 text-brand-500" />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+      <Reveal className="flex flex-wrap items-center justify-between gap-3 mb-7">
+        <div className="group flex items-center gap-3.5 min-w-0">
+          <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] ${hop}`}>
+            <Hotel className="h-5 w-5" strokeWidth={1.8} />
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-ink-900">
-              Property &amp; Rooms
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+              Property &amp; <span className="font-serif italic font-normal">Rooms</span>
             </h1>
             <p className="text-sm text-ink-500">
               Your hotel's details, rooms, rates and availability.
@@ -138,7 +152,7 @@ export default function PropertyPage() {
           <select
             value={activeId || ""}
             onChange={(e) => switchTo(e.target.value)}
-            className="rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400 bg-white"
+            className="input w-auto max-w-full min-h-[40px] py-2 pr-8 font-medium"
           >
             {properties.map((p) => (
               <option key={p._id} value={p._id}>
@@ -147,7 +161,7 @@ export default function PropertyPage() {
             ))}
           </select>
         )}
-      </div>
+      </Reveal>
 
       {!property || wantsNew ? (
         <SetupCards
@@ -162,12 +176,12 @@ export default function PropertyPage() {
           {/* The honest state of the OTA connection, right where rates and
               rooms are edited — so a blocker ("set a nightly rate for Deluxe
               Double") is one scroll from the field that fixes it. */}
-          <div className="mb-6">
+          <Reveal className="mb-6">
             <ConnectionStatus
               propertyId={property._id}
               onConnect={openConnect}
             />
-          </div>
+          </Reveal>
           <PropertyEditor property={property} onChanged={load} />
         </>
       )}
@@ -191,57 +205,72 @@ function SetupCards({ onDone, onCancel }) {
           </p>
           <button
             onClick={onCancel}
-            className="text-xs font-semibold text-ink-500 hover:text-ink-800"
+            className="btn-ghost px-3 py-1.5 text-xs"
           >
             Cancel
           </button>
         </div>
       )}
+      <AnimatePresence mode="wait" initial={false}>
       {!mode && (
-        <div className="grid md:grid-cols-2 gap-4">
-          <button
+        <motion.div
+          key="choose"
+          initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="grid md:grid-cols-2 gap-4"
+        >
+          <Spotlight
+            as="button"
             onClick={() => setMode("import")}
-            className="text-left rounded-2xl border border-ink-100 bg-white p-6 hover:border-brand-300 hover:shadow-card transition group"
+            className="card-hover text-left p-6 group active:scale-[0.98]"
           >
-            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-105 transition">
-              <CloudDownload className="w-6 h-6" />
+            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] mb-4 ${hop}`}>
+              <CloudDownload className="w-6 h-6" strokeWidth={1.8} />
             </div>
-            <p className="font-black text-ink-900">
+            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
               Import from Booking.com / Airbnb
             </p>
             <p className="text-sm text-ink-500 mt-1">
               Already listed on an OTA? Pull your property, rooms and rates in
               one click — and keep availability synced both ways.
             </p>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 mt-3">
-              Import my property <Plus className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame mt-4">
+              Import my property <Plus className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:rotate-90" />
             </span>
-          </button>
-          <button
+          </Spotlight>
+          <Spotlight
+            as="button"
             onClick={() => setMode("manual")}
-            className="text-left rounded-2xl border border-ink-100 bg-white p-6 hover:border-brand-300 hover:shadow-card transition group"
+            className="card-hover text-left p-6 group active:scale-[0.98]"
           >
-            <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center mb-4 group-hover:scale-105 transition">
-              <Building2 className="w-6 h-6" />
+            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame mb-4 ${hop}`}>
+              <Building2 className="w-6 h-6" strokeWidth={1.8} />
             </div>
-            <p className="font-black text-ink-900">Set up manually</p>
+            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up manually</p>
             <p className="text-sm text-ink-500 mt-1">
               Not on an OTA yet? Add your hotel and rooms yourself in a couple
               of minutes — you can connect OTAs later.
             </p>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 mt-3">
-              Create my property <Plus className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame mt-4">
+              Create my property <Plus className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:rotate-90" />
             </span>
-          </button>
-        </div>
+          </Spotlight>
+        </motion.div>
       )}
 
       {mode === "import" && (
-        <ImportFlow onBack={() => setMode(null)} onDone={onDone} onManual={() => setMode("manual")} />
+        <motion.div key="import" initial={{ opacity: 0, y: 12, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(6px)" }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+          <ImportFlow onBack={() => setMode(null)} onDone={onDone} onManual={() => setMode("manual")} />
+        </motion.div>
       )}
       {mode === "manual" && (
-        <ManualCreateForm onBack={() => setMode(null)} onDone={onDone} />
+        <motion.div key="manual" initial={{ opacity: 0, y: 12, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(6px)" }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+          <ManualCreateForm onBack={() => setMode(null)} onDone={onDone} />
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -293,36 +322,41 @@ function ImportFlow({ onBack, onDone, onManual }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6">
+    <div className="card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-black text-ink-900">Import from your OTAs</p>
+        <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Import from your OTAs</p>
         <button
           onClick={onBack}
-          className="text-xs font-semibold text-ink-500 hover:text-ink-800"
+          className="btn-ghost px-3 py-1.5 text-xs"
         >
           ← Back
         </button>
       </div>
 
       {loading ? (
-        <div className="py-10 text-center">
-          <Loader2 className="w-6 h-6 text-brand-500 animate-spin inline" />
+        <div className="space-y-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="h-[68px] rounded-xl bg-ink-900/[0.05] animate-pulse" />
+          ))}
         </div>
       ) : unavailable ? (
         <div className="text-center py-8">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-3">
-            <CloudDownload className="w-6 h-6" />
+          <div className="relative mx-auto mb-4 grid h-14 w-14 place-items-center">
+            <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-amber-50 text-amber-500 ring-1 ring-amber-500/20">
+              <CloudDownload className="w-6 h-6" strokeWidth={1.8} />
+            </span>
           </div>
-          <p className="font-bold text-ink-900">OTA import is coming soon</p>
+          <p className="font-display text-lg font-semibold text-ink-900">OTA import is coming soon</p>
           <p className="text-sm text-ink-500 mt-1 max-w-md mx-auto">
             {unavailable} In the meantime, add your rooms manually — your
             bookings and AI concierge work exactly the same.
           </p>
           <button
             onClick={onManual}
-            className="mt-4 inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
+            className="btn-primary group mt-5 min-h-[44px]"
           >
-            <Building2 className="w-4 h-4" /> Set up manually
+            <Building2 className={`w-4 h-4 ${hop}`} /> Set up manually
           </button>
         </div>
       ) : channexProps.length === 0 ? (
@@ -331,27 +365,30 @@ function ImportFlow({ onBack, onDone, onManual }) {
         </p>
       ) : (
         <div className="space-y-2">
-          {channexProps.map((p) => (
-            <div
+          {channexProps.map((p, i) => (
+            <motion.div
               key={p.channexId}
-              className="flex flex-wrap items-center gap-3 rounded-xl border border-ink-100 p-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring, delay: i * 0.05 }}
+              className="flex flex-wrap items-center gap-3 rounded-xl bg-white/60 p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color] duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/90"
             >
               <div className="flex-1 min-w-[180px]">
-                <p className="font-bold text-ink-900">{p.name}</p>
+                <p className="font-display font-semibold text-ink-900">{p.name}</p>
                 <p className="text-xs text-ink-500">
                   {[p.city, p.country].filter(Boolean).join(", ")}
                   {p.currency ? ` · ${p.currency}` : ""}
                 </p>
               </div>
               {p.alreadyImported ? (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5">
+                <span className="badge-green inline-flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Imported
                 </span>
               ) : (
                 <button
                   onClick={() => doImport(p)}
                   disabled={!!importing}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-lg px-3 py-2 transition disabled:opacity-60"
+                  className="btn-primary min-h-[40px] px-3.5 py-2 text-xs disabled:opacity-60"
                 >
                   {importing === p.channexId ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -361,7 +398,7 @@ function ImportFlow({ onBack, onDone, onManual }) {
                   Import
                 </button>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -411,12 +448,12 @@ function ManualCreateForm({ onBack, onDone }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 max-w-2xl">
+    <div className="card p-5 sm:p-6 max-w-2xl">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-black text-ink-900">Set up your property</p>
+        <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up your property</p>
         <button
           onClick={onBack}
-          className="text-xs font-semibold text-ink-500 hover:text-ink-800"
+          className="btn-ghost px-3 py-1.5 text-xs"
         >
           ← Back
         </button>
@@ -499,30 +536,38 @@ function ManualCreateForm({ onBack, onDone }) {
         </div>
       </div>
 
+      <AnimatePresence>
       {limitError && (
-        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="font-bold text-amber-900 text-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={spring}
+          className="mt-5 rounded-xl bg-amber-50/90 p-4 ring-1 ring-amber-500/25"
+        >
+          <p className="font-semibold text-amber-900 text-sm">
             You've reached your plan's property limit
           </p>
           <p className="text-sm text-amber-800 mt-1">{limitError}</p>
           <Link
             to="/dashboard/billing"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-lg px-3.5 py-2 mt-3 transition"
+            className="btn-primary mt-3 min-h-[40px] px-3.5 py-2 text-xs"
           >
             See upgrade options
           </Link>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <button
         onClick={submit}
         disabled={saving || !!limitError}
-        className="mt-5 inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+        className="mt-5 btn-primary group min-h-[44px] disabled:opacity-60"
       >
         {saving ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
         )}
         Create property
       </button>
@@ -569,8 +614,12 @@ function PropertyEditor({ property, onChanged }) {
     <div className="space-y-6">
       {/* OTA sync status strip */}
       {form.channel?.provider && form.channel.provider !== "none" && (
-        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-3.5 flex flex-wrap items-center gap-3 text-sm">
-          <CloudDownload className="w-4 h-4 text-blue-600 shrink-0" />
+        <Reveal className="card px-5 py-3.5 flex flex-wrap items-center gap-3 text-sm">
+          {form.channel.status === "active" ? (
+            <PulseDot color="bg-emerald-500" />
+          ) : (
+            <CloudDownload className="w-4 h-4 text-sky-600 shrink-0" />
+          )}
           <span className="font-semibold text-ink-800">
             OTA sync {form.channel.status === "active" ? "active" : form.channel.status}
           </span>
@@ -584,12 +633,18 @@ function PropertyEditor({ property, onChanged }) {
               Last sync {new Date(form.channel.lastSyncAt).toLocaleString()}
             </span>
           )}
-        </div>
+        </Reveal>
       )}
 
       {/* Details */}
-      <div className="rounded-2xl border border-ink-100 bg-white p-5">
-        <p className="font-bold text-ink-900 mb-4">Property details</p>
+      <Reveal>
+      <div className="card p-5 sm:p-6">
+        <div className="mb-5"><div className="group flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <Building2 className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Property details</p>
+        </div></div>
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
             <span className={label}>Name</span>
@@ -683,17 +738,18 @@ function PropertyEditor({ property, onChanged }) {
           <button
             onClick={saveDetails}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+            className="btn-primary group min-h-[44px] disabled:opacity-60"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />
             )}
             Save details
           </button>
         </div>
       </div>
+      </Reveal>
 
       {/* Photos */}
       <PhotosCard property={property} onChanged={onChanged} />
@@ -767,18 +823,24 @@ function PhotosCard({ property, onChanged }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="font-bold text-ink-900">Photos</p>
+    <Reveal>
+    <div className="card p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="group flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <Camera className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Photos</p>
+        </div>
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 disabled:opacity-60"
+          className="btn-secondary group min-h-[40px] px-3.5 py-2 text-xs disabled:opacity-60"
         >
           {uploading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Camera className="w-4 h-4" />
+            <Camera className={`w-4 h-4 ${hop}`} />
           )}
           Add photos
         </button>
@@ -792,33 +854,50 @@ function PhotosCard({ property, onChanged }) {
         />
       </div>
       {photos.length === 0 ? (
-        <p className="text-sm text-ink-400">
-          No photos yet — guests book more when they can see the rooms.
-        </p>
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="group flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink-900/10 bg-white/40 px-4 py-8 text-center transition-colors hover:border-sunset-flame/40 hover:bg-white/80"
+        >
+          <span className={`grid h-10 w-10 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ${hop}`}>
+            <Camera className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <span className="text-sm text-ink-500">
+            No photos yet — guests book more when they can see the rooms.
+          </span>
+        </button>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          <AnimatePresence initial={false}>
           {photos.map((p, i) => (
-            <div
+            <motion.div
+              layout
               key={`${p.url}-${i}`}
-              className="relative group aspect-square rounded-xl overflow-hidden border border-ink-100"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={spring}
+              className="relative group aspect-square rounded-xl overflow-hidden ring-1 ring-ink-900/[0.07] shadow-[0_6px_16px_-10px_rgba(15,23,42,0.35)]"
             >
               <img
                 src={p.url}
                 alt={p.caption || `Photo ${i + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.07]"
               />
               <button
                 onClick={() => removePhoto(i)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                className="absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-night-950/55 text-white backdrop-blur opacity-100 sm:opacity-0 sm:scale-75 transition-all duration-300 ease-spring group-hover:opacity-100 group-hover:scale-100 hover:bg-rose-600"
                 title="Remove"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
         </div>
       )}
     </div>
+    </Reveal>
   );
 }
 
@@ -865,42 +944,58 @@ function RoomsSection({ property }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5">
-      <div className="flex items-center justify-between mb-4">
-        <p className="font-bold text-ink-900">Rooms</p>
+    <Reveal>
+    <div className="card p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="group flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <BedDouble className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Rooms</p>
+        </div>
         <button
           onClick={() => setEditing({})}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
+          className="btn-primary group min-h-[40px] px-3.5 py-2 text-xs"
         >
-          <Plus className="w-4 h-4" /> Add room
+          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" /> Add room
         </button>
       </div>
 
       {loading ? (
-        <div className="py-8 text-center">
-          <Loader2 className="w-5 h-5 text-brand-500 animate-spin inline" />
+        <div className="space-y-3">
+          {[0, 1].map((i) => (
+            <div key={i} className="h-[104px] rounded-xl bg-ink-900/[0.05] animate-pulse" />
+          ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="text-center py-10 rounded-xl border border-dashed border-ink-200">
-          <BedDouble className="w-8 h-8 text-ink-300 mx-auto mb-2" />
-          <p className="font-semibold text-ink-700">No rooms yet</p>
+        <div className="text-center py-10 rounded-xl border-2 border-dashed border-ink-900/10 bg-white/40">
+          <div className="relative mx-auto mb-3 grid h-14 w-14 place-items-center">
+            <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+              <BedDouble className="w-6 h-6" strokeWidth={1.8} />
+            </span>
+          </div>
+          <p className="font-display font-semibold text-ink-900">No rooms yet</p>
           <p className="text-sm text-ink-500 mt-0.5">
             Add your room types so the AI can quote prices and book guests.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {rooms.map((r) => (
-            <div
+          {rooms.map((r, i) => (
+            <motion.div
               key={r._id}
-              className={`rounded-xl border p-4 ${r.active === false ? "border-ink-100 opacity-60" : "border-ink-100"}`}
+              initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ ...spring, delay: Math.min(i, 8) * 0.05 }}
+              className={`group rounded-xl p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color,box-shadow] duration-500 ease-spring ${r.active === false ? "bg-ink-900/[0.02] opacity-60" : "bg-white/60 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-18px_rgba(255,61,119,0.35)]"}`}
             >
               <div className="flex flex-wrap items-start gap-3">
                 <div className="flex-1 min-w-[200px]">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-ink-900">{r.name}</span>
+                    <span className="font-display font-semibold tracking-[-0.01em] text-ink-900">{r.name}</span>
                     {r.active === false && (
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border bg-ink-100 text-ink-500 border-ink-200">
+                      <span className="badge-gray">
                         inactive
                       </span>
                     )}
@@ -911,7 +1006,7 @@ function RoomsSection({ property }) {
                       Sleeps {r.maxOccupancy || (r.maxAdults || 0) + (r.maxChildren || 0)}
                     </span>
                     <span>{r.unitsCount} unit{r.unitsCount === 1 ? "" : "s"}</span>
-                    <span className="font-semibold text-ink-800">
+                    <span className="font-semibold tabular-nums text-ink-800">
                       {r.currency || property.currency || ""} {r.baseRate}
                       /night
                     </span>
@@ -920,22 +1015,23 @@ function RoomsSection({ property }) {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setEditing(r)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-ink-600 bg-ink-50 hover:bg-ink-100 border border-ink-200 rounded-lg px-2.5 py-1.5 transition"
+                    className="btn-secondary group/b min-h-[36px] gap-1 px-3 py-1.5 text-xs"
                   >
-                    <Pencil className="w-3.5 h-3.5" /> Edit
+                    <Pencil className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/b:rotate-[-14deg]" /> Edit
                   </button>
                   {r.active !== false && (
                     <button
                       onClick={() => deactivate(r)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg px-2.5 py-1.5 transition"
+                      aria-label={`Deactivate ${r.name}`}
+                      className="btn group/b min-h-[36px] px-2.5 py-1.5 text-xs text-rose-600 bg-rose-50/90 ring-1 ring-rose-500/20 hover:bg-rose-100 hover:-translate-y-0.5"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/b:rotate-[-12deg]" />
                     </button>
                   )}
                 </div>
               </div>
               <AvailabilityStrip roomId={r._id} />
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -951,6 +1047,7 @@ function RoomsSection({ property }) {
         }}
       />
     </div>
+    </Reveal>
   );
 }
 
@@ -974,7 +1071,7 @@ function AvailabilityStrip({ roomId }) {
 
   if (nights === null)
     return (
-      <div className="mt-3 h-6 rounded-lg bg-ink-50 animate-pulse" />
+      <div className="mt-3 h-6 rounded-lg bg-ink-900/[0.06] animate-pulse" />
     );
   if (!nights.length) return null;
 
@@ -994,11 +1091,15 @@ function AvailabilityStrip({ roomId }) {
         </span>
       </div>
       <div className="flex gap-[2px] overflow-x-auto">
-        {nights.map((n) => (
-          <div
+        {nights.map((n, i) => (
+          <motion.div
             key={n.date}
             title={`${n.date} · ${n.available} free`}
-            className={`h-5 flex-1 min-w-[6px] rounded-[3px] ${
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 26, delay: i * 0.012 }}
+            style={{ originY: 1 }}
+            className={`h-5 flex-1 min-w-[6px] rounded-[3px] transition-transform duration-300 ease-spring hover:-translate-y-0.5 hover:scale-y-125 ${
               n.available > 0 ? "bg-emerald-400/80" : "bg-rose-400/90"
             }`}
           />
@@ -1073,14 +1174,14 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
         <>
           <button
             onClick={onClose}
-            className="text-sm font-semibold text-ink-600 hover:text-ink-900 px-4 py-2 rounded-lg transition"
+            className="btn-ghost min-h-[40px]"
           >
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+            className="btn-primary group min-h-[44px] disabled:opacity-60"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEdit ? "Save room" : "Add room"}
@@ -1171,7 +1272,7 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
           </div>
         </div>
         {isEdit && (
-          <label className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
+          <label className="flex items-center justify-between rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] px-4 py-3">
             <span className="text-sm text-ink-700 font-medium">
               Active — the AI can offer and book this room
             </span>
@@ -1207,16 +1308,22 @@ function TransfersSettingsCard({ property, onChanged }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5">
-      <p className="font-bold text-ink-900 flex items-center gap-1.5 mb-1">
-        <Plane className="w-4 h-4 text-brand-500" /> Airport transfers
-      </p>
-      <p className="text-xs text-ink-500 mb-4">
-        Let your AI offer guests a ride from and to the airport.
-      </p>
+    <Reveal>
+    <div className="card p-5 sm:p-6">
+      <div className="group flex items-center gap-3 mb-5">
+        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ${hop}`}>
+          <Plane className="h-5 w-5" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Airport transfers</p>
+          <p className="text-xs text-ink-500">
+            Let your AI offer guests a ride from and to the airport.
+          </p>
+        </div>
+      </div>
 
       <div className="space-y-3">
-        <div className="rounded-xl border border-ink-100 px-4 py-3">
+        <div className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-ink-800">
@@ -1231,8 +1338,17 @@ function TransfersSettingsCard({ property, onChanged }) {
               onChange={(v) => patch("hasOwnService", v)}
             />
           </div>
+          <AnimatePresence initial={false}>
           {t.hasOwnService && (
-            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+            <motion.div
+              key="own"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+            <div className="grid sm:grid-cols-2 gap-3 pt-3">
               <div>
                 <span className={label}>
                   Price per ride ({property.currency || "USD"})
@@ -1254,10 +1370,12 @@ function TransfersSettingsCard({ property, onChanged }) {
                 />
               </div>
             </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
 
-        <div className="rounded-xl border border-ink-100 px-4 py-3 flex items-center justify-between gap-3">
+        <div className="rounded-xl bg-white/60 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] px-4 py-3 flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-ink-800">
               Offer partner transfer service
@@ -1288,16 +1406,17 @@ function TransfersSettingsCard({ property, onChanged }) {
         <button
           onClick={save}
           disabled={saving}
-          className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+          className="btn-primary group min-h-[44px] disabled:opacity-60"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Save className="w-4 h-4" />
+            <Save className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />
           )}
           Save transfer settings
         </button>
       </div>
     </div>
+    </Reveal>
   );
 }

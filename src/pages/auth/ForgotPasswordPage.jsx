@@ -2,12 +2,28 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
-import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  KeyRound,
+} from "lucide-react";
 import TurnstileWidget, {
   turnstileEnabled,
 } from "@/components/auth/TurnstileWidget";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
+
+// Dark liquid-glass field — `.input` is the light variant.
+const FIELD =
+  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
+const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+const ICON =
+  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none";
 
 /**
  * Forgot-password — 4-digit code flow (same UX as signup verification).
@@ -70,132 +86,166 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div>
+    <div className="card-dark p-6 sm:p-8 overflow-hidden">
       <Link
         to="/login"
-        className="flex items-center gap-1 text-sm text-ink-500 hover:text-ink-700 mb-6"
+        className="group inline-flex items-center gap-1.5 text-sm text-white/55 hover:text-white mb-6 transition-colors"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to login
+        <ArrowLeft className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-1" />{" "}
+        Back to login
       </Link>
 
-      {step === 1 ? (
-        <>
-          <h2 className="text-2xl font-bold text-ink-900 mb-1">
-            Forgot password
-          </h2>
-          <p className="text-ink-500 text-sm mb-6">
-            Enter your email and we'll send you a 4-digit reset code.
-          </p>
-          <form onSubmit={sendCode} className="space-y-4">
-            <div>
-              <label className="label">Email address</label>
-              <input
-                className="input"
-                type="email"
-                placeholder="you@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+      <AnimatePresence mode="wait" initial={false}>
+        {step === 1 ? (
+          <motion.div
+            key="step-1"
+            initial={{ opacity: 0, x: -24, filter: "blur(6px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, x: -24, filter: "blur(6px)" }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+          >
+            <div className="h-11 w-11 rounded-xl grid place-items-center bg-sunset text-white mb-4 shadow-[0_10px_30px_-10px_rgba(255,61,119,0.7)]">
+              <KeyRound className="w-5 h-5" strokeWidth={1.8} />
             </div>
-            {turnstileEnabled && (
-              <TurnstileWidget onToken={setCaptcha} className="pt-1" />
-            )}
-            <button
-              type="submit"
-              className="btn-primary w-full"
-              disabled={loading}
-            >
-              {loading ? "Sending…" : "Send reset code"}
-            </button>
-          </form>
-        </>
-      ) : (
-        <>
-          <h2 className="text-2xl font-bold text-ink-900 mb-1">
-            Enter the code
-          </h2>
-          <p className="text-ink-500 text-sm mb-6">
-            We emailed a 4-digit code to{" "}
-            <span className="font-semibold text-ink-700">{email}</span>. Enter it
-            and choose a new password.
-          </p>
-          <form onSubmit={resetPassword} className="space-y-4">
-            <div>
-              <label className="label">4-digit code</label>
-              <input
-                className="input tracking-[0.5em] text-center text-lg font-bold"
-                inputMode="numeric"
-                maxLength={4}
-                placeholder="1234"
-                required
-                value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-                }
-              />
-            </div>
-            <div>
-              <label className="label">New password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-                <input
-                  className="input pl-9 pr-10"
-                  type={showPw ? "text" : "password"}
-                  autoComplete="new-password"
-                  placeholder="Min. 8 characters"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
-                  onClick={() => setShowPw((v) => !v)}
-                >
-                  {showPw ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-1">
+              Forgot{" "}
+              <span className="font-serif italic font-normal">password</span>
+            </h2>
+            <p className="text-white/60 text-sm mb-6">
+              Enter your email and we'll send you a 4-digit reset code.
+            </p>
+            <form onSubmit={sendCode} className="space-y-4">
+              <div>
+                <label className={LABEL}>Email address</label>
+                <div className="relative group">
+                  <Mail strokeWidth={1.8} className={ICON} />
+                  <input
+                    className={`${FIELD} pl-9`}
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
               </div>
-              <PasswordStrength password={password} email={email} />
-            </div>
-            <div>
-              <label className="label">Confirm new password</label>
-              <input
-                className="input"
-                type="password"
-                autoComplete="new-password"
-                placeholder="••••••••"
-                required
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-              />
-              {confirm && confirm !== password && (
-                <p className="text-[11px] text-red-500 mt-1">
-                  Passwords don't match.
-                </p>
+              {turnstileEnabled && (
+                <TurnstileWidget onToken={setCaptcha} className="pt-1" />
               )}
-            </div>
-            <button
-              type="submit"
-              className="btn-primary w-full"
-              disabled={loading}
-            >
-              {loading ? "Resetting…" : "Reset password"}
-            </button>
-            <button
-              type="button"
-              onClick={sendCode}
-              className="w-full text-xs text-ink-500 hover:text-brand-600"
-            >
-              Didn't get it? Resend code
-            </button>
-          </form>
-        </>
-      )}
+              <button
+                type="submit"
+                className="btn-primary w-full h-11 group"
+                disabled={loading}
+              >
+                {loading ? "Sending…" : "Send reset code"}
+                {!loading && (
+                  <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                )}
+              </button>
+            </form>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="step-2"
+            initial={{ opacity: 0, x: 24, filter: "blur(6px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, x: 24, filter: "blur(6px)" }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+          >
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white mb-1">
+              Enter the{" "}
+              <span className="font-serif italic font-normal">code</span>
+            </h2>
+            <p className="text-white/60 text-sm mb-6">
+              We emailed a 4-digit code to{" "}
+              <span className="font-semibold text-white break-all">{email}</span>.
+              Enter it and choose a new password.
+            </p>
+            <form onSubmit={resetPassword} className="space-y-4">
+              <div>
+                <label className={LABEL}>4-digit code</label>
+                <input
+                  className={`${FIELD} tracking-[0.5em] text-center text-lg font-bold font-mono tabular-nums`}
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="1234"
+                  required
+                  value={code}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+                  }
+                />
+              </div>
+              <div>
+                <label className={LABEL}>New password</label>
+                <div className="relative group">
+                  <Lock strokeWidth={1.8} className={ICON} />
+                  <input
+                    className={`${FIELD} pl-9 pr-11`}
+                    type={showPw ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Min. 8 characters"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+                    onClick={() => setShowPw((v) => !v)}
+                  >
+                    {showPw ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <PasswordStrength password={password} email={email} />
+              </div>
+              <div>
+                <label className={LABEL}>Confirm new password</label>
+                <input
+                  className={FIELD}
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  required
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                />
+                <AnimatePresence>
+                  {confirm && confirm !== password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="text-[11px] text-rose-300 mt-1"
+                    >
+                      Passwords don't match.
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+              <button
+                type="submit"
+                className="btn-primary w-full h-11"
+                disabled={loading}
+              >
+                {loading ? "Resetting…" : "Reset password"}
+              </button>
+              <button
+                type="button"
+                onClick={sendCode}
+                className="w-full min-h-[40px] text-xs text-white/55 hover:text-sunset-gold transition-colors"
+              >
+                Didn't get it? Resend code
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

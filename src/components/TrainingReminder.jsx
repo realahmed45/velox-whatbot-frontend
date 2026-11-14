@@ -112,12 +112,14 @@ export default function TrainingReminder() {
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="overflow-hidden"
         >
-          <div className="mx-4 sm:mx-6 mt-4 rounded-xl border border-accent-200 bg-accent-50 px-4 py-3 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white border border-accent-200 flex items-center justify-center shrink-0">
-              <GraduationCap className="w-4.5 h-4.5 text-accent-600" />
+          <div className="card group relative mx-4 mt-4 flex items-center gap-3 overflow-hidden px-4 py-3 sm:mx-6">
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-100/70 via-amber-50/40 to-transparent" />
+            <div aria-hidden className="pointer-events-none absolute inset-y-3 left-0 w-[3px] rounded-full bg-amber-400" />
+            <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(245,158,11,0.2),0_6px_14px_-6px_rgba(245,158,11,0.5)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+              <GraduationCap className="h-4.5 w-4.5 text-amber-600" strokeWidth={1.8} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-ink-900">
+            <div className="relative min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink-900">
                 Your AI is missing {count} must-have{" "}
                 {count === 1 ? "detail" : "details"}
               </p>
@@ -128,18 +130,18 @@ export default function TrainingReminder() {
             </div>
             <button
               onClick={() => navigate(`${TRAIN_PATH}?fill=1`)}
-              className="shrink-0 inline-flex items-center gap-1.5 bg-ink-900 hover:bg-ink-800 text-white text-xs sm:text-sm font-bold rounded-lg px-3 py-2 transition"
+              className="btn-primary group/cta relative shrink-0 px-3 py-2 text-xs sm:text-sm"
             >
               Fill them in
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover/cta:translate-x-0.5" />
             </button>
             <button
               onClick={dismiss}
               aria-label="Hide for now"
               title="Hide for now"
-              className="shrink-0 p-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-white/70 transition"
+              className="group/x relative grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 transition hover:bg-white/70 hover:text-ink-700 active:scale-90"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/x:rotate-90" />
             </button>
           </div>
         </motion.div>
@@ -170,31 +172,32 @@ export function ReadinessModal({ open, readiness, categories = [], onFill, onClo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-night-950/40 backdrop-blur-md"
             onClick={onClose}
           />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="readiness-title"
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-card-lg max-h-[90vh] flex flex-col overflow-hidden"
+            initial={{ opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            className="relative w-full sm:max-w-md glass-strong rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden"
           >
+            <div aria-hidden className="pointer-events-none absolute inset-x-8 top-0 h-px bg-sunset opacity-60" />
             <button
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-3 top-3 p-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-ink-50 transition"
+              className="group/x absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-xl text-ink-400 transition hover:bg-ink-900/[0.05] hover:text-ink-700 active:scale-90"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/x:rotate-90" />
             </button>
             <div className="px-6 pt-6 pb-4">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-brand-500" />
+              <div className="relative grid h-12 w-12 place-items-center rounded-2xl bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.7)]">
+                <Sparkles className="h-6 w-6 text-white" strokeWidth={1.8} />
               </div>
-              <h2 id="readiness-title" className="mt-4 text-lg font-black text-ink-900">
+              <h2 id="readiness-title" className="mt-4 text-lg font-display font-semibold tracking-[-0.02em] text-ink-900">
                 Almost there — your AI needs a few details
               </h2>
               <p className="mt-1 text-sm text-ink-500 leading-relaxed">
@@ -207,9 +210,9 @@ export function ReadinessModal({ open, readiness, categories = [], onFill, onClo
                   <span>Ready to look after guests</span>
                   <span className="text-ink-900">{readiness.percent}%</span>
                 </div>
-                <div className="mt-1.5 h-2 rounded-full bg-ink-100 overflow-hidden">
+                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink-900/[0.06]">
                   <div
-                    className="h-full rounded-full bg-brand-500 transition-all"
+                    className="h-full rounded-full bg-sunset transition-all duration-700 ease-out-expo"
                     style={{ width: `${readiness.percent}%` }}
                   />
                 </div>
@@ -259,7 +262,7 @@ export function ReadinessModal({ open, readiness, categories = [], onFill, onClo
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-ink-100 bg-ink-50/60 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <div className="flex flex-col-reverse gap-2 border-t border-ink-900/[0.06] bg-white/50 px-6 py-4 sm:flex-row sm:justify-end">
               <button onClick={onClose} className="btn-ghost">
                 Later
               </button>

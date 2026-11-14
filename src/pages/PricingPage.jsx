@@ -24,6 +24,8 @@ import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { clsx } from "clsx";
 import ChannelWall from "@/components/ChannelWall";
+import { AnimatePresence, motion } from "framer-motion";
+import { Aurora, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 
 /* Local fallback — mirrors backend plan catalog so pricing always shows. */
 const FALLBACK_PLANS = [
@@ -155,25 +157,52 @@ export default function PricingPage({
     }
   };
 
+  const dark = !embedded;
+
   return (
-    <div className={embedded ? "" : "py-16 px-4"}>
-      <div className={embedded ? "" : "max-w-4xl mx-auto"}>
+    <div
+      className={
+        embedded
+          ? ""
+          : "relative isolate overflow-hidden bg-night-950 text-white grain py-20 sm:py-28 px-4"
+      }
+    >
+      {!embedded && (
+        <>
+          <Aurora variant="dark" />
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b opacity-60"
+          />
+        </>
+      )}
+      <div className={embedded ? "" : "relative max-w-4xl mx-auto"}>
         {!embedded && (
-          <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100">
-              <Hotel className="w-3 h-3" /> One place. Every booking channel.
-            </span>
-            <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-ink-900">
-              Simple, honest <span className="text-brand-500">pricing</span>
-            </h1>
-            <p className="mt-3 text-base text-ink-500 max-w-lg mx-auto">
-              OTA sync is free with 0% commission. We only earn 10% on bookings
-              the AI closes for you — start free, upgrade when you're ready.
-            </p>
+          <div className="text-center mb-12">
+            <Reveal>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] text-white/80 text-xs font-semibold ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+                <Hotel className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} />{" "}
+                One place. Every booking channel.
+              </span>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <h1 className="mt-6 font-display text-5xl sm:text-6xl md:text-7xl font-semibold tracking-[-0.05em] leading-[0.95] text-white">
+                Simple, honest{" "}
+                <span className="font-serif italic font-normal tracking-[-0.02em] text-sunset pr-1">
+                  pricing
+                </span>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <p className="mt-5 text-[15px] sm:text-base text-white/60 max-w-lg mx-auto leading-relaxed">
+                OTA sync is free with 0% commission. We only earn 10% on bookings
+                the AI closes for you — start free, upgrade when you're ready.
+              </p>
+            </Reveal>
           </div>
         )}
 
-        <BillingToggle cycle={cycle} setCycle={setCycle} />
+        <BillingToggle cycle={cycle} setCycle={setCycle} dark={dark} />
 
         {(() => {
           const cards = [
@@ -185,36 +214,60 @@ export default function PricingPage({
           );
           if (visible.length === 0) {
             return (
-              <div className="max-w-md mx-auto text-center rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6">
-                <p className="font-bold text-ink-900">
-                  You're on our top plan 🎉
-                </p>
-                <p className="text-sm text-ink-500 mt-1">
-                  Botlify for Hotels ({curCycle === "yearly" ? "yearly" : "monthly"})
-                  — you already have every feature. Nothing to upgrade.
-                </p>
-              </div>
+              <Reveal>
+                <div
+                  className={clsx(
+                    "max-w-md mx-auto text-center p-6",
+                    dark
+                      ? "card-dark ring-1 ring-emerald-400/20"
+                      : "card ring-1 ring-emerald-500/15",
+                  )}
+                >
+                  <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/15 text-emerald-500">
+                    <Check className="h-5 w-5" strokeWidth={2} />
+                  </div>
+                  <p
+                    className={clsx(
+                      "font-display font-semibold tracking-[-0.02em]",
+                      dark ? "text-white" : "text-ink-900",
+                    )}
+                  >
+                    You're on our top plan 🎉
+                  </p>
+                  <p
+                    className={clsx(
+                      "text-sm mt-1",
+                      dark ? "text-white/60" : "text-ink-500",
+                    )}
+                  >
+                    Botlify for Hotels ({curCycle === "yearly" ? "yearly" : "monthly"})
+                    — you already have every feature. Nothing to upgrade.
+                  </p>
+                </div>
+              </Reveal>
             );
           }
           return (
             <div
               className={clsx(
-                "grid grid-cols-1 gap-6 mx-auto",
+                "grid grid-cols-1 gap-6 mx-auto pt-3",
                 visible.length > 1 ? "md:grid-cols-2 max-w-2xl" : "max-w-sm",
               )}
             >
-              {visible.map(({ plan, highlight }) => {
+              {visible.map(({ plan, highlight }, i) => {
                 const state = cardState(plan.key);
                 return (
-                  <PlanCard
-                    key={plan.key}
-                    plan={plan}
-                    cycle={cycle}
-                    onPick={handlePick}
-                    selecting={selecting === plan.key}
-                    highlight={highlight}
-                    isCurrent={state === "current"}
-                  />
+                  <Reveal key={plan.key} delay={0.08 + i * 0.08} className="h-full">
+                    <PlanCard
+                      plan={plan}
+                      cycle={cycle}
+                      onPick={handlePick}
+                      selecting={selecting === plan.key}
+                      highlight={highlight}
+                      isCurrent={state === "current"}
+                      dark={dark}
+                    />
+                  </Reveal>
                 );
               })}
             </div>
@@ -224,51 +277,62 @@ export default function PricingPage({
         {!embedded && (
           <>
             {/* Feature comparison note */}
-            <div className="mt-10 max-w-2xl mx-auto bg-brand-50/60 border border-brand-100 rounded-2xl p-5">
-              <div className="flex items-start gap-3">
-                <Zap className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-ink-900">
-                    Every plan includes
-                  </p>
-                  <div className="mt-2 grid grid-cols-2 gap-1.5">
-                    {[
-                      "60+ OTA channels synced",
-                      "0% commission on OTA bookings",
-                      "Bookings dashboard",
-                      "Availability calendar",
-                      "AI concierge on WhatsApp",
-                      "10% only on bot-closed bookings",
-                      "Direct & manual bookings",
-                      "No setup fees",
-                    ].map((f) => (
-                      <div
-                        key={f}
-                        className="flex items-center gap-1.5 text-xs text-ink-600"
-                      >
-                        <Check className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
-                        {f}
-                      </div>
-                    ))}
+            <Reveal className="mt-12 max-w-2xl mx-auto">
+              <Spotlight className="card-dark group p-5 sm:p-6">
+                <div className="flex items-start gap-3.5">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                    <Zap className="w-5 h-5" strokeWidth={1.8} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-display text-base font-semibold tracking-[-0.02em] text-white">
+                      Every plan includes
+                    </p>
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                      {[
+                        "60+ OTA channels synced",
+                        "0% commission on OTA bookings",
+                        "Bookings dashboard",
+                        "Availability calendar",
+                        "AI concierge on WhatsApp",
+                        "10% only on bot-closed bookings",
+                        "Direct & manual bookings",
+                        "No setup fees",
+                      ].map((f) => (
+                        <div
+                          key={f}
+                          className="flex items-center gap-2 text-[13px] text-white/70"
+                        >
+                          <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-sunset-flame/15 text-sunset-gold">
+                            <Check className="w-3 h-3" strokeWidth={2.4} />
+                          </span>
+                          {f}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </Spotlight>
+            </Reveal>
 
-            <ChannelWall
-              className="mt-10 max-w-3xl mx-auto"
-              size="compact"
-              align="center"
-              title="0% commission on all 60+ booking channels"
-              subtitle="Two-way sync on every one of them, through our connectivity partner — with no per-channel fee."
-            />
+            <Reveal className="mt-10 max-w-3xl mx-auto">
+              <ChannelWall
+                className="!rounded-2xl !border-white/10 !bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                size="compact"
+                align="center"
+                dark
+                title="0% commission on all 60+ booking channels"
+                subtitle="Two-way sync on every one of them, through our connectivity partner — with no per-channel fee."
+              />
+            </Reveal>
 
             <CommissionPanel />
 
-            <div className="mt-8 text-center text-sm text-ink-500 flex items-center justify-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-brand-500" />
-              Start free · Pro has a 3-day free trial · Cancel anytime
-            </div>
+            <Reveal>
+              <div className="mt-10 text-center text-sm text-white/55 flex flex-wrap items-center justify-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-sunset-gold" strokeWidth={1.8} />
+                Start free · Pro has a 3-day free trial · Cancel anytime
+              </div>
+            </Reveal>
           </>
         )}
       </div>
@@ -308,73 +372,75 @@ const COMMISSION_ROWS = [
 ];
 
 const TONES = {
-  emerald: "bg-emerald-50 border-emerald-100 text-emerald-700",
-  brand: "bg-brand-50 border-brand-200 text-brand-700",
-  ink: "bg-ink-100 border-ink-200 text-ink-700",
+  emerald: "bg-emerald-400/10 ring-emerald-400/25 text-emerald-300",
+  brand: "bg-sunset-flame/10 ring-sunset-flame/30 text-sunset-gold",
+  ink: "bg-white/[0.06] ring-white/15 text-white/75",
 };
 
 function CommissionPanel() {
   return (
-    <div className="mt-6 max-w-2xl mx-auto">
-      <div className="rounded-2xl border border-ink-100 bg-white shadow-card overflow-hidden">
-        <div className="px-5 py-4 border-b border-ink-100 bg-ink-50/60">
-          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
-            <BadgePercent className="w-4 h-4 text-brand-500" />
+    <Reveal className="mt-6 max-w-2xl mx-auto">
+      <div className="card-dark overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.07]">
+          <p className="font-display text-base font-semibold tracking-[-0.02em] text-white flex items-center gap-2">
+            <BadgePercent className="w-4 h-4 text-sunset-gold" strokeWidth={1.8} />
             And the commission, in full
           </p>
-          <p className="mt-0.5 text-xs text-ink-500">
+          <p className="mt-0.5 text-xs text-white/50">
             On top of the flat subscription — three lines, no small print.
           </p>
         </div>
 
-        <ul className="divide-y divide-ink-100">
-          {COMMISSION_ROWS.map((r) => {
+        <ul className="divide-y divide-white/[0.06]">
+          {COMMISSION_ROWS.map((r, i) => {
             const Icon = r.icon;
             return (
-              <li key={r.source} className="px-5 py-4">
-                <div className="flex items-start gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-ink-50 text-ink-400 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-bold text-ink-900 leading-snug">
-                        {r.source}
+              <Reveal as="li" key={r.source} delay={i * 0.06} y={12}>
+                <div className="group px-5 py-4 transition-colors duration-300 hover:bg-white/[0.03]">
+                  <div className="flex items-start gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-white/[0.06] ring-1 ring-white/10 text-white/70 flex items-center justify-center shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                      <Icon className="w-4 h-4" strokeWidth={1.8} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold text-white leading-snug">
+                          {r.source}
+                        </p>
+                        <span
+                          className={clsx(
+                            "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ring-1 ring-inset",
+                            TONES[r.tone],
+                          )}
+                        >
+                          {r.rate}
+                        </span>
+                      </div>
+                      {r.sub && (
+                        <p className="mt-0.5 text-[11px] text-white/40 leading-snug">
+                          {r.sub}
+                        </p>
+                      )}
+                      <p className="mt-1.5 text-xs text-white/60 leading-relaxed">
+                        {r.why}
                       </p>
-                      <span
-                        className={clsx(
-                          "shrink-0 rounded-full border px-2.5 py-1 text-xs font-black",
-                          TONES[r.tone],
-                        )}
-                      >
-                        {r.rate}
-                      </span>
                     </div>
-                    {r.sub && (
-                      <p className="mt-0.5 text-[11px] text-ink-400 leading-snug">
-                        {r.sub}
-                      </p>
-                    )}
-                    <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
-                      {r.why}
-                    </p>
                   </div>
                 </div>
-              </li>
+              </Reveal>
             );
           })}
         </ul>
 
-        <div className="px-5 py-4 bg-brand-50/50 border-t border-brand-100">
-          <p className="text-sm font-black text-ink-900 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-brand-500" />
+        <div className="relative px-5 py-4 border-t border-white/[0.07] bg-sunset-soft">
+          <p className="font-display text-sm font-semibold text-white flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-sunset-gold" strokeWidth={1.8} />
             Tracked automatically, settled manually
           </p>
-          <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+          <p className="mt-1.5 text-xs text-white/65 leading-relaxed">
             Every commissionable booking is recorded in a ledger in your
             dashboard as it happens, and we email you a statement each month.
             You settle it by bank transfer or invoice.{" "}
-            <b className="text-ink-900">
+            <b className="text-white">
               Botlify never takes money out of your account and never sits
               between your guest and your payments
             </b>{" "}
@@ -382,64 +448,74 @@ function CommissionPanel() {
           </p>
         </div>
       </div>
-    </div>
+    </Reveal>
   );
 }
 
-function BillingToggle({ cycle, setCycle }) {
+function BillingToggle({ cycle, setCycle, dark }) {
   return (
     <div className="flex justify-center mb-8">
-      <div className="inline-flex items-center gap-1 p-1 rounded-full bg-ink-100 border border-ink-200">
-        <button
-          onClick={() => setCycle("monthly")}
-          className={clsx(
-            "px-4 py-1.5 rounded-full text-sm font-bold transition",
-            cycle === "monthly"
-              ? "bg-white text-ink-900 shadow-sm"
-              : "text-ink-500 hover:text-ink-800",
-          )}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setCycle("yearly")}
-          className={clsx(
-            "px-4 py-1.5 rounded-full text-sm font-bold transition inline-flex items-center gap-1.5",
-            cycle === "yearly"
-              ? "bg-white text-ink-900 shadow-sm"
-              : "text-ink-500 hover:text-ink-800",
-          )}
-        >
-          Yearly
-          <span className="text-[10px] font-black uppercase tracking-wide bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">
-            2 months free
-          </span>
-        </button>
-      </div>
+      <SlidingTabs
+        dark={dark}
+        value={cycle}
+        onChange={setCycle}
+        className="max-w-full"
+        items={[
+          { value: "monthly", label: "Monthly" },
+          {
+            value: "yearly",
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                Yearly
+                <span
+                  className={clsx(
+                    "text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
+                    dark
+                      ? "bg-sunset-flame/20 text-sunset-gold"
+                      : "bg-sunset-soft text-sunset-flame",
+                  )}
+                >
+                  2 months free
+                </span>
+              </span>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
 
-function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
+function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent, dark }) {
   const isFree = plan.key === "hotel_free" || plan.usd === 0;
   const isYearly = cycle === "yearly";
   // Annual = 10× monthly (2 months free), matching the backend catalog.
   const usd = isFree ? 0 : isYearly ? (plan.yearlyUsd ?? plan.usd * 10) : plan.usd;
   const per = isFree ? "" : isYearly ? "/yr" : "/mo";
 
-  return (
-    <div
+  const surface = dark
+    ? highlight
+      ? "bg-night-900/90 text-white"
+      : "card-dark"
+    : highlight
+      ? "bg-white/95 text-ink-900"
+      : "card";
+
+  const body = (
+    <Spotlight
       className={clsx(
-        "relative rounded-2xl p-6 flex flex-col border transition",
-        highlight
-          ? "border-brand-300 shadow-glow bg-white"
-          : "border-ink-100 bg-white hover:border-brand-200 hover:shadow-card",
+        "group relative h-full rounded-[1.4rem] p-6 sm:p-7 flex flex-col",
+        surface,
+        highlight &&
+          (dark
+            ? "backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+            : "backdrop-blur-2xl shadow-[inset_0_1px_0_#fff]"),
       )}
     >
       {highlight && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="px-3 py-1 rounded-full bg-brand-500 text-white text-[11px] font-bold shadow-glow">
-            Recommended
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <span className="relative inline-flex items-center gap-1 px-3 py-1 rounded-full bg-sunset text-white text-[11px] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-6px_rgba(255,61,119,0.6)] whitespace-nowrap">
+            <Sparkles className="h-3 w-3" strokeWidth={2} /> Recommended
           </span>
         </div>
       )}
@@ -447,28 +523,57 @@ function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
       {/* Icon */}
       <div
         className={clsx(
-          "w-10 h-10 rounded-xl flex items-center justify-center mb-4",
-          highlight ? "bg-brand-500" : "bg-brand-50",
+          "w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg]",
+          highlight
+            ? "bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.7)]"
+            : dark
+              ? "bg-white/[0.07] ring-1 ring-white/10 text-sunset-gold"
+              : "bg-sunset-soft text-sunset-flame",
         )}
       >
         {highlight ? (
-          <Sparkles className="w-5 h-5 text-white" />
+          <Sparkles className="w-5 h-5" strokeWidth={1.8} />
         ) : (
-          <Hotel className="w-5 h-5 text-brand-500" />
+          <Hotel className="w-5 h-5" strokeWidth={1.8} />
         )}
       </div>
 
-      <h3 className="text-xl font-black tracking-tight text-ink-900">
+      <h3
+        className={clsx(
+          "font-display text-xl font-semibold tracking-[-0.03em]",
+          dark ? "text-white" : "text-ink-900",
+        )}
+      >
         {plan.name}
       </h3>
-      <p className="text-xs mt-0.5 text-ink-500">{plan.tagline}</p>
+      <p className={clsx("text-[13px] mt-1", dark ? "text-white/55" : "text-ink-500")}>
+        {plan.tagline}
+      </p>
 
-      <div className="mt-4">
+      <div className="mt-5">
         <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-black text-ink-900">${usd}</span>
-          {per && <span className="text-sm text-ink-400">{per}</span>}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={`${usd}${per}`}
+              initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -14, filter: "blur(6px)" }}
+              transition={{ type: "spring", stiffness: 420, damping: 30 }}
+              className={clsx(
+                "font-display text-5xl font-semibold tracking-[-0.04em] tabular-nums",
+                dark ? "text-white" : "text-ink-900",
+              )}
+            >
+              ${usd}
+            </motion.span>
+          </AnimatePresence>
+          {per && (
+            <span className={clsx("text-sm", dark ? "text-white/45" : "text-ink-400")}>
+              {per}
+            </span>
+          )}
         </div>
-        <p className="text-[11px] mt-0.5 text-ink-400">
+        <p className={clsx("text-[11px] mt-1", dark ? "text-white/45" : "text-ink-400")}>
           {isFree
             ? "No card required"
             : isYearly
@@ -477,17 +582,43 @@ function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
         </p>
       </div>
 
-      <ul className="mt-5 space-y-2 flex-1">
+      <div className={clsx("my-5 h-px", dark ? "bg-white/[0.08]" : "divider")} />
+
+      <ul className="space-y-2.5 flex-1">
         {(plan.highlights || []).map((h) => (
-          <li key={h} className="flex items-start gap-2 text-xs text-ink-700">
-            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-brand-500" />
+          <li
+            key={h}
+            className={clsx(
+              "flex items-start gap-2.5 text-[13px]",
+              dark ? "text-white/75" : "text-ink-700",
+            )}
+          >
+            <span
+              className={clsx(
+                "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full",
+                highlight
+                  ? "bg-sunset text-white"
+                  : dark
+                    ? "bg-white/10 text-white/80"
+                    : "bg-sunset-soft text-sunset-flame",
+              )}
+            >
+              <Check className="w-2.5 h-2.5" strokeWidth={3} />
+            </span>
             <span>{h}</span>
           </li>
         ))}
       </ul>
 
       {isCurrent ? (
-        <div className="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <div
+          className={clsx(
+            "mt-7 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold ring-1 ring-inset",
+            dark
+              ? "bg-emerald-400/10 text-emerald-300 ring-emerald-400/25"
+              : "bg-emerald-50 text-emerald-700 ring-emerald-500/20",
+          )}
+        >
           <Check className="w-4 h-4" /> Your current plan
         </div>
       ) : (
@@ -495,10 +626,8 @@ function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
           onClick={() => onPick(plan)}
           disabled={selecting}
           className={clsx(
-            "mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-60",
-            highlight
-              ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow"
-              : "bg-ink-900 text-white hover:bg-ink-800",
+            "group/btn mt-7 w-full",
+            highlight ? "btn-primary" : dark ? "btn-glass-dark" : "btn-secondary",
           )}
         >
           {selecting ? (
@@ -508,11 +637,42 @@ function PlanCard({ plan, cycle, onPick, selecting, highlight, isCurrent }) {
           ) : (
             <>
               {isFree ? "Start free" : "Start 3-day trial"}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/btn:translate-x-1" />
             </>
           )}
         </button>
       )}
-    </div>
+    </Spotlight>
+  );
+
+  if (!highlight) {
+    return (
+      <motion.div
+        className="h-full"
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 320, damping: 22 }}
+      >
+        {body}
+      </motion.div>
+    );
+  }
+
+  // Recommended plan: a living sunset ring — a rotating conic gradient
+  // behind a 1.5px inset card, plus a soft bloom underneath.
+  return (
+    <motion.div
+      className="relative h-full rounded-[1.5rem] p-[1.5px] isolate"
+      whileHover={{ y: -6 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+    >
+      <div
+        aria-hidden
+        className="absolute -inset-3 -z-20 rounded-[2rem] bg-sunset opacity-25 blur-2xl"
+      />
+      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden rounded-[1.5rem]">
+        <div className="absolute left-1/2 top-1/2 aspect-square w-[220%] -translate-x-1/2 -translate-y-1/2 bg-sunset-conic animate-[spin_6s_linear_infinite] motion-reduce:animate-none" />
+      </div>
+      {body}
+    </motion.div>
   );
 }

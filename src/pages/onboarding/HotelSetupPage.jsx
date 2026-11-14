@@ -8,11 +8,27 @@
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Hotel, Loader2, Ticket } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Hotel,
+  Loader2,
+  MapPin,
+  Ticket,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, Reveal } from "@/components/fx";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+
+// Dark liquid-glass field — `.input` is the light variant.
+const FIELD =
+  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
+const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
+const ICON =
+  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none";
 
 export default function HotelSetupPage() {
   const navigate = useNavigate();
@@ -150,101 +166,144 @@ export default function HotelSetupPage() {
 
   if (ensuring || checking) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <div className="w-full max-w-md" aria-busy="true">
+          <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-white/[0.06] animate-pulse" />
+          <div className="mx-auto mb-2 h-7 w-64 max-w-full rounded-lg bg-white/[0.06] animate-pulse" />
+          <div className="mx-auto mb-6 h-4 w-72 max-w-full rounded-lg bg-white/[0.04] animate-pulse" />
+          <div className="h-80 rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06] animate-pulse" />
+          <span className="sr-only">
+            <Loader2 className="w-7 h-7 animate-spin" />
+            Loading
+          </span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
+    <div className="flex items-start justify-center px-4 sm:px-6 py-8 sm:py-12 text-white">
       <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg mx-auto mb-4">
-            <Hotel className="w-7 h-7 text-white" />
+        <Reveal className="text-center mb-7">
+          <div className="relative w-14 h-14 mx-auto mb-5">
+            <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-30 blur-2xl" />
+            <motion.div
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              className="relative w-14 h-14 rounded-2xl bg-sunset grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_36px_-12px_rgba(255,61,119,0.8)]"
+            >
+              <Hotel className="w-7 h-7 text-white" strokeWidth={1.8} />
+            </motion.div>
           </div>
-          <h1 className="text-2xl font-black text-ink-900">
-            What's your hotel called?
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white">
+            What's your hotel{" "}
+            <span className="font-serif italic font-normal text-sunset">called?</span>
           </h1>
-          <p className="text-sm text-ink-500 mt-1.5">
+          <p className="text-sm text-white/60 mt-2">
             That's all we need. You can add rooms and channels in a minute.
           </p>
-        </div>
+        </Reveal>
 
-        <form
-          onSubmit={submit}
-          className="bg-white rounded-2xl border border-ink-100 shadow-lg p-6 sm:p-7 space-y-4"
-        >
-          <div>
-            <label className="label" htmlFor="hotelName">
-              Hotel name
-            </label>
-            <input
-              id="hotelName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Sunset Beach Resort"
-              className="input"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="label" htmlFor="hotelCity">
-              City <span className="font-normal text-ink-400">(optional)</span>
-            </label>
-            <input
-              id="hotelCity"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Canggu, Bali"
-              className="input"
-            />
-          </div>
-
-          {/* Optional consultant referral */}
-          <div>
-            <label className="label" htmlFor="refCode">
-              Referral code{" "}
-              <span className="font-normal text-ink-400">(optional)</span>
-            </label>
-            <div className="relative">
-              <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" />
+        <Reveal delay={0.08}>
+          <form onSubmit={submit} className="card-dark p-6 sm:p-7 space-y-4">
+            <div>
+              <label className={LABEL} htmlFor="hotelName">
+                Hotel name
+              </label>
               <input
-                id="refCode"
-                value={refCode}
-                onChange={(e) => setRefCode(e.target.value)}
-                placeholder="Have a consultant's code?"
-                className="input pl-9"
+                id="hotelName"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Sunset Beach Resort"
+                className={FIELD}
+                autoFocus
               />
-              {refState === "checking" && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 animate-spin" />
-              )}
+            </div>
+
+            <div>
+              <label className={LABEL} htmlFor="hotelCity">
+                City <span className="font-normal text-white/40">(optional)</span>
+              </label>
+              <div className="relative group">
+                <MapPin strokeWidth={1.8} className={ICON} />
+                <input
+                  id="hotelCity"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Canggu, Bali"
+                  className={`${FIELD} pl-9`}
+                />
+              </div>
+            </div>
+
+            {/* Optional consultant referral */}
+            <div>
+              <label className={LABEL} htmlFor="refCode">
+                Referral code{" "}
+                <span className="font-normal text-white/40">(optional)</span>
+              </label>
+              <div className="relative group">
+                <Ticket strokeWidth={1.8} className={ICON} />
+                <input
+                  id="refCode"
+                  value={refCode}
+                  onChange={(e) => setRefCode(e.target.value)}
+                  placeholder="Have a consultant's code?"
+                  className={`${FIELD} pl-9 pr-9`}
+                />
+                <AnimatePresence mode="wait">
+                  {refState === "checking" && (
+                    <motion.span
+                      key="checking"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+                    </motion.span>
+                  )}
+                  {refState === "valid" && (
+                    <motion.span
+                      key="valid"
+                      initial={{ opacity: 0, scale: 0.4 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.4 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
               {refState === "valid" && (
-                <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                <p className="text-xs text-emerald-300 mt-1.5">
+                  Referred by {refName || "a Botlify consultant"}
+                </p>
+              )}
+              {refState === "invalid" && (
+                <p className="text-xs text-white/45 mt-1.5">
+                  We don't recognise that code — you can leave it blank.
+                </p>
               )}
             </div>
-            {refState === "valid" && (
-              <p className="text-xs text-emerald-600 mt-1">
-                Referred by {refName || "a Botlify consultant"}
-              </p>
-            )}
-            {refState === "invalid" && (
-              <p className="text-xs text-ink-400 mt-1">
-                We don't recognise that code — you can leave it blank.
-              </p>
-            )}
-          </div>
 
-          <button
-            type="submit"
-            disabled={saving || !name.trim()}
-            className="btn-primary w-full"
-          >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Continue
-          </button>
-        </form>
+            <Magnetic strength={0.12} className="w-full">
+              <button
+                type="submit"
+                disabled={saving || !name.trim()}
+                className="btn-primary w-full h-11 group"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                Continue
+                {!saving && (
+                  <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                )}
+              </button>
+            </Magnetic>
+          </form>
+        </Reveal>
       </div>
     </div>
   );

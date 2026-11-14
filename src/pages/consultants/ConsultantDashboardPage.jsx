@@ -6,6 +6,8 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import toast from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, NumberTicker, Reveal, RevealGroup, Spotlight } from "@/components/fx";
 import {
   Banknote,
   Building2,
@@ -19,16 +21,18 @@ import {
   XCircle,
 } from "lucide-react";
 
-const input =
-  "w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none";
-const label = "block text-xs font-semibold text-ink-600 mb-1";
+const input = "input";
+const label = "label";
 
 const ENTRY_STATUS = {
-  accrued: "bg-amber-50 text-amber-700 border-amber-200",
-  verified: "bg-blue-50 text-blue-700 border-blue-200",
-  paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  reversed: "bg-rose-50 text-rose-600 border-rose-200",
+  accrued: "badge-yellow",
+  verified: "badge-blue",
+  paid: "badge-green",
+  reversed: "badge-red",
 };
+
+const hop =
+  "transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]";
 
 const money = (a, c) =>
   `${c || "USD"} ${Number(a || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -63,28 +67,45 @@ export default function ConsultantDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6" aria-busy="true">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-6 w-56 rounded-lg bg-ink-900/[0.06] animate-pulse" />
+            <div className="h-4 w-72 max-w-[60vw] rounded bg-ink-900/[0.06] animate-pulse" />
+          </div>
+        </div>
+        <div className="card h-40 animate-pulse" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="card h-24 animate-pulse" />
+          ))}
+        </div>
+        <Loader2 className="sr-only" aria-label="Loading" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
-          <HandCoins className="w-6 h-6 text-brand-500" />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10">
+      <Reveal y={14} className="group flex items-start sm:items-center gap-3 mb-6 sm:mb-8">
+        <div className="relative shrink-0">
+          <span aria-hidden className="absolute inset-0 rounded-xl bg-sunset opacity-40 blur-lg" />
+          <div className={`relative w-11 h-11 rounded-xl bg-sunset text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${hop}`}>
+            <HandCoins className="w-5 h-5" strokeWidth={1.8} />
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-ink-900">
-            Consultant Program
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+            Consultant{" "}
+            <span className="font-serif italic font-normal">Program</span>
           </h1>
-          <p className="text-sm text-ink-500">
+          <p className="text-sm text-ink-500 mt-0.5">
             Earn 20% of Botlify's revenue from every hotel you sign — for 12
             months.
           </p>
         </div>
-      </div>
+      </Reveal>
 
       {!me?.consultant ? (
         <ApplicationForm onApplied={load} />
@@ -139,20 +160,29 @@ function ApplicationForm({ onApplied }) {
 
   return (
     <div className="max-w-xl">
-      <div className="rounded-2xl border border-brand-100 bg-brand-50/60 p-5 mb-5">
-        <p className="font-bold text-ink-900">How it works</p>
-        <ul className="mt-2 space-y-1.5 text-sm text-ink-600">
-          <li>1. Apply below — we approve consultants within a day or two.</li>
-          <li>2. You get a personal referral code.</li>
-          <li>
-            3. Hotels enter your code when they sign up — you earn 20% of what
-            Botlify makes from them for 12 months, paid monthly.
-          </li>
+      <Reveal y={16}>
+      <div className="relative overflow-hidden rounded-2xl bg-sunset-soft ring-1 ring-sunset-flame/15 p-5 mb-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+        <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">How it works</p>
+        <ul className="mt-3 space-y-2.5 text-sm text-ink-600">
+          {[
+            "Apply below — we approve consultants within a day or two.",
+            "You get a personal referral code.",
+            "Hotels enter your code when they sign up — you earn 20% of what Botlify makes from them for 12 months, paid monthly.",
+          ].map((t, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sunset text-[11px] font-bold text-white tabular-nums shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+                {i + 1}
+              </span>
+              <span>{t}</span>
+            </li>
+          ))}
         </ul>
       </div>
+      </Reveal>
 
-      <div className="rounded-2xl border border-ink-100 bg-white p-5 space-y-3">
-        <p className="font-bold text-ink-900">Apply to join</p>
+      <Reveal y={16} delay={0.06}>
+      <div className="card p-5 space-y-3">
+        <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">Apply to join</p>
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
             <span className={label}>Full name</span>
@@ -187,7 +217,7 @@ function ApplicationForm({ onApplied }) {
             />
           </div>
         </div>
-        <p className="text-xs font-bold uppercase tracking-wide text-ink-400 pt-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400 pt-3">
           Payout details
         </p>
         <div className="grid sm:grid-cols-2 gap-3">
@@ -219,39 +249,54 @@ function ApplicationForm({ onApplied }) {
         <button
           onClick={submit}
           disabled={saving}
-          className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-3 transition disabled:opacity-60"
+          className="btn-primary w-full mt-3 py-3"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           Submit application
         </button>
       </div>
+      </Reveal>
     </div>
   );
 }
 
 function PendingState() {
   return (
-    <div className="max-w-md mx-auto text-center rounded-2xl border border-amber-200 bg-amber-50/60 p-8">
-      <Hourglass className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-      <p className="font-black text-ink-900 text-lg">Application received</p>
+    <Reveal y={16} className="max-w-md mx-auto text-center card ring-1 ring-amber-500/20 p-8">
+      <div className="relative mx-auto mb-4 w-fit">
+        <span aria-hidden className="absolute inset-0 rounded-2xl bg-amber-400 opacity-30 blur-2xl" />
+        <motion.span
+          className="relative grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-amber-500 ring-1 ring-amber-500/20"
+          animate={{ rotate: [0, 180, 180, 360] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", times: [0, 0.2, 0.5, 0.7] }}
+        >
+          <Hourglass className="w-7 h-7" strokeWidth={1.8} />
+        </motion.span>
+      </div>
+      <p className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-lg">Application received</p>
       <p className="text-sm text-ink-600 mt-2">
         We're reviewing your application — you'll get your referral code as soon
         as it's approved, usually within 1–2 days.
       </p>
-    </div>
+    </Reveal>
   );
 }
 
 function SuspendedState() {
   return (
-    <div className="max-w-md mx-auto text-center rounded-2xl border border-rose-200 bg-rose-50/60 p-8">
-      <XCircle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-      <p className="font-black text-ink-900 text-lg">Account suspended</p>
+    <Reveal y={16} className="max-w-md mx-auto text-center card ring-1 ring-rose-500/20 p-8">
+      <div className="relative mx-auto mb-4 w-fit">
+        <span aria-hidden className="absolute inset-0 rounded-2xl bg-rose-400 opacity-25 blur-2xl" />
+        <span className="relative grid h-14 w-14 place-items-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-500/20">
+          <XCircle className="w-7 h-7" strokeWidth={1.8} />
+        </span>
+      </div>
+      <p className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-lg">Account suspended</p>
       <p className="text-sm text-ink-600 mt-2">
         Your consultant account is currently suspended. If you think this is a
         mistake, email contactus@botlify.site.
       </p>
-    </div>
+    </Reveal>
   );
 }
 
@@ -260,10 +305,16 @@ function ApprovedDashboard({ me, hotels, onChanged }) {
   const { consultant, stats, entries = [] } = me;
   const byCurrency = stats?.byCurrency || [];
 
+  const [copied, setCopied] = useState(false);
   const copyCode = () => {
     navigator.clipboard
       .writeText(consultant.code)
-      .then(() => toast.success("Code copied!"))
+      .then(() => {
+        toast.success("Code copied!");
+        // Visual-only tick on the button; resets on its own.
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      })
       .catch(() => toast.error("Couldn't copy"));
   };
 
@@ -279,96 +330,133 @@ function ApprovedDashboard({ me, hotels, onChanged }) {
   return (
     <div className="space-y-6">
       {/* Referral code hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 to-ink-800 text-white p-6 sm:p-8">
-        <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-500/30 blur-3xl" />
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-300">
+      <Reveal y={18}>
+      <Spotlight className="relative isolate overflow-hidden rounded-3xl bg-night-950 text-white p-6 sm:p-8 shadow-[0_30px_60px_-30px_rgba(124,92,255,0.55),inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/10 grain">
+        <div className="pointer-events-none absolute -top-20 -right-16 w-64 h-64 rounded-full bg-sunset-magenta/40 blur-3xl animate-drift-a" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-sunset-violet/35 blur-3xl animate-drift-b" />
+        <div className="pointer-events-none absolute inset-0 bg-dot-grid-dark opacity-60 mask-fade-b" />
+        <p className="relative text-[11px] font-semibold uppercase tracking-[0.18em] text-sunset-gold">
           Your referral code
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <span className="text-3xl sm:text-5xl font-black tracking-widest font-mono">
+        <div className="relative mt-2 flex flex-wrap items-center gap-3">
+          <span className="text-3xl sm:text-5xl font-bold tracking-[0.18em] font-mono break-all bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
             {consultant.code}
           </span>
-          <button
-            onClick={copyCode}
-            className="inline-flex items-center gap-1.5 text-xs font-bold bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg px-3 py-2 transition"
-          >
-            <Copy className="w-3.5 h-3.5" /> Copy
-          </button>
+          <Magnetic strength={0.3}>
+            <button
+              onClick={copyCode}
+              className="btn-glass-dark text-xs px-3.5 py-2"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={copied ? "ok" : "copy"}
+                  initial={{ scale: 0.4, opacity: 0, rotate: -20 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  exit={{ scale: 0.4, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 24 }}
+                  className="flex"
+                >
+                  {copied ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </motion.span>
+              </AnimatePresence>
+              Copy
+            </button>
+          </Magnetic>
         </div>
-        <p className="mt-3 text-sm text-white/60 max-w-lg">
+        <p className="relative mt-3 text-sm text-white/60 max-w-lg">
           Hotels enter this code during sign-up. You earn 20% of Botlify's
           revenue from each one for 12 months — paid to your bank every month.
         </p>
-      </div>
+      </Spotlight>
+      </Reveal>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-ink-100 bg-white p-4">
-          <div className="flex items-center gap-1.5 text-ink-400 text-xs font-semibold uppercase tracking-wide mb-1.5">
-            <Building2 className="w-3.5 h-3.5" /> Hotels signed
+      <RevealGroup step={0.06} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Spotlight className="group card p-4 sm:p-5 h-full">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-[13px] text-ink-500">Hotels signed</span>
+            <span className={`grid h-8 w-8 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ${hop}`}>
+              <Building2 className="w-4 h-4" strokeWidth={1.8} />
+            </span>
           </div>
-          <p className="text-2xl font-black text-ink-900">
-            {stats?.hotelsSigned ?? hotels.length}
+          <p className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+            <NumberTicker value={Number(stats?.hotelsSigned ?? hotels.length) || 0} />
           </p>
-        </div>
+        </Spotlight>
         {["accrued", "verified", "paid"].map((k) => (
-          <div key={k} className="rounded-xl border border-ink-100 bg-white p-4">
-            <div className="flex items-center gap-1.5 text-ink-400 text-xs font-semibold uppercase tracking-wide mb-1.5">
-              {k === "paid" ? (
-                <Banknote className="w-3.5 h-3.5" />
-              ) : k === "verified" ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              ) : (
-                <Clock className="w-3.5 h-3.5" />
-              )}
-              {k}
+          <Spotlight key={k} className="group card p-4 sm:p-5 h-full">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[13px] text-ink-500 capitalize">{k}</span>
+              <span
+                className={`grid h-8 w-8 place-items-center rounded-xl ${hop} ${
+                  k === "paid"
+                    ? "bg-emerald-50 text-emerald-600"
+                    : k === "verified"
+                      ? "bg-sky-50 text-sky-600"
+                      : "bg-amber-50 text-amber-600"
+                }`}
+              >
+                {k === "paid" ? (
+                  <Banknote className="w-4 h-4" strokeWidth={1.8} />
+                ) : k === "verified" ? (
+                  <CheckCircle2 className="w-4 h-4" strokeWidth={1.8} />
+                ) : (
+                  <Clock className="w-4 h-4" strokeWidth={1.8} />
+                )}
+              </span>
             </div>
             {byCurrency.length === 0 ? (
-              <p className="text-2xl font-black text-ink-900">0</p>
+              <p className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink-900 tabular-nums">0</p>
             ) : (
               byCurrency.map((c) => (
-                <p key={c.currency} className="text-lg font-black text-ink-900 leading-tight">
+                <p key={c.currency} className="font-display text-lg sm:text-xl font-semibold tracking-[-0.02em] text-ink-900 leading-tight tabular-nums break-words">
                   {money(c[k], c.currency)}
                 </p>
               ))
             )}
-          </div>
+          </Spotlight>
         ))}
-      </div>
+      </RevealGroup>
 
       {/* Referred hotels */}
-      <div className="rounded-2xl border border-ink-100 bg-white overflow-hidden">
-        <div className="px-5 py-4 border-b border-ink-100">
-          <p className="font-bold text-ink-900">Your hotels</p>
+      <Reveal y={16}>
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-ink-900/[0.06] flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
+          <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">Your hotels</p>
         </div>
         {hotels.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-ink-400 text-center">
+          <EmptyRow icon={Building2}>
             No hotels signed up with your code yet — go get them!
-          </p>
+          </EmptyRow>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
-                  <th className="px-4 py-2.5">Hotel</th>
-                  <th className="px-4 py-2.5">Signed up</th>
-                  <th className="px-4 py-2.5">Plan</th>
-                  <th className="px-4 py-2.5">Status</th>
+                <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-400 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur">
+                  <th className="px-4 py-3 whitespace-nowrap">Hotel</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Signed up</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Plan</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-ink-900/[0.06]">
                 {hotels.map((h, i) => (
-                  <tr key={i} className="border-b border-ink-50">
-                    <td className="px-4 py-2.5 font-semibold text-ink-900">
+                  <tr key={i} className="hover:bg-white/80 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900">
                       {h.name}
                     </td>
-                    <td className="px-4 py-2.5 text-ink-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-500">
                       {fmtDate(h.attributedAt)}
                     </td>
-                    <td className="px-4 py-2.5 text-ink-700 capitalize">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-700 capitalize">
                       {h.plan || "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-ink-500 capitalize">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-500 capitalize">
                       {h.status || "—"}
                     </td>
                   </tr>
@@ -378,46 +466,49 @@ function ApprovedDashboard({ me, hotels, onChanged }) {
           </div>
         )}
       </div>
+      </Reveal>
 
       {/* Earnings ledger */}
-      <div className="rounded-2xl border border-ink-100 bg-white overflow-hidden">
-        <div className="px-5 py-4 border-b border-ink-100">
-          <p className="font-bold text-ink-900">Earnings</p>
+      <Reveal y={16}>
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-ink-900/[0.06] flex items-center gap-2">
+          <HandCoins className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
+          <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">Earnings</p>
         </div>
         {entries.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-ink-400 text-center">
+          <EmptyRow icon={HandCoins}>
             Your commission entries will appear here each month.
-          </p>
+          </EmptyRow>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
-                  <th className="px-4 py-2.5">Period</th>
-                  <th className="px-4 py-2.5">Hotel</th>
-                  <th className="px-4 py-2.5">Type</th>
-                  <th className="px-4 py-2.5">Amount</th>
-                  <th className="px-4 py-2.5">Status</th>
+                <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-400 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur">
+                  <th className="px-4 py-3 whitespace-nowrap">Period</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Hotel</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Type</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Amount</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-ink-900/[0.06]">
                 {entries.map((e, i) => (
-                  <tr key={e._id || i} className="border-b border-ink-50">
-                    <td className="px-4 py-2.5 font-mono text-xs text-ink-700">
+                  <tr key={e._id || i} className="hover:bg-white/80 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-ink-700">
                       {e.period || fmtDate(e.createdAt)}
                     </td>
-                    <td className="px-4 py-2.5 text-ink-700">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-700">
                       {e.workspaceName || e.workspace?.name || e.workspaceId?.name || "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-ink-500 capitalize">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-500 capitalize">
                       {(e.revenueType || "").replace("_", " ")}
                     </td>
-                    <td className="px-4 py-2.5 font-semibold text-ink-900">
+                    <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900">
                       {money(e.amount, e.currency)}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${ENTRY_STATUS[e.status] || ENTRY_STATUS.accrued}`}
+                        className={`capitalize ${ENTRY_STATUS[e.status] || ENTRY_STATUS.accrued}`}
                       >
                         {e.status}
                       </span>
@@ -429,6 +520,7 @@ function ApprovedDashboard({ me, hotels, onChanged }) {
           </div>
         )}
       </div>
+      </Reveal>
 
       {/* Payout editor */}
       <PayoutEditor consultant={consultant} onChanged={onChanged} />
@@ -456,9 +548,13 @@ function PayoutEditor({ consultant, onChanged }) {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5">
-      <p className="font-bold text-ink-900 mb-3 flex items-center gap-1.5">
-        <Banknote className="w-4 h-4 text-brand-500" /> Payout details
+    <Reveal y={16}>
+    <div className="card p-5">
+      <p className="font-display font-semibold tracking-[-0.01em] text-ink-900 mb-4 flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame">
+          <Banknote className="w-4 h-4" strokeWidth={1.8} />
+        </span>
+        Payout details
       </p>
       <div className="grid sm:grid-cols-3 gap-3">
         <div>
@@ -490,7 +586,7 @@ function PayoutEditor({ consultant, onChanged }) {
         <button
           onClick={save}
           disabled={saving}
-          className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition disabled:opacity-60"
+          className="btn-primary w-full sm:w-auto"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -500,6 +596,21 @@ function PayoutEditor({ consultant, onChanged }) {
           Save payout details
         </button>
       </div>
+    </div>
+    </Reveal>
+  );
+}
+
+function EmptyRow({ icon: Icon, children }) {
+  return (
+    <div className="flex flex-col items-center text-center px-6 py-10">
+      <div className="relative mb-3">
+        <span aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+        <span className="relative grid h-11 w-11 place-items-center rounded-2xl bg-sunset-soft text-sunset-flame">
+          <Icon className="w-5 h-5" strokeWidth={1.8} />
+        </span>
+      </div>
+      <p className="text-sm text-ink-500 max-w-xs">{children}</p>
     </div>
   );
 }

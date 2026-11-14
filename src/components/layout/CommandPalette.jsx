@@ -1,5 +1,6 @@
 import { Command } from "cmdk";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard,
   BedDouble,
@@ -13,6 +14,8 @@ import {
   TrendingUp,
   Plus,
   X,
+  Search,
+  CornerDownLeft,
 } from "lucide-react";
 
 /**
@@ -88,7 +91,6 @@ const ENTRIES = [
 
 export default function CommandPalette({ open, onClose }) {
   const navigate = useNavigate();
-  if (!open) return null;
 
   const go = (to) => {
     onClose();
@@ -101,66 +103,86 @@ export default function CommandPalette({ open, onClose }) {
     return acc;
   }, {});
 
+  const kbd =
+    "rounded-md bg-white px-1.5 py-0.5 font-mono text-[10px] text-ink-500 shadow-[inset_0_-1px_0_rgba(15,23,42,0.08)] ring-1 ring-ink-900/[0.08]";
+
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl rounded-md bg-white shadow-2xl border border-ink-100 overflow-hidden"
-      >
-        <Command label="Command palette" className="w-full">
-          <div className="flex items-center border-b border-ink-100 px-3">
-            <Command.Input
-              autoFocus
-              placeholder="Type to search or jump to a page…"
-              className="flex-1 py-3 bg-transparent outline-none text-sm"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="cmdk"
+          className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <div className="absolute inset-0 bg-night-950/40 backdrop-blur-md" />
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.96, y: -10, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.97, y: -6, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            className="glass-strong relative w-full max-w-xl overflow-hidden rounded-3xl"
+          >
+            <div aria-hidden className="pointer-events-none absolute inset-x-10 top-0 h-px bg-sunset opacity-70" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -left-16 -top-20 h-40 w-40 rounded-full bg-sunset opacity-[0.12] blur-3xl"
             />
-            <button
-              onClick={onClose}
-              className="text-ink-400 hover:text-ink-600 p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <Command.List className="max-h-80 overflow-y-auto p-2">
-            <Command.Empty className="py-6 text-center text-sm text-ink-400">
-              No results.
-            </Command.Empty>
-            {Object.entries(groups).map(([group, items]) => (
-              <Command.Group
-                key={group}
-                heading={group}
-                className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-ink-400"
-              >
-                {items.map(({ label, icon: Icon, to }) => (
-                  <Command.Item
-                    key={to}
-                    value={label}
-                    onSelect={() => go(to)}
-                    className="flex items-center gap-3 px-3 py-2 text-sm rounded-lg cursor-pointer text-ink-700 aria-selected:bg-brand-50 aria-selected:text-brand-700"
+            <Command label="Command palette" className="relative w-full">
+              <div className="flex items-center gap-2 border-b border-ink-900/[0.06] px-4">
+                <Search className="h-4 w-4 shrink-0 text-sunset-flame" strokeWidth={2} />
+                <Command.Input
+                  autoFocus
+                  placeholder="Type to search or jump to a page…"
+                  className="flex-1 bg-transparent py-4 text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
+                />
+                <button
+                  onClick={onClose}
+                  className="group grid h-8 w-8 place-items-center rounded-lg text-ink-400 transition hover:bg-ink-900/[0.05] hover:text-ink-700 active:scale-90"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
+                </button>
+              </div>
+              <Command.List className="max-h-80 overflow-y-auto p-2">
+                <Command.Empty className="py-8 text-center text-sm text-ink-400">No results.</Command.Empty>
+                {Object.entries(groups).map(([group, items]) => (
+                  <Command.Group
+                    key={group}
+                    heading={group}
+                    className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.16em] [&_[cmdk-group-heading]]:text-ink-400"
                   >
-                    <Icon className="w-4 h-4 text-ink-400" />
-                    {label}
-                  </Command.Item>
+                    {items.map(({ label, icon: Icon, to }) => (
+                      <Command.Item
+                        key={to}
+                        value={label}
+                        onSelect={() => go(to)}
+                        className="group/item relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-700 transition-colors aria-selected:bg-white aria-selected:text-ink-900 aria-selected:shadow-[0_1px_2px_rgba(15,23,42,0.06),0_6px_16px_-8px_rgba(255,61,119,0.35),inset_0_1px_0_#fff]"
+                      >
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-900/[0.04] text-ink-500 transition-all duration-500 ease-spring group-aria-selected/item:-translate-y-0.5 group-aria-selected/item:rotate-[-8deg] group-aria-selected/item:bg-sunset-soft group-aria-selected/item:text-sunset-flame">
+                          <Icon className="h-4 w-4" strokeWidth={1.8} />
+                        </span>
+                        <span className="flex-1">{label}</span>
+                        <CornerDownLeft className="h-3.5 w-3.5 text-ink-300 opacity-0 transition-opacity group-aria-selected/item:opacity-100" />
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
                 ))}
-              </Command.Group>
-            ))}
-          </Command.List>
-          <div className="border-t border-ink-100 px-3 py-2 flex items-center justify-between text-[10px] text-ink-400">
-            <span>
-              Tip: Press{" "}
-              <kbd className="px-1 py-0.5 bg-ink-100 rounded">↑↓</kbd> to
-              navigate,{" "}
-              <kbd className="px-1 py-0.5 bg-ink-100 rounded">Enter</kbd> to
-              select
-            </span>
-            <kbd className="px-1 py-0.5 bg-ink-100 rounded">Esc</kbd>
-          </div>
-        </Command>
-      </div>
-    </div>
+              </Command.List>
+              <div className="flex items-center justify-between border-t border-ink-900/[0.06] bg-white/40 px-4 py-2.5 text-[11px] text-ink-400">
+                <span>
+                  Tip: Press <kbd className={kbd}>↑↓</kbd> to navigate, <kbd className={kbd}>Enter</kbd> to select
+                </span>
+                <kbd className={kbd}>Esc</kbd>
+              </div>
+            </Command>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

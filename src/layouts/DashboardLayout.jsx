@@ -13,6 +13,7 @@ import OfflineBanner from "@/components/layout/OfflineBanner";
 import ShortcutsHelp from "@/components/layout/ShortcutsHelp";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TrainingReminder from "@/components/TrainingReminder";
+import { Aurora } from "@/components/fx";
 
 const ROUTE_TITLES = {
   "/dashboard": "Today",
@@ -116,7 +117,10 @@ export default function DashboardLayout() {
   }, [navigate]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-50">
+    <div className="relative isolate flex h-screen overflow-hidden bg-[var(--canvas)]">
+      {/* The canvas: warm paper + a slow sunset aurora that the glass floats on. */}
+      <Aurora fixed className="opacity-70" />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-dot-grid opacity-[0.35]" />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-brand-600 focus:text-white focus:px-3 focus:py-1.5 focus:rounded-lg focus:text-sm"
@@ -131,10 +135,10 @@ export default function DashboardLayout() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="lg:hidden fixed inset-0 bg-night-950/50 backdrop-blur-md z-40 animate-fade-in"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="lg:hidden fixed inset-y-0 left-0 w-[260px] z-50 shadow-xl">
+          <div className="lg:hidden fixed inset-y-0 left-0 z-50 shadow-2xl animate-[slideInLeft_0.45s_cubic-bezier(0.16,1,0.3,1)]">
             <Sidebar onNavigate={() => setMobileSidebarOpen(false)} />
           </div>
         </>
@@ -155,10 +159,10 @@ export default function DashboardLayout() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Outlet />
               </motion.div>

@@ -44,9 +44,11 @@ export default function PlanGate({
 
   if (compact) {
     return (
-      <div className="rounded-lg border-2 border-dashed border-brand-200 bg-brand-50/40 p-3 flex items-center justify-between">
+      <div className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-dashed border-sunset-flame/30 bg-sunset-soft p-3">
         <div className="flex items-center gap-2 text-sm text-ink-700">
-          <Icon className="w-4 h-4 text-brand-600" />
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/80 text-sunset-flame shadow-[inset_0_1px_0_#fff] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <Icon className="h-4 w-4" strokeWidth={1.8} />
+          </span>
           <span>
             Available on the <b>Pro</b> plan
           </span>
@@ -63,15 +65,18 @@ export default function PlanGate({
 
   return (
     <div className="relative">
-      <div className="pointer-events-none opacity-40 select-none">
+      <div className="pointer-events-none select-none opacity-40 blur-[1.5px]">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-md">
-        <div className="text-center max-w-sm px-6 py-8">
-          <div className="inline-flex w-14 h-14 items-center justify-center rounded-full bg-brand-gradient mb-3 shadow-glow">
-            <Icon className="w-6 h-6 text-white" />
+      <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/60 backdrop-blur-md">
+        <div className="glass-strong relative max-w-sm rounded-3xl px-6 py-8 text-center animate-pop-in">
+          <div className="relative mx-auto mb-4 h-14 w-14">
+            <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-25 blur-2xl animate-glow-pulse" />
+            <div className="relative grid h-14 w-14 place-items-center rounded-2xl bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_12px_28px_-10px_rgba(255,61,119,0.7)]">
+              <Icon className="h-6 w-6 text-white" strokeWidth={1.8} />
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-ink-900">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
             {feature || "Premium feature"}
           </h3>
           <p className="text-sm text-ink-500 mt-1">

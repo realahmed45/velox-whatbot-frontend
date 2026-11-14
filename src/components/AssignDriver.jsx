@@ -38,8 +38,8 @@ export default function AssignDriver({ transfer, drivers, onAssign }) {
 
   if (assigned && !changing) {
     return (
-      <div className="mt-2 inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-xs bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-lg px-2.5 py-1.5">
-        <Car className="w-3.5 h-3.5" />
+      <div className="mt-2 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-emerald-50/90 px-2.5 py-1.5 text-xs text-emerald-800 ring-1 ring-inset ring-emerald-600/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+        <Car className="h-3.5 w-3.5" strokeWidth={1.8} />
         <span className="font-bold">{assigned.name}</span>
         <span>{assigned.phone}</span>
         {assigned.vehicleLabel && (
@@ -48,7 +48,7 @@ export default function AssignDriver({ transfer, drivers, onAssign }) {
         {open && (
           <button
             onClick={() => setChanging(true)}
-            className="font-bold underline underline-offset-2 hover:text-emerald-900"
+            className="rounded-md px-1 font-semibold underline decoration-emerald-600/40 underline-offset-2 transition hover:bg-emerald-600/10 hover:text-emerald-900 active:scale-95"
           >
             Change
           </button>
@@ -61,7 +61,7 @@ export default function AssignDriver({ transfer, drivers, onAssign }) {
 
   if (!drivers.length) {
     return (
-      <p className="mt-2 text-xs text-amber-700">
+      <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-xs text-amber-700 ring-1 ring-inset ring-amber-600/20">
         No drivers yet — add one below to assign this pickup.
       </p>
     );
@@ -73,7 +73,7 @@ export default function AssignDriver({ transfer, drivers, onAssign }) {
         defaultValue=""
         disabled={saving}
         onChange={(e) => pick(e.target.value)}
-        className="text-xs font-semibold border border-amber-300 bg-amber-50 text-amber-900 rounded-lg px-2.5 py-1.5 outline-none"
+        className="cursor-pointer rounded-xl border border-amber-300/70 bg-amber-50/90 px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition hover:border-amber-400 focus:border-sunset-flame/60 focus:ring-4 focus:ring-sunset-flame/10 disabled:opacity-60"
       >
         <option value="" disabled>
           Assign a driver…
@@ -86,11 +86,11 @@ export default function AssignDriver({ transfer, drivers, onAssign }) {
             </option>
           ))}
       </select>
-      {saving && <Loader2 className="w-3.5 h-3.5 animate-spin text-ink-400" />}
+      {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-sunset-flame" />}
       {changing && (
         <button
           onClick={() => setChanging(false)}
-          className="text-xs text-ink-500 hover:text-ink-800"
+          className="rounded-lg px-2 py-1 text-xs font-medium text-ink-500 transition hover:bg-ink-900/[0.05] hover:text-ink-800"
         >
           Cancel
         </button>

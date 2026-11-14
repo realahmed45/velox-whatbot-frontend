@@ -13,8 +13,10 @@ import api from "@/services/api";
 import { usePropertyScope } from "@/store/propertyStore";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   BedDouble,
   CalendarCheck,
@@ -27,11 +29,19 @@ import {
   Sparkles,
   TrendingUp,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import ConnectionStatus from "@/components/ConnectionStatus";
+import {
+  Magnetic,
+  NumberTicker,
+  PulseDot,
+  Reveal,
+  Spotlight,
+} from "@/components/fx";
 
 const money = (amount, currency) =>
   `${currency || "USD"} ${Number(amount || 0).toLocaleString(undefined, {
@@ -47,6 +57,15 @@ const fmtDay = (d) =>
     : "—";
 
 const errMsg = (e, fallback) => e?.response?.data?.message || fallback;
+
+const spring = { type: "spring", stiffness: 420, damping: 30 };
+
+const bubbleIn = {
+  initial: { opacity: 0, y: 10, scale: 0.96, filter: "blur(4px)" },
+  animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -4, scale: 0.97, filter: "blur(4px)" },
+  transition: spring,
+};
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. Botlify Agent chat                                                      */
@@ -153,132 +172,171 @@ function AgentChat({ onActionDone }) {
   };
 
   return (
-    <div className="card overflow-hidden">
-      {/* header */}
-      <div className="flex items-center gap-3 px-4 sm:px-5 py-3.5 border-b border-ink-100">
-        <div className="w-9 h-9 rounded-xl bg-brand-gradient flex items-center justify-center text-white shadow-glow flex-shrink-0">
-          <Sparkles className="w-4 h-4" />
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-sm font-bold text-ink-900 leading-tight">
-            Botlify Agent
-          </h2>
-          <p className="text-xs text-ink-500 leading-tight mt-0.5">
-            Ask about your hotel, or tell it what to change.
-          </p>
-        </div>
-      </div>
-
-      {/* transcript */}
+    <div className="relative">
+      {/* soft sunset halo behind the panel */}
       <div
-        ref={scrollRef}
-        className="max-h-[340px] min-h-[132px] overflow-y-auto px-4 sm:px-5 py-4 space-y-3"
-      >
-        {messages.length === 0 && !busy && (
-          <div className="text-center py-3">
-            <p className="text-sm text-ink-500 mb-3">
-              Try something like&hellip;
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {SUGGESTED.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => send(s)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-ink-200 text-ink-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words ${
-                m.role === "user"
-                  ? "bg-brand-500 text-white rounded-br-md"
-                  : "bg-ink-100 text-ink-800 rounded-bl-md"
-              }`}
-            >
-              {m.content}
-            </div>
-          </div>
-        ))}
-
-        {busy && (
-          <div className="flex justify-start">
-            <div className="bg-ink-100 rounded-2xl rounded-bl-md px-3.5 py-2.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-ink-400 animate-bounce [animation-delay:-0.3s]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-ink-400 animate-bounce [animation-delay:-0.15s]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-ink-400 animate-bounce" />
-            </div>
-          </div>
-        )}
-
-        {/* inline confirm card — the agent never acts without approval */}
-        {pending && !busy && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-1.5">
-              Confirm this change
-            </p>
-            <p className="text-sm text-ink-800 mb-3">
-              {pending.summary || "The agent wants to make a change."}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={confirmAction}
-                className="btn-primary text-xs px-3 py-1.5"
-              >
-                <Check className="w-3.5 h-3.5" /> Do it
-              </button>
-              <button
-                type="button"
-                onClick={cancelAction}
-                className="btn-ghost text-xs px-3 py-1.5"
-              >
-                <X className="w-3.5 h-3.5" /> Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* composer */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
-        className="flex items-center gap-2 px-4 sm:px-5 py-3 border-t border-ink-100 bg-ink-50/60"
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Change Deluxe to $95 next weekend…"
-          disabled={busy}
-          className="input flex-1 py-2"
-          aria-label="Message the Botlify Agent"
+        aria-hidden
+        className="pointer-events-none absolute -inset-x-6 -inset-y-4 -z-10 rounded-[2.5rem] bg-sunset opacity-[0.12] blur-3xl"
+      />
+      <div className="glass-strong relative overflow-hidden rounded-3xl">
+        {/* specular sunset hairline */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sunset-flame/60 to-transparent"
         />
-        <button
-          type="submit"
-          disabled={busy || !input.trim()}
-          className="btn-primary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Send"
+        {/* header */}
+        <div className="flex items-center gap-3 border-b border-ink-900/[0.06] px-4 py-4 sm:px-6">
+          <div className="group relative flex-shrink-0">
+            <div
+              aria-hidden
+              className="absolute inset-0 rounded-xl bg-sunset opacity-50 blur-md transition-opacity duration-500 group-hover:opacity-80"
+            />
+            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+              <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="flex items-center gap-2 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em] text-ink-900">
+              Botlify Agent
+              <PulseDot color="bg-emerald-500" />
+            </h2>
+            <p className="mt-0.5 truncate text-xs leading-tight text-ink-500">
+              Ask about your hotel, or tell it what to change.
+            </p>
+          </div>
+        </div>
+
+        {/* transcript */}
+        <div
+          ref={scrollRef}
+          className="max-h-[360px] min-h-[148px] space-y-3 overflow-y-auto px-4 py-5 sm:px-6"
         >
-          {busy ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
+          {messages.length === 0 && !busy && (
+            <div className="py-3 text-center">
+              <p className="mb-3.5 text-sm text-ink-500">
+                Try something like&hellip;
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {SUGGESTED.map((s, i) => (
+                  <motion.button
+                    key={s}
+                    type="button"
+                    onClick={() => send(s)}
+                    initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{ ...spring, delay: 0.08 * i }}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="group inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-white/80 px-3.5 py-1.5 text-xs font-medium text-ink-600 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.04)] transition-[color,box-shadow] duration-300 hover:text-ink-900 hover:ring-sunset-flame/30 hover:shadow-[inset_0_1px_0_#fff,0_10px_22px_-12px_rgba(255,106,43,0.5)]"
+                  >
+                    <Sparkles
+                      className="h-3 w-3 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-[-14deg] group-hover:scale-125"
+                      strokeWidth={1.8}
+                    />
+                    {s}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
           )}
-        </button>
-      </form>
+
+          <AnimatePresence initial={false}>
+            {messages.map((m, i) => (
+              <motion.div
+                key={i}
+                {...bubbleIn}
+                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`relative max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    m.role === "user"
+                      ? "rounded-br-md bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-12px_rgba(255,61,119,0.55)]"
+                      : "rounded-bl-md bg-white/85 text-ink-800 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.04)]"
+                  }`}
+                >
+                  {m.content}
+                </div>
+              </motion.div>
+            ))}
+
+            {busy && (
+              <motion.div key="typing" {...bubbleIn} className="flex justify-start">
+                <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white/85 px-4 py-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-gold [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-flame [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-magenta" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* inline confirm card — the agent never acts without approval */}
+            {pending && !busy && (
+              <motion.div
+                key="pending"
+                {...bubbleIn}
+                className="rounded-2xl bg-amber-50/90 p-4 ring-1 ring-amber-300/50 shadow-[inset_0_1px_0_#fff,0_12px_28px_-16px_rgba(245,158,11,0.5)]"
+              >
+                <p className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-amber-700">
+                  <PulseDot color="bg-amber-500" />
+                  Confirm this change
+                </p>
+                <p className="mb-3.5 text-sm text-ink-800">
+                  {pending.summary || "The agent wants to make a change."}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={confirmAction}
+                    className="btn-primary px-3.5 py-2 text-xs"
+                  >
+                    <Check className="h-3.5 w-3.5" /> Do it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelAction}
+                    className="btn-ghost px-3.5 py-2 text-xs"
+                  >
+                    <X className="h-3.5 w-3.5" /> Cancel
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* composer */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+          className="flex items-center gap-2 border-t border-ink-900/[0.06] bg-white/40 px-3 py-3 sm:px-5"
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Change Deluxe to $95 next weekend…"
+            disabled={busy}
+            className="input flex-1 rounded-2xl py-2.5"
+            aria-label="Message the Botlify Agent"
+          />
+          <Magnetic strength={0.25}>
+            <motion.button
+              type="submit"
+              disabled={busy || !input.trim()}
+              whileTap={{ scale: 0.92 }}
+              className="btn-primary h-11 w-11 rounded-2xl p-0 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Send"
+            >
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" strokeWidth={1.8} />
+              )}
+            </motion.button>
+          </Magnetic>
+        </form>
+      </div>
     </div>
   );
 }
@@ -312,54 +370,56 @@ function SuggestionCard({ s, onDone }) {
       : fmtDay(s.dateFrom);
 
   return (
-    <div
-      className={`rounded-lg border p-4 ${
-        up ? "border-emerald-200 bg-emerald-50/60" : "border-amber-200 bg-amber-50/60"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3 mb-2">
+    <Spotlight className="card group h-full p-5">
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent ${
+          up ? "via-emerald-400/70" : "via-amber-400/70"
+        } to-transparent`}
+      />
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-ink-900 truncate">
+          <p className="truncate font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
             {s.room || "Room"}
           </p>
-          <p className="text-xs text-ink-500 mt-0.5">{range}</p>
+          <p className="mt-0.5 text-xs text-ink-500">{range}</p>
         </div>
         <div
-          className={`flex items-center gap-1 flex-shrink-0 text-sm font-bold ${
-            up ? "text-emerald-700" : "text-amber-700"
+          className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+            up ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
           }`}
         >
           {up ? (
-            <ArrowUpRight className="w-4 h-4" />
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} />
           ) : (
-            <ArrowDownRight className="w-4 h-4" />
+            <ArrowDownRight className="h-4 w-4" strokeWidth={1.8} />
           )}
         </div>
       </div>
 
-      <p className="text-base font-bold text-ink-900 mb-2">
-        <span className="text-ink-400 line-through font-semibold">
+      <p className="mb-2 flex flex-wrap items-baseline gap-x-1.5 font-display text-lg font-semibold tabular-nums text-ink-900">
+        <span className="text-sm font-medium text-ink-400 line-through">
           {money(s.currentRate, s.currency)}
         </span>
-        <span className="mx-1.5 text-ink-400">→</span>
+        <ArrowRight className="h-3.5 w-3.5 self-center text-ink-300" />
         <span className={up ? "text-emerald-700" : "text-amber-700"}>
           {money(s.suggestedRate, s.currency)}
         </span>
       </p>
 
-      {s.reason && <p className="text-xs text-ink-600 mb-3.5">{s.reason}</p>}
+      {s.reason && <p className="mb-4 text-xs leading-relaxed text-ink-600">{s.reason}</p>}
 
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => act("approve")}
           disabled={!!busy}
-          className="btn-primary text-xs px-3 py-1.5 disabled:opacity-60"
+          className="btn-primary px-3.5 py-2 text-xs disabled:opacity-60"
         >
           {busy === "approve" ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Check className="w-3.5 h-3.5" />
+            <Check className="h-3.5 w-3.5" />
           )}
           Approve
         </button>
@@ -367,17 +427,17 @@ function SuggestionCard({ s, onDone }) {
           type="button"
           onClick={() => act("skip")}
           disabled={!!busy}
-          className="btn-ghost text-xs px-3 py-1.5 disabled:opacity-60"
+          className="btn-ghost px-3.5 py-2 text-xs disabled:opacity-60"
         >
           {busy === "skip" ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <X className="w-3.5 h-3.5" />
+            <X className="h-3.5 w-3.5" />
           )}
           Skip
         </button>
       </div>
-    </div>
+    </Spotlight>
   );
 }
 
@@ -407,54 +467,122 @@ function GlanceRow({ booking, kind, onDone }) {
   };
 
   const room = booking.roomTypeId?.name || booking.unitLabel || "";
+  const initial = (booking.guestName || "G").trim().charAt(0).toUpperCase();
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-ink-100 last:border-0">
+    <div className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors duration-300 hover:bg-white/80">
+      <div
+        className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-full font-display text-sm font-semibold ring-1 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 ${
+          done
+            ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20"
+            : "bg-sunset-soft text-sunset-flame ring-sunset-flame/15"
+        }`}
+      >
+        {initial}
+      </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-ink-900 truncate">
+        <p className="truncate text-sm font-semibold text-ink-900">
           {booking.guestName || "Guest"}
         </p>
-        <p className="text-xs text-ink-500 truncate mt-0.5">
+        <p className="mt-0.5 truncate text-xs text-ink-500">
           {[room, booking.unitLabel, booking.code].filter(Boolean).join(" · ") || "—"}
         </p>
       </div>
-      {done ? (
-        <span className="badge-green flex-shrink-0">
-          <Check className="w-3 h-3" />
-          {kind === "in" ? "In" : "Out"}
-        </span>
-      ) : (
-        <button
-          type="button"
-          onClick={act}
-          disabled={busy}
-          className="btn-secondary text-xs px-2.5 py-1.5 flex-shrink-0 disabled:opacity-60"
-        >
-          {busy ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : kind === "in" ? (
-            <LogIn className="w-3.5 h-3.5" />
-          ) : (
-            <LogOut className="w-3.5 h-3.5" />
-          )}
-          {kind === "in" ? "Check in" : "Check out"}
-        </button>
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {done ? (
+          <motion.span
+            key="done"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 500, damping: 22 }}
+            className="badge-green flex-shrink-0"
+          >
+            <Check className="h-3 w-3" />
+            {kind === "in" ? "In" : "Out"}
+          </motion.span>
+        ) : (
+          <motion.button
+            key="act"
+            type="button"
+            onClick={act}
+            disabled={busy}
+            exit={{ opacity: 0, scale: 0.85 }}
+            whileTap={{ scale: 0.94 }}
+            className="btn-secondary group/btn min-h-[36px] flex-shrink-0 px-3 py-1.5 text-xs disabled:opacity-60"
+          >
+            {busy ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : kind === "in" ? (
+              <LogIn className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover/btn:translate-x-0.5" />
+            ) : (
+              <LogOut className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover/btn:translate-x-0.5" />
+            )}
+            {kind === "in" ? "Check in" : "Check out"}
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function GlanceCard({ icon: Icon, title, children }) {
+function GlanceCard({ icon: Icon, title, count, children }) {
   return (
-    <div className="card p-4 sm:p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-brand-600" />
-        <h3 className="text-sm font-bold text-ink-900">{title}</h3>
+    <div className="card group h-full p-4 sm:p-5">
+      <div className="mb-3 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <Icon className="h-4 w-4" strokeWidth={1.8} />
+        </div>
+        <h3 className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
+          {title}
+        </h3>
+        {count > 0 && (
+          <span className="ml-auto rounded-full bg-ink-900/[0.05] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
+            {count}
+          </span>
+        )}
       </div>
       {children}
     </div>
   );
 }
+
+function KpiCard({ icon: Icon, label, children, footer, hero = false }) {
+  return (
+    <Spotlight className="card group h-full p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[13px] text-ink-500">{label}</p>
+        <div
+          className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+            hero
+              ? "bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_8px_18px_-8px_rgba(255,61,119,0.6)]"
+              : "bg-sunset-soft text-sunset-flame"
+          }`}
+        >
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </div>
+      </div>
+      <p className="mt-2 truncate font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 tabular-nums sm:text-3xl">
+        {children}
+      </p>
+      {footer}
+    </Spotlight>
+  );
+}
+
+function EmptyRow({ text }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-7 text-center">
+      <div className="mb-2 grid h-9 w-9 place-items-center rounded-full bg-ink-900/[0.04] text-ink-400">
+        <Check className="h-4 w-4" strokeWidth={1.8} />
+      </div>
+      <p className="text-sm text-ink-500">{text}</p>
+    </div>
+  );
+}
+
+const greetingFor = (h) =>
+  h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 
@@ -462,7 +590,7 @@ export default function TodayPage() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [data, setData] = useState(null);
-  const { activeWorkspace } = useAuthStore();
+  const { activeWorkspace, user } = useAuthStore();
   // Which property this screen is about (null = whole account, the normal
   // single-hotel case).
   const { propertyId } = usePropertyScope(activeWorkspace);
@@ -502,25 +630,36 @@ export default function TodayPage() {
     [revenue.bySource],
   );
 
+  const firstName = String(user?.name || "").trim().split(/\s+/)[0];
+  const greeting = greetingFor(new Date().getHours());
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <div className="mb-5 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-ink-900 tracking-tight">
-          Today
-        </h1>
-        <p className="text-sm text-ink-500 mt-1">
+    <div className="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+      <Reveal className="mb-6 sm:mb-8">
+        <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-[12px] font-medium text-ink-500 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+          <CalendarCheck className="h-3.5 w-3.5 text-sunset-flame" strokeWidth={1.8} />
+          Today ·{" "}
           {new Date().toLocaleDateString(undefined, {
             weekday: "long",
             day: "numeric",
             month: "long",
           })}
         </p>
-      </div>
+        <h1 className="font-display text-[28px] font-semibold leading-[1.05] tracking-[-0.035em] text-ink-900 sm:text-4xl">
+          {greeting},{" "}
+          <span className="font-serif font-normal italic tracking-[-0.01em] text-sunset">
+            {firstName || "there"}
+          </span>
+        </h1>
+        <p className="mt-2 text-sm text-ink-500 sm:text-[15px]">
+          Here&apos;s your hotel at a glance — and an agent ready for anything.
+        </p>
+      </Reveal>
 
       {/* ── 1. The agent (always available, even if today's data failed) ── */}
-      <div className="mb-6">
+      <Reveal delay={0.06} className="mb-8">
         <AgentChat onActionDone={refresh} />
-      </div>
+      </Reveal>
 
       {/* ── 1b. Where the OTA connection really is ───────────────────────
           Hidden entirely when nothing is connected and nothing needs fixing,
@@ -533,10 +672,14 @@ export default function TodayPage() {
 
       {loading ? (
         <div className="space-y-6">
-          <Skeleton className="h-40 w-full" />
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+            ))}
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
           </div>
         </div>
       ) : failed ? (
@@ -554,15 +697,19 @@ export default function TodayPage() {
         <>
           {/* ── 2. Pricing suggestions ─────────────────────────────── */}
           {suggestions.length > 0 && (
-            <section className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4 text-brand-600" />
-                <h2 className="section-heading">Pricing suggestions</h2>
+            <section className="mb-8">
+              <div className="mb-3 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-sunset-flame" strokeWidth={1.8} />
+                <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+                  Pricing suggestions
+                </h2>
                 <span className="badge-brand">{suggestions.length}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                {suggestions.map((s) => (
-                  <SuggestionCard key={s._id} s={s} onDone={refresh} />
+                {suggestions.map((s, i) => (
+                  <Reveal key={s._id} delay={i * 0.06} className="h-full">
+                    <SuggestionCard s={s} onDone={refresh} />
+                  </Reveal>
                 ))}
               </div>
             </section>
@@ -570,82 +717,83 @@ export default function TodayPage() {
 
           {/* ── 3. Today at a glance ───────────────────────────────── */}
           <section>
-            <h2 className="section-heading mb-3">Today at a glance</h2>
+            <h2 className="mb-3 font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+              Today at a glance
+            </h2>
 
             {/* counters */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <div className="card p-4">
-                <p className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-1">
-                  Arrivals
-                </p>
-                <p className="text-2xl font-bold text-ink-900">
-                  {arrivals.length}
-                </p>
-              </div>
-              <div className="card p-4">
-                <p className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-1">
-                  Departures
-                </p>
-                <p className="text-2xl font-bold text-ink-900">
-                  {departures.length}
-                </p>
-              </div>
-              <div className="card p-4">
-                <p className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-1">
-                  In house
-                </p>
-                <p className="text-2xl font-bold text-ink-900">
-                  {data?.inHouse ?? 0}
-                </p>
-              </div>
-              <div className="card p-4">
-                <p className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-1">
-                  Revenue (MTD)
-                </p>
-                <p className="text-2xl font-bold text-ink-900 truncate">
-                  {money(revenue.monthToDate, revenue.currency)}
-                </p>
-                {topSources.length > 0 && (
-                  <p className="text-[11px] text-ink-400 mt-1.5 truncate">
-                    {topSources
-                      .map(
-                        (s) =>
-                          `${String(s.source || "other").replace(/_/g, " ")} ${money(
-                            s.revenue,
-                            revenue.currency,
-                          )}`,
-                      )
-                      .join(" · ")}
-                  </p>
-                )}
-              </div>
+            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <Reveal delay={0} className="h-full">
+                <KpiCard icon={DoorOpen} label="Arrivals">
+                  <NumberTicker value={arrivals.length} />
+                </KpiCard>
+              </Reveal>
+              <Reveal delay={0.06} className="h-full">
+                <KpiCard icon={LogOut} label="Departures">
+                  <NumberTicker value={departures.length} />
+                </KpiCard>
+              </Reveal>
+              <Reveal delay={0.12} className="h-full">
+                <KpiCard icon={BedDouble} label="In house">
+                  <NumberTicker value={data?.inHouse ?? 0} />
+                </KpiCard>
+              </Reveal>
+              <Reveal delay={0.18} className="h-full">
+                <KpiCard
+                  icon={Wallet}
+                  label="Revenue (MTD)"
+                  hero
+                  footer={
+                    topSources.length > 0 && (
+                      <p className="mt-1.5 truncate text-[11px] capitalize text-ink-400">
+                        {topSources
+                          .map(
+                            (s) =>
+                              `${String(s.source || "other").replace(/_/g, " ")} ${money(
+                                s.revenue,
+                                revenue.currency,
+                              )}`,
+                          )
+                          .join(" · ")}
+                      </p>
+                    )
+                  }
+                >
+                  <span className="text-xl sm:text-2xl">
+                    <NumberTicker
+                      value={Number(revenue.monthToDate || 0)}
+                      prefix={`${revenue.currency || "USD"} `}
+                    />
+                  </span>
+                </KpiCard>
+              </Reveal>
             </div>
 
             {/* arrivals / departures lists */}
             <div className="grid gap-4 sm:grid-cols-2">
-              <GlanceCard icon={DoorOpen} title="Arriving today">
-                {arrivals.length === 0 ? (
-                  <p className="text-sm text-ink-500 py-6 text-center">
-                    No arrivals today
-                  </p>
-                ) : (
-                  arrivals.map((b) => (
-                    <GlanceRow key={b._id} booking={b} kind="in" onDone={refresh} />
-                  ))
-                )}
-              </GlanceCard>
+              <Reveal delay={0.05} className="h-full">
+                <GlanceCard icon={DoorOpen} title="Arriving today" count={arrivals.length}>
+                  {arrivals.length === 0 ? (
+                    <EmptyRow text="No arrivals today" />
+                  ) : (
+                    arrivals.map((b) => (
+                      <GlanceRow key={b._id} booking={b} kind="in" onDone={refresh} />
+                    ))
+                  )}
+                </GlanceCard>
+              </Reveal>
 
-              <GlanceCard icon={BedDouble} title="Departing today">
-                {departures.length === 0 ? (
-                  <p className="text-sm text-ink-500 py-6 text-center">
-                    No departures today
-                  </p>
-                ) : (
-                  departures.map((b) => (
-                    <GlanceRow key={b._id} booking={b} kind="out" onDone={refresh} />
-                  ))
-                )}
-              </GlanceCard>
+              <Reveal delay={0.1} className="h-full">
+                <GlanceCard icon={BedDouble} title="Departing today" count={departures.length}>
+                  {departures.length === 0 ? (
+                    <EmptyRow text="No departures today" />
+                  ) : (
+                    departures.map((b) => (
+                      <GlanceRow key={b._id} booking={b} kind="out" onDone={refresh} />
+                    ))
+                  )}
+                </GlanceCard>
+              </Reveal>
             </div>
 
             {arrivals.length === 0 &&

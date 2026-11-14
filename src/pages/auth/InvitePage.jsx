@@ -10,7 +10,11 @@ import {
   Lock,
   Eye,
   EyeOff,
+  ArrowRight,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Aurora } from "@/components/fx";
+import BotlifyMark from "@/components/BotlifyMark";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import PasswordStrength from "@/components/auth/PasswordStrength";
@@ -19,6 +23,11 @@ import TurnstileWidget, {
 } from "@/components/auth/TurnstileWidget";
 import { checkPassword } from "@/utils/passwordPolicy";
 import toast from "react-hot-toast";
+
+// Dark liquid-glass field — `.input` is the light variant.
+const FIELD =
+  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.12),0_8px_24px_-12px_rgba(255,61,119,0.5)]";
+const LABEL = "block text-[13px] font-medium text-white/70 mb-1.5";
 
 /**
  * Team-invite landing page. Emailed link:
@@ -211,208 +220,264 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink-50 p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-ink-100 bg-white shadow-xl p-8">
-        {phase === "loading" && (
-          <div className="text-center">
-            <Loader2 className="w-7 h-7 text-brand-500 animate-spin mx-auto mb-3" />
-            <p className="text-sm text-ink-500">Checking your invite…</p>
-          </div>
-        )}
+    <div className="relative isolate min-h-screen flex flex-col items-center justify-center bg-night-950 text-white p-4 overflow-hidden grain">
+      <Aurora variant="dark" />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-dot-grid-dark opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+      />
 
-        {phase === "accepting" && (
-          <div className="text-center">
-            <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
-              <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
-            </div>
-            <p className="font-bold text-ink-900">Joining the team…</p>
-          </div>
-        )}
+      <Link
+        to="/"
+        className="mb-6 inline-flex items-center transition-transform duration-500 ease-spring hover:-translate-y-0.5"
+      >
+        <BotlifyMark size={44} />
+      </Link>
 
-        {phase === "success" && (
-          <div className="text-center">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-              <Check className="w-7 h-7 text-emerald-500" />
-            </div>
-            <p className="font-black text-ink-900 text-lg">You're in! 🎉</p>
-            <p className="text-sm text-ink-500 mt-1.5">{message}</p>
-            <p className="text-xs text-ink-400 mt-3">
-              Taking you to the dashboard…
-            </p>
-          </div>
-        )}
-
-        {phase === "error" && (
-          <div className="text-center">
-            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-7 h-7 text-red-500" />
-            </div>
-            <p className="font-black text-ink-900 text-lg">Invite problem</p>
-            <p className="text-sm text-ink-500 mt-1.5">{message}</p>
-            <Link
-              to="/dashboard"
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:underline"
-            >
-              <Users className="w-4 h-4" /> Go to dashboard
-            </Link>
-          </div>
-        )}
-
-        {phase === "join" && info && (
-          <div>
-            <div className="text-center mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center mx-auto mb-3">
-                <Users className="w-6 h-6" />
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(8px)" }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        transition={{ type: "spring", stiffness: 260, damping: 26 }}
+        className="card-dark w-full max-w-sm p-6 sm:p-8"
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={phase}
+            initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          >
+            {phase === "loading" && (
+              <div className="text-center py-4">
+                <Loader2 className="w-7 h-7 text-sunset-gold animate-spin mx-auto mb-3" />
+                <p className="text-sm text-white/60">Checking your invite…</p>
               </div>
-              <h1 className="font-black text-ink-900 text-lg leading-tight">
-                Join {info.workspaceName}
-              </h1>
-              <p className="text-sm text-ink-500 mt-1">
-                {info.ownerName ? `${info.ownerName} invited ` : "You were invited "}
-                <span className="font-semibold text-ink-700">{info.email}</span>{" "}
-                as a team member.
-              </p>
-            </div>
+            )}
 
-            {/* Signed in as a DIFFERENT account */}
-            {authToken &&
-              user?.email &&
-              user.email.toLowerCase() !== info.email.toLowerCase() && (
-                <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                  You're signed in as{" "}
-                  <span className="font-semibold">{user.email}</span>. To accept,
-                  continue as the invited email below.
+            {phase === "accepting" && (
+              <div className="text-center py-2">
+                <div className="relative w-14 h-14 mx-auto mb-4">
+                  <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl" />
+                  <div className="relative w-14 h-14 rounded-2xl bg-sunset grid place-items-center">
+                    <Loader2 className="w-7 h-7 text-white animate-spin" />
+                  </div>
                 </div>
-              )}
+                <p className="font-display font-semibold text-white">Joining the team…</p>
+              </div>
+            )}
 
-            {/* Existing account → just sign in */}
-            {info.hasAccount ? (
-              <div className="space-y-3">
-                <p className="text-sm text-ink-600 text-center">
-                  You already have a Botlify account. Sign in to accept.
+            {phase === "success" && (
+              <div className="text-center py-2">
+                <motion.div
+                  initial={{ scale: 0.4, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 14 }}
+                  className="relative w-14 h-14 mx-auto mb-4"
+                >
+                  <div aria-hidden className="absolute -inset-3 rounded-full bg-emerald-400 opacity-30 blur-2xl" />
+                  <div className="relative w-14 h-14 rounded-2xl bg-emerald-500/20 ring-1 ring-emerald-400/40 grid place-items-center">
+                    <Check className="w-7 h-7 text-emerald-300" />
+                  </div>
+                </motion.div>
+                <p className="font-display font-semibold tracking-[-0.02em] text-white text-xl">
+                  You're <span className="font-serif italic font-normal">in!</span> 🎉
                 </p>
-                <button
-                  onClick={goSignIn}
-                  className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-4 py-2.5 transition"
-                >
-                  Sign in as {info.email}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex justify-center">
-                  <GoogleLogin
-                    onSuccess={handleGoogle}
-                    onError={() => toast.error("Google sign-in was cancelled")}
-                    text="signup_with"
-                    size="large"
-                    width="100%"
-                  />
-                </div>
-
-                <div className="relative py-1">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-ink-200" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-white px-2 text-[11px] text-ink-400">
-                      or create a password
-                    </span>
-                  </div>
-                </div>
-
-                {/* Email (locked to the invited address) */}
-                <div>
-                  <label className="text-xs font-bold text-ink-700">Email</label>
-                  <div className="relative mt-1.5">
-                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-                    <input
-                      readOnly
-                      value={info.email}
-                      className="w-full rounded-xl border border-ink-200 bg-ink-50 pl-9 pr-3 py-2.5 text-sm text-ink-500 cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-ink-700">
-                    Your name
-                  </label>
-                  <input
-                    className="mt-1.5 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
-                    placeholder="Jane Doe"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-ink-700">
-                    Create a password
-                  </label>
-                  <div className="relative mt-1.5">
-                    <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-                    <input
-                      type={showPw ? "text" : "password"}
-                      autoComplete="new-password"
-                      className="w-full rounded-xl border border-ink-200 pl-9 pr-10 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition"
-                      placeholder="At least 8 characters"
-                      value={form.password}
-                      onChange={(e) =>
-                        setForm({ ...form, password: e.target.value })
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
-                    >
-                      {showPw ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                  <PasswordStrength
-                    password={form.password}
-                    email={info.email}
-                    name={form.name}
-                  />
-                </div>
-
-                {turnstileEnabled && (
-                  <TurnstileWidget onToken={setCaptcha} className="pt-1" />
-                )}
-
-                <button
-                  onClick={createAndJoin}
-                  disabled={submitting}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-4 py-2.5 disabled:opacity-50 transition"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Joining…
-                    </>
-                  ) : (
-                    <>Create account & join</>
-                  )}
-                </button>
-
-                <p className="text-center text-xs text-ink-400">
-                  Already have an account?{" "}
-                  <button
-                    onClick={goSignIn}
-                    className="font-semibold text-brand-600 hover:underline"
-                  >
-                    Sign in
-                  </button>
+                <p className="text-sm text-white/60 mt-1.5">{message}</p>
+                <p className="text-xs text-white/40 mt-3">
+                  Taking you to the dashboard…
                 </p>
               </div>
             )}
-          </div>
-        )}
-      </div>
+
+            {phase === "error" && (
+              <div className="text-center py-2">
+                <div className="w-14 h-14 rounded-2xl bg-rose-500/15 ring-1 ring-rose-400/30 grid place-items-center mx-auto mb-4">
+                  <XCircle className="w-7 h-7 text-rose-300" />
+                </div>
+                <p className="font-display font-semibold tracking-[-0.02em] text-white text-xl">
+                  Invite problem
+                </p>
+                <p className="text-sm text-white/60 mt-1.5">{message}</p>
+                <Link
+                  to="/dashboard"
+                  className="btn-glass-dark mt-5 group"
+                >
+                  <Users className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />{" "}
+                  Go to dashboard
+                </Link>
+              </div>
+            )}
+
+            {phase === "join" && info && (
+              <div>
+                <div className="text-center mb-6">
+                  <div className="relative w-12 h-12 mx-auto mb-4">
+                    <div aria-hidden className="absolute -inset-3 rounded-full bg-sunset opacity-30 blur-2xl" />
+                    <motion.div
+                      animate={{ y: [0, -3, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="relative w-12 h-12 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+                    >
+                      <Users className="w-6 h-6" strokeWidth={1.8} />
+                    </motion.div>
+                  </div>
+                  <h1 className="font-display font-semibold tracking-[-0.03em] text-white text-2xl leading-tight">
+                    Join{" "}
+                    <span className="font-serif italic font-normal">
+                      {info.workspaceName}
+                    </span>
+                  </h1>
+                  <p className="text-sm text-white/60 mt-1.5">
+                    {info.ownerName ? `${info.ownerName} invited ` : "You were invited "}
+                    <span className="font-semibold text-white break-all">{info.email}</span>{" "}
+                    as a team member.
+                  </p>
+                </div>
+
+                {/* Signed in as a DIFFERENT account */}
+                {authToken &&
+                  user?.email &&
+                  user.email.toLowerCase() !== info.email.toLowerCase() && (
+                    <div className="mb-4 rounded-xl bg-amber-400/10 ring-1 ring-amber-300/25 p-3 text-xs text-amber-100">
+                      You're signed in as{" "}
+                      <span className="font-semibold">{user.email}</span>. To accept,
+                      continue as the invited email below.
+                    </div>
+                  )}
+
+                {/* Existing account → just sign in */}
+                {info.hasAccount ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-white/65 text-center">
+                      You already have a Botlify account. Sign in to accept.
+                    </p>
+                    <button onClick={goSignIn} className="btn-primary w-full h-11 group">
+                      <span className="truncate">Sign in as {info.email}</span>
+                      <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3.5">
+                    <div className="flex justify-center rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 ease-spring hover:-translate-y-0.5">
+                      <GoogleLogin
+                        onSuccess={handleGoogle}
+                        onError={() => toast.error("Google sign-in was cancelled")}
+                        text="signup_with"
+                        size="large"
+                        width="100%"
+                      />
+                    </div>
+
+                    <div className="relative py-1">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="px-3 text-[11px] uppercase tracking-[0.14em] text-white/40 bg-night-950/60 backdrop-blur rounded-full">
+                          or create a password
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Email (locked to the invited address) */}
+                    <div>
+                      <label className={LABEL}>Email</label>
+                      <div className="relative">
+                        <Mail strokeWidth={1.8} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+                        <input
+                          readOnly
+                          value={info.email}
+                          className="w-full rounded-xl bg-white/[0.03] ring-1 ring-white/10 pl-9 pr-3 py-2.5 text-sm text-white/50 cursor-not-allowed outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={LABEL}>Your name</label>
+                      <input
+                        className={FIELD}
+                        placeholder="Jane Doe"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={LABEL}>Create a password</label>
+                      <div className="relative group">
+                        <Lock
+                          strokeWidth={1.8}
+                          className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 transition-colors group-focus-within:text-sunset-gold pointer-events-none"
+                        />
+                        <input
+                          type={showPw ? "text" : "password"}
+                          autoComplete="new-password"
+                          className={`${FIELD} pl-9 pr-11`}
+                          placeholder="At least 8 characters"
+                          value={form.password}
+                          onChange={(e) =>
+                            setForm({ ...form, password: e.target.value })
+                          }
+                        />
+                        <button
+                          type="button"
+                          aria-label={showPw ? "Hide password" : "Show password"}
+                          onClick={() => setShowPw((v) => !v)}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 active:scale-90 transition duration-300 ease-spring"
+                        >
+                          {showPw ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                      <PasswordStrength
+                        password={form.password}
+                        email={info.email}
+                        name={form.name}
+                      />
+                    </div>
+
+                    {turnstileEnabled && (
+                      <TurnstileWidget onToken={setCaptcha} className="pt-1" />
+                    )}
+
+                    <button
+                      onClick={createAndJoin}
+                      disabled={submitting}
+                      className="btn-primary w-full h-11 group"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Joining…
+                        </>
+                      ) : (
+                        <>
+                          Create account & join
+                          <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-center text-xs text-white/45">
+                      Already have an account?{" "}
+                      <button
+                        onClick={goSignIn}
+                        className="font-semibold text-sunset-gold hover:underline underline-offset-4"
+                      >
+                        Sign in
+                      </button>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

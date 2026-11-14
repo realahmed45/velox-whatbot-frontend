@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { AnimatePresence, motion } from "framer-motion";
+import { NumberTicker, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 
 const DAYS = [
   ["monday", "Mon"],
@@ -35,12 +37,23 @@ const DAYS = [
 ];
 
 const STATUS_STYLE = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  completed: "bg-ink-100 text-ink-600 border-ink-200",
-  cancelled: "bg-rose-50 text-rose-600 border-rose-200",
-  no_show: "bg-rose-50 text-rose-600 border-rose-200",
+  pending: "badge-yellow",
+  confirmed: "badge-green",
+  completed: "badge-gray",
+  cancelled: "badge-red",
+  no_show: "badge-red",
 };
+
+const STATUS_DOT = {
+  pending: "bg-amber-500",
+  confirmed: "bg-emerald-500",
+  completed: "bg-ink-400",
+  cancelled: "bg-rose-500",
+  no_show: "bg-rose-500",
+};
+
+const rowBtn =
+  "group/rb inline-flex items-center gap-1 text-xs font-semibold rounded-xl px-2.5 py-1.5 ring-1 transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-95";
 
 function fmt(dt) {
   try {
@@ -156,8 +169,32 @@ export default function AppointmentsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-6" aria-busy="true">
+        <span className="sr-only">Loading appointments…</span>
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-ink-900/[0.06] animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-6 w-48 rounded-lg bg-ink-900/[0.06] animate-pulse" />
+            <div className="h-3.5 w-72 max-w-[60vw] rounded-md bg-ink-900/[0.06] animate-pulse" />
+          </div>
+        </div>
+        <div className="h-10 w-56 rounded-2xl bg-ink-900/[0.06] animate-pulse" />
+        <div className="grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="card p-4 space-y-2">
+              <div className="h-7 w-12 rounded-md bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-3 w-20 max-w-full rounded-md bg-ink-900/[0.06] animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="card divide-y divide-ink-900/[0.06]">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="p-4 space-y-2">
+              <div className="h-4 w-40 rounded-md bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-3 w-64 max-w-full rounded-md bg-ink-900/[0.06] animate-pulse" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -167,91 +204,113 @@ export default function AppointmentsPage() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
-          <CalendarCheck className="w-6 h-6 text-brand-500" />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+      <Reveal className="group flex items-center gap-3.5 mb-6">
+        <div className="relative shrink-0">
+          <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-30 blur-xl" />
+          <div className="relative w-11 h-11 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <CalendarCheck className="w-5 h-5" strokeWidth={1.8} />
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-ink-900">Appointments</h1>
-          <p className="text-sm text-ink-500">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+            <span className="font-serif italic font-normal">Appointments</span>
+          </h1>
+          <p className="text-sm text-ink-500 mt-0.5">
             Bookings your bot captures from Instagram DMs, and how scheduling
             works.
           </p>
         </div>
-      </div>
+      </Reveal>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-ink-100">
-        {[
-          ["bookings", "Bookings", CalendarCheck],
-          ["settings", "Settings", Settings2],
-        ].map(([key, label, Icon]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition ${
-              tab === key
-                ? "border-brand-500 text-brand-600"
-                : "border-transparent text-ink-500 hover:text-ink-800"
-            }`}
-          >
-            <Icon className="w-4 h-4" /> {label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <SlidingTabs
+          value={tab}
+          onChange={setTab}
+          items={[
+            { value: "bookings", label: "Bookings", icon: CalendarCheck },
+            { value: "settings", label: "Settings", icon: Settings2 },
+          ]}
+        />
       </div>
 
+      <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      >
       {tab === "bookings" ? (
         <>
           {/* quick stats */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3 mb-6">
             {[
-              ["Upcoming", upcoming.length],
+              ["Upcoming", upcoming.length, CalendarCheck],
               [
                 "Pending approval",
                 appointments.filter((a) => a.status === "pending").length,
+                Clock,
               ],
-              ["Total", appointments.length],
-            ].map(([label, val]) => (
-              <div
-                key={label}
-                className="rounded-xl border border-ink-100 bg-white p-4"
-              >
-                <p className="text-2xl font-black text-ink-900">{val}</p>
-                <p className="text-xs text-ink-500">{label}</p>
-              </div>
+              ["Total", appointments.length, CheckCircle2],
+            ].map(([label, val, Icon], i) => (
+              <Reveal key={label} delay={i * 0.06}>
+                <Spotlight className="card group p-3 sm:p-5 h-full">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[12px] sm:text-[13px] text-ink-500 leading-tight">{label}</p>
+                    <span className="hidden sm:grid w-8 h-8 rounded-xl bg-sunset-soft text-sunset-flame place-items-center shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                      <Icon className="w-4 h-4" strokeWidth={1.8} />
+                    </span>
+                  </div>
+                  <p className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900 mt-1">
+                    <NumberTicker value={val} />
+                  </p>
+                </Spotlight>
+              </Reveal>
             ))}
           </div>
 
           {appointments.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl border border-dashed border-ink-200">
-              <CalendarCheck className="w-10 h-10 text-ink-300 mx-auto mb-3" />
-              <p className="font-semibold text-ink-700">No bookings yet</p>
+            <Reveal className="card text-center py-16 px-6">
+              <div className="relative mx-auto w-14 h-14 mb-4">
+                <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+                <div className="relative w-14 h-14 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center animate-float">
+                  <CalendarCheck className="w-7 h-7" strokeWidth={1.8} />
+                </div>
+              </div>
+              <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">No bookings yet</p>
               <p className="text-sm text-ink-500 mt-1">
                 When your bot books someone from a DM, it'll show up here.
               </p>
-            </div>
+            </Reveal>
           ) : (
-            <div className="space-y-2.5">
-              {appointments.map((a) => (
-                <div
+            <div className="card divide-y divide-ink-900/[0.06] overflow-hidden">
+              {appointments.map((a, idx) => (
+                <motion.div
                   key={a._id}
-                  className="rounded-xl border border-ink-100 bg-white p-4 flex flex-wrap items-center gap-3"
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(idx, 10) * 0.04, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="p-4 flex flex-wrap items-center gap-3 transition-colors hover:bg-white/80"
                 >
                   <div className="flex-1 min-w-[180px]">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-ink-900">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-display font-semibold tracking-[-0.01em] text-ink-900">
                         {a.service || "Appointment"}
                       </span>
                       <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLE[a.status] || STATUS_STYLE.completed}`}
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${STATUS_STYLE[a.status] || STATUS_STYLE.completed}`}
                       >
+                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[a.status] || STATUS_DOT.completed}`} />
                         {a.status}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 mt-1.5">
                       <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> {fmt(a.startAt)}
+                        <Clock className="w-3.5 h-3.5" /> <span className="tabular-nums">{fmt(a.startAt)}</span>
                       </span>
                       {a.customerName && (
                         <span className="inline-flex items-center gap-1">
@@ -260,7 +319,7 @@ export default function AppointmentsPage() {
                       )}
                       {a.customerPhone && (
                         <span className="inline-flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5" /> {a.customerPhone}
+                          <Phone className="w-3.5 h-3.5" /> <span className="tabular-nums">{a.customerPhone}</span>
                         </span>
                       )}
                       {a.igUsername && (
@@ -268,20 +327,20 @@ export default function AppointmentsPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {a.status === "pending" && (
                       <button
                         onClick={() => setStatus(a._id, "confirmed")}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1.5 transition"
+                        className={`${rowBtn} text-emerald-700 bg-emerald-50 hover:bg-emerald-100 ring-emerald-200`}
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                        <CheckCircle2 className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/rb:scale-110" /> Approve
                       </button>
                     )}
                     {["pending", "confirmed"].includes(a.status) && (
                       <>
                         <button
                           onClick={() => setStatus(a._id, "completed")}
-                          className="text-xs font-semibold text-ink-600 bg-ink-50 hover:bg-ink-100 border border-ink-200 rounded-lg px-2.5 py-1.5 transition"
+                          className={`${rowBtn} text-ink-700 bg-white/80 hover:bg-white ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff]`}
                         >
                           Done
                         </button>
@@ -296,14 +355,14 @@ export default function AppointmentsPage() {
                             )
                               setStatus(a._id, "cancelled");
                           }}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg px-2.5 py-1.5 transition"
+                          className={`${rowBtn} text-rose-600 bg-rose-50 hover:bg-rose-100 ring-rose-200`}
                         >
-                          <XCircle className="w-3.5 h-3.5" /> Cancel
+                          <XCircle className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/rb:rotate-90" /> Cancel
                         </button>
                       </>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
@@ -312,43 +371,52 @@ export default function AppointmentsPage() {
         /* ── Settings tab ─────────────────────────────────────── */
         <div className="space-y-6">
           {/* Master toggle */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 flex items-center justify-between">
-            <div>
-              <p className="font-bold text-ink-900">Appointment scheduling</p>
+          <div className="card p-5 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">Appointment scheduling</p>
               <p className="text-sm text-ink-500">
                 Let your bot offer open slots and book customers automatically.
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="toggle shrink-0 cursor-pointer">
               <input
                 type="checkbox"
-                className="sr-only peer"
                 checked={!!config?.enabled}
                 onChange={(e) => patchCfg("enabled", e.target.checked)}
+                aria-label="Appointment scheduling"
               />
-              <div className="w-11 h-6 bg-ink-200 rounded-full peer peer-checked:bg-brand-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition" />
+              <span className="slider" />
             </label>
           </div>
 
           {/* Services */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5">
+          <div className="card p-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="font-bold text-ink-900">Services</p>
+              <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">Services</p>
               <button
                 onClick={addService}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
+                className="btn-secondary group/as text-xs px-3 py-1.5"
               >
-                <Plus className="w-4 h-4" /> Add service
+                <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/as:rotate-90" /> Add service
               </button>
             </div>
             <div className="space-y-2">
+              <AnimatePresence initial={false}>
               {(config?.services || []).map((s, i) => (
-                <div key={i} className="flex items-center gap-2">
+                <motion.div
+                  key={i}
+                  layout
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  className="flex flex-wrap items-center gap-2 rounded-xl bg-white/50 ring-1 ring-ink-900/[0.05] p-2 sm:bg-transparent sm:ring-0 sm:p-0"
+                >
                   <input
                     value={s.name}
                     onChange={(e) => patchService(i, "name", e.target.value)}
                     placeholder="Service name"
-                    className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none"
+                    className="input flex-1 min-w-[10rem]"
                   />
                   <div className="flex items-center gap-1">
                     <input
@@ -357,7 +425,7 @@ export default function AppointmentsPage() {
                       onChange={(e) =>
                         patchService(i, "durationMinutes", Number(e.target.value))
                       }
-                      className="w-20 rounded-lg border border-ink-200 px-2 py-2 text-sm focus:border-brand-400 outline-none"
+                      className="input !w-20 !px-2 tabular-nums"
                     />
                     <span className="text-xs text-ink-400">min</span>
                   </div>
@@ -368,16 +436,18 @@ export default function AppointmentsPage() {
                       patchService(i, "price", Number(e.target.value))
                     }
                     placeholder="Price"
-                    className="w-24 rounded-lg border border-ink-200 px-2 py-2 text-sm focus:border-brand-400 outline-none"
+                    className="input !w-24 !px-2 tabular-nums"
                   />
                   <button
                     onClick={() => removeService(i)}
-                    className="text-ink-400 hover:text-rose-500 p-1.5"
+                    className="group/del ml-auto sm:ml-0 grid w-10 h-10 place-items-center rounded-xl text-ink-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition-all duration-300 ease-spring"
+                    aria-label="Remove service"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/del:rotate-[-12deg]" />
                   </button>
-                </div>
+                </motion.div>
               ))}
+              </AnimatePresence>
               {!(config?.services || []).length && (
                 <p className="text-sm text-ink-400">
                   No services yet — add the things people can book.
@@ -387,7 +457,7 @@ export default function AppointmentsPage() {
           </div>
 
           {/* Slot rules */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 grid sm:grid-cols-2 gap-4">
+          <div className="card p-5 grid sm:grid-cols-2 gap-4">
             {[
               ["slotMinutes", "Slot length (min)"],
               ["bufferMinutes", "Gap between (min)"],
@@ -396,23 +466,23 @@ export default function AppointmentsPage() {
               ["minNoticeHours", "Minimum notice (hours)"],
             ].map(([k, label]) => (
               <label key={k} className="block">
-                <span className="text-xs font-semibold text-ink-600">
+                <span className="label">
                   {label}
                 </span>
                 <input
                   type="number"
                   value={config?.[k] ?? 0}
                   onChange={(e) => patchCfg(k, Number(e.target.value))}
-                  className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none"
+                  className="input mt-1 w-full tabular-nums"
                 />
               </label>
             ))}
-            <label className="flex items-center gap-2 sm:col-span-2">
+            <label className="flex items-center gap-2.5 sm:col-span-2 cursor-pointer rounded-xl px-3 py-2.5 bg-white/50 ring-1 ring-ink-900/[0.06] hover:bg-white/80 transition-colors">
               <input
                 type="checkbox"
                 checked={!!config?.requireApproval}
                 onChange={(e) => patchCfg("requireApproval", e.target.checked)}
-                className="w-4 h-4 accent-brand-500"
+                className="w-4 h-4 accent-[#FF6A2B]"
               />
               <span className="text-sm text-ink-700">
                 Hold bookings for my approval before confirming
@@ -421,17 +491,17 @@ export default function AppointmentsPage() {
           </div>
 
           {/* Business hours */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5">
-            <p className="font-bold text-ink-900 mb-3">Working hours</p>
-            <div className="space-y-2">
+          <div className="card p-5">
+            <p className="font-display font-semibold tracking-[-0.01em] text-ink-900 mb-3">Working hours</p>
+            <div className="space-y-1.5">
               {businessHours.map((d, i) => (
-                <div key={d.day} className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 w-24">
+                <div key={d.day} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-2 py-1.5 -mx-2 transition-colors hover:bg-white/70">
+                  <label className="flex items-center gap-2 w-20 sm:w-24 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={d.isOpen}
                       onChange={(e) => patchHour(i, "isOpen", e.target.checked)}
-                      className="w-4 h-4 accent-brand-500"
+                      className="w-4 h-4 accent-[#FF6A2B]"
                     />
                     <span className="text-sm font-medium text-ink-700 capitalize">
                       {d.day.slice(0, 3)}
@@ -443,7 +513,7 @@ export default function AppointmentsPage() {
                         type="time"
                         value={d.openTime}
                         onChange={(e) => patchHour(i, "openTime", e.target.value)}
-                        className="rounded-lg border border-ink-200 px-2 py-1.5 text-sm"
+                        className="input !w-auto !px-2 !py-1.5 tabular-nums"
                       />
                       <span className="text-ink-400 text-sm">–</span>
                       <input
@@ -452,11 +522,11 @@ export default function AppointmentsPage() {
                         onChange={(e) =>
                           patchHour(i, "closeTime", e.target.value)
                         }
-                        className="rounded-lg border border-ink-200 px-2 py-1.5 text-sm"
+                        className="input !w-auto !px-2 !py-1.5 tabular-nums"
                       />
                     </div>
                   ) : (
-                    <span className="text-sm text-ink-400">Closed</span>
+                    <span className="badge-gray text-xs">Closed</span>
                   )}
                 </div>
               ))}
@@ -464,9 +534,12 @@ export default function AppointmentsPage() {
           </div>
 
           {/* Location */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 space-y-3">
-            <p className="font-bold text-ink-900 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-brand-500" /> Location (optional)
+          <div className="card p-5 space-y-3">
+            <p className="font-display font-semibold tracking-[-0.01em] text-ink-900 flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-sunset-soft text-sunset-flame grid place-items-center">
+                <MapPin className="w-4 h-4" strokeWidth={1.8} />
+              </span>
+              Location (optional)
             </p>
             <p className="text-xs text-ink-500 -mt-1">
               Shown in booking confirmations so customers know where to go.
@@ -475,19 +548,19 @@ export default function AppointmentsPage() {
               value={config?.locationName || ""}
               onChange={(e) => patchCfg("locationName", e.target.value)}
               placeholder="Location name (e.g. Smile Dental, Main St Clinic)"
-              className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none"
+              className="input w-full"
             />
             <input
               value={config?.mapsUrl || ""}
               onChange={(e) => patchCfg("mapsUrl", e.target.value)}
               placeholder="Google Maps link (https://maps.app.goo.gl/…)"
-              className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none"
+              className="input w-full"
             />
             <input
               value={config?.notifyEmail || ""}
               onChange={(e) => patchCfg("notifyEmail", e.target.value)}
               placeholder="Notify email for new bookings (defaults to your account email)"
-              className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-brand-400 outline-none"
+              className="input w-full"
             />
           </div>
 
@@ -495,18 +568,20 @@ export default function AppointmentsPage() {
             <button
               onClick={saveConfig}
               disabled={saving}
-              className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-6 py-3 transition disabled:opacity-60"
+              className="btn-primary group/sv text-sm px-6 py-3 disabled:opacity-60"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/sv:-translate-y-0.5" />
               )}
               Save settings
             </button>
           </div>
         </div>
       )}
+      </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

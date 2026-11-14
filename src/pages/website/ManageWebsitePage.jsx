@@ -15,7 +15,9 @@ import {
   LayoutTemplate, Loader2, MapPin, Maximize2, MessageSquareQuote, Monitor, Phone, RefreshCw,
   Search, Smartphone, Sparkles, Star, Type,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import api from "@/services/api";
+import { Magnetic, PulseDot, Reveal, SlidingTabs } from "@/components/fx";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import SiteRenderer from "@/website/SiteRenderer";
 import TemplateGallery, { TemplatePreview } from "@/website/TemplateGallery";
@@ -23,6 +25,9 @@ import { templateById } from "@/website/templates";
 import { PAGES } from "@/website/shared";
 import { SITE_HOST, siteUrl, websiteApi } from "@/website/api";
 import { ChipsEditor, Field, GalleryManager, ImageField, ListEditor, inputCls } from "@/website/editor";
+
+const spring = { type: "spring", stiffness: 420, damping: 30 };
+const hop = "transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]";
 
 const pick = (w) => ({
   templateId: w.templateId,
@@ -186,29 +191,53 @@ export default function ManageWebsitePage() {
   }, [data, draft, rooms]);
 
   if (loading) {
-    return <div className="flex justify-center py-32"><Loader2 className="h-7 w-7 animate-spin text-brand-500" /></div>;
+    return (
+      <div className="mx-auto max-w-[1600px] px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-busy="true">
+        <div className="h-8 w-64 max-w-full rounded-lg bg-ink-900/[0.06] animate-pulse" />
+        <div className="mt-3 h-4 w-48 rounded bg-ink-900/[0.06] animate-pulse" />
+        <div className="mt-8 grid gap-6 xl:grid-cols-2">
+          <div className="space-y-3">
+            {[0, 1, 2, 3, 4].map((i) => <div key={i} className="card h-[72px] animate-pulse" />)}
+          </div>
+          <div className="card hidden h-[560px] animate-pulse xl:block" />
+        </div>
+      </div>
+    );
   }
 
   if (noProperty) {
     return (
-      <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <Globe className="mx-auto h-10 w-10 text-ink-300" />
-        <h1 className="mt-4 text-2xl font-black text-ink-900">Set up your property first</h1>
+      <Reveal className="mx-auto max-w-lg px-6 py-24 text-center">
+        <div className="relative mx-auto grid h-16 w-16 place-items-center">
+          <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+          <span className="relative grid h-14 w-14 place-items-center rounded-2xl bg-sunset-soft text-sunset-flame ring-1 ring-white/80">
+            <Globe className="h-7 w-7" strokeWidth={1.8} />
+          </span>
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900">Set up your property first</h1>
         <p className="mt-2 text-ink-500">Your website is built from your hotel's details and rooms.</p>
-        <Link to="/onboarding/hotel" className="mt-6 inline-block rounded-xl bg-ink-900 px-5 py-3 font-bold text-white">Set up my property</Link>
-      </div>
+        <Magnetic strength={0.3} className="mt-6">
+          <Link to="/onboarding/hotel" className="btn-primary min-h-[44px] px-5">Set up my property</Link>
+        </Magnetic>
+      </Reveal>
     );
   }
 
   // ── No website yet: pick a design ─────────────────────────────────────
   if (!data?.website) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <p className="text-sm font-bold uppercase tracking-wider text-brand-600">Your website</p>
-        <h1 className="mt-1 text-3xl font-black text-ink-900">Choose a design for {data?.property?.name || "your hotel"}</h1>
-        <p className="mt-2 max-w-2xl text-ink-500">
-          Five designs, all filled with your own hotel details. Preview any of them full screen — every page, on desktop and phone — then pick one. You can change it any time.
-        </p>
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        <Reveal>
+          <p className="inline-flex items-center gap-2 rounded-full bg-sunset-soft px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sunset-flame">
+            <Sparkles className="h-3.5 w-3.5" /> Your website
+          </p>
+          <h1 className="mt-3 font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+            Choose a <span className="font-serif italic font-normal">design</span> for {data?.property?.name || "your hotel"}
+          </h1>
+          <p className="mt-2 max-w-2xl text-ink-500">
+            Five designs, all filled with your own hotel details. Preview any of them full screen — every page, on desktop and phone — then pick one. You can change it any time.
+          </p>
+        </Reveal>
         <div className="mt-8">
           <TemplateGallery site={draftSite} onSelect={createWith} busyId={busyTemplate} />
         </div>
@@ -220,33 +249,37 @@ export default function ManageWebsitePage() {
   const url = siteUrl(baseline.slug);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 pb-32 pt-6 sm:px-6">
+    <div className="mx-auto max-w-[1600px] px-4 pb-32 pt-6 sm:px-6 sm:pt-8 lg:px-8">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-ink-900 sm:text-3xl">Manage your website</h1>
+      <Reveal className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+            Manage your <span className="font-serif italic font-normal">website</span>
+          </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${baseline.published ? "bg-emerald-50 text-emerald-700" : "bg-ink-100 text-ink-600"}`}>
-              <span className={`h-1.5 w-1.5 rounded-full ${baseline.published ? "bg-emerald-500" : "bg-ink-400"}`} />
+            <span className={`inline-flex items-center gap-1.5 ${baseline.published ? "badge-green" : "badge-gray"}`}>
+              {baseline.published ? <PulseDot color="bg-emerald-500" /> : <span className="h-1.5 w-1.5 rounded-full bg-ink-400" />}
               {baseline.published ? "Live" : "Hidden"}
             </span>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="font-semibold text-ink-700 hover:underline">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="min-w-0 truncate font-mono text-[13px] font-semibold text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline">
               {SITE_HOST}/{baseline.slug}
             </a>
-            <button type="button" onClick={() => { navigator.clipboard?.writeText(url); toast.success("Link copied"); }} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" aria-label="Copy link">
+            <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={() => { navigator.clipboard?.writeText(url); toast.success("Link copied"); }} className="grid h-9 w-9 place-items-center rounded-xl text-ink-400 hover:bg-white hover:text-ink-700 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.08)]" aria-label="Copy link">
               <Copy className="h-4 w-4" />
-            </button>
+            </motion.button>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={regenerate} disabled={regenerating} className="inline-flex items-center gap-1.5 rounded-xl border-2 border-ink-200 px-3.5 py-2 text-sm font-bold text-ink-700 hover:border-ink-900 disabled:opacity-60">
-            {regenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Rewrite from hotel details
+          <button type="button" onClick={regenerate} disabled={regenerating} className="btn-secondary group min-h-[40px] disabled:opacity-60">
+            {regenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 transition-transform duration-700 ease-spring group-hover:rotate-180" />} Rewrite from hotel details
           </button>
-          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-4 py-2 text-sm font-bold text-white hover:bg-black">
-            View live site <ExternalLink className="h-4 w-4" />
-          </a>
+          <Magnetic strength={0.25}>
+            <a href={url} target="_blank" rel="noopener noreferrer" className="btn-primary group min-h-[40px]">
+              View live site <ExternalLink className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </a>
+          </Magnetic>
         </div>
-      </div>
+      </Reveal>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         {/* ── Editor ─────────────────────────────────────────────── */}
@@ -254,16 +287,16 @@ export default function ManageWebsitePage() {
           <Section icon={LayoutTemplate} title="Design" sub={`${tpl.name} — ${tpl.tagline}`} defaultOpen>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex -space-x-1">
-                {tpl.swatches.map((c) => <span key={c} className="h-7 w-7 rounded-full border-2 border-white shadow" style={{ background: c }} />)}
+                {tpl.swatches.map((c, i) => <motion.span key={c} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...spring, delay: i * 0.05 }} className="h-7 w-7 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(15,23,42,0.18)]" style={{ background: c }} />)}
               </div>
-              <button type="button" onClick={() => setGalleryOpen(true)} className="rounded-xl bg-ink-900 px-4 py-2 text-sm font-bold text-white">Change design</button>
+              <button type="button" onClick={() => setGalleryOpen(true)} className="btn-primary group min-h-[40px]"><LayoutTemplate className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-[-8deg]" /> Change design</button>
             </div>
             <div className="mt-5">
               <Field label="Accent colour" hint="Optional — buttons and highlights. Leave empty for the design's own colour.">
                 <div className="flex items-center gap-3">
-                  <input type="color" value={draft.accent || tpl.accent} onChange={(e) => set("accent", e.target.value)} className="h-10 w-14 cursor-pointer rounded-lg border-2 border-ink-200" />
+                  <input type="color" value={draft.accent || tpl.accent} onChange={(e) => set("accent", e.target.value)} className="h-10 w-14 cursor-pointer rounded-xl border border-ink-900/10 bg-white/80 p-1 shadow-[inset_0_1px_0_#fff] transition-transform duration-300 ease-spring hover:-translate-y-0.5" />
                   <span className="font-mono text-sm text-ink-600">{draft.accent || `${tpl.accent} (default)`}</span>
-                  {draft.accent && <button type="button" onClick={() => set("accent", "")} className="text-sm font-bold text-ink-500 underline">Reset</button>}
+                  {draft.accent && <button type="button" onClick={() => set("accent", "")} className="btn-ghost px-2.5 py-1.5 text-sm">Reset</button>}
                 </div>
               </Field>
             </div>
@@ -276,9 +309,9 @@ export default function ManageWebsitePage() {
                 <input className={inputCls} type="tel" placeholder="+62 812 3456 7890" value={draft.whatsappNumber} onChange={(e) => set("whatsappNumber", e.target.value)} />
               </Field>
             </div>
-            <label className="mt-4 flex cursor-pointer items-center justify-between gap-4 rounded-xl border-2 border-ink-100 p-3">
+            <label className="mt-4 flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-white/60 p-3.5 ring-1 ring-ink-900/[0.07] transition-colors hover:bg-white/90">
               <span>
-                <span className="block text-sm font-bold text-ink-800">{draft.published ? "Website is public" : "Website is hidden"}</span>
+                <span className="block text-sm font-semibold text-ink-800">{draft.published ? "Website is public" : "Website is hidden"}</span>
                 <span className="block text-xs text-ink-500">{draft.published ? "Anyone with the link can see it." : "Visitors see a 'not found' page until you publish."}</span>
               </span>
               <Toggle on={draft.published} onChange={(v) => set("published", v)} />
@@ -299,7 +332,7 @@ export default function ManageWebsitePage() {
               <Field label="Text" hint="Leave an empty line between paragraphs."><textarea rows={8} className={inputCls} maxLength={5000} value={draft.content.about?.body || ""} onChange={(e) => set("about.body", e.target.value)} /></Field>
               <ImageField label="About photo" value={draft.content.about?.image} onChange={(v) => set("about.image", v)} aspect="4/5" />
               <div>
-                <p className="mb-1.5 text-sm font-bold text-ink-800">Highlights</p>
+                <p className="label">Highlights</p>
                 <ListEditor items={draft.content.highlights || []} onChange={(v) => set("content.highlights", v)} blank={{ title: "", body: "" }} addLabel="Add a highlight" fields={[{ key: "title", placeholder: "e.g. Book direct, pay less" }, { key: "body", placeholder: "One or two sentences", multiline: true }]} />
               </div>
             </div>
@@ -307,7 +340,7 @@ export default function ManageWebsitePage() {
 
           <Section icon={BedDouble} title="Rooms" sub="Names and prices come from your rooms — here you choose how they look">
             {rooms.length === 0 ? (
-              <p className="text-sm text-ink-500">No rooms yet. Add them in <Link to="/dashboard/settings" className="font-bold underline">Settings</Link>.</p>
+              <p className="text-sm text-ink-500">No rooms yet. Add them in <Link to="/dashboard/settings" className="font-semibold text-sunset-flame underline underline-offset-4">Settings</Link>.</p>
             ) : (
               <div className="space-y-3">
                 {rooms.map((r) => {
@@ -315,23 +348,27 @@ export default function ManageWebsitePage() {
                   const o = draft.roomOverrides.find((x) => x.roomTypeId === id) || { roomTypeId: id, hidden: false, description: "", image: "" };
                   const upd = (fields) => set("roomOverrides", [...draft.roomOverrides.filter((x) => x.roomTypeId !== id), { ...o, ...fields }]);
                   return (
-                    <div key={id} className={`rounded-xl border-2 p-3 ${o.hidden ? "border-ink-100 bg-ink-50" : "border-ink-100"}`}>
+                    <motion.div layout transition={spring} key={id} className={`rounded-xl p-3.5 ring-1 transition-colors ${o.hidden ? "bg-ink-900/[0.03] ring-ink-900/[0.05] opacity-75" : "bg-white/70 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff]"}`}>
                       <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-bold text-ink-900">{r.name}</p>
-                          <p className="text-xs text-ink-500">{r.currency} {Number(r.baseRate || 0).toLocaleString()} / night · sleeps {r.maxOccupancy || 2}</p>
+                        <div className="min-w-0">
+                          <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">{r.name}</p>
+                          <p className="text-xs tabular-nums text-ink-500">{r.currency} {Number(r.baseRate || 0).toLocaleString()} / night · sleeps {r.maxOccupancy || 2}</p>
                         </div>
-                        <button type="button" onClick={() => upd({ hidden: !o.hidden })} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-600 hover:bg-ink-100">
+                        <button type="button" onClick={() => upd({ hidden: !o.hidden })} className={`btn min-h-[36px] shrink-0 gap-1.5 px-3 py-1.5 text-xs ring-1 hover:-translate-y-0.5 ${o.hidden ? "bg-ink-900/[0.04] text-ink-500 ring-ink-900/[0.08]" : "bg-emerald-50 text-emerald-700 ring-emerald-500/20"}`}>
                           {o.hidden ? <><EyeOff className="h-3.5 w-3.5" /> Hidden</> : <><Eye className="h-3.5 w-3.5" /> Shown</>}
                         </button>
                       </div>
+                      <AnimatePresence initial={false}>
                       {!o.hidden && (
+                        <motion.div key="body" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
                         <div className="mt-3 space-y-3">
                           <textarea rows={2} className={inputCls} placeholder={r.description || "Description shown on the website (optional)"} value={o.description} onChange={(e) => upd({ description: e.target.value })} />
                           <ImageField value={o.image || r.photos?.[0]?.url || (data.site.rooms.find((x) => x.id === id) || {}).image} onChange={(v) => upd({ image: v })} aspect="4/3" />
                         </div>
+                        </motion.div>
                       )}
-                    </div>
+                      </AnimatePresence>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -380,28 +417,29 @@ export default function ManageWebsitePage() {
       </div>
 
       {/* Save bar */}
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-ink-100 bg-white/95 backdrop-blur transition-transform duration-300 ${dirty ? "translate-y-0" : "translate-y-full"}`}>
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <p className="text-sm font-semibold text-ink-700">You have unsaved changes</p>
+      <div className={`fixed inset-x-0 bottom-0 z-40 px-3 pb-3 transition-[transform,opacity] duration-500 ease-spring sm:px-6 sm:pb-5 ${dirty ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-[120%] opacity-0"}`}>
+        <div className="glass-strong mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 shadow-[0_24px_60px_-20px_rgba(255,61,119,0.35)]">
+          <p className="flex items-center gap-2 text-sm font-semibold text-ink-700"><PulseDot color="bg-amber-500" /> You have unsaved changes</p>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setDraft(baseline)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-ink-600 hover:bg-ink-100">Discard</button>
-            <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save &amp; publish
+            <button type="button" onClick={() => setDraft(baseline)} className="btn-ghost min-h-[40px]">Discard</button>
+            <button type="button" onClick={save} disabled={saving} className="btn-primary group min-h-[40px] disabled:opacity-60">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:scale-125" />} Save &amp; publish
             </button>
           </div>
         </div>
       </div>
 
       {/* Change design */}
+      <AnimatePresence>
       {galleryOpen && (
-        <div className="fixed inset-0 z-[150] overflow-y-auto bg-ink-950/60 p-4 backdrop-blur-sm" onClick={() => setGalleryOpen(false)}>
-          <div className="mx-auto my-6 max-w-6xl rounded-3xl bg-white p-5 sm:p-8" onClick={(e) => e.stopPropagation()}>
+        <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[150] overflow-y-auto bg-night-950/40 p-3 backdrop-blur-md sm:p-4" onClick={() => setGalleryOpen(false)}>
+          <motion.div initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, y: 16, scale: 0.97, filter: "blur(4px)" }} transition={spring} className="glass-strong mx-auto my-6 max-w-6xl rounded-3xl p-4 sm:p-8" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-black text-ink-900">Change design</h2>
+                <h2 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900">Change <span className="font-serif italic font-normal">design</span></h2>
                 <p className="text-ink-500">Your content stays the same — only the look changes.</p>
               </div>
-              <button type="button" onClick={() => setGalleryOpen(false)} className="rounded-xl px-3 py-2 font-bold text-ink-500 hover:bg-ink-100">Close</button>
+              <button type="button" onClick={() => setGalleryOpen(false)} className="btn-secondary min-h-[40px]">Close</button>
             </div>
             <TemplateGallery
               site={previewSite}
@@ -413,9 +451,10 @@ export default function ManageWebsitePage() {
                 toast.success(`${templateById(id).name} selected — save to publish it`);
               }}
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <TemplatePreview site={previewSite} templateId={fullPreview ? draft.templateId : null} onClose={() => setFullPreview(false)} />
     </div>
@@ -425,25 +464,35 @@ export default function ManageWebsitePage() {
 function Section({ icon: Icon, title, sub, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white">
-      <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 p-4 text-left">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-ink-700"><Icon className="h-[18px] w-[18px]" /></span>
+    <Reveal y={14}>
+    <div className={`card transition-shadow duration-500 ${open ? "shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.14),0_18px_40px_-20px_rgba(255,61,119,0.28)]" : ""}`}>
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="group flex w-full items-center gap-3 rounded-2xl p-4 text-left transition-colors hover:bg-white/60">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${open ? "bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.55)]" : "bg-sunset-soft text-sunset-flame"} ${hop}`}><Icon className="h-[18px] w-[18px]" strokeWidth={1.8} /></span>
         <span className="min-w-0 flex-1">
-          <span className="block font-black text-ink-900">{title}</span>
+          <span className="block font-display font-semibold tracking-[-0.01em] text-ink-900">{title}</span>
           {sub && <span className="block truncate text-sm text-ink-500">{sub}</span>}
         </span>
-        <ChevronDown className={`h-5 w-5 text-ink-400 transition ${open ? "rotate-180" : ""}`} />
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={spring} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 group-hover:bg-ink-900/[0.04] group-hover:text-ink-700">
+          <ChevronDown className="h-5 w-5" />
+        </motion.span>
       </button>
-      {open && <div className="border-t border-ink-100 p-4">{children}</div>}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div key="c" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
+            <div className="relative p-4"><div className="divider absolute inset-x-4 top-0" />{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+    </Reveal>
   );
 }
 
 function Toggle({ on, onChange }) {
   return (
-    <button type="button" role="switch" aria-checked={on} onClick={() => onChange(!on)} className={`relative h-7 w-12 shrink-0 rounded-full transition ${on ? "bg-emerald-500" : "bg-ink-300"}`}>
-      <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? "left-6" : "left-1"}`} />
-    </button>
+    <motion.button whileTap={{ scale: 0.94 }} type="button" role="switch" aria-checked={on} onClick={() => onChange(!on)} className={`relative h-7 w-12 shrink-0 rounded-full shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] transition-colors duration-300 ${on ? "bg-emerald-500" : "bg-ink-300"}`}>
+      <motion.span layout transition={{ type: "spring", stiffness: 600, damping: 30 }} className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-[0_2px_6px_rgba(15,23,42,0.25)] ${on ? "left-6" : "left-1"}`} />
+    </motion.button>
   );
 }
 
@@ -464,20 +513,22 @@ function SlugField({ value, original, onChange }) {
   }, [value, original]);
   return (
     <Field label="Web address" hint="Lowercase letters, numbers and dashes.">
-      <div className="flex items-center overflow-hidden rounded-xl border-2 border-ink-200 focus-within:border-ink-900">
-        <span className="whitespace-nowrap bg-ink-50 px-3 py-2.5 text-[15px] font-semibold text-ink-500">{SITE_HOST}/</span>
+      <div className="flex items-center overflow-hidden rounded-xl border border-ink-900/10 bg-white/80 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)] transition-[border-color,box-shadow] duration-300 focus-within:border-sunset-flame/60 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(255,106,43,0.12)]">
+        <span className="whitespace-nowrap bg-ink-900/[0.03] px-3 py-2.5 font-mono text-[13px] font-semibold text-ink-500 sm:text-sm">{SITE_HOST}/</span>
         <input
-          className="w-full px-2 py-2.5 text-[15px] font-semibold text-ink-900 outline-none"
+          className="w-full min-w-0 bg-transparent px-2 py-2.5 font-mono text-[14px] font-semibold text-ink-900 outline-none"
           value={value}
           maxLength={50}
           onChange={(e) => onChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-{2,}/g, "-"))}
         />
       </div>
+      <AnimatePresence mode="wait">
       {status && (
-        <p className={`mt-1.5 text-xs font-semibold ${status.available ? "text-emerald-600" : "text-rose-600"}`}>
+        <motion.p key={String(status.available)} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={spring} className={`mt-1.5 text-xs font-semibold ${status.available ? "text-emerald-600" : "text-rose-600"}`}>
           {status.available ? "✓ Available" : status.message}
-        </p>
+        </motion.p>
       )}
+      </AnimatePresence>
     </Field>
   );
 }
@@ -487,24 +538,34 @@ function LivePreview({ site, onExpand }) {
   const [page, setPage] = useState("home");
   if (!site) return null;
   return (
-    <div className="overflow-hidden rounded-2xl border border-ink-100 bg-ink-100">
-      <div className="flex flex-wrap items-center gap-2 border-b border-ink-200 bg-white px-3 py-2">
-        <div className="flex gap-1 overflow-x-auto">
-          {PAGES.map((p) => (
-            <button key={p.id} type="button" onClick={() => setPage(p.id)} className={`whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-bold ${page === p.id ? "bg-ink-900 text-white" : "text-ink-500 hover:bg-ink-100"}`}>{p.label}</button>
-          ))}
+    <Reveal delay={0.1} className="card overflow-hidden">
+      <div className="flex flex-wrap items-center gap-2 rounded-t-2xl border-b border-ink-900/[0.06] bg-white/70 px-3 py-2 backdrop-blur">
+        <div className="hidden items-center gap-1.5 pr-1 sm:flex" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+        </div>
+        <div className="min-w-0 max-w-full overflow-x-auto">
+          <SlidingTabs size="sm" items={PAGES.map((p) => ({ value: p.id, label: p.label }))} value={page} onChange={setPage} className="whitespace-nowrap" />
         </div>
         <div className="ml-auto flex items-center gap-1">
-          <button type="button" onClick={() => setDevice("desktop")} className={`rounded-lg p-1.5 ${device === "desktop" ? "bg-ink-900 text-white" : "text-ink-500"}`} aria-label="Desktop"><Monitor className="h-4 w-4" /></button>
-          <button type="button" onClick={() => setDevice("mobile")} className={`rounded-lg p-1.5 ${device === "mobile" ? "bg-ink-900 text-white" : "text-ink-500"}`} aria-label="Phone"><Smartphone className="h-4 w-4" /></button>
-          <button type="button" onClick={onExpand} className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100" aria-label="Full screen"><Maximize2 className="h-4 w-4" /></button>
+          <SlidingTabs
+            size="sm"
+            items={[
+              { value: "desktop", label: <span className="sr-only">Desktop</span>, icon: Monitor },
+              { value: "mobile", label: <span className="sr-only">Phone</span>, icon: Smartphone },
+            ]}
+            value={device}
+            onChange={setDevice}
+          />
+          <motion.button whileHover={{ y: -2, rotate: -6 }} whileTap={{ scale: 0.9 }} transition={spring} type="button" onClick={onExpand} className="grid h-9 w-9 place-items-center rounded-xl text-ink-500 hover:bg-white hover:text-ink-800 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(15,23,42,0.08)]" aria-label="Full screen"><Maximize2 className="h-4 w-4" /></motion.button>
         </div>
       </div>
-      <div className="flex justify-center p-3" style={{ height: "calc(100vh - 170px)", minHeight: 560 }}>
-        <div className={`h-full overflow-hidden bg-white shadow-sm ${device === "mobile" ? "w-[375px] rounded-[28px] border-[8px] border-ink-800" : "w-full rounded-lg"}`}>
+      <div className="flex justify-center bg-ink-900/[0.03] p-3" style={{ height: "calc(100vh - 170px)", minHeight: 560 }}>
+        <div className={`h-full overflow-hidden bg-white shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] transition-[width,border-radius] duration-500 ease-spring ${device === "mobile" ? "w-[375px] max-w-full rounded-[28px] border-[8px] border-night-950" : "w-full rounded-xl"}`}>
           <SiteRenderer key={device} site={site} mode={device === "mobile" ? "frame" : "scaled"} page={page} onNavigate={setPage} className="h-full w-full" />
         </div>
       </div>
-    </div>
+    </Reveal>
   );
 }

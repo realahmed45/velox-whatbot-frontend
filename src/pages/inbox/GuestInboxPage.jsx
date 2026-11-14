@@ -37,31 +37,38 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, PulseDot, Reveal, SlidingTabs } from "@/components/fx";
 dayjs.extend(relativeTime);
 
 const STATUS = {
   bot_active: {
     label: "AI handled",
-    cls: "bg-brand-100 text-brand-700 ring-1 ring-brand-200/60",
+    cls: "bg-sunset-soft text-sunset-flame ring-1 ring-inset ring-sunset-flame/20",
   },
-  open: { label: "Open", cls: "bg-ink-100 text-ink-600 ring-1 ring-ink-200/60" },
+  open: {
+    label: "Open",
+    cls: "bg-ink-900/[0.05] text-ink-600 ring-1 ring-inset ring-ink-900/10",
+  },
   awaiting_human: {
     label: "Needs you",
-    cls: "bg-amber-100 text-amber-700 ring-1 ring-amber-200/60",
+    cls: "bg-amber-400/15 text-amber-800 ring-1 ring-inset ring-amber-500/25",
   },
   human_active: {
     label: "You",
-    cls: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200/60",
+    cls: "bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20",
   },
   resolved: {
     label: "Resolved",
-    cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
+    cls: "bg-ink-900/[0.04] text-ink-500 ring-1 ring-inset ring-ink-900/[0.08]",
   },
   closed: {
     label: "Closed",
-    cls: "bg-ink-100 text-ink-500 ring-1 ring-ink-200/60",
+    cls: "bg-ink-900/[0.04] text-ink-500 ring-1 ring-inset ring-ink-900/[0.08]",
   },
 };
+
+const spring = { type: "spring", stiffness: 420, damping: 32 };
 
 /**
  * Status filters. `query` is what goes to the server as `status=` — the
@@ -85,7 +92,7 @@ function Avatar({ initial, avatar, size = "w-10 h-10", text = "text-sm" }) {
         alt=""
         className={clsx(
           size,
-          "rounded-full object-cover ring-1 ring-ink-200 flex-shrink-0",
+          "rounded-full object-cover ring-2 ring-white shadow-[0_2px_6px_-2px_rgba(15,23,42,0.2)] flex-shrink-0",
         )}
         onError={(e) => {
           e.currentTarget.style.display = "none";
@@ -98,7 +105,7 @@ function Avatar({ initial, avatar, size = "w-10 h-10", text = "text-sm" }) {
       className={clsx(
         size,
         text,
-        "rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white shadow-sm ring-2 ring-white flex-shrink-0",
+        "rounded-full bg-sunset flex items-center justify-center font-display font-semibold text-white ring-2 ring-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_6px_14px_-8px_rgba(255,61,119,0.6)] flex-shrink-0",
       )}
     >
       {initial}
@@ -129,7 +136,7 @@ function ChannelAvatar({
         className={clsx(
           badge,
           meta.tint,
-          "absolute -bottom-0.5 -right-0.5 rounded-full ring-2 ring-white flex items-center justify-center shadow-sm",
+          "absolute -bottom-0.5 -right-0.5 rounded-full ring-2 ring-white flex items-center justify-center shadow-sm transition-transform duration-500 ease-spring group-hover:scale-110 group-hover:rotate-[-10deg]",
         )}
       >
         <Mark className={mark} />
@@ -405,40 +412,40 @@ export default function GuestInboxPage() {
   return (
     // h-full + overflow-hidden pins the whole inbox to the viewport height so
     // each pane scrolls on its own — the list stays put while the chat scrolls.
-    <div className="flex h-full min-h-0 overflow-hidden bg-ink-50">
+    <div className="relative flex h-full min-h-0 overflow-hidden">
       {/* List pane */}
       <div
         className={clsx(
-          "flex-shrink-0 border-r border-ink-100 bg-white flex flex-col h-full min-h-0",
+          "relative flex-shrink-0 border-r border-white/70 bg-white/60 backdrop-blur-2xl backdrop-saturate-150 shadow-[1px_0_0_rgba(15,23,42,0.05)] flex flex-col h-full min-h-0",
           "w-full md:w-[21rem] lg:w-[23rem]",
           activeConversationId && "hidden md:flex",
         )}
       >
-        {/* ── Dark gradient header (matches the rest of the dashboard) ── */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-ink-900 to-ink-800 text-white px-4 pt-4 pb-3.5">
-          <div className="pointer-events-none absolute -top-16 right-4 w-48 h-48 rounded-full bg-brand-500/20 blur-3xl" />
-          <div className="relative flex items-center gap-2.5 mb-3.5">
-            <span className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
-              <MessagesSquare className="w-5 h-5 text-brand-300" />
+        {/* ── Glass header ── */}
+        <div className="relative px-4 pb-3.5 pt-4">
+          <div className="relative mb-3.5 flex items-center gap-2.5">
+            <span className="group grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+              <MessagesSquare className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </span>
-            <div>
-              <h2 className="font-black text-[17px] leading-none tracking-tight">
-                Guest messages
+            <div className="min-w-0">
+              <h2 className="font-display text-[17px] font-semibold leading-none tracking-[-0.02em] text-ink-900">
+                Guest{" "}
+                <span className="font-serif font-normal italic">messages</span>
               </h2>
-              <p className="text-[11px] text-white/50 mt-1">
+              <p className="mt-1 text-[11px] tabular-nums text-ink-500">
                 {conversations.length} conversation
                 {conversations.length === 1 ? "" : "s"}
               </p>
             </div>
-            <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-inset ring-emerald-500/20">
+              <PulseDot color="bg-emerald-500" className="!h-1.5 !w-1.5 [&>span]:!h-1.5 [&>span]:!w-1.5" />
               Live
             </span>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <div className="group relative">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400 transition-all duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-flame" />
             <input
-              className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder-white/40 focus:bg-white/15 focus:border-white/30 outline-none transition"
+              className="input rounded-2xl py-2.5 pl-10 text-sm"
               placeholder="Search guests by name or phone"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -448,7 +455,7 @@ export default function GuestInboxPage() {
 
         {/* ── Channel tabs — the primary split ── */}
         {showTabs && (
-          <div className="flex gap-1 px-2 pt-2 pb-1.5 border-b border-ink-100 overflow-x-auto no-scrollbar">
+          <div className="no-scrollbar flex gap-1 overflow-x-auto border-t border-ink-900/[0.05] px-3 pb-1.5 pt-2">
             {tabs.map((t) => {
               const isAll = t.key === "all";
               const stats = isAll
@@ -457,29 +464,35 @@ export default function GuestInboxPage() {
               const on = channel === t.key;
               const Mark = t.Mark;
               return (
-                <button
+                <motion.button
                   key={t.key}
                   type="button"
                   onClick={() => pickChannel(t.key)}
                   title={isAll ? "All channels" : t.name}
+                  whileTap={{ scale: 0.94 }}
                   className={clsx(
-                    "relative flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border",
-                    on
-                      ? "bg-ink-900 text-white border-ink-900 shadow-sm"
-                      : "bg-white border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
+                    "group relative isolate inline-flex min-h-[34px] flex-shrink-0 items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-300",
+                    on ? "text-white" : "text-ink-500 hover:bg-white/70 hover:text-ink-900",
                   )}
                 >
+                  {on && (
+                    <motion.span
+                      layoutId="inbox-channel-pill"
+                      transition={spring}
+                      className="absolute inset-0 -z-10 rounded-xl bg-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_6px_16px_-8px_rgba(15,23,42,0.6)]"
+                    />
+                  )}
                   {Mark ? (
                     <Mark
                       className={clsx(
-                        "w-3.5 h-3.5",
+                        "h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]",
                         on ? "text-white" : "text-ink-400",
                       )}
                     />
                   ) : (
                     <InboxIcon
                       className={clsx(
-                        "w-3.5 h-3.5",
+                        "h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]",
                         on ? "text-white" : "text-ink-400",
                       )}
                     />
@@ -488,62 +501,66 @@ export default function GuestInboxPage() {
                   {stats.total > 0 && (
                     <span
                       className={clsx(
-                        "min-w-[1.15rem] text-center px-1 py-px rounded-full text-[10px] font-bold",
+                        "min-w-[1.15rem] rounded-full px-1 py-px text-center text-[10px] font-semibold tabular-nums",
                         stats.unread > 0
-                          ? "bg-brand-500 text-white"
+                          ? "bg-sunset text-white shadow-[0_2px_6px_-2px_rgba(255,61,119,0.6)]"
                           : on
                             ? "bg-white/15 text-white/80"
-                            : "bg-ink-100 text-ink-500",
+                            : "bg-ink-900/[0.06] text-ink-500",
                       )}
                     >
                       {stats.unread > 0 ? stats.unread : stats.total}
                     </span>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
         )}
 
         {/* Status filter chips */}
-        <div className="flex gap-1.5 px-3 py-2.5 border-b border-ink-100 overflow-x-auto no-scrollbar">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFilter(f.id)}
-              className={clsx(
-                "flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border",
-                filter === f.id
-                  ? "bg-brand-500 text-white border-brand-500 shadow-sm shadow-brand-500/25"
-                  : "border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600",
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="no-scrollbar overflow-x-auto border-b border-ink-900/[0.06] px-3 pb-2.5 pt-1.5">
+          <SlidingTabs
+            size="sm"
+            items={FILTERS.map((f) => ({ value: f.id, label: f.label }))}
+            value={filter}
+            onChange={setFilter}
+            className="flex-nowrap whitespace-nowrap"
+          />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
           {loading && filtered.length === 0 && (
-            <div className="flex justify-center py-12">
-              <span className="block w-5 h-5 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+            <div className="space-y-1">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-start gap-3 rounded-2xl px-3 py-3">
+                  <div className="h-10 w-10 flex-shrink-0 animate-pulse rounded-full bg-ink-900/[0.06]" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-ink-900/[0.06]" />
+                    <div className="h-2.5 w-4/5 animate-pulse rounded bg-ink-900/[0.05]" />
+                    <div className="h-4 w-16 animate-pulse rounded-full bg-ink-900/[0.05]" />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {!loading && filtered.length === 0 && (
-            <div className="text-center py-12 px-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-100 flex items-center justify-center mx-auto mb-3 shadow-sm">
-                <InboxIcon className="w-6 h-6 text-brand-500" />
+            <div className="px-4 py-12 text-center">
+              <div className="relative mx-auto mb-4 h-14 w-14">
+                <div className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+                <div className="relative grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-sunset-flame ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff,0_10px_24px_-14px_rgba(255,106,43,0.5)]">
+                  <InboxIcon className="h-6 w-6" strokeWidth={1.8} />
+                </div>
               </div>
-              <p className="text-xs text-ink-700 font-bold">{emptyLabel}</p>
-              <p className="text-[11px] text-ink-400 mt-1">
+              <p className="font-display text-sm font-semibold text-ink-800">{emptyLabel}</p>
+              <p className="mt-1 text-[12px] text-ink-500">
                 {search || filter !== "all"
                   ? "Nothing matches that filter — try clearing it."
                   : "When guests message you, they'll appear here."}
               </p>
             </div>
           )}
-          {filtered.map((conv) => {
+          {filtered.map((conv, idx) => {
             const meta = STATUS[conv.status] || STATUS.open;
             const c = conv.contact || {};
             const displayName =
@@ -554,60 +571,72 @@ export default function GuestInboxPage() {
               conv.lastMessage?.text || conv.lastMessagePreview || "";
             const isActive = activeConversationId === conv._id;
             return (
-              <button
+              <motion.button
                 key={conv._id}
+                layout="position"
                 onClick={() => setActiveConversation(conv._id)}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: Math.min(idx, 10) * 0.025, ease: [0.16, 1, 0.3, 1] }}
+                whileTap={{ scale: 0.98 }}
                 className={clsx(
-                  "w-full text-left px-3 py-3 border-b border-ink-50 border-l-[3px] border-l-transparent transition-colors",
-                  isActive
-                    ? "bg-brand-50 border-l-brand-500"
-                    : "hover:bg-ink-50/70",
+                  "group relative isolate mb-0.5 w-full rounded-2xl px-3 py-3 text-left transition-colors duration-300",
+                  !isActive && "hover:bg-white/70",
                 )}
               >
+                {isActive && (
+                  <motion.span
+                    layoutId="inbox-active-row"
+                    transition={spring}
+                    className="absolute inset-0 -z-10 rounded-2xl bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.18),0_10px_26px_-14px_rgba(255,61,119,0.45)]"
+                  >
+                    <span className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-sunset" />
+                  </motion.span>
+                )}
                 <div className="flex items-start gap-3">
                   <ChannelAvatar
                     initial={initial}
                     avatar={c.avatar}
                     channelType={conv.channelType}
                   />
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1.5">
-                      <p className="text-[13px] font-bold text-ink-900 truncate">
+                      <p className="truncate text-[13px] font-semibold text-ink-900">
                         {displayName}
                       </p>
-                      <span className="text-[10px] text-ink-400 flex-shrink-0 whitespace-nowrap">
+                      <span className="flex-shrink-0 whitespace-nowrap text-[10px] tabular-nums text-ink-400">
                         {dayjs(conv.lastMessageAt || conv.updatedAt).fromNow(
                           true,
                         )}
                       </span>
                     </div>
                     {handle && (
-                      <p className="text-[11px] text-brand-600 font-semibold truncate leading-tight">
+                      <p className="truncate text-[11px] font-medium leading-tight text-sunset-flame">
                         {c.username ? `@${c.username}` : handle}
                       </p>
                     )}
-                    <p className="text-[12px] text-ink-500 truncate mt-1">
+                    <p className="mt-1 truncate text-[12px] text-ink-500">
                       {preview || (
                         <span className="italic text-ink-300">
                           No messages yet
                         </span>
                       )}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-2">
+                    <div className="mt-2 flex items-center gap-1.5">
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.cls}`}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.cls}`}
                       >
                         {meta.label}
                       </span>
                       {conv.botEnabled === false && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/60 inline-flex items-center gap-0.5">
-                          <Pause className="w-2.5 h-2.5" /> AI off
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-800 ring-1 ring-inset ring-amber-500/25">
+                          <Pause className="h-2.5 w-2.5" /> AI off
                         </span>
                       )}
                       {(c.tags || []).slice(0, 1).map((t) => (
                         <span
                           key={t}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-ink-100 text-ink-500 truncate max-w-[80px]"
+                          className="max-w-[80px] truncate rounded-full bg-ink-900/[0.05] px-2 py-0.5 text-[10px] font-medium text-ink-500"
                         >
                           {t}
                         </span>
@@ -615,7 +644,7 @@ export default function GuestInboxPage() {
                     </div>
                   </div>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -623,18 +652,17 @@ export default function GuestInboxPage() {
 
       {/* Chat pane */}
       {active ? (
-        <div className="flex-1 flex flex-col min-w-0 min-h-0 h-full bg-ink-50">
-          {/* Chat header — dark, on-brand */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-ink-900 to-ink-800 text-white px-3 sm:px-5 py-3.5">
-            <div className="pointer-events-none absolute -top-16 right-10 w-56 h-56 rounded-full bg-brand-500/15 blur-3xl" />
+        <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
+          {/* Chat header — light glass */}
+          <div className="relative z-10 border-b border-white/70 bg-white/65 px-3 py-3.5 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_1px_0_rgba(15,23,42,0.05)] sm:px-5">
             <button
               onClick={() => setActiveConversation(null)}
-              className="md:hidden mb-2 text-xs text-brand-300 font-bold inline-flex items-center gap-1"
+              className="group mb-2 inline-flex min-h-[32px] items-center gap-1 rounded-lg pr-2 text-xs font-semibold text-sunset-flame md:hidden"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> All messages
+              <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-1" /> All messages
             </button>
-            <div className="relative flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="relative flex flex-wrap items-center justify-between gap-2">
+              <div className="group flex min-w-0 items-center gap-3">
                 <ChannelAvatar
                   initial={(
                     active.contact?.name ||
@@ -650,100 +678,129 @@ export default function GuestInboxPage() {
                   mark="w-3 h-3"
                 />
                 <div className="min-w-0">
-                  <p className="font-bold text-[15px] truncate">
+                  <p className="truncate font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
                     {active.contact?.name ||
                       active.contact?.username ||
                       active.participantName ||
                       "Guest"}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/60">
-                      <activeMeta.Mark className="w-3 h-3" />
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-ink-500">
+                      <activeMeta.Mark className="h-3 w-3" />
                       {activeMeta.shortName}
                     </span>
                     {(active.contact?.username || active.contact?.phone) && (
-                      <span className="text-[11px] text-white/50 font-medium truncate">
+                      <span className="truncate text-[11px] font-medium text-ink-400">
                         {active.contact.username
                           ? `@${active.contact.username}`
                           : active.contact.phone}
                       </span>
                     )}
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/70">
-                      <span
-                        className={clsx(
-                          "w-1.5 h-1.5 rounded-full",
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-ink-600">
+                      <PulseDot
+                        color={clsx(
                           active.status === "human_active"
-                            ? "bg-emerald-400"
+                            ? "bg-emerald-500"
                             : active.status === "awaiting_human"
-                              ? "bg-amber-400"
-                              : "bg-brand-400",
+                              ? "bg-amber-500"
+                              : "bg-sunset-flame",
                         )}
+                        className="!h-1.5 !w-1.5 [&>span]:!h-1.5 [&>span]:!w-1.5"
                       />
                       {(STATUS[active.status] || STATUS.open).label}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <button
+              <div className="flex flex-wrap items-center gap-1.5">
+                <motion.button
                   onClick={toggleBot}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.94 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 24 }}
                   className={clsx(
-                    "text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all",
+                    "group flex min-h-[34px] items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-semibold ring-1 ring-inset transition-colors duration-300",
                     active.botEnabled === false
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/30"
-                      : "bg-white/10 text-white/80 border border-white/15 hover:bg-white/20",
+                      ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 hover:bg-emerald-500/15"
+                      : "bg-white/80 text-ink-700 ring-ink-900/10 shadow-[inset_0_1px_0_#fff] hover:bg-white",
                   )}
                 >
-                  {active.botEnabled === false ? (
-                    <>
-                      <Play className="w-3 h-3" /> Resume AI
-                    </>
-                  ) : (
-                    <>
-                      <Pause className="w-3 h-3" /> Pause AI
-                    </>
-                  )}
-                </button>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {active.botEnabled === false ? (
+                      <motion.span
+                        key="resume"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.18 }}
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Play className="h-3 w-3" /> Resume AI
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="pause"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.18 }}
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Pause className="h-3 w-3" /> Pause AI
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
                 {active.status !== "human_active" && (
                   <button
                     onClick={takeover}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-1 transition-all"
+                    className="btn-primary group min-h-[34px] gap-1 rounded-xl px-3 py-1.5 text-[11px]"
                   >
-                    <UserCheck className="w-3 h-3" /> Take over
+                    <UserCheck className="h-3 w-3 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" /> Take over
                   </button>
                 )}
                 {active.status !== "resolved" && active.status !== "closed" && (
-                  <button
+                  <motion.button
                     onClick={resolve}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-white/10 text-white/80 border border-white/15 hover:bg-white/20 flex items-center gap-1 transition-all"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.94 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                    className="group flex min-h-[34px] items-center gap-1 rounded-xl bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-ink-700 ring-1 ring-inset ring-ink-900/10 shadow-[inset_0_1px_0_#fff] transition-colors duration-300 hover:bg-white hover:text-emerald-700"
                   >
-                    <CheckCheck className="w-3 h-3" /> Resolve
-                  </button>
+                    <CheckCheck className="h-3 w-3 transition-transform duration-500 ease-spring group-hover:scale-125" /> Resolve
+                  </motion.button>
                 )}
               </div>
             </div>
 
             {/* Tag row */}
-            <div className="relative flex items-center flex-wrap gap-1.5 mt-3">
-              <TagIcon className="w-3 h-3 text-white/40" />
-              {(active.tags || []).map((t) => (
-                <span
-                  key={t}
-                  className="text-[10px] font-bold rounded-full bg-white/10 text-white/80 border border-white/15 px-2 py-0.5 inline-flex items-center gap-0.5"
-                >
-                  #{t}
-                  <button
-                    onClick={() => removeTag(t)}
-                    className="hover:text-white"
+            <div className="relative mt-3 flex flex-wrap items-center gap-1.5">
+              <TagIcon className="h-3 w-3 text-ink-400" />
+              <AnimatePresence initial={false}>
+                {(active.tags || []).map((t) => (
+                  <motion.span
+                    key={t}
+                    layout
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 26 }}
+                    className="inline-flex items-center gap-0.5 rounded-full bg-sunset-soft px-2 py-0.5 text-[10px] font-semibold text-sunset-flame ring-1 ring-inset ring-sunset-flame/20"
                   >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </span>
-              ))}
-              <div className="relative">
-                <Plus className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40" />
+                    #{t}
+                    <button
+                      onClick={() => removeTag(t)}
+                      className="rounded-full p-0.5 transition-all duration-300 ease-spring hover:rotate-90 hover:bg-white/70 hover:text-ink-900"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+              <div className="group relative">
+                <Plus className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-400 transition-transform duration-500 ease-spring group-focus-within:rotate-90 group-focus-within:text-sunset-flame" />
                 <input
-                  className="text-[11px] h-6 pl-6 pr-2 w-28 rounded-full bg-white/10 border border-white/15 text-white placeholder-white/40 focus:bg-white/15 outline-none"
+                  className="h-6 w-28 rounded-full bg-white/70 pl-6 pr-2 text-[11px] text-ink-800 outline-none ring-1 ring-inset ring-ink-900/10 transition-all duration-300 placeholder:text-ink-400 focus:w-36 focus:bg-white focus:ring-sunset-flame/40"
                   placeholder="add tag…"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
@@ -756,24 +813,37 @@ export default function GuestInboxPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-ink-50">
-            {activeMsgs.map((m) => (
-              <Bubble key={m._id} msg={m} />
-            ))}
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-5 sm:px-5">
+            <AnimatePresence initial={false}>
+              {activeMsgs.map((m) => (
+                <Bubble key={m._id} msg={m} />
+              ))}
+            </AnimatePresence>
             <div ref={endRef} />
           </div>
 
           {/* Reply box */}
-          <div className="bg-white border-t border-ink-100 p-3">
-            {active.botEnabled === false && (
-              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5 mb-2 flex items-center gap-1.5">
-                <Pause className="w-3 h-3 flex-shrink-0" />
-                The AI is paused — only your manual replies go out.
-              </div>
-            )}
-            <div className="flex items-end gap-2 rounded-2xl border border-ink-200 bg-ink-50/50 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition p-1.5">
+          <div className="border-t border-white/70 bg-white/60 p-3 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_-1px_0_rgba(15,23,42,0.05)]">
+            <AnimatePresence initial={false}>
+              {active.botEnabled === false && (
+                <motion.div
+                  key="paused"
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginBottom: 8 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={spring}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-1.5 rounded-xl bg-amber-400/15 px-2.5 py-1.5 text-[11px] text-amber-800 ring-1 ring-inset ring-amber-500/25">
+                    <Pause className="h-3 w-3 flex-shrink-0" />
+                    The AI is paused — only your manual replies go out.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div className="flex items-end gap-2 rounded-2xl bg-white/85 p-1.5 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff,0_8px_24px_-16px_rgba(15,23,42,0.25)] transition-all duration-300 focus-within:ring-2 focus-within:ring-sunset-flame/40 focus-within:shadow-[inset_0_1px_0_#fff,0_0_0_4px_rgba(255,106,43,0.08),0_12px_28px_-16px_rgba(255,61,119,0.4)]">
               <textarea
-                className="resize-none flex-1 text-sm bg-transparent outline-none px-2.5 py-2 max-h-32"
+                className="max-h-32 flex-1 resize-none bg-transparent px-2.5 py-2 text-sm text-ink-900 outline-none placeholder:text-ink-400"
                 rows={1}
                 placeholder={`Reply on ${activeMeta.shortName}…`}
                 value={replyText}
@@ -785,74 +855,88 @@ export default function GuestInboxPage() {
                   }
                 }}
               />
-              <button
-                onClick={sendReply}
-                disabled={sending || !replyText.trim()}
-                className="bg-brand-500 hover:bg-brand-600 text-white p-2.5 rounded-xl shadow-sm shadow-brand-500/30 disabled:opacity-40 disabled:shadow-none transition-all flex-shrink-0 active:scale-95"
-              >
-                {sending ? (
-                  <span className="block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </button>
+              <Magnetic strength={0.25}>
+                <motion.button
+                  onClick={sendReply}
+                  disabled={sending || !replyText.trim()}
+                  whileTap={{ scale: 0.88 }}
+                  animate={{ scale: replyText.trim() ? 1 : 0.94 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                  aria-label="Send"
+                  className="group relative grid h-10 w-10 flex-shrink-0 place-items-center overflow-hidden rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_8px_20px_-8px_rgba(255,61,119,0.6)] transition-opacity disabled:opacity-40 disabled:shadow-none"
+                >
+                  {sending ? (
+                    <span className="block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  ) : (
+                    <Send
+                      className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:rotate-[-12deg]"
+                      strokeWidth={1.8}
+                    />
+                  )}
+                </motion.button>
+              </Magnetic>
             </div>
-            <p className="text-[10px] text-ink-400 mt-1.5 px-1">
+            <p className="mt-1.5 hidden px-1 text-[10px] text-ink-400 sm:block">
               Enter to send · Shift+Enter for a new line
             </p>
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-center relative overflow-hidden bg-gradient-to-br from-ink-50 via-white to-brand-50/40">
-          {/* soft brand glow */}
-          <div className="pointer-events-none absolute -top-20 -right-10 w-80 h-80 rounded-full bg-brand-200/30 blur-[120px]" />
-          <div className="pointer-events-none absolute bottom-0 -left-16 w-72 h-72 rounded-full bg-amber-100/40 blur-[120px]" />
-          <div className="relative max-w-sm px-6">
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 rounded-3xl bg-brand-500/20 blur-xl" />
-              <div className="relative w-24 h-24 rounded-3xl bg-white ring-1 ring-brand-100 shadow-xl shadow-brand-500/10 flex items-center justify-center animate-float">
+        <div className="relative hidden flex-1 items-center justify-center overflow-hidden text-center md:flex">
+          {/* soft sunset glow */}
+          <div className="pointer-events-none absolute -right-10 -top-20 h-80 w-80 rounded-full bg-sunset-magenta/15 blur-[120px]" />
+          <div className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-sunset-gold/20 blur-[120px]" />
+          <Reveal className="relative max-w-sm px-6">
+            <div className="relative mx-auto mb-6 h-24 w-24">
+              <div className="absolute inset-0 rounded-3xl bg-sunset opacity-30 blur-2xl" />
+              <div className="glass-strong relative flex h-24 w-24 animate-float items-center justify-center rounded-3xl">
                 <BotlifyMark size={56} className="drop-shadow" />
               </div>
             </div>
-            <p className="text-ink-900 font-black text-xl tracking-tight">
-              Every guest, every channel
+            <p className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900">
+              Every guest,{" "}
+              <span className="font-serif font-normal italic">every channel</span>
             </p>
-            <p className="text-ink-500 text-sm mt-2 leading-relaxed">
+            <p className="mt-2 text-sm leading-relaxed text-ink-500">
               Pick a conversation on the left to reply, take over from the AI,
               tag, and resolve — new messages slide in live.
             </p>
             {connected.length > 0 && (
-              <div className="mt-5 flex items-center justify-center gap-1.5 flex-wrap">
-                {connected.map((k) => {
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
+                {connected.map((k, i) => {
                   const m = channelMeta(k);
                   return (
-                    <span
+                    <motion.span
                       key={k}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ ...spring, delay: 0.1 + i * 0.05 }}
+                      whileHover={{ y: -2 }}
                       className={clsx(
-                        "inline-flex items-center gap-1.5 text-[11px] font-bold rounded-full px-2.5 py-1 shadow-sm",
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm",
                         m.tint,
                       )}
                     >
-                      <m.Mark className="w-3 h-3" />
+                      <m.Mark className="h-3 w-3" />
                       {m.shortName}
-                    </span>
+                    </motion.span>
                   );
                 })}
               </div>
             )}
-            <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               {["AI answers guests", "Take over any chat", "Booking context"].map(
                 (f) => (
                   <span
                     key={f}
-                    className="text-[11px] font-semibold text-ink-600 bg-white border border-ink-100 rounded-full px-3 py-1 shadow-sm"
+                    className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-ink-600 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]"
                   >
                     {f}
                   </span>
                 ),
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
       )}
     </div>
@@ -864,47 +948,66 @@ function Bubble({ msg }) {
   const isBot = msg.sentBy === "bot" || msg.metadata?.triggerType;
   if (msg.isInternalNote) {
     return (
-      <div className="flex justify-center">
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-1.5 rounded-2xl max-w-[80%] text-center shadow-sm">
+      <motion.div
+        layout="position"
+        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={spring}
+        className="flex justify-center"
+      >
+        <div className="max-w-[80%] rounded-2xl bg-amber-50/90 px-3 py-1.5 text-center text-xs text-amber-800 ring-1 ring-inset ring-amber-300/50 shadow-[inset_0_1px_0_#fff]">
           📝 {msg.text}
         </div>
-      </div>
+      </motion.div>
     );
   }
   return (
-    <div className={`flex ${out ? "justify-end" : "justify-start"}`}>
+    <motion.div
+      layout="position"
+      initial={{ opacity: 0, y: 12, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={spring}
+      style={{ transformOrigin: out ? "100% 100%" : "0% 100%" }}
+      className={`flex ${out ? "justify-end" : "justify-start"}`}
+    >
       <div
         className={clsx(
-          "max-w-[80%] sm:max-w-[70%] px-3.5 py-2.5 text-sm",
+          "relative max-w-[82%] overflow-hidden px-3.5 py-2.5 text-sm sm:max-w-[70%]",
           out
-            ? "bg-brand-500 text-white rounded-2xl rounded-br-md shadow-md shadow-brand-500/20"
-            : "bg-white text-ink-800 border border-ink-100 rounded-2xl rounded-bl-md shadow-sm",
+            ? "rounded-2xl rounded-br-md bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(0,0,0,0.06),0_10px_24px_-12px_rgba(255,61,119,0.55)]"
+            : "rounded-2xl rounded-bl-md bg-white/85 text-ink-800 ring-1 ring-ink-900/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_#fff,0_4px_14px_-8px_rgba(15,23,42,0.18)]",
         )}
       >
+        {out && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent"
+          />
+        )}
         {msg.type === "image" && msg.mediaUrl && (
           <img
             src={msg.mediaUrl}
             alt=""
-            className="rounded-[14px] max-w-full mb-1"
+            className="relative mb-1 max-w-full rounded-[14px]"
           />
         )}
-        <p className="leading-relaxed whitespace-pre-wrap">
+        <p className="relative whitespace-pre-wrap leading-relaxed">
           {msg.text || msg.caption || ""}
         </p>
         <div
           className={clsx(
-            "flex items-center gap-1 text-[10px] mt-1",
-            out ? "text-white/70" : "text-ink-400",
+            "relative mt-1 flex items-center gap-1 text-[10px] tabular-nums",
+            out ? "text-white/75" : "text-ink-400",
           )}
         >
           {isBot && out && (
             <span className="inline-flex items-center gap-0.5 font-semibold">
-              <Sparkles className="w-2.5 h-2.5" /> AI ·
+              <Sparkles className="h-2.5 w-2.5" /> AI ·
             </span>
           )}
           <span>{dayjs(msg.createdAt).format("h:mm A")}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

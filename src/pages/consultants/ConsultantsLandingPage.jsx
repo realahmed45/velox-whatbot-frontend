@@ -15,6 +15,7 @@ import {
   KeyRound,
   TrendingUp,
 } from "lucide-react";
+import { Aurora, Magnetic, NumberTicker, Reveal, Spotlight, Tilt } from "@/components/fx";
 
 export default function ConsultantsLandingPage() {
   const token = useAuthStore((s) => s.token);
@@ -23,62 +24,72 @@ export default function ConsultantsLandingPage() {
     : "/register?redirect=/dashboard/consultant";
 
   return (
-    <div className="bg-white">
+    <div className="relative isolate overflow-hidden bg-night-950 text-white grain">
+      <Aurora variant="dark" />
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[90vh] bg-dot-grid-dark mask-fade-b opacity-60" />
+
       {/* Hero */}
-      <section className="relative overflow-hidden bg-ink-950 text-white">
-        <div className="pointer-events-none absolute -top-32 -left-24 w-[26rem] h-[26rem] rounded-full bg-brand-500/25 blur-[120px]" />
-        <div className="pointer-events-none absolute -bottom-32 -right-24 w-[22rem] h-[22rem] rounded-full bg-amber-500/15 blur-[120px]" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-brand-200">
-            <HandCoins className="w-3.5 h-3.5" /> Botlify Consultant Program
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-6xl font-black tracking-tighter leading-[1.05]">
-            Earn <span className="text-brand-500">20% of Botlify's revenue</span>{" "}
-            from every hotel you sign.
-          </h1>
-          <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto">
-            For 12 full months, on everything — subscriptions and booking
-            commissions. Walk into hotels, show them every booking channel in one place,
-            and get paid monthly for every one that signs up with your code.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to={cta}
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition shadow-glow"
-            >
-              Become a consultant <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/pricing"
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl border border-white/20 text-white font-bold text-[15px] hover:bg-white/10 transition"
-            >
-              See what hotels pay
-            </Link>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/50">
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-brand-400" /> No cost to join
+      <section className="relative">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 sm:pt-28 sm:pb-24 text-center">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl text-xs font-semibold text-white/80">
+              <HandCoins className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} /> Botlify Consultant Program
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-brand-400" /> Paid monthly to your bank
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-brand-400" /> Unlimited hotels
-            </span>
-          </div>
+          </Reveal>
+          <Reveal delay={0.06}>
+            <h1 className="mt-6 font-display text-[2.6rem] sm:text-6xl md:text-7xl font-semibold tracking-[-0.05em] leading-[0.98]">
+              Earn <span className="text-sunset">20% of Botlify's revenue</span>{" "}
+              from every hotel you{" "}
+              <span className="font-serif italic font-normal tracking-[-0.02em]">sign.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <p className="mt-6 text-base sm:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
+              For 12 full months, on everything — subscriptions and booking
+              commissions. Walk into hotels, show them every booking channel in one place,
+              and get paid monthly for every one that signs up with your code.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Magnetic strength={0.3}>
+                <Link to={cta} className="group btn-primary px-7 py-4 text-[15px]">
+                  Become a consultant{" "}
+                  <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                </Link>
+              </Magnetic>
+              <Link to="/pricing" className="btn-glass-dark px-7 py-4 text-[15px]">
+                See what hotels pay
+              </Link>
+            </div>
+          </Reveal>
+          <Reveal delay={0.24}>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/50">
+              {["No cost to join", "Paid monthly to your bank", "Unlimited hotels"].map((t) => (
+                <span key={t} className="inline-flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={2.2} /> {t}
+                </span>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* How it works */}
-      <section className="py-16 sm:py-24">
+      <section className="relative py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="inline-block px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-[11px] font-bold uppercase tracking-wider text-brand-600">
-              How it works
-            </span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-ink-950">
-              Four steps to your first payout.
-            </h2>
+            <Reveal>
+              <span className="inline-block px-3 py-1 rounded-full bg-white/[0.06] ring-1 ring-white/10 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                How it works
+              </span>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <h2 className="mt-4 font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] leading-[1.02]">
+                Four steps to your first{" "}
+                <span className="font-serif italic font-normal">payout.</span>
+              </h2>
+            </Reveal>
           </div>
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
@@ -102,21 +113,20 @@ export default function ConsultantsLandingPage() {
                 title: "4 · Get paid monthly",
                 desc: "20% of everything Botlify earns from your hotels, for 12 months each.",
               },
-            ].map((s) => {
+            ].map((s, i) => {
               const Icon = s.icon;
               return (
-                <div
-                  key={s.title}
-                  className="rounded-2xl border border-ink-100 bg-white p-6 shadow-card"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <p className="font-black text-ink-900">{s.title}</p>
-                  <p className="text-sm text-ink-500 mt-1.5 leading-relaxed">
-                    {s.desc}
-                  </p>
-                </div>
+                <Reveal key={s.title} delay={i * 0.07} className="h-full">
+                  <Spotlight className="card-dark group h-full p-6 transition-transform duration-500 ease-spring hover:-translate-y-1">
+                    <div className="w-11 h-11 rounded-xl bg-white/[0.07] ring-1 ring-white/10 text-sunset-gold flex items-center justify-center mb-5 transition-all duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg] group-hover:bg-sunset group-hover:text-white">
+                      <Icon className="w-5 h-5" strokeWidth={1.8} />
+                    </div>
+                    <p className="font-display font-semibold tracking-[-0.02em] text-white">{s.title}</p>
+                    <p className="text-sm text-white/55 mt-1.5 leading-relaxed">
+                      {s.desc}
+                    </p>
+                  </Spotlight>
+                </Reveal>
               );
             })}
           </div>
@@ -124,84 +134,109 @@ export default function ConsultantsLandingPage() {
       </section>
 
       {/* Earnings example */}
-      <section className="py-16 sm:py-20 bg-ink-50/50 border-y border-ink-100">
+      <section className="relative py-16 sm:py-24 border-y border-white/[0.06] bg-white/[0.015]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
-              <span className="inline-block px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-[11px] font-bold uppercase tracking-wider text-brand-600">
-                Your earnings
-              </span>
-              <h2 className="mt-4 text-3xl font-black tracking-tight text-ink-950">
-                It adds up — fast.
-              </h2>
-              <p className="mt-3 text-ink-600 leading-relaxed">
-                Hotels pay a monthly subscription plus a 10% commission on
-                bookings the AI closes. You get 20% of all of it. Sign a few
-                hotels a month and your share keeps stacking for a year per
-                hotel.
-              </p>
-              <ul className="mt-5 space-y-2.5">
+              <Reveal>
+                <span className="inline-block px-3 py-1 rounded-full bg-white/[0.06] ring-1 ring-white/10 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  Your earnings
+                </span>
+              </Reveal>
+              <Reveal delay={0.06}>
+                <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-[-0.04em]">
+                  It adds up —{" "}
+                  <span className="font-serif italic font-normal">fast.</span>
+                </h2>
+              </Reveal>
+              <Reveal delay={0.1}>
+                <p className="mt-3 text-white/60 leading-relaxed">
+                  Hotels pay a monthly subscription plus a 10% commission on
+                  bookings the AI closes. You get 20% of all of it. Sign a few
+                  hotels a month and your share keeps stacking for a year per
+                  hotel.
+                </p>
+              </Reveal>
+              <ul className="mt-6 space-y-2.5">
                 {[
                   "20% of subscription revenue",
                   "20% of Botlify's booking commissions",
                   "12 months per hotel, from the day they sign",
                   "Track everything live in your dashboard",
-                ].map((p) => (
-                  <li
-                    key={p}
-                    className="flex items-center gap-2.5 text-sm font-medium text-ink-800"
-                  >
-                    <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3" />
+                ].map((p, i) => (
+                  <Reveal as="li" key={p} delay={0.12 + i * 0.05} y={12}>
+                    <span className="flex items-center gap-2.5 text-sm font-medium text-white/85">
+                      <span className="w-5 h-5 rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/25 text-emerald-300 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3" strokeWidth={2.6} />
+                      </span>
+                      {p}
                     </span>
-                    {p}
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-card">
-              <div className="flex items-center gap-2 text-ink-400 text-xs font-bold uppercase tracking-wider mb-4">
-                <TrendingUp className="w-4 h-4" /> Example · 10 hotels on the
-                $49 plan
-              </div>
-              {[
-                ["Subscriptions", "10 × $49 = $490/mo"],
-                ["Your 20% share", "$98 every month"],
-                ["+ booking commissions", "20% of those too"],
-              ].map(([l, v]) => (
-                <div
-                  key={l}
-                  className="flex items-center justify-between py-2.5 border-b border-ink-50 last:border-0 text-sm"
-                >
-                  <span className="text-ink-500">{l}</span>
-                  <span className="font-black text-ink-900">{v}</span>
+            <Reveal delay={0.1}>
+              <Tilt max={6} className="rounded-2xl">
+                <div className="card-dark p-6 sm:p-7">
+                  <div className="flex items-center gap-2 text-white/45 text-[11px] font-semibold uppercase tracking-[0.12em] mb-5">
+                    <TrendingUp className="w-4 h-4 text-sunset-gold shrink-0" strokeWidth={1.8} /> Example · 10 hotels on the
+                    $49 plan
+                  </div>
+                  <div className="mb-5">
+                    <p className="font-display text-5xl font-semibold tracking-[-0.04em] text-sunset inline-block">
+                      <NumberTicker value={98} prefix="$" />
+                    </p>
+                    <p className="text-xs text-white/45 mt-1">your share, every month</p>
+                  </div>
+                  {[
+                    ["Subscriptions", "10 × $49 = $490/mo"],
+                    ["Your 20% share", "$98 every month"],
+                    ["+ booking commissions", "20% of those too"],
+                  ].map(([l, v]) => (
+                    <div
+                      key={l}
+                      className="flex items-center justify-between gap-3 py-3 border-b border-white/[0.07] last:border-0 text-sm"
+                    >
+                      <span className="text-white/55">{l}</span>
+                      <span className="font-semibold text-white tabular-nums text-right">{v}</span>
+                    </div>
+                  ))}
+                  <p className="mt-4 text-[11px] text-white/40">
+                    Illustrative example — your earnings depend on the hotels you
+                    sign and their booking volume.
+                  </p>
                 </div>
-              ))}
-              <p className="mt-3 text-[11px] text-ink-400">
-                Illustrative example — your earnings depend on the hotels you
-                sign and their booking volume.
-              </p>
-            </div>
+              </Tilt>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-24">
+      <section className="relative py-20 sm:py-28">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-ink-950">
-            Know hotels? Start earning.
-          </h2>
-          <p className="mt-3 text-ink-600">
-            Create your account, apply in two minutes, and get your referral
-            code.
-          </p>
-          <Link
-            to={cta}
-            className="mt-7 inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition shadow-glow"
-          >
-            Become a consultant <ArrowRight className="w-4 h-4" />
-          </Link>
+          <Reveal>
+            <h2 className="font-display text-4xl sm:text-6xl font-semibold tracking-[-0.05em] leading-[0.98]">
+              Know hotels?{" "}
+              <span className="font-serif italic font-normal text-sunset pr-1">Start earning.</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.06}>
+            <p className="mt-4 text-white/60">
+              Create your account, apply in two minutes, and get your referral
+              code.
+            </p>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <div className="mt-8 flex justify-center">
+              <Magnetic strength={0.3}>
+                <Link to={cta} className="group btn-primary px-8 py-4 text-[15px]">
+                  Become a consultant{" "}
+                  <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                </Link>
+              </Magnetic>
+            </div>
+          </Reveal>
         </div>
       </section>
     </div>

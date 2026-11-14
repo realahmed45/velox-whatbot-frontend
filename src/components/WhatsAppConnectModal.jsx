@@ -220,17 +220,17 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
             setView("choose");
             setError(null);
           }}
-          className="w-9 h-9 rounded-xl border border-ink-200 text-ink-500 hover:bg-ink-50 flex items-center justify-center flex-shrink-0"
+          className="btn-secondary group/back h-10 w-10 flex-shrink-0 rounded-xl p-0 text-ink-500"
           aria-label="Back"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/back:-translate-x-0.5" />
         </button>
       )}
-      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-        <WhatsAppMark className="w-6 h-6" />
+      <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-emerald-500 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-8px_rgba(16,185,129,0.7)]">
+        <WhatsAppMark className="h-6 w-6" />
       </div>
       <div className="min-w-0">
-        <h2 id="wa-connect-title" className="text-lg font-black text-ink-900">
+        <h2 id="wa-connect-title" className="text-lg font-display font-semibold tracking-[-0.02em] text-ink-900">
           {view === "buy"
             ? "Get a WhatsApp number"
             : view === "kyc"
@@ -250,7 +250,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink-950/50 p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-night-950/40 backdrop-blur-md p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="wa-connect-title"
@@ -259,12 +259,12 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-6 shadow-xl outline-none max-h-[92vh] overflow-y-auto"
+        className="glass-strong w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 outline-none max-h-[92vh] overflow-y-auto animate-pop-in"
       >
         {header}
 
         {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4 flex gap-2.5">
+          <div className="mb-4 flex gap-2.5 rounded-xl bg-rose-50 p-3 ring-1 ring-inset ring-rose-600/15 animate-pop-in">
             <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-rose-900">{error}</p>
           </div>
@@ -274,13 +274,13 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
         {view === "choose" && (
           <div className="space-y-3">
             {/* Path A — the common case */}
-            <div className="rounded-2xl border border-ink-100 p-4">
+            <div className="group rounded-2xl bg-white/60 p-4 shadow-[inset_0_1px_0_#fff] ring-1 ring-inset ring-ink-900/[0.07] transition duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-16px_rgba(255,61,119,0.35)]">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
                   <Smartphone className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-ink-900 text-[15px]">
+                  <p className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
                     My number is already on WhatsApp
                   </p>
                   <p className="text-sm text-ink-500 mt-1">
@@ -290,7 +290,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-ink-50 border border-ink-100 p-3 mt-3">
+              <div className="mt-3 rounded-xl bg-ink-900/[0.03] p-3 ring-1 ring-inset ring-ink-900/[0.06]">
                 <p className="text-xs text-ink-700 leading-relaxed">
                   <span className="font-bold text-ink-900">
                     One requirement:
@@ -304,7 +304,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                   type="button"
                   onClick={() => setShowBusinessHelp((v) => !v)}
                   aria-expanded={showBusinessHelp}
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700"
+                  className="mt-2 inline-flex items-center gap-1 rounded-md text-xs font-semibold text-[#E2541C] transition hover:text-sunset-magenta"
                 >
                   {showBusinessHelp ? (
                     <ChevronDown className="w-3.5 h-3.5" />
@@ -321,7 +321,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                       "It offers to move your existing chats across. Keep them, and you're done.",
                     ].map((step, i) => (
                       <li key={i} className="flex gap-2.5 text-xs text-ink-700">
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-ink-200 text-ink-700 font-bold text-[10px] flex items-center justify-center">
+                        <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-white text-[10px] font-semibold text-ink-700 ring-1 ring-ink-900/10">
                           {i + 1}
                         </span>
                         <span className="leading-relaxed">{step}</span>
@@ -342,7 +342,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                     "Scan a QR code from your WhatsApp Business app — no SMS code.",
                   ].map((step, i) => (
                     <li key={i} className="flex gap-2.5 text-xs text-ink-600">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-ink-100 text-ink-700 font-bold text-[10px] flex items-center justify-center">
+                      <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-sunset-soft text-[10px] font-semibold text-sunset-flame">
                         {i + 1}
                       </span>
                       <span className="leading-relaxed">{step}</span>
@@ -355,7 +355,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 type="button"
                 onClick={startOauth}
                 disabled={redirecting}
-                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 border border-ink-200 text-ink-800 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50 transition disabled:opacity-60"
+                className="btn-secondary mt-4 w-full text-sm disabled:opacity-60"
               >
                 {redirecting && <Loader2 className="w-4 h-4 animate-spin" />}
                 Connect my existing number
@@ -363,13 +363,13 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
             </div>
 
             {/* Path B */}
-            <div className="rounded-2xl border border-ink-100 p-4">
+            <div className="group rounded-2xl bg-white/60 p-4 shadow-[inset_0_1px_0_#fff] ring-1 ring-inset ring-ink-900/[0.07] transition duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-16px_rgba(255,61,119,0.35)]">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 flex items-center justify-center flex-shrink-0">
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-ink-900 text-[15px]">
+                  <p className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
                     I don't have WhatsApp on this number
                   </p>
                   <p className="text-sm text-ink-500 mt-1">
@@ -381,7 +381,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
               <button
                 type="button"
                 onClick={openBuy}
-                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
+                className="btn-primary mt-4 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5"
               >
                 Get a number for my hotel
               </button>
@@ -402,7 +402,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
           <div>
             {loadingCountries ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-7 h-7 text-brand-500 animate-spin" />
+                <Loader2 className="w-7 h-7 text-sunset-flame animate-spin" />
               </div>
             ) : countries.length === 0 ? (
               <div className="py-6 text-center">
@@ -416,7 +416,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 <button
                   type="button"
                   onClick={loadCountries}
-                  className="mt-5 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5"
+                  className="btn-primary mt-5 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Try again
@@ -434,7 +434,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                   id="wa-country"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
+                  className="input font-semibold"
                 >
                   {countries.map((c) => (
                     <option
@@ -455,7 +455,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                   </p>
                   {loadingNumbers ? (
                     <div className="flex items-center justify-center py-10">
-                      <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+                      <Loader2 className="w-6 h-6 text-sunset-flame animate-spin" />
                     </div>
                   ) : numbers.length === 0 ? (
                     <p className="text-sm text-ink-500 py-4">
@@ -480,8 +480,8 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                             onClick={() => setSelected(n.phoneNumber)}
                             className={`w-full flex items-center gap-3 rounded-xl border p-3 text-left transition ${
                               active
-                                ? "border-brand-500 bg-brand-500/5 ring-1 ring-brand-500"
-                                : "border-ink-100 hover:border-ink-200 hover:bg-ink-50"
+                                ? "border-sunset-flame bg-sunset-soft ring-1 ring-sunset-flame"
+                                : "border-ink-900/[0.07] hover:border-ink-200 hover:bg-ink-50"
                             }`}
                           >
                             <span className="flex-1 min-w-0">
@@ -502,7 +502,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                             <span
                               className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border ${
                                 active
-                                  ? "bg-brand-500 border-brand-500 text-white"
+                                  ? "bg-sunset border-sunset-flame text-white"
                                   : "border-ink-200"
                               }`}
                             >
@@ -516,7 +516,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 </div>
 
                 {/* Never surprise a hotelier with a charge. */}
-                <div className="rounded-xl bg-ink-50 border border-ink-100 p-3 mt-4">
+                <div className="mt-4 rounded-xl bg-ink-900/[0.03] p-3 ring-1 ring-inset ring-ink-900/[0.06]">
                   <p className="text-xs text-ink-700">
                     {shownPrice ? (
                       <>
@@ -537,7 +537,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                   type="button"
                   onClick={buy}
                   disabled={!country || buying || numbers.length === 0}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition disabled:opacity-60"
+                  className="btn-primary mt-4 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5 disabled:opacity-60"
                 >
                   {buying && <Loader2 className="w-4 h-4 animate-spin" />}
                   {buying ? "Setting up your number…" : "Get this number"}
@@ -558,7 +558,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
         {/* ── KYC — information, not failure ─────────────────────────────── */}
         {view === "kyc" && (
           <div className="py-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
+            <div className="flex gap-3 rounded-2xl bg-amber-50/90 p-4 ring-1 ring-inset ring-amber-600/20">
               <ShieldCheck className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-bold text-amber-900">
@@ -577,7 +577,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
                 href={kyc.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 w-full inline-flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition"
+                className="btn-primary mt-4 w-full inline-flex items-center justify-center gap-1.5 text-sm px-4 py-2.5"
               >
                 <ExternalLink className="w-4 h-4" />
                 Complete the identity check
@@ -586,7 +586,7 @@ export default function WhatsAppConnectModal({ from = "channels", onClose }) {
             <button
               type="button"
               onClick={() => onClose?.()}
-              className="mt-2 w-full border border-ink-200 text-ink-700 font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-ink-50"
+              className="btn-secondary mt-2 w-full text-sm px-4 py-2.5"
             >
               Done for now
             </button>

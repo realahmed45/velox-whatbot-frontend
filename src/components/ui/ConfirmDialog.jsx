@@ -5,9 +5,12 @@ import {
   createContext,
   useContext,
 } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 
 const ConfirmContext = createContext(null);
+
+const POP = { type: "spring", stiffness: 420, damping: 30 };
 
 /**
  * Provider — mount once near the top of the dashboard tree.
@@ -44,58 +47,70 @@ export function ConfirmProvider({ children }) {
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      {state && (
-        <div
-          className="fixed inset-0 z-[95] bg-ink-950/50 backdrop-blur-sm flex items-center justify-center p-4 animate-[fadeIn_.12s_ease-out]"
-          onClick={() => close(false)}
-        >
-          <div
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-7 text-center animate-[popIn_.16s_cubic-bezier(.16,1,.3,1)]"
-            onClick={(e) => e.stopPropagation()}
-            role="alertdialog"
-            aria-modal="true"
+      <AnimatePresence>
+        {state && (
+          <motion.div
+            key="confirm"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-night-950/40 p-4 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => close(false)}
           >
-            <div
-              className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
-                state.danger
-                  ? "bg-rose-50 text-rose-500"
-                  : "bg-brand-50 text-brand-500"
-              }`}
+            <motion.div
+              className="glass-strong relative w-full max-w-md overflow-hidden rounded-3xl p-6 text-center sm:p-7"
+              initial={{ opacity: 0, scale: 0.94, y: 10, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+              exit={{ opacity: 0, scale: 0.96, y: 6, filter: "blur(4px)" }}
+              transition={POP}
+              onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
             >
-              <AlertTriangle className="w-7 h-7" />
-            </div>
-
-            <h3 className="text-lg font-black text-ink-900">
-              {state.title || "Are you sure?"}
-            </h3>
-            {state.description && (
-              <p className="text-sm text-ink-500 mt-2 leading-relaxed">
-                {state.description}
-              </p>
-            )}
-
-            <div className="flex flex-col-reverse sm:flex-row gap-2.5 mt-6">
-              <button
-                onClick={() => close(false)}
-                className="flex-1 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700 hover:bg-ink-50 transition"
-              >
-                {state.cancelLabel || "Cancel"}
-              </button>
-              <button
-                onClick={() => close(true)}
-                autoFocus
-                className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition ${
+              {/* soft wash behind the icon */}
+              <div
+                aria-hidden
+                className={`pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl ${
+                  state.danger ? "bg-rose-400/25" : "bg-sunset opacity-25"
+                }`}
+              />
+              <motion.div
+                initial={{ scale: 0.6, rotate: -12 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 14, delay: 0.05 }}
+                className={`relative mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl ring-1 ring-inset ${
                   state.danger
-                    ? "bg-rose-500 hover:bg-rose-600"
-                    : "bg-brand-500 hover:bg-brand-600"
+                    ? "bg-rose-50 text-rose-500 ring-rose-500/15"
+                    : "bg-sunset-soft text-sunset-flame ring-sunset-flame/15"
                 }`}
               >
-                {state.confirmLabel || "Confirm"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
+              </motion.div>
+
+              <h3 className="relative font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
+                {state.title || "Are you sure?"}
+              </h3>
+              {state.description && (
+                <p className="relative mt-2 text-sm leading-relaxed text-ink-500">{state.description}</p>
+              )}
+
+              <div className="relative mt-6 flex flex-col-reverse gap-2.5 sm:flex-row">
+                <button onClick={() => close(false)} className="btn-secondary flex-1">
+                  {state.cancelLabel || "Cancel"}
+                </button>
+                <button
+                  onClick={() => close(true)}
+                  autoFocus
+                  className={`flex-1 ${state.danger ? "btn-danger" : "btn-primary"}`}
+                >
+                  {state.confirmLabel || "Confirm"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ConfirmContext.Provider>
   );
 }

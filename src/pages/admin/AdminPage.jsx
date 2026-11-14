@@ -8,6 +8,14 @@
  * subscriptions, and a live event timeline.
  */
 import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import {
+  Aurora,
+  NumberTicker,
+  Reveal,
+  SlidingTabs,
+  Spotlight,
+} from "@/components/fx";
 import axios from "axios";
 import DriversPanel from "@/components/DriversPanel";
 import AdminPickups from "./AdminPickups";
@@ -116,7 +124,7 @@ const BOOKING_STATUS_CLS = {
 function Pill({ children, cls = "bg-ink-100 text-ink-600" }) {
   return (
     <span
-      className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${cls}`}
+      className={`inline-block text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ring-inset ring-ink-900/[0.06] ${cls}`}
     >
       {children}
     </span>
@@ -157,58 +165,62 @@ function AdminLogin({ onSuccess }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink-950 p-4">
-      <form
+    <div className="relative isolate min-h-screen flex items-center justify-center bg-night-950 p-4 overflow-hidden grain">
+      <Aurora variant="dark" />
+      <motion.form
         onSubmit={submit}
-        className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-7"
+        initial={{ opacity: 0, y: 20, scale: 0.97, filter: "blur(8px)" }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        className="card-dark w-full max-w-sm p-7"
       >
-        <div className="flex items-center gap-2.5 mb-6">
-          <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-3 mb-6">
+          <span className="w-10 h-10 rounded-xl bg-sunset flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-10px_rgba(255,61,119,0.8)]">
+            <ShieldCheck className="w-5 h-5 text-white" strokeWidth={1.8} />
           </span>
           <div>
-            <h1 className="font-black text-lg text-ink-900 leading-none">
+            <h1 className="font-display font-semibold tracking-[-0.02em] text-lg text-white leading-none">
               Botlify Admin
             </h1>
-            <p className="text-xs text-ink-400 mt-0.5">Founder access only</p>
+            <p className="text-xs text-white/45 mt-1">Founder access only</p>
           </div>
         </div>
         {error && (
-          <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <div className="mb-4 text-sm text-rose-200 bg-rose-500/10 ring-1 ring-rose-400/25 rounded-xl px-3 py-2">
             {error}
           </div>
         )}
-        <label className="block text-xs font-semibold text-ink-600 mb-1">
+        <label className="block text-[13px] font-medium text-white/70 mb-1.5">
           Email
         </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm mb-3 outline-none focus:border-brand-400"
+          className={`${DARK_FIELD} mb-3`}
           required
         />
-        <label className="block text-xs font-semibold text-ink-600 mb-1">
+        <label className="block text-[13px] font-medium text-white/70 mb-1.5">
           Password
         </label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm mb-5 outline-none focus:border-brand-400"
+          className={`${DARK_FIELD} mb-5`}
           required
         />
-        <button
-          disabled={loading}
-          className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white font-bold text-sm rounded-xl py-2.5 flex items-center justify-center gap-2"
-        >
+        <button disabled={loading} className="btn-primary w-full h-11">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           Sign in
         </button>
-      </form>
+      </motion.form>
     </div>
   );
 }
+
+const DARK_FIELD =
+  "block w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 bg-white/[0.06] ring-1 ring-white/10 outline-none transition-[box-shadow,background-color] duration-300 hover:ring-white/20 focus:bg-white/[0.09] focus:ring-2 focus:ring-sunset-flame/60";
 
 /* ── Stage badge ────────────────────────────────────────────────────── */
 const STAGE_META = {
@@ -220,13 +232,13 @@ const STAGE_META = {
   paying: { label: "Paying", cls: "bg-emerald-100 text-emerald-700" },
   canceling: { label: "Canceling", cls: "bg-orange-100 text-orange-700" },
   cancelled: { label: "Cancelled", cls: "bg-red-100 text-red-700" },
-  lifetime: { label: "Lifetime", cls: "bg-brand-100 text-brand-700" },
+  lifetime: { label: "Lifetime", cls: "bg-sunset-soft text-sunset-flame" },
 };
 function StageBadge({ stage }) {
   const m = STAGE_META[stage] || STAGE_META.signed_up;
   return (
     <span
-      className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${m.cls}`}
+      className={`inline-block text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ring-inset ring-ink-900/[0.06] ${m.cls}`}
     >
       {m.label}
     </span>
@@ -319,28 +331,36 @@ function AdminDashboard({ onLogout }) {
   const f = overview?.funnel || {};
 
   return (
-    <div className="min-h-screen bg-ink-50">
+    <div className="relative isolate min-h-screen bg-[var(--canvas)]">
+      <Aurora variant="light" fixed />
+      <div aria-hidden className="fixed inset-0 -z-10 bg-dot-grid opacity-50 pointer-events-none" />
       {/* top bar */}
-      <div className="bg-ink-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-night-950/85 backdrop-blur-xl text-white shadow-[inset_0_-1px_0_rgba(255,255,255,0.06)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-white" />
+            <span className="w-8 h-8 rounded-lg bg-sunset flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+              <ShieldCheck className="w-4 h-4 text-white" strokeWidth={1.8} />
             </span>
-            <span className="font-black">Botlify Admin</span>
+            <span className="font-display font-semibold tracking-[-0.02em]">
+              Botlify <span className="font-serif italic font-normal">Admin</span>
+            </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={load}
-              className="text-xs font-semibold text-ink-300 hover:text-white flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/10"
+              className="group text-xs font-medium text-white/60 hover:text-white flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-white/10 active:scale-95 transition duration-300 ease-spring"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              <RefreshCw
+                className={`w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:rotate-180 ${loading ? "animate-spin" : ""}`}
+              />{" "}
+              Refresh
             </button>
             <button
               onClick={logout}
-              className="text-xs font-semibold text-ink-300 hover:text-white flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/10"
+              className="group text-xs font-medium text-white/60 hover:text-white flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-white/10 active:scale-95 transition duration-300 ease-spring"
             >
-              <LogOut className="w-3.5 h-3.5" /> Sign out
+              <LogOut className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:translate-x-0.5" />{" "}
+              Sign out
             </button>
           </div>
         </div>
@@ -348,42 +368,52 @@ function AdminDashboard({ onLogout }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {loading && !overview ? (
-          <div className="py-24 text-center text-ink-400">
-            <Loader2 className="w-6 h-6 animate-spin inline" />
+          <div aria-busy="true">
+            <div className="h-11 w-full max-w-2xl rounded-2xl bg-ink-900/[0.06] animate-pulse mb-4" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-5">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-[104px] rounded-2xl bg-ink-900/[0.06] animate-pulse" />
+              ))}
+            </div>
+            <div className="h-36 rounded-2xl bg-ink-900/[0.06] animate-pulse" />
+            <span className="sr-only">
+              <Loader2 className="w-6 h-6 animate-spin inline" />
+              Loading
+            </span>
           </div>
         ) : (
           <>
             {/* tabs */}
-            <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-4 overflow-x-auto">
-              {[
-                { id: "overview", label: "Overview" },
+            <div className="mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+              <SlidingTabs
+                size="sm"
+                value={tab}
+                onChange={setTab}
+                className="whitespace-nowrap"
+                items={[
+                { value: "overview", label: "Overview" },
                 {
-                  id: "hotels",
+                  value: "hotels",
                   label: `Hotels${stats?.hotels?.total != null ? ` (${stats.hotels.total})` : ""}`,
                 },
-                { id: "activity", label: `Users (${rows.length})` },
-                { id: "timeline", label: `Timeline (${events.length})` },
-                { id: "subs", label: `Subs (${subs.length})` },
+                { value: "activity", label: `Users (${rows.length})` },
+                { value: "timeline", label: `Timeline (${events.length})` },
+                { value: "subs", label: `Subs (${subs.length})` },
                 {
-                  id: "consultants",
+                  value: "consultants",
                   label: `Consultants${stats?.consultants?.total != null ? ` (${stats.consultants.total})` : ""}`,
                 },
-                { id: "drivers", label: "Drivers" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    tab === t.id
-                      ? "bg-white text-ink-900 shadow-sm"
-                      : "text-ink-500 hover:text-ink-700"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+                { value: "drivers", label: "Drivers" },
+              ]}
+              />
             </div>
 
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            >
             {/* ── OVERVIEW ── */}
             {tab === "overview" && (
               <>
@@ -416,8 +446,8 @@ function AdminDashboard({ onLogout }) {
             </div>
 
             {/* funnel */}
-            <div className="bg-white rounded-2xl border border-ink-100 p-4 mb-6">
-              <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">
+            <Reveal className="card p-4 mb-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 mb-3">
                 Conversion funnel
               </p>
               <div className="flex flex-wrap gap-2">
@@ -435,22 +465,22 @@ function AdminDashboard({ onLogout }) {
                 ].map(([label, val, cls], i, arr) => (
                   <div key={label} className="flex items-center gap-2">
                     <div
-                      className={`rounded-xl px-3.5 py-2.5 ${cls} min-w-[92px]`}
+                      className={`rounded-xl px-3.5 py-2.5 ring-1 ring-inset ring-ink-900/[0.05] ${cls} min-w-[92px] transition-transform duration-500 ease-spring hover:-translate-y-0.5`}
                     >
-                      <div className="text-2xl font-black leading-none">
-                        {val ?? 0}
+                      <div className="font-display text-2xl font-semibold leading-none tabular-nums">
+                        <NumberTicker value={val ?? 0} />
                       </div>
-                      <div className="text-[10px] font-bold uppercase tracking-wide mt-1">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide mt-1">
                         {label}
                       </div>
                     </div>
                     {i < arr.length - 1 && (
-                      <span className="text-ink-300 font-black">›</span>
+                      <span className="text-ink-300 font-semibold">›</span>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
 
                 <HotelPlatformStats stats={stats} />
               </>
@@ -469,7 +499,7 @@ function AdminDashboard({ onLogout }) {
                       value={q}
                       onChange={(e) => searchActivity(e.target.value, stage)}
                       placeholder="Search name or email…"
-                      className="w-full rounded-xl border border-ink-200 pl-9 pr-3 py-2 text-sm outline-none focus:border-brand-400"
+                      className="input pl-9 py-2"
                     />
                   </div>
                   <select
@@ -478,7 +508,7 @@ function AdminDashboard({ onLogout }) {
                       setStage(e.target.value);
                       searchActivity(q, e.target.value);
                     }}
-                    className="rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                    className="input !w-auto py-2"
                   >
                     <option value="">All stages</option>
                     <option value="signed_up">Signed up</option>
@@ -492,10 +522,10 @@ function AdminDashboard({ onLogout }) {
                     <option value="lifetime">Lifetime</option>
                   </select>
                 </div>
-                <div className="bg-white rounded-2xl border border-ink-100 overflow-x-auto">
+                <div className="card overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                      <tr className="text-left text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur sticky top-0 z-[1]">
                         <th className="px-3 py-2.5">#</th>
                         <th className="px-3 py-2.5">User</th>
                         <th className="px-3 py-2.5">Stage</th>
@@ -511,7 +541,7 @@ function AdminDashboard({ onLogout }) {
                       {rows.map((r) => (
                         <tr
                           key={r.userId}
-                          className="border-b border-ink-50 hover:bg-ink-50/60"
+                          className="border-b border-ink-900/[0.05] hover:bg-white/80 transition-colors"
                         >
                           <td className="px-3 py-2.5 text-ink-400 font-mono text-xs">
                             {r.signupNumber ?? "—"}
@@ -598,7 +628,7 @@ function AdminDashboard({ onLogout }) {
 
             {/* ── TIMELINE ── */}
             {tab === "timeline" && (
-              <div className="bg-white rounded-2xl border border-ink-100 divide-y divide-ink-50">
+              <div className="card divide-y divide-ink-900/[0.05]">
                 {events.map((e) => {
                   const Icon = EVENT_ICON[e.type] || Activity;
                   return (
@@ -606,7 +636,7 @@ function AdminDashboard({ onLogout }) {
                       key={e._id}
                       className="flex items-start gap-3 px-4 py-3"
                     >
-                      <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                      <span className="w-8 h-8 rounded-lg bg-sunset-soft text-sunset-flame flex items-center justify-center shrink-0">
                         <Icon className="w-4 h-4" />
                       </span>
                       <div className="flex-1 min-w-0">
@@ -637,10 +667,10 @@ function AdminDashboard({ onLogout }) {
                 of their own. Same panel the hotel uses for its drivers. */}
             {tab === "drivers" && (
               <div className="space-y-6">
-                <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
+                <div className="card p-5 sm:p-6">
                   <AdminPickups client={adminApi} drivers={platformDrivers} />
                 </div>
-                <div className="bg-white rounded-2xl border border-ink-100 p-5 sm:p-6">
+                <div className="card p-5 sm:p-6">
                   <DriversPanel
                     scope="platform"
                     client={adminApi}
@@ -652,10 +682,10 @@ function AdminDashboard({ onLogout }) {
 
             {/* ── SUBS ── */}
             {tab === "subs" && (
-              <div className="bg-white rounded-2xl border border-ink-100 overflow-x-auto">
+              <div className="card overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur sticky top-0 z-[1]">
                       <th className="px-3 py-2.5">Workspace</th>
                       <th className="px-3 py-2.5">IG</th>
                       <th className="px-3 py-2.5">Plan</th>
@@ -668,7 +698,7 @@ function AdminDashboard({ onLogout }) {
                     {subs.map((s) => (
                       <tr
                         key={s.id}
-                        className="border-b border-ink-50 hover:bg-ink-50/60"
+                        className="border-b border-ink-900/[0.05] hover:bg-white/80 transition-colors"
                       >
                         <td className="px-3 py-2.5 font-medium text-ink-900">
                           {s.name}
@@ -700,6 +730,7 @@ function AdminDashboard({ onLogout }) {
                 </table>
               </div>
             )}
+            </motion.div>
           </>
         )}
       </div>
@@ -748,7 +779,7 @@ function HotelPlatformStats({ stats }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         {/* Top hotels by revenue */}
-        <div className="bg-white rounded-2xl border border-ink-100 p-4">
+        <div className="card p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">
             Top hotels by revenue ({stats.period})
           </p>
@@ -757,13 +788,13 @@ function HotelPlatformStats({ stats }) {
               No bookings this month yet.
             </p>
           ) : (
-            <div className="divide-y divide-ink-50">
+            <div className="divide-y divide-ink-900/[0.05]">
               {stats.topHotels.map((t, i) => (
                 <div
                   key={t.workspaceId}
                   className="flex items-center gap-3 py-2"
                 >
-                  <span className="w-6 h-6 rounded-lg bg-ink-100 text-ink-500 text-xs font-black flex items-center justify-center shrink-0">
+                  <span className="w-6 h-6 rounded-lg bg-ink-100 text-ink-500 text-xs font-semibold tabular-nums flex items-center justify-center shrink-0">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -791,7 +822,7 @@ function HotelPlatformStats({ stats }) {
         </div>
 
         {/* Bookings by source + commission ledger summary */}
-        <div className="bg-white rounded-2xl border border-ink-100 p-4">
+        <div className="card p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">
             Bookings by source ({stats.period})
           </p>
@@ -805,10 +836,10 @@ function HotelPlatformStats({ stats }) {
                   className={`rounded-xl px-3 py-2 ${
                     s.isOta
                       ? "bg-ink-100 text-ink-700"
-                      : "bg-brand-50 text-brand-700"
+                      : "bg-sunset-soft text-sunset-flame"
                   }`}
                 >
-                  <div className="text-lg font-black leading-none">
+                  <div className="font-display text-lg font-semibold leading-none tabular-nums">
                     {s.bookings}
                   </div>
                   <div className="text-[10px] font-bold uppercase tracking-wide mt-1">
@@ -939,13 +970,13 @@ function HotelsAdmin() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search hotel, owner, city…"
-            className="w-full rounded-xl border border-ink-200 pl-9 pr-3 py-2 text-sm outline-none focus:border-brand-400"
+            className="input pl-9 py-2"
           />
         </div>
         <select
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
-          className="rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          className="input !w-auto py-2"
         >
           <option value="">All plans</option>
           <option value="hotel_pro">Hotel Pro</option>
@@ -955,7 +986,7 @@ function HotelsAdmin() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-ink-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          className="input !w-auto py-2"
         >
           <option value="">All statuses</option>
           <option value="active">Active</option>
@@ -969,10 +1000,10 @@ function HotelsAdmin() {
         </span>
       </div>
 
-      <div className="bg-white rounded-2xl border border-ink-100 overflow-x-auto">
+      <div className="card overflow-x-auto">
         <table className="w-full text-sm min-w-[1100px]">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+            <tr className="text-left text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur sticky top-0 z-[1]">
               <th className="px-3 py-2.5">Hotel</th>
               <th className="px-3 py-2.5">Owner</th>
               <th className="px-3 py-2.5">Plan</th>
@@ -998,7 +1029,7 @@ function HotelsAdmin() {
                 <tr
                   key={h.workspaceId}
                   onClick={() => setSelected(h.workspaceId)}
-                  className="border-b border-ink-50 hover:bg-ink-50/60 cursor-pointer"
+                  className="border-b border-ink-900/[0.05] hover:bg-white/80 transition-colors cursor-pointer"
                 >
                   <td className="px-3 py-2.5">
                     <div className="font-semibold text-ink-900 flex items-center gap-1.5">
@@ -1137,7 +1168,7 @@ function HotelsAdmin() {
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="text-xs font-semibold text-ink-600 bg-white border border-ink-200 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="btn-secondary !px-3 !py-1.5 !text-xs disabled:opacity-40"
           >
             Previous
           </button>
@@ -1147,7 +1178,7 @@ function HotelsAdmin() {
           <button
             disabled={page >= pages}
             onClick={() => setPage((p) => p + 1)}
-            className="text-xs font-semibold text-ink-600 bg-white border border-ink-200 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="btn-secondary !px-3 !py-1.5 !text-xs disabled:opacity-40"
           >
             Next
           </button>
@@ -1168,14 +1199,22 @@ function HotelsAdmin() {
 function Drawer({ title, subtitle, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div
-        className="flex-1 bg-ink-950/40 backdrop-blur-[1px]"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
+        className="flex-1 bg-night-950/40 backdrop-blur-md"
         onClick={onClose}
       />
-      <div className="w-full max-w-3xl bg-ink-50 h-full overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 z-10 bg-white border-b border-ink-100 px-5 py-3.5 flex items-start justify-between gap-3">
+      <motion.div
+        initial={{ x: 48, opacity: 0, filter: "blur(4px)" }}
+        animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+        transition={{ type: "spring", stiffness: 420, damping: 36 }}
+        className="w-full max-w-3xl bg-[var(--canvas)] h-full overflow-y-auto shadow-[-24px_0_80px_-24px_rgba(6,5,10,0.45)]"
+      >
+        <div className="sticky top-0 z-10 glass-strong px-5 py-3.5 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="font-black text-ink-900 text-lg leading-tight truncate">
+            <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-lg leading-tight truncate">
               {title}
             </h2>
             {subtitle && (
@@ -1184,23 +1223,24 @@ function Drawer({ title, subtitle, onClose, children }) {
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 text-ink-400 hover:text-ink-900 rounded-lg p-1.5 hover:bg-ink-100"
+            aria-label="Close"
+            className="group shrink-0 text-ink-400 hover:text-ink-900 rounded-lg p-2 hover:bg-ink-900/[0.05] active:scale-90 transition duration-300 ease-spring"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 transition-transform duration-500 ease-spring group-hover:rotate-90" />
           </button>
         </div>
         <div className="p-4 sm:p-5 space-y-4">{children}</div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 function Section({ icon: Icon, title, right, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-ink-100 overflow-hidden">
-      <div className="px-4 py-3 border-b border-ink-100 flex items-center gap-2">
-        {Icon && <Icon className="w-4 h-4 text-brand-500" />}
-        <span className="font-bold text-ink-900 text-sm">{title}</span>
+    <div className="card overflow-hidden">
+      <div className="px-4 py-3 border-b border-ink-900/[0.06] flex items-center gap-2">
+        {Icon && <Icon className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />}
+        <span className="font-display font-semibold tracking-[-0.01em] text-ink-900 text-sm">{title}</span>
         {right && <span className="ml-auto text-xs text-ink-400">{right}</span>}
       </div>
       <div className="p-4">{children}</div>
@@ -1257,11 +1297,11 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
     >
       {loading && (
         <div className="py-20 text-center text-ink-400">
-          <Loader2 className="w-6 h-6 animate-spin inline" />
+          <Loader2 className="w-6 h-6 animate-spin inline text-sunset-flame" />
         </div>
       )}
       {error && !loading && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+        <div className="text-sm text-rose-700 bg-rose-50/80 ring-1 ring-inset ring-rose-200 rounded-xl px-3 py-2">
           {error}
         </div>
       )}
@@ -1455,7 +1495,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                   <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
                     Policies
                   </p>
-                  <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-50 rounded-xl p-3">
+                  <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-900/[0.03] ring-1 ring-inset ring-ink-900/[0.05] rounded-xl p-3">
                     {p.policies}
                   </p>
                 </>
@@ -1475,7 +1515,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs min-w-[620px]">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
                       <th className="px-2 py-1.5">Room</th>
                       <th className="px-2 py-1.5">Units</th>
                       <th className="px-2 py-1.5">Occupancy</th>
@@ -1487,7 +1527,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                   </thead>
                   <tbody>
                     {d.roomTypes.map((r) => (
-                      <tr key={r.id} className="border-b border-ink-50">
+                      <tr key={r.id} className="border-b border-ink-900/[0.05]">
                         <td className="px-2 py-1.5">
                           <div className="font-semibold text-ink-900">
                             {r.name}
@@ -1622,7 +1662,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs min-w-[720px]">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
                       <th className="px-2 py-1.5">Code</th>
                       <th className="px-2 py-1.5">Guest</th>
                       <th className="px-2 py-1.5">Stay</th>
@@ -1635,7 +1675,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                   </thead>
                   <tbody>
                     {d.bookings.recent.map((b) => (
-                      <tr key={b.id} className="border-b border-ink-50">
+                      <tr key={b.id} className="border-b border-ink-900/[0.05]">
                         <td className="px-2 py-1.5 font-mono text-ink-700">
                           {b.code}
                         </td>
@@ -1661,7 +1701,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                             cls={
                               b.isOta
                                 ? "bg-ink-100 text-ink-600"
-                                : "bg-brand-100 text-brand-700"
+                                : "bg-sunset-soft text-sunset-flame"
                             }
                           >
                             {prettify(b.source)}
@@ -1710,10 +1750,10 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                     className={`rounded-xl px-3 py-2 min-w-[120px] ${
                       s.isOta
                         ? "bg-ink-100 text-ink-700"
-                        : "bg-brand-50 text-brand-700"
+                        : "bg-sunset-soft text-sunset-flame"
                     }`}
                   >
-                    <div className="text-lg font-black leading-none">
+                    <div className="font-display text-lg font-semibold leading-none tabular-nums">
                       {s.bookings}
                     </div>
                     <div className="text-[10px] font-bold uppercase tracking-wide mt-1">
@@ -1761,7 +1801,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs min-w-[560px]">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
                       <th className="px-2 py-1.5">Period</th>
                       <th className="px-2 py-1.5">Kind</th>
                       <th className="px-2 py-1.5">Type</th>
@@ -1772,7 +1812,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                   </thead>
                   <tbody>
                     {d.commissions.ledger.map((e) => (
-                      <tr key={e.id} className="border-b border-ink-50">
+                      <tr key={e.id} className="border-b border-ink-900/[0.05]">
                         <td className="px-2 py-1.5 font-mono">
                           {e.period || "—"}
                         </td>
@@ -1872,7 +1912,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                 <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
                   Brand voice / tone
                 </p>
-                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-50 rounded-xl p-3 mb-2">
+                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-900/[0.03] ring-1 ring-inset ring-ink-900/[0.05] rounded-xl p-3 mb-2">
                   {d.ai.brandVoice}
                 </p>
               </>
@@ -1882,7 +1922,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                 <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
                   AI role
                 </p>
-                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-50 rounded-xl p-3 mb-2">
+                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-900/[0.03] ring-1 ring-inset ring-ink-900/[0.05] rounded-xl p-3 mb-2">
                   {d.ai.aiRole}
                 </p>
               </>
@@ -1892,7 +1932,7 @@ function HotelDetailDrawer({ workspaceId, onClose }) {
                 <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
                   Guardrails
                 </p>
-                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-50 rounded-xl p-3">
+                <p className="text-xs text-ink-600 whitespace-pre-wrap bg-ink-900/[0.03] ring-1 ring-inset ring-ink-900/[0.05] rounded-xl p-3">
                   {d.ai.guardrails}
                 </p>
               </>
@@ -1988,14 +2028,14 @@ function ConsultantsAdmin() {
   if (loading)
     return (
       <div className="py-16 text-center text-ink-400">
-        <Loader2 className="w-6 h-6 animate-spin inline" />
+        <Loader2 className="w-6 h-6 animate-spin inline text-sunset-flame" />
       </div>
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-ink-100 overflow-hidden">
-      <div className="px-4 py-3 border-b border-ink-100 flex items-center gap-2">
-        <HandCoins className="w-4 h-4 text-brand-500" />
+    <div className="card overflow-hidden">
+      <div className="px-4 py-3 border-b border-ink-900/[0.06] flex items-center gap-2">
+        <HandCoins className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
         <span className="font-bold text-ink-900 text-sm">
           Consultants ({consultants.length})
         </span>
@@ -2008,7 +2048,7 @@ function ConsultantsAdmin() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+              <tr className="text-left text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/70 backdrop-blur sticky top-0 z-[1]">
                 <th className="px-3 py-2.5 w-8" />
                 <th className="px-3 py-2.5">Name</th>
                 <th className="px-3 py-2.5">Code</th>
@@ -2067,7 +2107,7 @@ function ConsultantRow({
     0;
   return (
     <>
-      <tr className="border-b border-ink-50 hover:bg-ink-50/60">
+      <tr className="border-b border-ink-900/[0.05] hover:bg-white/80 transition-colors">
         <td className="px-3 py-2.5">
           <button onClick={onToggle} className="text-ink-400 hover:text-ink-700">
             {expanded ? (
@@ -2080,7 +2120,7 @@ function ConsultantRow({
         <td className="px-3 py-2.5">
           <button
             onClick={onOpenDetail}
-            className="text-left font-semibold text-ink-900 hover:text-brand-600"
+            className="text-left font-semibold text-ink-900 hover:text-sunset-flame transition-colors"
           >
             {c.fullName || c.name || "—"}
           </button>
@@ -2119,7 +2159,7 @@ function ConsultantRow({
               <button
                 onClick={onApprove}
                 disabled={busy}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1.5 transition disabled:opacity-60"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1.5 transition duration-300 ease-spring hover:-translate-y-px active:scale-95 disabled:opacity-60"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" /> Approve
               </button>
@@ -2128,7 +2168,7 @@ function ConsultantRow({
               <button
                 onClick={onSuspend}
                 disabled={busy}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg px-2.5 py-1.5 transition disabled:opacity-60"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg px-2.5 py-1.5 transition duration-300 ease-spring hover:-translate-y-px active:scale-95 disabled:opacity-60"
               >
                 <Ban className="w-3.5 h-3.5" /> Suspend
               </button>
@@ -2137,7 +2177,7 @@ function ConsultantRow({
         </td>
       </tr>
       {expanded && (
-        <tr className="border-b border-ink-50">
+        <tr className="border-b border-ink-900/[0.05]">
           <td colSpan={9} className="px-3 py-3 bg-ink-50/50">
             {hotels.length > 0 && (
               <div className="mb-3 flex flex-wrap gap-1.5">
@@ -2200,11 +2240,11 @@ function ConsultantDetailDrawer({ consultantId, onClose }) {
     >
       {loading && (
         <div className="py-20 text-center text-ink-400">
-          <Loader2 className="w-6 h-6 animate-spin inline" />
+          <Loader2 className="w-6 h-6 animate-spin inline text-sunset-flame" />
         </div>
       )}
       {error && !loading && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+        <div className="text-sm text-rose-700 bg-rose-50/80 ring-1 ring-inset ring-rose-200 rounded-xl px-3 py-2">
           {error}
         </div>
       )}
@@ -2282,7 +2322,7 @@ function ConsultantDetailDrawer({ consultantId, onClose }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs min-w-[680px]">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
                       <th className="px-2 py-1.5">Hotel</th>
                       <th className="px-2 py-1.5">Owner</th>
                       <th className="px-2 py-1.5">Plan</th>
@@ -2296,7 +2336,7 @@ function ConsultantDetailDrawer({ consultantId, onClose }) {
                   </thead>
                   <tbody>
                     {d.hotels.map((h) => (
-                      <tr key={h.workspaceId} className="border-b border-ink-50">
+                      <tr key={h.workspaceId} className="border-b border-ink-900/[0.05]">
                         <td className="px-2 py-1.5">
                           <div className="font-semibold text-ink-900">
                             {h.propertyName || h.workspaceName}
@@ -2356,7 +2396,7 @@ function ConsultantDetailDrawer({ consultantId, onClose }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs min-w-[680px]">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
                       <th className="px-2 py-1.5">Period</th>
                       <th className="px-2 py-1.5">Hotel</th>
                       <th className="px-2 py-1.5">Type</th>
@@ -2368,7 +2408,7 @@ function ConsultantDetailDrawer({ consultantId, onClose }) {
                   </thead>
                   <tbody>
                     {d.ledger.map((e) => (
-                      <tr key={e.id} className="border-b border-ink-50">
+                      <tr key={e.id} className="border-b border-ink-900/[0.05]">
                         <td className="px-2 py-1.5 font-mono">
                           {e.period || "—"}
                         </td>
@@ -2505,7 +2545,7 @@ function ConsultantLedger({ consultantId }) {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs outline-none focus:border-brand-400"
+          className="input !w-auto !rounded-lg !px-2 !py-1.5 !text-xs"
         >
           <option value="">All statuses</option>
           <option value="accrued">Accrued</option>
@@ -2517,11 +2557,11 @@ function ConsultantLedger({ consultantId }) {
           value={period}
           onChange={(e) => setPeriod(e.target.value)}
           placeholder="Period (YYYY-MM)"
-          className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs outline-none focus:border-brand-400 w-32 font-mono"
+          className="input !w-auto !rounded-lg !px-2 !py-1.5 !text-xs w-32 font-mono"
         />
         <button
           onClick={markPeriodPaid}
-          className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg px-2.5 py-1.5 transition"
+          className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg px-2.5 py-1.5 transition duration-300 ease-spring hover:-translate-y-px active:scale-95"
         >
           <Banknote className="w-3.5 h-3.5" /> Mark period paid
         </button>
@@ -2537,7 +2577,7 @@ function ConsultantLedger({ consultantId }) {
       ) : (
         <table className="w-full text-xs">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-ink-400 border-b border-ink-100">
+            <tr className="text-left text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-900/[0.06] bg-white/60">
               <th className="px-2 py-1.5">Period</th>
               <th className="px-2 py-1.5">Hotel</th>
               <th className="px-2 py-1.5">Type</th>
@@ -2548,7 +2588,7 @@ function ConsultantLedger({ consultantId }) {
           </thead>
           <tbody>
             {entries.map((e) => (
-              <tr key={e._id} className="border-b border-ink-50">
+              <tr key={e._id} className="border-b border-ink-900/[0.05]">
                 <td className="px-2 py-1.5 font-mono">{e.period || "—"}</td>
                 <td className="px-2 py-1.5 text-ink-700">
                   {e.workspaceName || e.workspace?.name || e.workspaceId?.name || "—"}
@@ -2572,7 +2612,7 @@ function ConsultantLedger({ consultantId }) {
                       <button
                         onClick={() => verify(e)}
                         disabled={busy === e._id}
-                        className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-2 py-1 transition disabled:opacity-60"
+                        className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-2 py-1 transition duration-300 ease-spring hover:-translate-y-px active:scale-95 disabled:opacity-60"
                       >
                         Verify
                       </button>
@@ -2581,7 +2621,7 @@ function ConsultantLedger({ consultantId }) {
                       <button
                         onClick={() => markPaid(e)}
                         disabled={busy === e._id}
-                        className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-2 py-1 transition disabled:opacity-60"
+                        className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-2 py-1 transition duration-300 ease-spring hover:-translate-y-px active:scale-95 disabled:opacity-60"
                       >
                         Mark paid
                       </button>
@@ -2599,15 +2639,26 @@ function ConsultantLedger({ consultantId }) {
 
 function StatCard({ icon: Icon, label, value, sub }) {
   return (
-    <div className="bg-white rounded-2xl border border-ink-100 p-4">
-      <div className="flex items-center gap-2 text-ink-400 mb-2">
-        <Icon className="w-4 h-4" />
-        <span className="text-xs font-semibold uppercase tracking-wide">
-          {label}
+    <Spotlight className="card group p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <span className="text-[13px] text-ink-500">{label}</span>
+        <span className="h-8 w-8 shrink-0 rounded-xl grid place-items-center bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <Icon className="w-4 h-4" strokeWidth={1.8} />
         </span>
       </div>
-      <div className="text-2xl font-black text-ink-900">{value}</div>
-      {sub && <div className="text-xs text-ink-400 mt-0.5">{sub}</div>}
-    </div>
+      <div className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-ink-900 tabular-nums break-words">
+        <StatValue value={value} />
+      </div>
+      {sub && <div className="text-xs text-ink-500 mt-1">{sub}</div>}
+    </Spotlight>
   );
+}
+
+/** Numbers count up; "$123"-style values count up with their prefix; anything
+ *  else (multi-currency lists) renders as-is. */
+function StatValue({ value }) {
+  if (typeof value === "number") return <NumberTicker value={value} />;
+  const m = typeof value === "string" && value.match(/^(\$)(\d+(?:\.\d+)?)$/);
+  if (m) return <NumberTicker prefix={m[1]} value={Number(m[2])} />;
+  return value;
 }

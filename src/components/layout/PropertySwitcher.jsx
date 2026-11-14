@@ -11,6 +11,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Hotel, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
@@ -76,99 +77,99 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
           type="button"
           onClick={() => navigate("/dashboard/property")}
           title={active?.name || "Properties"}
-          className="w-full h-10 rounded-xl bg-white/[0.06] border border-white/[0.08] text-gray-300 hover:text-white hover:bg-white/[0.1] transition flex items-center justify-center"
+          className="group flex h-10 w-full items-center justify-center rounded-xl bg-white/[0.06] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-white/[0.08] transition hover:bg-white/[0.1] hover:text-white active:scale-95"
         >
-          <Hotel className="w-4 h-4" />
+          <Hotel className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" strokeWidth={1.8} />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="px-3 pt-3 relative" ref={wrapRef}>
+    <div className="relative px-3 pt-3" ref={wrapRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="w-full flex items-center gap-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] px-3 py-2.5 hover:bg-white/[0.1] transition text-left"
+        className={clsx(
+          "group flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 transition active:scale-[0.98]",
+          open ? "bg-white/[0.1] ring-white/[0.14]" : "bg-white/[0.05] ring-white/[0.08] hover:bg-white/[0.09]",
+        )}
       >
-        <span className="w-7 h-7 rounded-lg bg-brand-500/20 text-brand-300 flex items-center justify-center shrink-0">
-          <Hotel className="w-3.5 h-3.5" />
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_16px_-6px_rgba(255,61,119,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <Hotel className="h-4 w-4" strokeWidth={1.8} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-gray-500">
-            Property
-          </span>
-          <span className="block text-[13px] font-bold text-white truncate">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">Property</span>
+          <span className="block truncate text-[13px] font-semibold text-white">
             {active?.name || "Choose a property"}
           </span>
         </span>
         <ChevronDown
           className={clsx(
-            "w-4 h-4 text-gray-500 shrink-0 transition-transform",
-            open && "rotate-180",
+            "h-4 w-4 shrink-0 text-white/40 transition-transform duration-500 ease-spring",
+            open && "rotate-180 text-white/80",
           )}
         />
       </button>
 
-      {open && (
-        <div
-          role="listbox"
-          className="absolute left-3 right-3 top-full mt-1.5 z-30 rounded-xl bg-[#1F2937] border border-white/[0.1] shadow-2xl overflow-hidden py-1"
-        >
-          <div className="max-h-64 overflow-y-auto sidebar-scroll">
-            {properties.map((p) => {
-              const isActive = String(p._id) === String(activeId);
-              return (
-                <button
-                  key={p._id}
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
-                  onClick={() => pick(p._id)}
-                  className={clsx(
-                    "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition",
-                    isActive
-                      ? "bg-brand-500/15 text-white"
-                      : "text-gray-300 hover:bg-white/[0.06] hover:text-white",
-                  )}
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] font-semibold truncate">
-                      {p.name}
-                    </span>
-                    {(p.city || p.country) && (
-                      <span className="block text-[11px] text-gray-500 truncate">
-                        {[p.city, p.country].filter(Boolean).join(", ")}
-                      </span>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="listbox"
+            initial={{ opacity: 0, scale: 0.96, y: -6, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+            exit={{ opacity: 0, scale: 0.96, y: -6, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            style={{ transformOrigin: "top center" }}
+            className="glass-darker absolute left-3 right-3 top-full z-30 mt-2 overflow-hidden rounded-2xl py-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)]"
+          >
+            <div className="sidebar-scroll max-h-64 overflow-y-auto px-1.5">
+              {properties.map((p) => {
+                const isActive = String(p._id) === String(activeId);
+                return (
+                  <button
+                    key={p._id}
+                    type="button"
+                    role="option"
+                    aria-selected={isActive}
+                    onClick={() => pick(p._id)}
+                    className={clsx(
+                      "group/opt relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition",
+                      isActive ? "bg-white/[0.08] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white",
                     )}
-                  </span>
-                  {isActive && (
-                    <Check
-                      className="w-4 h-4 text-brand-400 shrink-0"
-                      strokeWidth={3}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    {isActive && (
+                      <span aria-hidden className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-sunset" />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-semibold">{p.name}</span>
+                      {(p.city || p.country) && (
+                        <span className="block truncate text-[11px] text-white/40">
+                          {[p.city, p.country].filter(Boolean).join(", ")}
+                        </span>
+                      )}
+                    </span>
+                    {isActive && <Check className="h-4 w-4 shrink-0 text-sunset-gold" strokeWidth={2.5} />}
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className="border-t border-white/[0.08] mt-1 pt-1">
-            <button
-              type="button"
-              onClick={addAnother}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-gray-300 hover:bg-white/[0.06] hover:text-white transition"
-            >
-              <Plus className="w-4 h-4 text-brand-400 shrink-0" />
-              <span className="text-[13px] font-semibold">
-                Add another property
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
+            <div className="mx-1.5 mt-1.5 border-t border-white/[0.08] pt-1.5">
+              <button
+                type="button"
+                onClick={addAnother}
+                className="group/add flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-white/65 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                <Plus className="h-4 w-4 shrink-0 text-sunset-gold transition-transform duration-500 ease-spring group-hover/add:rotate-90" />
+                <span className="text-[13px] font-semibold">Add another property</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

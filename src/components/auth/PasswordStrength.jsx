@@ -32,9 +32,10 @@ export default function PasswordStrength({ password, email, name }) {
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}
-            className={`h-1.5 flex-1 rounded-full transition-colors ${
-              i < score ? barColors[score] : "bg-ink-150 bg-ink-200/60"
+            className={`h-1.5 flex-1 rounded-full transition-all duration-500 ease-spring ${
+              i < score ? `${barColors[score]} scale-y-125` : "bg-ink-900/[0.08]"
             }`}
+            style={{ transitionDelay: `${i * 40}ms` }}
           />
         ))}
       </div>

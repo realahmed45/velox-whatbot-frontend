@@ -3,6 +3,7 @@
  * (Custom Flows + the template gallery now live on the Custom Flows page.)
  */
 import { ChevronRight, Lock } from "lucide-react";
+import { Reveal, Spotlight } from "@/components/fx";
 
 const CATEGORIES = [
   {
@@ -41,30 +42,31 @@ function GalleryCard({ tab, plan, lifetime, onOpen }) {
     !lifetime && (RANK[plan] ?? 0) < (RANK[tab.plan] ?? 0);
 
   return (
-    <button
+    <Spotlight
+      as="button"
       type="button"
       onClick={onOpen}
-      className="group relative text-left rounded-2xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-500/5 hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
+      className="card-hover group relative w-full text-left p-5 flex flex-col h-full active:scale-[0.98]"
     >
       <div className="flex items-start justify-between gap-2 mb-3.5">
-        <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition-colors">
-          <Icon className="w-5 h-5" />
+        <div className="w-11 h-11 rounded-xl bg-sunset-soft text-sunset-flame grid place-items-center transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] group-hover:bg-sunset group-hover:text-white">
+          <Icon className="w-5 h-5" strokeWidth={1.8} />
         </div>
         {locked && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+          <span className="badge-premium inline-flex items-center gap-1 text-[10px] uppercase tracking-wide">
             <Lock className="w-2.5 h-2.5" /> Pro
           </span>
         )}
       </div>
-      <p className="font-bold text-sm text-ink-900">{tab.label}</p>
-      <p className="text-xs text-ink-500 mt-1 flex-1 leading-relaxed">
+      <p className="font-display font-semibold tracking-[-0.01em] text-[15px] text-ink-900">{tab.label}</p>
+      <p className="text-[13px] text-ink-500 mt-1 flex-1 leading-relaxed">
         {tab.desc}
       </p>
-      <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600 group-hover:gap-1.5 transition-all">
+      <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame">
         {locked ? "Upgrade to use" : "Set up"}
-        <ChevronRight className="w-3.5 h-3.5" />
+        <ChevronRight className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
       </span>
-    </button>
+    </Spotlight>
   );
 }
 
@@ -75,30 +77,31 @@ export default function AutomationsHubGallery({
   lifetime,
 }) {
   return (
-    <div className="space-y-9">
-      {CATEGORIES.map((cat) => {
+    <div className="space-y-10">
+      {CATEGORIES.map((cat, ci) => {
         const items = tabs.filter((t) => t.category === cat.id);
         if (!items.length) return null;
         return (
           <section key={cat.id}>
-            <div className="mb-4 flex items-center gap-2.5">
-              <span className="w-1 h-5 rounded-full bg-brand-500" />
+            <Reveal delay={ci * 0.05} className="mb-4 flex items-center gap-2.5">
+              <span className="w-1 h-6 rounded-full bg-sunset" />
               <div>
-                <h2 className="text-base font-black text-ink-900 leading-none">
+                <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900 leading-none">
                   {cat.label}
                 </h2>
-                <p className="text-xs text-ink-500 mt-1">{cat.subtitle}</p>
+                <p className="text-[13px] text-ink-500 mt-1">{cat.subtitle}</p>
               </div>
-            </div>
+            </Reveal>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.map((t) => (
-                <GalleryCard
-                  key={t.id}
-                  tab={t}
-                  plan={plan}
-                  lifetime={lifetime}
-                  onOpen={() => onOpenTab(t.id)}
-                />
+              {items.map((t, i) => (
+                <Reveal key={t.id} delay={i * 0.06} className="h-full">
+                  <GalleryCard
+                    tab={t}
+                    plan={plan}
+                    lifetime={lifetime}
+                    onOpen={() => onOpenTab(t.id)}
+                  />
+                </Reveal>
               ))}
             </div>
           </section>

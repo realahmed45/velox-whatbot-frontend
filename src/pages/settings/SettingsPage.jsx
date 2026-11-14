@@ -12,6 +12,8 @@
  * and the AI Assistant link to them) — keep them stable.
  */
 import { useEffect, useState, lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Reveal } from "@/components/fx";
 import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -66,22 +68,35 @@ const OWN_HEADER = ["property", "transfers", "assistant"];
 
 function TabFallback() {
   return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+    <div className="space-y-4 py-2" aria-busy="true">
+      <div className="h-6 w-48 rounded-lg bg-ink-900/[0.06] animate-pulse" />
+      <div className="card p-5 space-y-3">
+        <div className="h-4 w-1/3 rounded bg-ink-900/[0.06] animate-pulse" />
+        <div className="h-10 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+        <div className="h-10 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+        <div className="h-10 w-2/3 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+      </div>
     </div>
   );
 }
 
 /** Section title + one plain-English line, shown above every tab's content. */
-function SectionHeader({ title, subtitle }) {
+function SectionHeader({ title, subtitle, icon: Icon }) {
   return (
-    <div className="mb-6">
-      <h2 className="text-[17px] font-semibold tracking-tight text-ink-900">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="text-[13px] text-ink-500 mt-1 max-w-2xl">{subtitle}</p>
+    <div className="mb-6 flex items-start gap-3">
+      {Icon && (
+        <span className="hidden sm:grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ring-1 ring-sunset-flame/10">
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </span>
       )}
+      <div className="min-w-0">
+        <h2 className="font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-[13px] text-ink-500 mt-1 max-w-2xl">{subtitle}</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -190,90 +205,131 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-full">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-5 lg:mb-7">
-          <h1 className="text-[22px] font-semibold tracking-tight text-ink-900">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+        <Reveal className="mb-5 lg:mb-8" y={14}>
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
             Settings
           </h1>
-          <p className="text-[13px] text-ink-500 mt-0.5">
-            Your hotel, WhatsApp, AI assistant and account.
+          <p className="text-[13px] sm:text-sm text-ink-500 mt-1">
+            Your hotel, WhatsApp, AI assistant and{" "}
+            <span className="font-serif italic text-[15px] text-ink-700">account</span>.
           </p>
-        </div>
+        </Reveal>
 
         <div className="lg:flex lg:gap-8">
           {/* Left rail (desktop) / chip strip (phones & tablets). */}
           <nav
             aria-label="Settings sections"
-            className="lg:w-[230px] lg:shrink-0 mb-6 lg:mb-0"
+            className="lg:w-[236px] lg:shrink-0 mb-6 lg:mb-0"
           >
-            {/* Phones/tablets: one scrollable row of chips. */}
-            <div className="lg:hidden -mx-4 px-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-              {TABS.map((t) => {
-                const Icon = t.icon;
-                const active = tab === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    aria-current={active ? "page" : undefined}
-                    className={`shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[13px] transition ${
-                      active
-                        ? "border-brand-200 bg-brand-50 text-brand-700 font-medium"
-                        : "border-ink-100 bg-white text-ink-600"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
-                    {t.label}
-                  </button>
-                );
-              })}
+            {/* Phones/tablets: one scrollable row of glass chips with a sliding pill. */}
+            <div className="lg:hidden -mx-4 px-4 overflow-x-auto no-scrollbar pb-1">
+              <div className="inline-flex gap-1 rounded-2xl bg-ink-900/[0.04] p-1 ring-1 ring-ink-900/[0.06]">
+                {TABS.map((t) => {
+                  const Icon = t.icon;
+                  const active = tab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setTab(t.id)}
+                      aria-current={active ? "page" : undefined}
+                      className={`group relative shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[13px] font-medium transition-colors active:scale-[0.96] ${
+                        active ? "text-ink-900" : "text-ink-500 hover:text-ink-800"
+                      }`}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="settings-tab-pill-m"
+                          className="absolute inset-0 -z-0 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]"
+                          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                        />
+                      )}
+                      <Icon
+                        className={`relative h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                          active ? "text-sunset-flame" : ""
+                        }`}
+                        strokeWidth={1.8}
+                      />
+                      <span className="relative">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Desktop: grouped vertical list, sticky while scrolling. */}
-            <div className="hidden lg:block sticky top-6 space-y-5">
-              {GROUPS.filter((g) => g.tabs.length).map((g) => (
-                <div key={g.label}>
-                  <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
-                    {g.label}
-                  </p>
-                  <div className="space-y-0.5">
-                    {g.tabs.map((t) => {
-                      const Icon = t.icon;
-                      const active = tab === t.id;
-                      return (
-                        <button
-                          key={t.id}
-                          onClick={() => setTab(t.id)}
-                          aria-current={active ? "page" : undefined}
-                          className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13.5px] transition ${
-                            active
-                              ? "bg-brand-50 text-ink-900 font-medium"
-                              : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
-                          }`}
-                        >
-                          <Icon
-                            className={`w-4 h-4 shrink-0 ${
-                              active ? "text-brand-500" : "text-ink-400"
+            {/* Desktop: grouped vertical glass rail, sticky while scrolling. */}
+            <div className="hidden lg:block sticky top-6">
+              <div className="card p-2.5 space-y-4">
+                {GROUPS.filter((g) => g.tabs.length).map((g) => (
+                  <div key={g.label}>
+                    <p className="px-3 pt-1.5 mb-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                      {g.label}
+                    </p>
+                    <div className="space-y-0.5">
+                      {g.tabs.map((t) => {
+                        const Icon = t.icon;
+                        const active = tab === t.id;
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => setTab(t.id)}
+                            aria-current={active ? "page" : undefined}
+                            className={`group relative w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] transition-[color,transform] duration-300 ease-spring active:scale-[0.97] ${
+                              active
+                                ? "text-ink-900 font-medium"
+                                : "text-ink-600 hover:text-ink-900 hover:translate-x-0.5"
                             }`}
-                            strokeWidth={1.75}
-                          />
-                          {t.label}
-                        </button>
-                      );
-                    })}
+                          >
+                            {active && (
+                              <motion.span
+                                layoutId="settings-tab-pill"
+                                className="absolute inset-0 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_6px_16px_-6px_rgba(255,106,43,0.28),inset_0_1px_0_#fff] ring-1 ring-sunset-flame/15"
+                                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                              >
+                                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-sunset" />
+                              </motion.span>
+                            )}
+                            <span
+                              className={`relative grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                                active
+                                  ? "bg-sunset-soft text-sunset-flame"
+                                  : "bg-ink-900/[0.04] text-ink-400 group-hover:text-ink-700"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" strokeWidth={1.8} />
+                            </span>
+                            <span className="relative truncate">{t.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </nav>
 
           {/* Content pane. Embedded pages keep their own inner layouts; the
               .settings-embed class only neutralises their outer max-width. */}
           <main className="flex-1 min-w-0">
+            <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={tab}
+              // Opacity only: a lingering transform/filter here would trap the
+              // fixed-position modals of embedded pages inside this box.
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
             {/* Pages lifted in from former routes already carry their own
                 title, so only the native sections get one here. */}
             {!OWN_HEADER.includes(tab) && (
-              <SectionHeader title={current?.label} subtitle={current?.subtitle} />
+              <SectionHeader
+                title={current?.label}
+                subtitle={current?.subtitle}
+                icon={current?.icon}
+              />
             )}
 
             <Suspense fallback={<TabFallback />}>
@@ -333,6 +389,8 @@ export default function SettingsPage() {
                 </div>
               )}
             </Suspense>
+            </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </div>
@@ -386,14 +444,22 @@ function WhatsAppAiToggle({ workspace, onSave }) {
 
   return (
     <div
-      className={`card p-4 sm:p-5 border ${
-        on ? "border-emerald-200" : "border-amber-200"
+      className={`group card p-4 sm:p-5 overflow-hidden ring-1 transition-shadow duration-500 ${
+        on ? "ring-emerald-500/25" : "ring-amber-500/30"
       }`}
     >
-      <div className="flex items-start gap-4">
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full blur-3xl transition-colors duration-700 ${
+          on ? "bg-emerald-400/20" : "bg-amber-400/20"
+        }`}
+      />
+      <div className="relative flex items-start gap-3 sm:gap-4">
         <span
-          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-            on ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ring-1 transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+            on
+              ? "bg-emerald-50 text-emerald-600 ring-emerald-500/15"
+              : "bg-amber-50 text-amber-600 ring-amber-500/15"
           }`}
         >
           {on ? (
@@ -421,35 +487,37 @@ function WhatsAppAiToggle({ workspace, onSave }) {
               aria-label="WhatsApp AI replies"
               onClick={toggle}
               disabled={saving || !workspace?._id}
-              className={`relative w-14 h-8 rounded-full transition-colors shrink-0 disabled:opacity-60 ${
+              className={`relative w-14 h-8 rounded-full transition-colors duration-300 shrink-0 disabled:opacity-60 shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] active:scale-95 ${
                 on ? "bg-emerald-500" : "bg-ink-300"
               }`}
             >
-              <span
-                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                  on ? "translate-x-6" : "translate-x-0"
+              <motion.span
+                layout
+                transition={{ type: "spring", stiffness: 520, damping: 30 }}
+                className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-[0_2px_6px_rgba(15,23,42,0.25),inset_0_1px_0_#fff] ${
+                  on ? "right-1" : "left-1"
                 }`}
               />
             </button>
           </div>
 
           {!on && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-amber-50/80 ring-1 ring-amber-500/15 px-3 py-2 text-[12.5px] text-amber-800">
               <span>
                 Guest messages still arrive in your Inbox — nothing is sent
                 automatically until you switch this back on.
               </span>
               <Link
                 to="/dashboard/inbox"
-                className="inline-flex items-center gap-1 font-semibold text-amber-900 hover:underline"
+                className="group/link inline-flex items-center gap-1 font-semibold text-amber-900 hover:underline"
               >
-                Open Inbox <ArrowRight className="w-3.5 h-3.5" />
+                Open Inbox <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-spring group-hover/link:translate-x-0.5" />
               </Link>
             </div>
           )}
 
           {on && assistantOff && (
-            <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800">
+            <div className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50/80 ring-1 ring-amber-500/15 px-3 py-2 text-[12.5px] text-amber-800">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
               <span>
                 Your AI assistant is switched off in the AI assistant tab, so it
@@ -537,9 +605,12 @@ function SecuritySettings({ onGoToTeam }) {
   return (
     <div className="space-y-5">
       {/* Account identity */}
-      <div className="card p-4 flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
-          <Shield className="w-5 h-5 text-brand-500" />
+      <div className="group card p-4 flex items-center gap-3">
+        <div className="relative w-11 h-11 shrink-0">
+          <span aria-hidden className="absolute inset-0 rounded-xl bg-sunset opacity-30 blur-lg" />
+          <div className="relative w-11 h-11 rounded-xl bg-sunset text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <Shield className="w-5 h-5" strokeWidth={1.8} />
+          </div>
         </div>
         <div className="min-w-0">
           <p className="font-semibold text-ink-900 truncate">{user?.name}</p>
@@ -547,12 +618,12 @@ function SecuritySettings({ onGoToTeam }) {
         </div>
         <div className="ml-auto flex flex-wrap gap-1.5 justify-end">
           {user?.isEmailVerified && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+            <span className="badge-green inline-flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Verified
             </span>
           )}
           {hasGoogle && (
-            <span className="text-[11px] font-bold px-2 py-1 rounded-full bg-ink-100 text-ink-600">
+            <span className="badge-gray">
               Google linked
             </span>
           )}
@@ -562,14 +633,16 @@ function SecuritySettings({ onGoToTeam }) {
       {/* Password */}
       <div className="card p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <KeyRound className="w-4 h-4 text-ink-500" />
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame">
+            <KeyRound className="w-4 h-4" strokeWidth={1.8} />
+          </span>
           <h3 className="text-sm font-semibold text-ink-900">
             {hasPassword ? "Change password" : "Set a password"}
           </h3>
         </div>
 
         {!loadingMe && !hasPassword && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg">
+          <div className="bg-amber-50/80 ring-1 ring-amber-500/20 text-amber-800 text-xs p-3 rounded-xl">
             You signed up with Google, so you don't have a password yet. Set one
             to also be able to sign in with your email.
           </div>
@@ -673,9 +746,11 @@ function SecuritySettings({ onGoToTeam }) {
 
       {/* Who else can sign in — owners only; staff can't manage the team. */}
       {onGoToTeam && (
-      <div className="card p-4 sm:p-5">
+      <div className="group card p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1.5">
-          <Shield className="w-4 h-4 text-ink-500" />
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-sky-50 text-sky-600 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <Shield className="w-4 h-4" strokeWidth={1.8} />
+          </span>
           <h3 className="text-sm font-semibold text-ink-900">
             Who else can get in
           </h3>
@@ -696,9 +771,11 @@ function SecuritySettings({ onGoToTeam }) {
       )}
 
       {/* Support */}
-      <div className="card p-4 sm:p-5">
+      <div className="group card p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1.5">
-          <LifeBuoy className="w-4 h-4 text-ink-500" />
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-14deg]">
+            <LifeBuoy className="w-4 h-4" strokeWidth={1.8} />
+          </span>
           <h3 className="text-sm font-semibold text-ink-900">Need help?</h3>
         </div>
         <p className="text-xs text-ink-500">
@@ -714,10 +791,12 @@ function SecuritySettings({ onGoToTeam }) {
       </div>
 
       {/* Danger zone */}
-      <div className="rounded-2xl border border-red-200 bg-red-50/40 p-4 sm:p-5 space-y-4">
+      <div className="rounded-2xl bg-rose-50/60 ring-1 ring-rose-500/20 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
-          <h3 className="text-sm font-semibold text-red-700">Danger zone</h3>
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-rose-100 text-rose-600">
+            <AlertTriangle className="w-4 h-4" strokeWidth={1.8} />
+          </span>
+          <h3 className="text-sm font-semibold text-rose-700">Danger zone</h3>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -730,14 +809,14 @@ function SecuritySettings({ onGoToTeam }) {
           </div>
           <button
             onClick={doLogout}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition shrink-0"
+            className="btn shrink-0 bg-white text-rose-600 ring-1 ring-rose-500/25 shadow-[inset_0_1px_0_#fff] hover:-translate-y-0.5 hover:bg-rose-50 hover:shadow-[0_10px_24px_-12px_rgba(225,29,72,0.45)]"
           >
             <LogOut className="w-4 h-4" /> Log out
           </button>
         </div>
 
         {onGoToTeam && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-red-100 pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-rose-500/15 pt-4">
             <div className="min-w-0">
               <p className="text-sm font-medium text-ink-900">Delete a property</p>
               <p className="text-xs text-ink-500">
@@ -748,7 +827,7 @@ function SecuritySettings({ onGoToTeam }) {
             </div>
             <button
               onClick={() => navigate("/accounts")}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white text-red-600 font-bold text-sm px-4 py-2.5 hover:bg-red-50 transition shrink-0"
+              className="btn shrink-0 bg-white text-rose-600 ring-1 ring-rose-500/25 shadow-[inset_0_1px_0_#fff] hover:-translate-y-0.5 hover:bg-rose-50 hover:shadow-[0_10px_24px_-12px_rgba(225,29,72,0.45)]"
             >
               Manage properties <ArrowRight className="w-4 h-4" />
             </button>
@@ -907,7 +986,9 @@ function ReplyTimingSettings({ workspace, onSave }) {
     <div className="card p-4 sm:p-5 space-y-5">
       <div>
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-ink-500" />
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame">
+            <Clock className="w-4 h-4" strokeWidth={1.8} />
+          </span>
           <h3 className="text-sm font-semibold text-ink-900">Reply timing</h3>
         </div>
         <p className="text-xs text-ink-500 mt-0.5">
@@ -916,7 +997,7 @@ function ReplyTimingSettings({ workspace, onSave }) {
       </div>
 
       {/* Delay range */}
-      <div className="border-t border-ink-100 pt-4">
+      <div className="border-t border-ink-900/[0.06] pt-4">
         <label className="label">Reply delay range (minutes)</label>
         <p className="text-xs text-ink-400 mb-3">
           A short random pause before the AI replies, so answers feel like your

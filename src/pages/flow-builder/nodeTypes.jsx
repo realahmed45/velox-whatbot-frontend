@@ -23,7 +23,7 @@ const COLORS = {
   purple: { text: "text-purple-600", dot: "!bg-purple-400" },
   indigo: { text: "text-indigo-600", dot: "!bg-indigo-400" },
   yellow: { text: "text-amber-600", dot: "!bg-amber-400" },
-  orange: { text: "text-brand-600", dot: "!bg-brand-400" },
+  orange: { text: "text-sunset-flame", dot: "!bg-sunset-flame" },
   pink: { text: "text-pink-600", dot: "!bg-pink-400" },
   gray: { text: "text-ink-600", dot: "!bg-ink-400" },
   green: { text: "text-emerald-600", dot: "!bg-emerald-400" },
@@ -31,11 +31,15 @@ const COLORS = {
   red: { text: "text-red-600", dot: "!bg-red-400" },
 };
 
-const CARD_BORDER = "border-ink-200";
-const CARD_SEL = "border-brand-500 ring-2 ring-brand-200/70 shadow-lg";
+// Liquid-glass node cards: frosted fill, specular top edge, hairline ring.
+// Selected = sunset ring + warm glow.
+const CARD_BORDER =
+  "border-white/80 ring-1 ring-ink-900/[0.07] hover:ring-sunset-flame/30";
+const CARD_SEL =
+  "border-white ring-2 ring-sunset-flame/70 shadow-[inset_0_1px_0_#fff,0_0_0_4px_rgba(255,106,43,0.12),0_18px_40px_-16px_rgba(255,61,119,0.45)]";
 
 const baseStyle =
-  "min-w-[190px] max-w-[240px] rounded-2xl border bg-white shadow-md shadow-ink-900/5 text-xs font-medium transition-all hover:shadow-lg";
+  "min-w-[190px] max-w-[240px] rounded-2xl border bg-white/80 backdrop-blur-xl text-xs font-medium shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.05),0_10px_28px_-14px_rgba(15,23,42,0.22)] transition-[box-shadow,ring-color] duration-300 hover:shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.05),0_18px_36px_-14px_rgba(255,106,43,0.35)]";
 
 // Best-effort one-line preview of whatever the node is configured to do.
 const previewText = (data = {}) => {
@@ -52,7 +56,8 @@ const previewText = (data = {}) => {
   );
 };
 
-const HANDLE = "!w-3 !h-3 !border-2 !border-white";
+const HANDLE =
+  "!w-3 !h-3 !border-2 !border-white !shadow-[0_0_0_1px_rgba(15,23,42,0.08),0_2px_6px_rgba(255,106,43,0.35)] transition-transform duration-300 hover:!scale-125";
 
 const mkNode = (icon, label, color) => {
   const c = COLORS[color] || COLORS.gray;
@@ -61,13 +66,13 @@ const mkNode = (icon, label, color) => {
       <Handle
         type="target"
         position={Position.Top}
-        className={`${HANDLE} !bg-ink-400`}
+        className={`${HANDLE} !bg-ink-300`}
       />
       <div className={`flex items-center gap-2 ${c.text} mb-1.5`}>
-        <span className={`w-5 h-5 rounded-md flex items-center justify-center ${c.text}`}>
+        <span className={`w-6 h-6 rounded-lg bg-white ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] grid place-items-center ${c.text}`}>
           {icon}
         </span>
-        <span className="font-bold text-[13px] text-ink-800">
+        <span className="font-display font-semibold tracking-[-0.01em] text-[13px] text-ink-800">
           {data.label || label}
         </span>
       </div>
@@ -77,7 +82,7 @@ const mkNode = (icon, label, color) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className={`${HANDLE} ${c.dot}`}
+        className={`${HANDLE} !bg-sunset`}
       />
     </div>
   );
@@ -99,10 +104,12 @@ export const ConditionNode = ({ data, selected }) => {
   const c = COLORS.red;
   return (
     <div className={`${baseStyle} ${selected ? CARD_SEL : CARD_BORDER} p-3`}>
-      <Handle type="target" position={Position.Top} className="!bg-ink-300" />
+      <Handle type="target" position={Position.Top} className={`${HANDLE} !bg-ink-300`} />
       <div className={`flex items-center gap-2 ${c.text} mb-1`}>
-        <GitBranch className="w-3 h-3" />
-        <span className="font-semibold text-xs">{data.label || "Condition"}</span>
+        <span className="w-6 h-6 rounded-lg bg-white ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] grid place-items-center">
+          <GitBranch className="w-3 h-3" />
+        </span>
+        <span className="font-display font-semibold tracking-[-0.01em] text-[13px] text-ink-800">{data.label || "Condition"}</span>
       </div>
       <p className="text-ink-500 truncate text-xs">
         {data.conditionVariable
@@ -110,30 +117,30 @@ export const ConditionNode = ({ data, selected }) => {
           : "(not configured)"}
       </p>
       <div className="flex justify-between mt-1 text-[10px]">
-        <span className="text-green-600 font-semibold">Yes</span>
-        <span className="text-red-600 font-semibold">No</span>
+        <span className="text-emerald-600 font-semibold">Yes</span>
+        <span className="text-rose-600 font-semibold">No</span>
       </div>
       <Handle
         id="true"
         type="source"
         position={Position.Bottom}
         style={{ left: "25%" }}
-        className="!bg-green-500"
+        className={`${HANDLE} !bg-emerald-500`}
       />
       <Handle
         id="false"
         type="source"
         position={Position.Bottom}
         style={{ left: "75%" }}
-        className="!bg-red-500"
+        className={`${HANDLE} !bg-rose-500`}
       />
     </div>
   );
 };
 
 export const EndFlowNode = ({ data, selected }) => (
-  <div className={`${baseStyle} ${selected ? "border-ink-500" : "border-ink-300"} p-3 bg-ink-50`}>
-    <Handle type="target" position={Position.Top} className="!bg-ink-300" />
+  <div className={`${baseStyle} ${selected ? CARD_SEL : CARD_BORDER} p-3 !bg-ink-50/80`}>
+    <Handle type="target" position={Position.Top} className={`${HANDLE} !bg-ink-300`} />
     <div className="flex items-center gap-2 text-ink-500">
       <X className="w-3 h-3" />
       <span className="font-semibold text-xs">{data.label || "End Flow"}</span>
@@ -143,18 +150,20 @@ export const EndFlowNode = ({ data, selected }) => (
 
 // ── Trigger nodes (entry points — source handle only) ───────────────────────
 const triggerStyle = (selected) =>
-  `${baseStyle} p-3.5 bg-gradient-to-br from-brand-500 to-brand-600 text-white ${
-    selected ? "ring-2 ring-brand-300 border-brand-600" : "border-brand-500"
+  `${baseStyle} p-3.5 !bg-sunset text-white border-white/30 ${
+    selected
+      ? "ring-2 ring-sunset-flame/70 ring-offset-2 ring-offset-white/80 shadow-[0_18px_40px_-14px_rgba(255,61,119,0.6)]"
+      : "ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_32px_-14px_rgba(255,61,119,0.55)]"
   }`;
 
 export const KeywordTriggerNode = ({ data, selected }) => (
   <div className={triggerStyle(selected)}>
     <div className="flex items-center gap-2 mb-1.5">
-      <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 rounded px-1.5 py-0.5">
+      <span className="text-[9px] font-semibold uppercase tracking-wider bg-white/20 ring-1 ring-inset ring-white/25 rounded-md px-1.5 py-0.5">
         Trigger
       </span>
       <MessageSquare className="w-3.5 h-3.5" />
-      <span className="font-bold text-[13px]">
+      <span className="font-display font-semibold tracking-[-0.01em] text-[13px]">
         {data.label || "Keyword Trigger"}
       </span>
     </div>
@@ -172,11 +181,11 @@ export const KeywordTriggerNode = ({ data, selected }) => (
 export const AnyMessageTriggerNode = ({ data, selected }) => (
   <div className={triggerStyle(selected)}>
     <div className="flex items-center gap-2 mb-1.5">
-      <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 rounded px-1.5 py-0.5">
+      <span className="text-[9px] font-semibold uppercase tracking-wider bg-white/20 ring-1 ring-inset ring-white/25 rounded-md px-1.5 py-0.5">
         Trigger
       </span>
       <Zap className="w-3.5 h-3.5" />
-      <span className="font-bold text-[13px]">{data.label || "Any Message"}</span>
+      <span className="font-display font-semibold tracking-[-0.01em] text-[13px]">{data.label || "Any Message"}</span>
     </div>
     <p className="text-white/85 text-[11px] truncate pl-0.5">
       Fires on any incoming DM

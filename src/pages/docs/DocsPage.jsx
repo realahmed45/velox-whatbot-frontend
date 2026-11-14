@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search, BookOpen, ArrowRight, Menu, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Aurora, Magnetic, Reveal } from "@/components/fx";
 import { DOC_GROUPS } from "./docsContent";
 
 /* Flatten sections for search + lookup. */
@@ -38,7 +40,7 @@ function RichText({ text }) {
     const tok = m[0];
     if (tok.startsWith("**"))
       nodes.push(
-        <strong key={key++} className="font-semibold text-ink-900">
+        <strong key={key++} className="font-semibold text-white">
           {tok.slice(2, -2)}
         </strong>,
       );
@@ -46,7 +48,7 @@ function RichText({ text }) {
       nodes.push(
         <code
           key={key++}
-          className="text-[0.85em] font-mono bg-ink-100 text-brand-700 rounded px-1.5 py-0.5"
+          className="text-[0.85em] font-mono bg-white/[0.08] text-sunset-gold ring-1 ring-white/10 rounded-md px-1.5 py-0.5"
         >
           {tok.slice(1, -1)}
         </code>,
@@ -58,21 +60,21 @@ function RichText({ text }) {
 }
 
 const NOTE_STYLE = {
-  info: "border-blue-200 bg-blue-50 text-blue-900",
-  tip: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  warn: "border-amber-200 bg-amber-50 text-amber-900",
+  info: "border-sky-400/20 bg-sky-400/[0.07] text-sky-100",
+  tip: "border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-100",
+  warn: "border-amber-400/20 bg-amber-400/[0.07] text-amber-100",
 };
 
 function Block({ b }) {
   if (b.p)
     return (
-      <p className="text-ink-600 leading-relaxed">
+      <p className="text-white/65 leading-relaxed">
         <RichText text={b.p} />
       </p>
     );
   if (b.h)
     return (
-      <h3 className="text-lg font-bold text-ink-900 mt-6 mb-1 scroll-mt-24">
+      <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-white mt-7 mb-1 scroll-mt-24">
         {b.h}
       </h3>
     );
@@ -80,8 +82,8 @@ function Block({ b }) {
     return (
       <ul className="space-y-2 my-1">
         {b.list.map((li, i) => (
-          <li key={i} className="flex gap-2.5 text-ink-600 leading-relaxed">
-            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
+          <li key={i} className="flex gap-2.5 text-white/65 leading-relaxed">
+            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-sunset shrink-0" />
             <span>
               <RichText text={li} />
             </span>
@@ -93,8 +95,8 @@ function Block({ b }) {
     return (
       <ol className="space-y-2.5 my-1">
         {b.steps.map((st, i) => (
-          <li key={i} className="flex gap-3 text-ink-600 leading-relaxed">
-            <span className="shrink-0 w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-bold grid place-items-center">
+          <li key={i} className="flex gap-3 text-white/65 leading-relaxed">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-sunset text-white text-xs font-bold grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] tabular-nums">
               {i + 1}
             </span>
             <span className="pt-0.5">
@@ -107,27 +109,27 @@ function Block({ b }) {
   if (b.note)
     return (
       <div
-        className={`my-2 rounded-xl border px-4 py-3 text-sm leading-relaxed ${NOTE_STYLE[b.tone] || NOTE_STYLE.info}`}
+        className={`my-2 rounded-xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${NOTE_STYLE[b.tone] || NOTE_STYLE.info}`}
       >
         <RichText text={b.note} />
       </div>
     );
   if (b.code)
     return (
-      <div className="my-2 rounded-xl bg-ink-950 text-ink-100 font-mono text-[13px] px-4 py-3 overflow-x-auto">
+      <div className="my-2 rounded-xl bg-black/50 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] text-white/85 font-mono text-[13px] px-4 py-3 overflow-x-auto">
         {b.code}
       </div>
     );
   if (b.table)
     return (
-      <div className="my-3 overflow-x-auto rounded-xl border border-ink-100">
+      <div className="my-3 overflow-x-auto rounded-xl ring-1 ring-white/10 bg-white/[0.03]">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-ink-50 text-left">
+            <tr className="bg-white/[0.05] text-left">
               {b.table.head.map((h, i) => (
                 <th
                   key={i}
-                  className="px-3.5 py-2.5 font-semibold text-ink-700 border-b border-ink-100"
+                  className="px-3.5 py-2.5 font-semibold text-white/80 border-b border-white/10 whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -136,11 +138,11 @@ function Block({ b }) {
           </thead>
           <tbody>
             {b.table.rows.map((row, ri) => (
-              <tr key={ri} className="border-b border-ink-50 last:border-0">
+              <tr key={ri} className="border-b border-white/[0.06] last:border-0 transition-colors hover:bg-white/[0.03]">
                 {row.map((cell, ci) => (
                   <td
                     key={ci}
-                    className={`px-3.5 py-2.5 ${ci === 0 ? "font-medium text-ink-800" : "text-ink-600"}`}
+                    className={`px-3.5 py-2.5 ${ci === 0 ? "font-medium text-white/90" : "text-white/60"}`}
                   >
                     {cell || "—"}
                   </td>
@@ -201,62 +203,81 @@ export default function DocsPage() {
     }
   };
 
+  const navList = (mobile) =>
+    groups.map((g) => (
+      <div key={g.group} className={mobile ? "mb-5" : undefined}>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40 mb-2 px-2.5">
+          {g.group}
+        </p>
+        <ul className="space-y-0.5">
+          {g.sections.map((s) => {
+            const on = active === s.id && !q;
+            return (
+              <li key={s.id}>
+                <button
+                  onClick={() => jump(s.id)}
+                  className={`relative isolate block w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all duration-300 ease-spring ${
+                    on
+                      ? "text-white font-medium"
+                      : "text-white/55 hover:text-white hover:bg-white/[0.05] hover:translate-x-0.5"
+                  }`}
+                >
+                  {on && (
+                    <motion.span
+                      layoutId={mobile ? "docs-nav-m" : "docs-nav"}
+                      className="absolute inset-0 -z-10 rounded-lg bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    >
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-sunset" />
+                    </motion.span>
+                  )}
+                  <span className="relative">{s.title}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ));
+
   return (
-    <div className="bg-white">
+    <div className="bg-night-950 text-white">
       {/* Header band */}
-      <div className="border-b border-ink-100 bg-gradient-to-b from-brand-50/60 to-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600 bg-white border border-brand-100 px-3 py-1 rounded-full">
-            <BookOpen className="w-3.5 h-3.5" /> Documentation
+      <div className="relative isolate overflow-hidden border-b border-white/[0.07] grain">
+        <Aurora variant="dark" />
+        <div className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b" aria-hidden />
+        <Reveal className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-white/70 bg-white/[0.06] ring-1 ring-white/10 px-3 py-1 rounded-full">
+            <BookOpen className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} /> Documentation
           </span>
-          <h1 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-ink-900">
-            Everything you need to run Botlify.
+          <h1 className="mt-5 font-display text-4xl sm:text-6xl font-semibold tracking-[-0.04em] leading-[1]">
+            Everything you need to{" "}
+            <span className="font-serif italic font-normal text-sunset">run</span>{" "}
+            Botlify.
           </h1>
-          <p className="mt-2 text-ink-500 max-w-2xl">
-            Set up your account, teach your AI, and automate your Instagram —
+          <p className="mt-4 text-white/60 max-w-2xl sm:text-lg">
+            Set up your account, teach your AI, and connect your booking channels —
             step by step. Search below or browse the sidebar.
           </p>
-          <div className="mt-5 relative max-w-lg">
-            <Search className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <div className="group mt-7 relative max-w-lg">
+            <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 transition-transform duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-gold" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search the docs…"
-              className="w-full rounded-xl border border-ink-200 bg-white pl-10 pr-3 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition"
+              className="w-full rounded-xl bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl pl-10 pr-3 py-3 text-sm text-white placeholder:text-white/35 outline-none transition-all duration-300 focus:bg-white/[0.09] focus:ring-sunset-flame/60 focus:shadow-[0_0_0_4px_rgba(255,106,43,0.15)]"
             />
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex gap-10">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-60 shrink-0 py-10">
-          <nav className="sticky top-24 space-y-6">
-            {groups.map((g) => (
-              <div key={g.group}>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
-                  {g.group}
-                </p>
-                <ul className="space-y-0.5">
-                  {g.sections.map((s) => (
-                    <li key={s.id}>
-                      <button
-                        onClick={() => jump(s.id)}
-                        className={`block w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition ${
-                          active === s.id && !q
-                            ? "bg-brand-50 text-brand-700 font-semibold"
-                            : "text-ink-600 hover:text-ink-900 hover:bg-ink-50"
-                        }`}
-                      >
-                        {s.title}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+        <aside className="hidden lg:block w-60 shrink-0 py-12">
+          <nav className="sticky top-24 space-y-6 max-h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar">
+            {navList(false)}
             {!groups.length && (
-              <p className="text-sm text-ink-400">No matches.</p>
+              <p className="text-sm text-white/40 px-2.5">No matches.</p>
             )}
           </nav>
         </aside>
@@ -264,84 +285,100 @@ export default function DocsPage() {
         {/* Mobile nav toggle */}
         <button
           onClick={() => setNavOpen((v) => !v)}
-          className="lg:hidden fixed bottom-5 right-5 z-30 w-12 h-12 rounded-full bg-brand-500 text-white shadow-lg grid place-items-center"
+          className="lg:hidden fixed bottom-5 right-5 z-30 w-12 h-12 rounded-full bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_12px_30px_-8px_rgba(255,61,119,0.6)] grid place-items-center transition-transform duration-300 ease-spring hover:scale-110 active:scale-95"
           aria-label="Table of contents"
         >
-          {navOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-        {navOpen && (
-          <div className="lg:hidden fixed inset-0 z-20 bg-black/40" onClick={() => setNavOpen(false)}>
-            <div
-              className="absolute right-0 top-0 bottom-0 w-72 bg-white p-5 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={navOpen ? "x" : "m"}
+              initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 420, damping: 26 }}
             >
-              {groups.map((g) => (
-                <div key={g.group} className="mb-5">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
-                    {g.group}
-                  </p>
-                  <ul className="space-y-0.5">
-                    {g.sections.map((s) => (
-                      <li key={s.id}>
-                        <button
-                          onClick={() => jump(s.id)}
-                          className="block w-full text-left text-sm px-2.5 py-1.5 rounded-lg text-ink-600 hover:bg-ink-50"
-                        >
-                          {s.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+              {navOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </motion.span>
+          </AnimatePresence>
+        </button>
+        <AnimatePresence>
+          {navOpen && (
+            <motion.div
+              className="lg:hidden fixed inset-0 z-20 bg-night-950/50 backdrop-blur-md"
+              onClick={() => setNavOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="glass-darker absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] p-5 overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", stiffness: 380, damping: 36 }}
+              >
+                {navList(true)}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 min-w-0 py-10 max-w-3xl">
+        <div ref={contentRef} className="flex-1 min-w-0 py-12 max-w-3xl">
           {visibleSections.length === 0 && (
-            <div className="text-center py-20 text-ink-400">
-              <p className="text-lg font-semibold text-ink-600">No results</p>
-              <p className="text-sm">Try a different search term.</p>
+            <div className="relative text-center py-20">
+              <div className="relative mx-auto mb-5 h-14 w-14">
+                <div className="absolute inset-0 rounded-full bg-sunset opacity-30 blur-2xl" />
+                <div className="relative h-14 w-14 rounded-2xl grid place-items-center bg-white/[0.06] ring-1 ring-white/10">
+                  <Search className="h-6 w-6 text-sunset-gold" strokeWidth={1.8} />
+                </div>
+              </div>
+              <p className="font-display text-xl font-semibold text-white">No results</p>
+              <p className="text-sm text-white/50">Try a different search term.</p>
             </div>
           )}
           {visibleSections.map((s) => (
             <section
               key={s.id}
               id={s.id}
-              className="scroll-mt-24 mb-14 pb-14 border-b border-ink-100 last:border-0"
+              className="scroll-mt-24 mb-14 pb-14 border-b border-white/[0.07] last:border-0"
             >
-              <h2 className="text-2xl font-black tracking-tight text-ink-900">
-                {s.title}
-              </h2>
-              {s.summary && (
-                <p className="mt-1 text-brand-600 font-medium">{s.summary}</p>
-              )}
-              <div className="mt-4 space-y-3">
-                {s.blocks.map((b, i) => (
-                  <Block key={i} b={b} />
-                ))}
-              </div>
+              <Reveal y={16}>
+                <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-white">
+                  {s.title}
+                </h2>
+                {s.summary && (
+                  <p className="mt-1.5 text-sunset-gold/90 font-medium">{s.summary}</p>
+                )}
+                <div className="mt-5 space-y-3">
+                  {s.blocks.map((b, i) => (
+                    <Block key={i} b={b} />
+                  ))}
+                </div>
+              </Reveal>
             </section>
           ))}
 
           {/* CTA footer */}
           {!q && (
-            <div className="rounded-2xl bg-ink-950 text-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <p className="font-bold text-lg">Ready to automate your DMs?</p>
-                <p className="text-ink-300 text-sm">
-                  Start your 3-day free trial — live in minutes.
-                </p>
+            <Reveal>
+              <div className="card-dark relative overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sunset opacity-25 blur-3xl" aria-hidden />
+                <div className="relative">
+                  <p className="font-display font-semibold text-xl tracking-[-0.02em]">
+                    Ready to automate your DMs?
+                  </p>
+                  <p className="text-white/60 text-sm">
+                    Start your 3-day free trial — live in minutes.
+                  </p>
+                </div>
+                <Magnetic className="relative shrink-0">
+                  <Link to="/register" className="btn-primary">
+                    Start free <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Magnetic>
               </div>
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition shrink-0"
-              >
-                Start free <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            </Reveal>
           )}
         </div>
       </div>

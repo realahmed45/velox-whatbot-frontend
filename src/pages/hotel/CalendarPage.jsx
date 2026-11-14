@@ -7,6 +7,7 @@
  * Housekeeping: GET /pms/units, PATCH /pms/units { roomTypeId, unitLabel, status }
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { usePropertyScope } from "@/store/propertyStore";
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
+import { Reveal } from "@/components/fx";
 
 const DAYS = 30;
 
@@ -31,9 +33,11 @@ const isoDay = (d) => new Date(d).toISOString().slice(0, 10);
 
 /* Green = free, amber = last unit, red = sold out. */
 function cellStyle(available) {
-  if (available <= 0) return "bg-rose-100 text-rose-700";
-  if (available === 1) return "bg-amber-100 text-amber-700";
-  return "bg-emerald-100 text-emerald-700";
+  if (available <= 0)
+    return "bg-rose-500/[0.12] text-rose-700 ring-rose-500/25";
+  if (available === 1)
+    return "bg-amber-400/[0.18] text-amber-800 ring-amber-500/25";
+  return "bg-emerald-500/[0.10] text-emerald-700 ring-emerald-500/20";
 }
 
 /* ── Housekeeping ────────────────────────────────────────────────────────── */
@@ -41,12 +45,25 @@ function cellStyle(available) {
 // Order matters — clicking a chip advances to the next status.
 const HK_STATUSES = ["clean", "dirty", "inspected", "out_of_service"];
 const HK_META = {
-  clean: { label: "Clean", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  dirty: { label: "Dirty", cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  inspected: { label: "Inspected", cls: "bg-sky-100 text-sky-700 border-sky-200" },
+  clean: {
+    label: "Clean",
+    cls: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20",
+    dot: "bg-emerald-500",
+  },
+  dirty: {
+    label: "Dirty",
+    cls: "bg-amber-400/15 text-amber-800 ring-amber-500/25",
+    dot: "bg-amber-500",
+  },
+  inspected: {
+    label: "Inspected",
+    cls: "bg-sky-500/10 text-sky-700 ring-sky-500/20",
+    dot: "bg-sky-500",
+  },
   out_of_service: {
     label: "Out of service",
-    cls: "bg-rose-100 text-rose-700 border-rose-200",
+    cls: "bg-rose-500/10 text-rose-700 ring-rose-500/20",
+    dot: "bg-rose-500",
   },
 };
 
@@ -74,21 +91,39 @@ function UnitChip({ roomTypeId, unit, onChanged }) {
   };
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={cycle}
       disabled={busy}
       title={`${unit.label} — ${meta.label} (click to change)`}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition hover:opacity-80 disabled:opacity-50 ${meta.cls}`}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.94 }}
+      transition={{ type: "spring", stiffness: 420, damping: 26 }}
+      className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold ring-1 ring-inset shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition-colors duration-300 disabled:opacity-50 ${meta.cls}`}
     >
-      {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+      {busy ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+      )}
       <span>{unit.label}</span>
-      <span className="opacity-70 font-medium">{meta.label}</span>
-    </button>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={unit.status}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 0.75, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2 }}
+          className="font-medium"
+        >
+          {meta.label}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
-function Housekeeping() {
+function Housekeeping({ propertyId }) {
   const [loading, setLoading] = useState(true);
   const [rooms, setRooms] = useState([]);
 
@@ -104,7 +139,7 @@ function Housekeeping() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [propertyId]);
 
   useEffect(() => {
     load();
@@ -129,8 +164,8 @@ function Housekeeping() {
   if (loading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
       </div>
     );
   }
@@ -147,13 +182,17 @@ function Housekeeping() {
 
   return (
     <div className="space-y-4">
-      {rooms.map((r) => (
-        <div key={r.roomTypeId} className="card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <h3 className="text-sm font-bold text-ink-900 truncate">
-              {r.roomName}
+      {rooms.map((r, i) => (
+        <Reveal key={r.roomTypeId} delay={i * 0.06} y={16}>
+        <div className="card group p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="flex min-w-0 items-center gap-2.5 font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
+              <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                <BedDouble className="h-4 w-4" strokeWidth={1.8} />
+              </span>
+              <span className="truncate">{r.roomName}</span>
             </h3>
-            <span className="text-xs text-ink-500 flex-shrink-0">
+            <span className="flex-shrink-0 rounded-full bg-ink-900/[0.05] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
               {r.units.length} unit{r.units.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -172,6 +211,7 @@ function Housekeeping() {
             </div>
           )}
         </div>
+        </Reveal>
       ))}
     </div>
   );
@@ -202,7 +242,7 @@ function RateEditor({ room, currency, onSaved, onClose }) {
   };
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-brand-200 bg-brand-50/60 p-3.5">
+    <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-white/80 p-4 ring-1 ring-sunset-flame/20 shadow-[inset_0_1px_0_#fff,0_12px_30px_-18px_rgba(255,106,43,0.5)]">
       <div className="min-w-[160px]">
         <label className="label text-xs" htmlFor={`rate-${room._id}`}>
           Base rate ({currency || "USD"} per night)
@@ -221,7 +261,7 @@ function RateEditor({ room, currency, onSaved, onClose }) {
         type="button"
         onClick={save}
         disabled={saving}
-        className="btn-primary text-xs px-3 py-2"
+        className="btn-primary px-3.5 py-2 text-xs"
       >
         {saving ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -233,7 +273,7 @@ function RateEditor({ room, currency, onSaved, onClose }) {
       <button
         type="button"
         onClick={onClose}
-        className="btn-ghost text-xs px-3 py-2"
+        className="btn-ghost px-3.5 py-2 text-xs"
       >
         <X className="w-3.5 h-3.5" /> Close
       </button>
@@ -326,27 +366,29 @@ export default function CalendarPage() {
   const currency = property?.currency || "USD";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <div className="mb-5 sm:mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-            <CalendarDays className="w-6 h-6 text-brand-500" />
+    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+      <Reveal className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-3.5">
+          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+            <CalendarDays className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-ink-900 tracking-tight">
+            <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
               Calendar
             </h1>
-            <p className="text-sm text-ink-500 mt-0.5">
-              The next 30 days, and who's cleaning what.
+            <p className="mt-0.5 text-sm text-ink-500">
+              The next{" "}
+              <span className="font-serif text-[1.05em] italic text-ink-700">30 days</span>, and
+              who's cleaning what.
             </p>
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {loading ? (
         <div className="space-y-4">
-          <Skeleton className="h-56 w-full" />
-          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
         </div>
       ) : failed ? (
         <EmptyState
@@ -375,45 +417,63 @@ export default function CalendarPage() {
         <>
           {/* ── Availability grid ──────────────────────────────────── */}
           <section className="mb-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <h2 className="section-heading">Availability</h2>
-              <div className="flex items-center gap-3 text-xs text-ink-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-200" />
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+                Availability
+              </h2>
+              <div className="flex items-center gap-1 rounded-full bg-white/70 p-1 text-xs text-ink-600 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+                <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5">
+                  <span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-500/20 ring-1 ring-inset ring-emerald-500/30" />
                   Free
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-amber-100 border border-amber-200" />
+                <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5">
+                  <span className="h-2.5 w-2.5 rounded-[4px] bg-amber-400/30 ring-1 ring-inset ring-amber-500/30" />
                   1 left
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-rose-100 border border-rose-200" />
+                <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5">
+                  <span className="h-2.5 w-2.5 rounded-[4px] bg-rose-500/20 ring-1 ring-inset ring-rose-500/30" />
                   Full
                 </span>
               </div>
             </div>
 
-            <div className="card overflow-hidden">
+            <Reveal delay={0.05} y={16} className="card overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="w-full border-separate border-spacing-0">
                   <thead>
-                    <tr className="bg-ink-50">
-                      <th className="sticky left-0 z-10 bg-ink-50 text-left text-xs font-bold text-ink-600 px-3 py-2.5 min-w-[150px] border-b border-ink-100">
+                    <tr>
+                      <th className="sticky left-0 top-0 z-20 min-w-[132px] border-b border-r border-ink-900/[0.06] bg-white/85 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-500 backdrop-blur-xl sm:min-w-[160px]">
                         Room
                       </th>
-                      {dates.map((d) => (
-                        <th
-                          key={d.toISOString()}
-                          className="text-center text-[10px] font-semibold text-ink-500 px-1 py-2.5 min-w-[34px] border-b border-ink-100"
-                        >
-                          <span className="block leading-tight">
-                            {d.toLocaleDateString(undefined, { weekday: "narrow" })}
-                          </span>
-                          <span className="block leading-tight text-ink-700 font-bold">
-                            {d.getDate()}
-                          </span>
-                        </th>
-                      ))}
+                      {dates.map((d, i) => {
+                        const today = i === 0;
+                        const weekend = d.getDay() === 0 || d.getDay() === 6;
+                        return (
+                          <th
+                            key={d.toISOString()}
+                            className={`min-w-[36px] border-b border-ink-900/[0.06] px-1 py-2 text-center text-[10px] font-semibold backdrop-blur-xl ${
+                              today
+                                ? "bg-sunset-soft text-sunset-flame"
+                                : weekend
+                                  ? "bg-ink-900/[0.03] text-ink-500"
+                                  : "bg-white/70 text-ink-500"
+                            }`}
+                          >
+                            <span className="block uppercase leading-tight">
+                              {d.toLocaleDateString(undefined, { weekday: "narrow" })}
+                            </span>
+                            <span
+                              className={`mx-auto mt-0.5 grid h-5 w-5 place-items-center rounded-full font-display text-[11px] font-semibold leading-none tabular-nums ${
+                                today
+                                  ? "bg-sunset text-white shadow-[0_4px_10px_-4px_rgba(255,61,119,0.7)]"
+                                  : "text-ink-800"
+                              }`}
+                            >
+                              {d.getDate()}
+                            </span>
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
@@ -423,20 +483,33 @@ export default function CalendarPage() {
                       return (
                         <tr
                           key={room._id}
-                          className={open ? "bg-brand-50/40" : "hover:bg-ink-50/60"}
+                          className={`group/row transition-colors duration-300 ${
+                            open ? "bg-sunset-soft" : "hover:bg-white/70"
+                          }`}
                         >
-                          <td className="sticky left-0 z-10 bg-white px-3 py-2 border-b border-ink-100">
+                          <td
+                            className={`sticky left-0 z-10 border-b border-r border-ink-900/[0.06] px-2 py-1.5 backdrop-blur-xl transition-colors duration-300 ${
+                              open ? "bg-orange-50/90" : "bg-white/85 group-hover/row:bg-white/95"
+                            }`}
+                          >
                             <button
                               type="button"
                               onClick={() =>
                                 setOpenRoom(open ? null : room._id)
                               }
-                              className="text-left w-full group"
+                              aria-expanded={open}
+                              className={`group block w-full max-w-[150px] rounded-lg px-1.5 py-1 text-left transition-all duration-300 ease-spring active:scale-[0.97] sm:max-w-none ${
+                                open ? "" : "hover:translate-x-0.5"
+                              }`}
                             >
-                              <span className="block text-sm font-semibold text-ink-900 truncate group-hover:text-brand-700 transition">
+                              <span
+                                className={`block truncate text-sm font-semibold transition-colors ${
+                                  open ? "text-sunset-flame" : "text-ink-900 group-hover:text-sunset-flame"
+                                }`}
+                              >
                                 {room.name}
                               </span>
-                              <span className="block text-[11px] text-ink-500 mt-0.5">
+                              <span className="mt-0.5 block text-[11px] tabular-nums text-ink-500">
                                 {currency} {Number(room.baseRate || 0)} · tap to edit
                               </span>
                             </button>
@@ -447,16 +520,18 @@ export default function CalendarPage() {
                             return (
                               <td
                                 key={d.toISOString()}
-                                className="px-0.5 py-1 border-b border-ink-100 text-center"
+                                className={`border-b border-ink-900/[0.05] px-0.5 py-1 text-center ${
+                                  i === 0 ? "bg-sunset-flame/[0.06]" : ""
+                                }`}
                               >
                                 {available == null ? (
-                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded text-[11px] font-semibold bg-ink-100 text-ink-400">
+                                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900/[0.04] text-[11px] font-semibold text-ink-400">
                                     –
                                   </span>
                                 ) : (
                                   <span
                                     title={`${d.toLocaleDateString()} — ${available} free`}
-                                    className={`inline-flex items-center justify-center w-7 h-7 rounded text-[11px] font-bold ${cellStyle(available)}`}
+                                    className={`relative inline-flex h-7 w-7 cursor-default items-center justify-center rounded-lg text-[11px] font-semibold tabular-nums ring-1 ring-inset transition-transform duration-300 ease-spring hover:z-[5] hover:scale-[1.18] hover:shadow-[0_6px_14px_-6px_rgba(15,23,42,0.35)] ${cellStyle(available)}`}
                                   >
                                     {available}
                                   </span>
@@ -471,30 +546,43 @@ export default function CalendarPage() {
                 </table>
               </div>
 
-              {openRoom && (
-                <div className="p-3 sm:p-4 border-t border-ink-100 bg-ink-50/60">
-                  <RateEditor
-                    room={rooms.find((r) => String(r._id) === String(openRoom))}
-                    currency={currency}
-                    onSaved={onRateSaved}
-                    onClose={() => setOpenRoom(null)}
-                  />
-                </div>
-              )}
-            </div>
+              <AnimatePresence initial={false}>
+                {openRoom && (
+                  <motion.div
+                    key={String(openRoom)}
+                    initial={{ height: 0, opacity: 0, filter: "blur(4px)" }}
+                    animate={{ height: "auto", opacity: 1, filter: "blur(0px)" }}
+                    exit={{ height: 0, opacity: 0, filter: "blur(4px)" }}
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="border-t border-ink-900/[0.06] bg-white/40 p-3 sm:p-4">
+                      <RateEditor
+                        room={rooms.find((r) => String(r._id) === String(openRoom))}
+                        currency={currency}
+                        onSaved={onRateSaved}
+                        onClose={() => setOpenRoom(null)}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Reveal>
           </section>
 
           {/* ── Housekeeping ───────────────────────────────────────── */}
           <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-brand-600" />
-              <h2 className="section-heading">Housekeeping</h2>
+            <div className="mb-1.5 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-sunset-flame" strokeWidth={1.8} />
+              <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+                Housekeeping
+              </h2>
             </div>
-            <p className="text-xs text-ink-500 mb-3">
+            <p className="mb-4 text-xs text-ink-500">
               Tap a unit to move it through clean → dirty → inspected → out of
               service.
             </p>
-            <Housekeeping />
+            <Housekeeping propertyId={propertyId} />
           </section>
         </>
       )}

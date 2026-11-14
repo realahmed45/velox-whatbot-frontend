@@ -25,6 +25,8 @@ import {
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import Skeleton from "@/components/ui/Skeleton";
+import { Spotlight } from "@/components/fx";
 
 const ID_TYPES = [
   { value: "ktp", label: "KTP" },
@@ -131,7 +133,7 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-black text-ink-900">
+          <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
             {scope === "platform" ? "Botlify drivers" : "Your drivers"}
           </h2>
           <p className="text-sm text-ink-500 mt-0.5 max-w-xl">
@@ -142,16 +144,25 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
         </div>
         <button
           onClick={() => setEditing({ ...BLANK })}
-          className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition shrink-0"
+          className="btn-primary group shrink-0"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
           Add driver
         </button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-14">
-          <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+        <div className="space-y-2.5">
+          {[0, 1].map((i) => (
+            <div key={i} className="card flex items-start gap-4 p-4">
+              <Skeleton className="h-11 w-11 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-52" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : drivers.length === 0 ? (
         <EmptyState
@@ -162,27 +173,37 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
       ) : (
         <div className="space-y-2.5">
           {drivers.map((d) => (
-            <div
+            <Spotlight
               key={d._id}
-              className="rounded-2xl border border-ink-100 bg-white p-4 flex flex-wrap items-start gap-4"
+              className="card group flex flex-wrap items-start gap-4 p-4 transition-transform duration-500 ease-spring hover:-translate-y-0.5"
             >
+              <span
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl font-display text-base font-semibold transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                  d.active
+                    ? "bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_18px_-8px_rgba(255,61,119,0.6)]"
+                    : "bg-ink-900/[0.05] text-ink-400"
+                }`}
+                aria-hidden
+              >
+                {(d.name || "?").trim().charAt(0).toUpperCase()}
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-bold text-ink-900">{d.name}</p>
+                  <p className="font-semibold text-ink-900">{d.name}</p>
                   {d.nickname && (
                     <span className="text-xs text-ink-500">"{d.nickname}"</span>
                   )}
                   {!d.active && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-ink-100 text-ink-500">
+                    <span className="badge-gray">
                       Paused
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-ink-500 mt-0.5">{d.phone}</p>
+                <p className="mt-0.5 font-mono text-[13px] text-ink-500">{d.phone}</p>
                 {d.vehicleLabel && (
                   <p className="text-xs text-ink-400 mt-0.5">{d.vehicleLabel}</p>
                 )}
-                <p className="text-xs text-ink-400 mt-1.5">
+                <p className="mt-1.5 text-xs tabular-nums text-ink-400">
                   {d.stats?.accepted || 0} accepted ·{" "}
                   {d.stats?.missed || 0} missed ·{" "}
                   {d.stats?.declined || 0} passed
@@ -200,19 +221,19 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
                     })
                   }
                   title="Edit"
-                  className="p-2 rounded-lg text-ink-400 hover:text-ink-800 hover:bg-ink-50 transition"
+                  className="group/b grid h-10 w-10 place-items-center rounded-xl text-ink-400 transition hover:bg-ink-900/[0.05] hover:text-ink-800 active:scale-90"
                 >
-                  <Pencil className="w-4 h-4" />
+                  <Pencil className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/b:-translate-y-0.5 group-hover/b:rotate-[-12deg]" />
                 </button>
                 <button
                   onClick={() => remove(d)}
                   title="Remove"
-                  className="p-2 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  className="group/b grid h-10 w-10 place-items-center rounded-xl text-ink-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-90"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4 transition-transform duration-500 ease-spring group-hover/b:-translate-y-0.5 group-hover/b:rotate-[8deg]" />
                 </button>
               </div>
-            </div>
+            </Spotlight>
           ))}
         </div>
       )}
@@ -301,8 +322,8 @@ function DriverForm({ value, saving, onCancel, onSave }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-ink-100 bg-ink-50/40 p-3.5">
-          <p className="text-xs font-bold text-ink-700 mb-2.5">Vehicle</p>
+        <div className="rounded-2xl bg-white/50 p-3.5 ring-1 ring-inset ring-ink-900/[0.06]">
+          <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Vehicle</p>
           <div className="grid sm:grid-cols-4 gap-3">
             <input
               value={form.vehicle.make}
@@ -331,8 +352,8 @@ function DriverForm({ value, saving, onCancel, onSave }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-ink-100 bg-ink-50/40 p-3.5">
-          <p className="text-xs font-bold text-ink-700 mb-1">Identity</p>
+        <div className="rounded-2xl bg-white/50 p-3.5 ring-1 ring-inset ring-ink-900/[0.06]">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Identity</p>
           <p className="text-xs text-ink-400 mb-2.5">
             Numbers only — we never store a photo or scan of a document.
           </p>
@@ -402,7 +423,7 @@ function DriverForm({ value, saving, onCancel, onSave }) {
                 type="checkbox"
                 checked={form.active}
                 onChange={(e) => set("active", e.target.checked)}
-                className="w-4 h-4 accent-brand-500"
+                className="h-4 w-4 accent-[#FF6A2B]"
               />
               <span className="text-sm font-semibold text-ink-700">
                 Taking jobs
@@ -414,7 +435,7 @@ function DriverForm({ value, saving, onCancel, onSave }) {
         <div className="flex items-center justify-end gap-2 pt-1">
           <button
             onClick={onCancel}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-500 hover:text-ink-800 px-3 py-2.5 transition"
+            className="btn-ghost"
           >
             <X className="w-4 h-4" />
             Cancel
@@ -422,7 +443,7 @@ function DriverForm({ value, saving, onCancel, onSave }) {
           <button
             onClick={() => onSave(form)}
             disabled={!canSave}
-            className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl px-4 py-2.5 transition disabled:opacity-50"
+            className="btn-primary"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />

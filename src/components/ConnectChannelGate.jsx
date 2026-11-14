@@ -22,11 +22,13 @@ export default function ConnectChannelGate({ children, feature }) {
 
   return (
     <div>
-      <div className="mx-4 sm:mx-8 mt-4 sm:mt-6 mb-0 flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-xl bg-brand-50 border border-brand-100">
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center shadow-glow">
-          <MessageCircle className="w-4 h-4 text-white" />
+      <div className="card group relative mx-4 mb-0 mt-4 flex flex-col gap-3 overflow-hidden px-4 py-3.5 sm:mx-8 sm:mt-6 sm:flex-row sm:items-center">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-sunset-soft opacity-70" />
+        <div aria-hidden className="pointer-events-none absolute inset-y-3 left-0 w-[3px] rounded-full bg-sunset" />
+        <div className="relative grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <MessageCircle className="h-4.5 w-4.5 text-white" strokeWidth={1.8} />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="relative min-w-0 flex-1">
           <p className="text-sm font-semibold text-ink-900">
             {feature
               ? `${feature} needs a connected messaging channel`
@@ -39,7 +41,7 @@ export default function ConnectChannelGate({ children, feature }) {
         </div>
         <Link
           to="/dashboard/settings?tab=channels"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition flex-shrink-0 shadow-glow"
+          className="btn-primary relative flex-shrink-0 px-3.5 py-2 text-xs"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           Connect a channel

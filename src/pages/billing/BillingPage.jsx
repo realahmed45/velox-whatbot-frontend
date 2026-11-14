@@ -16,6 +16,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
+import { NumberTicker, PulseDot, Reveal, Spotlight } from "@/components/fx";
 import PricingPage from "../PricingPage";
 import PageHeader from "@/components/ui/PageHeader";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -122,7 +124,24 @@ export default function BillingPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-ink-400 text-sm">Loading…</div>;
+    return (
+      <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6" aria-busy="true">
+        <div className="space-y-2">
+          <div className="h-7 w-48 rounded-lg bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-4 w-72 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+        </div>
+        <div className="card p-5 h-24 animate-pulse" />
+        <div className="card p-6 space-y-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-32 rounded bg-ink-900/[0.06] animate-pulse" />
+              <div className="h-2 rounded-full bg-ink-900/[0.06] animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <span className="sr-only">Loading…</span>
+      </div>
+    );
   }
 
   const sub = data?.subscription;
@@ -145,8 +164,12 @@ export default function BillingPage() {
     planId !== "free";
   const cancelPending = !isLifetime && sub?.cancelAtPeriodEnd;
 
+  const tone = isLifetime ? "brand" : isTrial ? "amber" : "emerald";
+  const actionTile =
+    "group rounded-xl bg-white/80 p-4 text-left ring-1 shadow-[inset_0_1px_0_#fff] transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50";
+
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+    <div className="px-4 sm:px-8 pt-6 sm:pt-8 pb-10 max-w-6xl mx-auto">
       <PageHeader
         icon={CreditCard}
         title="Billing & plan"
@@ -154,196 +177,257 @@ export default function BillingPage() {
       />
 
       {/* Status banner */}
-      <div
-        className={clsx(
-          "card p-5 mb-6 flex items-start gap-3",
-          isLifetime
-            ? "border-l-4 border-brand-500 bg-brand-50/50"
-            : isTrial
-              ? "border-l-4 border-amber-400 bg-amber-50/40"
-              : "border-l-4 border-emerald-400 bg-emerald-50/40",
-        )}
-      >
-        {isLifetime ? (
-          <Sparkles className="w-5 h-5 text-brand-600 mt-0.5" />
-        ) : isTrial ? (
-          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-        ) : (
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5" />
-        )}
-        <div className="flex-1">
-          <h2 className="font-semibold text-ink-900">
-            {isLifetime
-              ? "Lifetime subscription ✨"
-              : isTrial
-                ? status === "trialing"
-                  ? "You're on your 3-day free trial"
-                  : "Choose a plan to get started"
-                : `${formatPlan(planId)} · ${capitalize(status)}`}
-          </h2>
-          <p className="text-sm text-ink-500 mt-0.5">
-            {isLifetime
-              ? "Free forever — your account never expires and is never charged. 💙"
-              : status === "trialing" && sub?.trialEndsAt
-                ? `Trial ends ${new Date(sub.trialEndsAt).toLocaleDateString()} — your card is charged then unless you cancel.`
-                : isTrial
-                  ? "Pick a plan below to unlock your Instagram automations."
-                  : cancelPending
-                    ? `Cancels on ${sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : "period end"} — you keep access until then.`
-                    : sub?.currentPeriodEnd
-                      ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
-                      : "Subscription active."}
-          </p>
-        </div>
-        {isLifetime ? (
-          <span className="chip bg-brand-100 text-brand-700 text-xs font-semibold">
-            <Sparkles className="w-3 h-3 mr-1" />
-            Lifetime
+      <Reveal y={16}>
+        <Spotlight
+          className={clsx(
+            "group card p-5 mb-6 flex flex-wrap sm:flex-nowrap items-start gap-3 sm:gap-4 overflow-hidden ring-1",
+            tone === "brand"
+              ? "ring-sunset-flame/25"
+              : tone === "amber"
+                ? "ring-amber-500/25"
+                : "ring-emerald-500/25",
+          )}
+        >
+          <span
+            aria-hidden
+            className={clsx(
+              "pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full blur-3xl",
+              tone === "brand"
+                ? "bg-sunset opacity-25"
+                : tone === "amber"
+                  ? "bg-amber-400/25"
+                  : "bg-emerald-400/25",
+            )}
+          />
+          <span
+            className={clsx(
+              "relative grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]",
+              tone === "brand"
+                ? "bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.6)]"
+                : tone === "amber"
+                  ? "bg-amber-50 text-amber-600 ring-1 ring-amber-500/15"
+                  : "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15",
+            )}
+          >
+            {isLifetime ? (
+              <Sparkles className="w-5 h-5" strokeWidth={1.8} />
+            ) : isTrial ? (
+              <AlertCircle className="w-5 h-5" strokeWidth={1.8} />
+            ) : (
+              <CheckCircle2 className="w-5 h-5" strokeWidth={1.8} />
+            )}
           </span>
-        ) : (
-          sub?.billingCycle && (
-            <span className="chip bg-ink-100 text-ink-700 text-xs">
-              <Calendar className="w-3 h-3 mr-1" />
-              {capitalize(sub.billingCycle)}
+          <div className="relative flex-1 min-w-0">
+            <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900 flex items-center gap-2">
+              {!isLifetime && !isTrial && (
+                <PulseDot color="bg-emerald-500" className="shrink-0" />
+              )}
+              <span>
+                {isLifetime
+                  ? "Lifetime subscription ✨"
+                  : isTrial
+                    ? status === "trialing"
+                      ? "You're on your 3-day free trial"
+                      : "Choose a plan to get started"
+                    : `${formatPlan(planId)} · ${capitalize(status)}`}
+              </span>
+            </h2>
+            <p className="text-sm text-ink-500 mt-0.5">
+              {isLifetime
+                ? "Free forever — your account never expires and is never charged. 💙"
+                : status === "trialing" && sub?.trialEndsAt
+                  ? `Trial ends ${new Date(sub.trialEndsAt).toLocaleDateString()} — your card is charged then unless you cancel.`
+                  : isTrial
+                    ? "Pick a plan below to unlock your Instagram automations."
+                    : cancelPending
+                      ? `Cancels on ${sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : "period end"} — you keep access until then.`
+                      : sub?.currentPeriodEnd
+                        ? `Renews on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
+                        : "Subscription active."}
+            </p>
+          </div>
+          {isLifetime ? (
+            <span className="relative badge-premium inline-flex items-center">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Lifetime
             </span>
-          )
-        )}
-      </div>
+          ) : (
+            sub?.billingCycle && (
+              <span className="relative badge-gray inline-flex items-center">
+                <Calendar className="w-3 h-3 mr-1" />
+                {capitalize(sub.billingCycle)}
+              </span>
+            )
+          )}
+        </Spotlight>
+      </Reveal>
 
       {/* Manage your subscription — prominent self-service actions */}
       {hasManageable && (
-        <div className="card p-6 mb-6">
-          <h3 className="font-semibold text-ink-900 mb-1">
-            Manage your subscription
-          </h3>
-          <p className="text-sm text-ink-500 mb-5">
-            Everything's self-service — cancel, update your card or download
-            invoices right here.
-          </p>
+        <Reveal y={16} delay={0.05}>
+          <div className="card p-5 sm:p-6 mb-6">
+            <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-ink-900 mb-1">
+              Manage your subscription
+            </h3>
+            <p className="text-sm text-ink-500 mb-5">
+              Everything's self-service — cancel, update your card or download
+              invoices right here.
+            </p>
 
-          {cancelPending ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 mb-4 flex items-start gap-2.5">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold text-amber-900">
-                  Your plan is set to cancel
-                </p>
-                <p className="text-amber-700 mt-0.5">
-                  You keep full access until{" "}
-                  {sub?.currentPeriodEnd
-                    ? new Date(sub.currentPeriodEnd).toLocaleDateString()
-                    : "the end of your period"}
-                  . Changed your mind? Just pick a plan below to stay.
-                </p>
-              </div>
-            </div>
-          ) : null}
+            <AnimatePresence initial={false}>
+              {cancelPending ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-xl bg-amber-50/80 ring-1 ring-amber-500/20 p-4 mb-4 flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-semibold text-amber-900">
+                        Your plan is set to cancel
+                      </p>
+                      <p className="text-amber-700 mt-0.5">
+                        You keep full access until{" "}
+                        {sub?.currentPeriodEnd
+                          ? new Date(sub.currentPeriodEnd).toLocaleDateString()
+                          : "the end of your period"}
+                        . Changed your mind? Just pick a plan below to stay.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
-          <div className="grid sm:grid-cols-3 gap-3">
-            {/* Update payment method */}
-            <button
-              onClick={openPortal}
-              disabled={portalLoading}
-              className="group rounded-xl border border-ink-200 bg-white p-4 text-left hover:border-brand-300 hover:shadow-card transition disabled:opacity-50"
-            >
-              <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2.5">
-                {portalLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CreditCard className="w-4 h-4" />
+            <div className="grid sm:grid-cols-3 gap-3">
+              {/* Update payment method */}
+              <Spotlight
+                as="button"
+                onClick={openPortal}
+                disabled={portalLoading}
+                className={clsx(
+                  actionTile,
+                  "ring-ink-900/[0.07] hover:ring-sunset-flame/30 hover:shadow-[0_14px_30px_-14px_rgba(255,106,43,0.45)]",
                 )}
-              </div>
-              <p className="font-bold text-sm text-ink-900">Update card</p>
-              <p className="text-xs text-ink-500 mt-0.5">
-                Change your payment method securely.
-              </p>
-            </button>
-
-            {/* Invoices / receipts */}
-            <button
-              onClick={openPortal}
-              disabled={portalLoading}
-              className="group rounded-xl border border-ink-200 bg-white p-4 text-left hover:border-brand-300 hover:shadow-card transition disabled:opacity-50"
-            >
-              <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2.5">
-                <FileText className="w-4 h-4" />
-              </div>
-              <p className="font-bold text-sm text-ink-900">Invoices</p>
-              <p className="text-xs text-ink-500 mt-0.5">
-                View and download your receipts.
-              </p>
-            </button>
-
-            {/* Cancel */}
-            {!cancelPending && (
-              <button
-                onClick={cancelPlan}
-                disabled={cancelling}
-                className="group rounded-xl border border-red-200 bg-white p-4 text-left hover:border-red-300 hover:bg-red-50/40 transition disabled:opacity-50"
               >
-                <div className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mb-2.5">
-                  {cancelling ? (
+                <div className="w-10 h-10 rounded-xl bg-sunset-soft text-sunset-flame flex items-center justify-center mb-3 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                  {portalLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <XCircle className="w-4 h-4" />
+                    <CreditCard className="w-4 h-4" strokeWidth={1.8} />
                   )}
                 </div>
-                <p className="font-bold text-sm text-red-600">Cancel plan</p>
+                <p className="font-semibold text-sm text-ink-900">Update card</p>
                 <p className="text-xs text-ink-500 mt-0.5">
-                  Cancel anytime — keep access till period end.
+                  Change your payment method securely.
                 </p>
-              </button>
-            )}
+              </Spotlight>
+
+              {/* Invoices / receipts */}
+              <Spotlight
+                as="button"
+                onClick={openPortal}
+                disabled={portalLoading}
+                className={clsx(
+                  actionTile,
+                  "ring-ink-900/[0.07] hover:ring-sunset-flame/30 hover:shadow-[0_14px_30px_-14px_rgba(255,106,43,0.45)]",
+                )}
+              >
+                <div className="w-10 h-10 rounded-xl bg-sunset-soft text-sunset-flame flex items-center justify-center mb-3 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[8deg]">
+                  <FileText className="w-4 h-4" strokeWidth={1.8} />
+                </div>
+                <p className="font-semibold text-sm text-ink-900">Invoices</p>
+                <p className="text-xs text-ink-500 mt-0.5">
+                  View and download your receipts.
+                </p>
+              </Spotlight>
+
+              {/* Cancel */}
+              {!cancelPending && (
+                <button
+                  onClick={cancelPlan}
+                  disabled={cancelling}
+                  className={clsx(
+                    actionTile,
+                    "ring-rose-500/20 hover:bg-rose-50/60 hover:ring-rose-500/35 hover:shadow-[0_14px_30px_-14px_rgba(225,29,72,0.4)]",
+                  )}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3 transition-transform duration-500 ease-spring group-hover:rotate-90">
+                    {cancelling ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <XCircle className="w-4 h-4" strokeWidth={1.8} />
+                    )}
+                  </div>
+                  <p className="font-semibold text-sm text-rose-600">Cancel plan</p>
+                  <p className="text-xs text-ink-500 mt-0.5">
+                    Cancel anytime — keep access till period end.
+                  </p>
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        </Reveal>
       )}
 
       {/* Usage card */}
-      <div className="card p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-4 h-4 text-brand-600" />
-          <h3 className="font-semibold text-ink-900">This month's usage</h3>
+      <Reveal y={16} delay={0.08}>
+        <div className="card p-5 sm:p-6 mb-6">
+          <div className="flex items-center gap-2.5 mb-5">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame">
+              <TrendingUp className="w-4 h-4" strokeWidth={1.8} />
+            </span>
+            <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-ink-900">
+              This month's usage
+            </h3>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <UsageBar
+              label="Messages sent"
+              used={usage.messagesThisMonth || 0}
+              limit={limits.messages}
+            />
+            <UsageBar
+              label="Contacts"
+              used={usage.contactsCount || 0}
+              limit={limits.contacts}
+            />
+            <UsageBar
+              label="Active flows"
+              used={usage.activeFlows || 0}
+              limit={limits.flows}
+            />
+            <UsageBar
+              label="Team seats"
+              used={usage.teamMembers || 1}
+              limit={limits.teamSeats}
+            />
+          </div>
         </div>
-        <div className="space-y-4">
-          <UsageBar
-            label="Messages sent"
-            used={usage.messagesThisMonth || 0}
-            limit={limits.messages}
-          />
-          <UsageBar
-            label="Contacts"
-            used={usage.contactsCount || 0}
-            limit={limits.contacts}
-          />
-          <UsageBar
-            label="Active flows"
-            used={usage.activeFlows || 0}
-            limit={limits.flows}
-          />
-          <UsageBar
-            label="Team seats"
-            used={usage.teamMembers || 1}
-            limit={limits.teamSeats}
-          />
-        </div>
-      </div>
+      </Reveal>
 
       {/* Embedded pricing — hidden for lifetime accounts (nothing to buy). */}
       {!isLifetime && (
-        <div className="card p-6">
-          <h3 className="font-semibold text-ink-900 mb-1">
-            {isTrial ? "Choose a plan" : "Upgrade your plan"}
-          </h3>
-          <p className="text-sm text-ink-500 mb-6">
-            {isTrial
-              ? "Switch plans anytime. Annual billing saves ~17%."
-              : "Upgrade for more — annual billing saves ~17%. You keep everything you already have."}
-          </p>
-          <PricingPage
-            embedded
-            currentPlan={isTrial ? null : planId}
-            currentCycle={sub?.billingCycle || null}
-          />
+        <div>
+          {/* Not wrapped in Reveal: a lingering CSS filter would trap any
+              fixed-position overlay the pricing block opens. */}
+          <div className="card p-5 sm:p-6">
+            <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900 mb-1">
+              {isTrial ? "Choose a plan" : "Upgrade your plan"}
+            </h3>
+            <p className="text-sm text-ink-500 mb-6">
+              {isTrial
+                ? "Switch plans anytime. Annual billing saves ~17%."
+                : "Upgrade for more — annual billing saves ~17%. You keep everything you already have."}
+            </p>
+            <PricingPage
+              embedded
+              currentPlan={isTrial ? null : planId}
+              currentCycle={sub?.billingCycle || null}
+            />
+          </div>
         </div>
       )}
 
@@ -366,29 +450,32 @@ function UsageBar({ label, used, limit }) {
   const near = pct >= 80;
   return (
     <div>
-      <div className="flex items-center justify-between text-sm mb-1">
+      <div className="flex items-baseline justify-between gap-2 text-sm mb-1.5">
         <span className="text-ink-700">{label}</span>
         <span
           className={clsx(
-            "font-mono text-xs",
-            near ? "text-red-600" : "text-ink-500",
+            "font-mono text-xs tabular-nums",
+            near ? "text-rose-600" : "text-ink-500",
           )}
         >
-          {Number(used).toLocaleString()} /{" "}
+          <NumberTicker value={Number(used) || 0} /> /{" "}
           {unlimited ? "∞" : numericLimit.toLocaleString()}
         </span>
       </div>
-      <div className="h-2 bg-ink-100 rounded-full overflow-hidden">
-        <div
+      <div className="h-2 bg-ink-900/[0.06] rounded-full overflow-hidden shadow-[inset_0_1px_2px_rgba(15,23,42,0.08)]">
+        <motion.div
           className={clsx(
-            "h-full transition-all",
+            "h-full rounded-full",
             unlimited
-              ? "bg-brand-gradient w-full opacity-30"
+              ? "bg-sunset opacity-30"
               : near
-                ? "bg-red-500"
-                : "bg-brand-gradient",
+                ? "bg-gradient-to-r from-rose-400 to-rose-600"
+                : "bg-sunset",
           )}
-          style={{ width: unlimited ? "100%" : `${pct}%` }}
+          initial={{ width: 0 }}
+          whileInView={{ width: unlimited ? "100%" : `${pct}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
         />
       </div>
     </div>

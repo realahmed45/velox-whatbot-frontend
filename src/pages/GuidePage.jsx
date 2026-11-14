@@ -7,11 +7,15 @@
  * pricing & commission, and a troubleshooting FAQ.
  *
  * Rendered both publicly (inside MarketingLayout) and in the dashboard, so it
- * keeps its own max-width and never assumes a surrounding shell.
+ * keeps its own max-width and never assumes a surrounding shell. Publicly it
+ * paints the dark cinematic canvas; inside /dashboard it switches to the light
+ * glass palette (see THEMES).
  */
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import ChannelWall from "@/components/ChannelWall";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { Aurora, Magnetic, NumberTicker, Reveal, Spotlight, PulseDot } from "@/components/fx";
 import {
   ArrowRight,
   BadgePercent,
@@ -46,6 +50,53 @@ import {
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────
+ * Theme — one set of class tokens per canvas
+ * ──────────────────────────────────────────────────────────── */
+const THEMES = {
+  dark: {
+    dark: true,
+    h: "text-white",
+    body: "text-white/65",
+    strong: "text-white",
+    sub: "text-white/50",
+    lead: "text-white/90",
+    card: "card-dark",
+    tile: "bg-sunset-soft text-sunset-gold ring-1 ring-white/10",
+    chip: "bg-white/[0.06] text-white/55 ring-1 ring-white/10",
+    inset: "bg-white/[0.04] ring-1 ring-white/[0.08]",
+    divide: "divide-white/[0.07]",
+    thead: "bg-white/[0.05] text-white/80",
+    eyebrow: "text-sunset-gold",
+    code: "text-white bg-white/[0.08] ring-1 ring-white/10",
+    link: "text-sunset-gold hover:text-white decoration-sunset-gold/40",
+    secondaryBtn: "btn-glass-dark",
+  },
+  light: {
+    dark: false,
+    h: "text-ink-950",
+    body: "text-ink-600",
+    strong: "text-ink-900",
+    sub: "text-ink-500",
+    lead: "text-ink-800",
+    card: "card",
+    tile: "bg-sunset-soft text-sunset-flame",
+    chip: "bg-ink-900/[0.05] text-ink-500 ring-1 ring-ink-900/[0.06]",
+    inset: "bg-ink-900/[0.03] ring-1 ring-ink-900/[0.06]",
+    divide: "divide-ink-900/[0.06]",
+    thead: "bg-white/70 text-ink-700",
+    eyebrow: "text-sunset-flame",
+    code: "text-ink-800 bg-ink-900/[0.06]",
+    link: "text-sunset-flame hover:text-sunset-magenta decoration-sunset-flame/30",
+    secondaryBtn: "btn-secondary",
+  },
+};
+const ThemeCtx = createContext(THEMES.dark);
+const useT = () => useContext(ThemeCtx);
+
+const hop =
+  "transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]";
+
+/* ────────────────────────────────────────────────────────────
  * Section registry — drives both the sidebar nav and the anchors
  * ──────────────────────────────────────────────────────────── */
 const SECTIONS = [
@@ -67,33 +118,47 @@ const SECTIONS = [
  * Small shared pieces
  * ──────────────────────────────────────────────────────────── */
 function Section({ id, icon: Icon, eyebrow, title, children }) {
+  const t = useT();
   return (
     <section id={id} className="scroll-mt-28">
-      <div className="flex items-center gap-2.5">
-        <span className="w-9 h-9 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center shrink-0">
-          <Icon className="w-[18px] h-[18px]" />
-        </span>
-        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
-          {eyebrow}
-        </span>
-      </div>
-      <h2 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-ink-950">
-        {title}
-      </h2>
-      <div className="mt-4 space-y-4 text-[15px] leading-relaxed text-ink-600">
-        {children}
-      </div>
+      <Reveal y={18}>
+        <div className="group flex items-center gap-2.5">
+          <span
+            className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${t.tile} ${hop}`}
+          >
+            <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+          </span>
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${t.eyebrow}`}
+          >
+            {eyebrow}
+          </span>
+        </div>
+        <h2
+          className={`mt-4 font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] ${t.h}`}
+        >
+          {title}
+        </h2>
+      </Reveal>
+      <Reveal y={18} delay={0.06}>
+        <div className={`mt-4 space-y-4 text-[15px] leading-relaxed ${t.body}`}>
+          {children}
+        </div>
+      </Reveal>
     </section>
   );
 }
 
 function Bullets({ items }) {
+  const t = useT();
   return (
     <ul className="space-y-2">
-      {items.map((t, i) => (
+      {items.map((x, i) => (
         <li key={i} className="flex items-start gap-2.5">
-          <Check className="w-4 h-4 text-brand-500 shrink-0 mt-[3px]" />
-          <span className="text-ink-700">{t}</span>
+          <span className="mt-[3px] grid h-4 w-4 shrink-0 place-items-center rounded-full bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+            <Check className="w-2.5 h-2.5" strokeWidth={3} />
+          </span>
+          <span className={t.dark ? "text-white/80" : "text-ink-700"}>{x}</span>
         </li>
       ))}
     </ul>
@@ -101,28 +166,54 @@ function Bullets({ items }) {
 }
 
 function Note({ icon: Icon = Info, tone = "brand", title, children }) {
-  const tones = {
-    brand: "border-brand-100 bg-brand-50/60 text-brand-600",
-    amber: "border-amber-200 bg-amber-50/70 text-amber-600",
-    ink: "border-ink-200 bg-ink-50/70 text-ink-500",
-  };
+  const t = useT();
+  const tones = t.dark
+    ? {
+        brand: "border-sunset-flame/25 bg-sunset-soft text-sunset-gold",
+        amber: "border-amber-400/25 bg-amber-400/[0.07] text-amber-300",
+        ink: "border-white/10 bg-white/[0.04] text-white/55",
+      }
+    : {
+        brand: "border-sunset-flame/20 bg-sunset-soft text-sunset-flame",
+        amber: "border-amber-200 bg-amber-50/70 text-amber-600",
+        ink: "border-ink-900/[0.08] bg-white/60 text-ink-500",
+      };
   return (
-    <div className={`rounded-xl border p-4 ${tones[tone]}`}>
-      <p className="flex items-center gap-2 text-sm font-bold text-ink-900">
-        <Icon className="w-4 h-4 shrink-0" /> {title}
+    <div className={`rounded-2xl border p-4 sm:p-5 backdrop-blur ${tones[tone]}`}>
+      <p className={`flex items-center gap-2 text-sm font-semibold ${t.strong}`}>
+        <Icon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> {title}
       </p>
-      <div className="mt-1.5 text-sm text-ink-600 leading-relaxed">{children}</div>
+      <div className={`mt-1.5 text-sm leading-relaxed ${t.body}`}>{children}</div>
     </div>
   );
 }
 
 function Card({ children, className = "" }) {
+  const t = useT();
   return (
-    <div
-      className={`rounded-2xl border border-ink-100 bg-white p-5 shadow-card ${className}`}
+    <Spotlight className={`${t.card} group p-5 ${className}`}>{children}</Spotlight>
+  );
+}
+
+/** Small icon + title + description tile used by several feature grids. */
+function FeatureTile({ icon: Icon, title, desc, stacked = false }) {
+  const t = useT();
+  return (
+    <Spotlight
+      className={`${t.card} group h-full p-4 transition-transform duration-500 ease-spring hover:-translate-y-0.5 ${
+        stacked ? "" : "flex gap-3"
+      }`}
     >
-      {children}
-    </div>
+      <span
+        className={`w-9 h-9 rounded-xl grid place-items-center shrink-0 ${t.tile} ${hop}`}
+      >
+        <Icon className="w-[17px] h-[17px]" strokeWidth={1.8} />
+      </span>
+      <div className={`min-w-0 ${stacked ? "mt-3" : ""}`}>
+        <p className={`text-sm font-semibold ${t.strong}`}>{title}</p>
+        <p className={`text-[13px] leading-snug mt-0.5 ${t.sub}`}>{desc}</p>
+      </div>
+    </Spotlight>
   );
 }
 
@@ -130,6 +221,7 @@ function Card({ children, className = "" }) {
  * Sticky anchor navigation (sidebar on desktop, select on mobile)
  * ──────────────────────────────────────────────────────────── */
 function GuideNav() {
+  const t = useT();
   const [active, setActive] = useState(SECTIONS[0].id);
 
   useEffect(() => {
@@ -153,7 +245,13 @@ function GuideNav() {
   return (
     <>
       {/* Mobile — a jump menu that stays out of the way */}
-      <div className="lg:hidden sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/90 backdrop-blur border-b border-ink-100">
+      <div
+        className={`lg:hidden sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 backdrop-blur-xl border-b ${
+          t.dark
+            ? "bg-night-950/75 border-white/[0.07]"
+            : "bg-white/70 border-ink-900/[0.06]"
+        }`}
+      >
         <label htmlFor="guide-jump" className="sr-only">
           Jump to a section
         </label>
@@ -166,7 +264,11 @@ function GuideNav() {
               .getElementById(e.target.value)
               ?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className={
+            t.dark
+              ? "w-full rounded-xl bg-white/[0.06] ring-1 ring-white/10 px-3 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-sunset-flame/60 [&>option]:text-ink-900"
+              : "input font-semibold"
+          }
         >
           {SECTIONS.map((s, i) => (
             <option key={s.id} value={s.id}>
@@ -181,7 +283,11 @@ function GuideNav() {
         aria-label="Guide sections"
         className="hidden lg:block sticky top-24 self-start"
       >
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-400 px-3 mb-2">
+        <p
+          className={`text-[11px] font-semibold uppercase tracking-[0.18em] px-3 mb-2 ${
+            t.dark ? "text-white/40" : "text-ink-400"
+          }`}
+        >
           On this page
         </p>
         <ul className="space-y-0.5">
@@ -194,19 +300,47 @@ function GuideNav() {
                   href={`#${s.id}`}
                   onClick={() => setActive(s.id)}
                   aria-current={on ? "true" : undefined}
-                  className={`group flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition ${
+                  className={`group relative isolate flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-300 ease-spring ${
                     on
-                      ? "bg-brand-50 text-brand-700"
-                      : "text-ink-500 hover:bg-ink-50 hover:text-ink-900"
+                      ? t.dark
+                        ? "text-white"
+                        : "text-ink-900"
+                      : t.dark
+                        ? "text-white/50 hover:text-white hover:translate-x-0.5"
+                        : "text-ink-500 hover:text-ink-900 hover:translate-x-0.5"
                   }`}
                 >
+                  {on && (
+                    <motion.span
+                      layoutId={`guide-nav-${t.dark ? "d" : "l"}`}
+                      className={`absolute inset-0 -z-10 rounded-xl ${
+                        t.dark
+                          ? "bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                          : "bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]"
+                      }`}
+                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    >
+                      <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sunset" />
+                    </motion.span>
+                  )}
                   <Icon
-                    className={`w-4 h-4 shrink-0 ${
-                      on ? "text-brand-500" : "text-ink-300 group-hover:text-ink-500"
+                    strokeWidth={1.8}
+                    className={`w-4 h-4 shrink-0 transition-transform duration-500 ease-spring group-hover:rotate-[-10deg] group-hover:scale-110 ${
+                      on
+                        ? t.dark
+                          ? "text-sunset-gold"
+                          : "text-sunset-flame"
+                        : t.dark
+                          ? "text-white/30 group-hover:text-white/60"
+                          : "text-ink-300 group-hover:text-ink-500"
                     }`}
                   />
                   <span className="truncate">
-                    <span className="tabular-nums text-ink-300 mr-1.5">
+                    <span
+                      className={`tabular-nums mr-1.5 ${
+                        t.dark ? "text-white/25" : "text-ink-300"
+                      }`}
+                    >
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     {s.label}
@@ -220,6 +354,7 @@ function GuideNav() {
     </>
   );
 }
+
 
 /* ────────────────────────────────────────────────────────────
  * Data
@@ -350,56 +485,96 @@ export default function GuidePage() {
   const [openFaq, setOpenFaq] = useState(0);
   const [agentTurn, setAgentTurn] = useState(0);
   const active = AGENT_EXAMPLES[agentTurn];
+  const { pathname } = useLocation();
+  const inDashboard = pathname.startsWith("/dashboard");
+  const t = inDashboard ? THEMES.light : THEMES.dark;
 
-  return (
-    <div className="bg-white">
-      {/* ── Hero ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-ink-950 text-white">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-32 -left-24 w-[26rem] h-[26rem] rounded-full bg-brand-500/25 blur-[120px]"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 -right-24 w-[22rem] h-[22rem] rounded-full bg-amber-500/15 blur-[120px]"
-        />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-brand-200">
-            <Layers className="w-3.5 h-3.5" /> The Botlify guide
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-6xl font-black tracking-tighter leading-[1.05] max-w-3xl">
-            How Botlify runs{" "}
-            <span className="text-brand-500">your whole hotel</span>.
-          </h1>
-          <p className="mt-5 text-lg text-white/70 max-w-2xl leading-relaxed">
-            Everything in one place: how to get set up, how your channels and
-            messaging connect, how the AI actually sells rooms, and exactly what
-            it costs. Read it end to end in about ten minutes — or jump to the
-            part you need.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition shadow-glow"
-            >
+  const hero = (
+    <div
+      className={`relative ${inDashboard ? "px-5 py-10 sm:px-10 sm:py-14" : "max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 sm:pt-28 sm:pb-24"}`}
+    >
+      <Reveal>
+        <span
+          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ${
+            t.dark
+              ? "bg-white/[0.06] ring-1 ring-white/10 text-white/75"
+              : "bg-white/80 ring-1 ring-ink-900/[0.06] text-ink-600 shadow-[inset_0_1px_0_#fff]"
+          }`}
+        >
+          <Layers className={`w-3.5 h-3.5 ${t.eyebrow}`} strokeWidth={1.8} /> The Botlify guide
+        </span>
+      </Reveal>
+      <Reveal delay={0.06}>
+        <h1
+          className={`mt-6 font-display font-semibold max-w-3xl ${
+            inDashboard
+              ? "text-3xl sm:text-5xl tracking-[-0.04em] leading-[1.02] text-ink-950"
+              : "text-5xl sm:text-7xl tracking-[-0.05em] leading-[0.95] text-white"
+          }`}
+        >
+          How Botlify runs{" "}
+          <span className="font-serif italic font-normal text-sunset pr-1">your whole hotel</span>.
+        </h1>
+      </Reveal>
+      <Reveal delay={0.12}>
+        <p
+          className={`mt-6 text-base sm:text-lg max-w-2xl leading-relaxed ${
+            t.dark ? "text-white/60" : "text-ink-600"
+          }`}
+        >
+          Everything in one place: how to get set up, how your channels and
+          messaging connect, how the AI actually sells rooms, and exactly what
+          it costs. Read it end to end in about ten minutes — or jump to the
+          part you need.
+        </p>
+      </Reveal>
+      <Reveal delay={0.18}>
+        <div className="mt-9 flex flex-col sm:flex-row gap-3">
+          <Magnetic className="w-full sm:w-auto">
+            <Link to="/register" className="btn-primary w-full sm:w-auto px-7 py-3.5 text-[15px]">
               Start free <ArrowRight className="w-4 h-4" />
             </Link>
-            <a
-              href="#getting-started"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border border-white/20 text-white font-bold text-[15px] hover:bg-white/10 transition"
-            >
-              Jump to setup
-            </a>
-          </div>
+          </Magnetic>
+          <a href="#getting-started" className={`${t.secondaryBtn} px-7 py-3.5 text-[15px]`}>
+            Jump to setup
+          </a>
         </div>
-      </section>
+      </Reveal>
+    </div>
+  );
+
+  return (
+    <ThemeCtx.Provider value={t}>
+    <div
+      className={
+        inDashboard
+          ? "text-ink-900"
+          : "relative isolate overflow-x-clip bg-night-950 text-white grain"
+      }
+    >
+      {/* ── Hero ───────────────────────────────────────────── */}
+      {inDashboard ? (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+          <section className="card relative isolate overflow-hidden rounded-3xl">
+            <Aurora variant="light" />
+            <div className="absolute inset-0 -z-10 bg-dot-grid mask-fade-b" aria-hidden />
+            {hero}
+          </section>
+        </div>
+      ) : (
+        <section className="relative isolate overflow-hidden">
+          <Aurora variant="dark" />
+          <div className="absolute inset-0 -z-10 bg-dot-grid-dark mask-fade-b" aria-hidden />
+          {hero}
+        </section>
+      )}
 
       {/* ── Body ───────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <div className="grid lg:grid-cols-[15rem,minmax(0,1fr)] gap-8 lg:gap-14">
           <GuideNav />
 
-          <div className="min-w-0 space-y-14 sm:space-y-20">
+          <div className="min-w-0 space-y-16 sm:space-y-24">
             {/* 1 — What Botlify is */}
             <Section
               id="what-it-is"
@@ -448,26 +623,11 @@ export default function GuidePage() {
                   },
                 ].map((x) => {
                   const Icon = x.icon;
-                  return (
-                    <div
-                      key={x.t}
-                      className="flex gap-3 rounded-xl border border-ink-100 bg-white p-4 shadow-card"
-                    >
-                      <span className="w-9 h-9 rounded-lg bg-brand-50 text-brand-500 flex items-center justify-center shrink-0">
-                        <Icon className="w-[17px] h-[17px]" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-ink-900">{x.t}</p>
-                        <p className="text-[13px] text-ink-500 leading-snug mt-0.5">
-                          {x.d}
-                        </p>
-                      </div>
-                    </div>
-                  );
+                  return <FeatureTile key={x.t} icon={Icon} title={x.t} desc={x.d} />;
                 })}
               </div>
 
-              <p className="font-semibold text-ink-800">What it replaces</p>
+              <p className={`font-semibold ${t.lead}`}>What it replaces</p>
               <p>
                 For most independent properties, Botlify takes the place of a
                 channel-manager subscription, a booking-engine plugin, a pricing
@@ -478,7 +638,7 @@ export default function GuidePage() {
               </p>
               <p>
                 On top of all of it sits the{" "}
-                <b className="text-ink-900">Botlify Agent</b>: you type an
+                <b className={t.strong}>Botlify Agent</b>: you type an
                 instruction the way you'd say it to a manager, and it carries it
                 out across every channel after asking you to confirm.
               </p>
@@ -503,30 +663,30 @@ export default function GuidePage() {
                     <Card key={s.title}>
                       <div className="flex gap-4">
                         <div className="flex flex-col items-center gap-2 shrink-0">
-                          <span className="w-10 h-10 rounded-xl bg-brand-gradient text-white font-black flex items-center justify-center shadow-glow">
+                          <span className="w-10 h-10 rounded-xl bg-sunset text-white font-display font-semibold tabular-nums flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:scale-110 group-hover:rotate-[-6deg]">
                             {i + 1}
                           </span>
-                          <Icon className="w-4 h-4 text-ink-300" />
+                          <Icon className={`w-4 h-4 ${t.dark ? "text-white/30" : "text-ink-300"}`} strokeWidth={1.8} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-black text-ink-950">
+                            <h3 className={`font-display text-base font-semibold tracking-[-0.01em] ${t.h}`}>
                               {s.title}
                             </h3>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-400 bg-ink-100 rounded-full px-2 py-0.5">
+                            <span className={`text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${t.chip}`}>
                               {s.eyebrow}
                             </span>
                           </div>
-                          <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">
+                          <p className={`mt-1.5 text-sm leading-relaxed ${t.body}`}>
                             {s.body}
                           </p>
                           <ul className="mt-3 space-y-1.5">
                             {s.bullets.map((b, k) => (
                               <li
                                 key={k}
-                                className="flex items-start gap-2 text-[13px] text-ink-500"
+                                className={`flex items-start gap-2 text-[13px] ${t.sub}`}
                               >
-                                <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-brand-300 shrink-0" />
+                                <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-sunset shrink-0" />
                                 <span>{b}</span>
                               </li>
                             ))}
@@ -554,21 +714,22 @@ export default function GuidePage() {
               title="Connecting your booking channels"
             >
               <p>
-                Botlify connects to <b className="text-ink-900">60+ booking
+                Botlify connects to <b className={t.strong}>60+ booking
                 channels</b> through our connectivity partner — the same kind of
                 certified pipe a traditional channel manager uses. You start it
                 from{" "}
-                <b className="text-ink-900">Channels</b> in the dashboard.
+                <b className={t.strong}>Channels</b> in the dashboard.
               </p>
 
               <div className="not-prose">
                 <ChannelWall
+                  dark={t.dark}
                   title="The channels you can connect"
                   subtitle="Booking.com, Airbnb, Agoda, Expedia, Vrbo, Traveloka, Tiket.com, Trip.com, Hostelworld and Google Hotel Ads — plus 50 more through the same connection. Traveloka and Tiket.com cover Indonesian domestic travellers. Every one of them is 0% commission from us."
                 />
               </div>
 
-              <p className="font-semibold text-ink-800">How the connection works</p>
+              <p className={`font-semibold ${t.lead}`}>How the connection works</p>
               <Bullets
                 items={[
                   "You authorise the channel and we request connectivity for your property.",
@@ -588,7 +749,7 @@ export default function GuidePage() {
 
               <Note tone="ink" icon={Link2} title="Your direct page is a channel too">
                 Every property gets a public booking page at{" "}
-                <code className="text-[13px] font-semibold text-ink-800 bg-ink-100 rounded px-1 py-0.5">
+                <code className={`text-[13px] font-semibold font-mono rounded-md px-1.5 py-0.5 ${t.code}`}>
                   /book/your-hotel
                 </code>{" "}
                 reading the same calendar. Link it from your website, your
@@ -613,25 +774,31 @@ export default function GuidePage() {
                 {MESSAGING.map((m) => {
                   const Icon = m.icon;
                   return (
-                    <div
+                    <Spotlight
                       key={m.name}
-                      className={`rounded-xl border bg-white p-4 shadow-card ${
-                        m.special ? "border-brand-200" : "border-ink-100"
+                      className={`${t.card} group p-4 transition-transform duration-500 ease-spring hover:-translate-y-0.5 ${
+                        m.special ? "ring-1 ring-sunset-flame/40" : ""
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className={`w-5 h-5 shrink-0 ${m.color}`} />
-                        <p className="font-bold text-ink-900">{m.name}</p>
+                        <span
+                          className={`w-9 h-9 rounded-xl grid place-items-center shrink-0 ${
+                            t.dark ? "bg-white/[0.06] ring-1 ring-white/10" : "bg-white ring-1 ring-ink-900/[0.06]"
+                          } ${hop}`}
+                        >
+                          <Icon className={`w-[18px] h-[18px] ${m.color}`} strokeWidth={1.8} />
+                        </span>
+                        <p className={`font-semibold ${t.strong}`}>{m.name}</p>
                         {m.special && (
-                          <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-2 py-0.5">
+                          <span className={`ml-auto text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 bg-sunset-soft ring-1 ring-sunset-flame/30 ${t.eyebrow}`}>
                             Connects differently
                           </span>
                         )}
                       </div>
-                      <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+                      <p className={`mt-2 text-sm leading-relaxed ${t.body}`}>
                         {m.how}
                       </p>
-                    </div>
+                    </Spotlight>
                   );
                 })}
               </div>
@@ -663,10 +830,10 @@ export default function GuidePage() {
             >
               <p>
                 A room type in Botlify is four things: a{" "}
-                <b className="text-ink-900">name</b>, a number of{" "}
-                <b className="text-ink-900">units</b>, an{" "}
-                <b className="text-ink-900">occupancy</b> and a{" "}
-                <b className="text-ink-900">nightly rate</b>. For example:
+                <b className={t.strong}>name</b>, a number of{" "}
+                <b className={t.strong}>units</b>, an{" "}
+                <b className={t.strong}>occupancy</b> and a{" "}
+                <b className={t.strong}>nightly rate</b>. For example:
                 “Deluxe Double, 4 units, sleeps 2, $79.”
               </p>
 
@@ -687,17 +854,17 @@ export default function GuidePage() {
                 ].map((x) => (
                   <div
                     key={x.t}
-                    className="rounded-xl border border-ink-100 bg-ink-50/50 p-4"
+                    className={`rounded-2xl p-4 transition-transform duration-500 ease-spring hover:-translate-y-0.5 ${t.inset}`}
                   >
-                    <p className="text-sm font-black text-ink-900">{x.t}</p>
-                    <p className="mt-1 text-[13px] text-ink-500 leading-snug">
+                    <p className={`font-display text-sm font-semibold ${t.strong}`}>{x.t}</p>
+                    <p className={`mt-1 text-[13px] leading-snug ${t.sub}`}>
                       {x.d}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <p className="font-semibold text-ink-800">Why the rate matters</p>
+              <p className={`font-semibold ${t.lead}`}>Why the rate matters</p>
               <p>
                 More than anywhere else in the product, this number does real
                 work. It is what the AI quotes to a guest in chat, what your
@@ -766,18 +933,7 @@ export default function GuidePage() {
                 ].map((x) => {
                   const Icon = x.icon;
                   return (
-                    <div
-                      key={x.t}
-                      className="rounded-xl border border-ink-100 bg-white p-4 shadow-card"
-                    >
-                      <span className="w-9 h-9 rounded-lg bg-brand-50 text-brand-500 flex items-center justify-center">
-                        <Icon className="w-[17px] h-[17px]" />
-                      </span>
-                      <p className="mt-3 text-sm font-black text-ink-900">{x.t}</p>
-                      <p className="mt-1 text-[13px] text-ink-500 leading-snug">
-                        {x.d}
-                      </p>
-                    </div>
+                    <FeatureTile key={x.t} icon={Icon} title={x.t} desc={x.d} stacked />
                   );
                 })}
               </div>
@@ -803,54 +959,72 @@ export default function GuidePage() {
                 instruction the way you'd say it to a manager.
               </p>
 
-              <div className="not-prose rounded-2xl border border-ink-200/60 bg-ink-950 shadow-2xl overflow-hidden">
+              <div className="not-prose relative overflow-hidden rounded-3xl bg-night-950/90 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_70px_-30px_rgba(124,92,255,0.45)] backdrop-blur-xl">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                  <Terminal className="w-4 h-4 text-brand-400" />
-                  <span className="text-xs font-black text-white">
+                  <Terminal className="w-4 h-4 text-sunset-gold" strokeWidth={1.8} />
+                  <span className="text-xs font-semibold text-white">
                     Botlify Agent
                   </span>
                   <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <PulseDot color="bg-emerald-400" />
                     Online
                   </span>
                 </div>
-                <div className="p-4 space-y-3 min-h-[11rem]">
+                <div className="p-4 min-h-[11rem]">
+                  <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={agentTurn}
+                    className="space-y-3"
+                    initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  >
                   <div className="flex justify-end">
-                    <span className="max-w-[85%] rounded-2xl rounded-br-md bg-brand-500 text-white text-sm px-4 py-2.5 leading-snug">
+                    <span className="max-w-[85%] rounded-2xl rounded-br-md bg-sunset text-white text-sm px-4 py-2.5 leading-snug shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-10px_rgba(255,61,119,0.6)]">
                       {active.you}
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="w-7 h-7 rounded-full bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
-                      <Bot className="w-3.5 h-3.5 text-brand-300" />
+                      <Bot className="w-3.5 h-3.5 text-sunset-gold" strokeWidth={1.8} />
                     </span>
                     <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white/[0.07] border border-white/10 px-4 py-2.5">
                       <p className="text-sm text-white/85 leading-snug">
                         {active.bot}
                       </p>
-                      <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-300">
+                      <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-sunset-gold">
                         <Shield className="w-3 h-3" /> {active.kind}
                       </p>
                     </div>
                   </div>
+                  </motion.div>
+                  </AnimatePresence>
                 </div>
                 <div className="border-t border-white/10 p-3">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-white/35 mb-2 px-1">
                     Try one
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {AGENT_EXAMPLES.map((t, i) => (
+                    {AGENT_EXAMPLES.map((ex, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setAgentTurn(i)}
-                        className={`text-left text-[11px] font-medium rounded-lg px-2.5 py-1.5 transition ${
+                        className={`relative isolate text-left text-[11px] font-medium rounded-lg px-2.5 py-1.5 transition-all duration-300 ease-spring active:scale-95 ${
                           i === agentTurn
-                            ? "bg-brand-500 text-white"
-                            : "bg-white/[0.06] text-white/60 hover:bg-white/10 hover:text-white"
+                            ? "text-white"
+                            : "bg-white/[0.06] text-white/60 hover:bg-white/10 hover:text-white hover:-translate-y-0.5"
                         }`}
                       >
-                        {t.you}
+                        {i === agentTurn && (
+                          <motion.span
+                            layoutId={`agent-pill-${t.dark ? "d" : "l"}`}
+                            className="absolute inset-0 -z-10 rounded-lg bg-sunset shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]"
+                            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                          />
+                        )}
+                        {ex.you}
                       </button>
                     ))}
                   </div>
@@ -879,25 +1053,25 @@ export default function GuidePage() {
                 the reason attached, in plain language.
               </p>
 
-              <div className="not-prose rounded-xl border border-ink-100 bg-ink-50/60 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400">
+              <div className={`not-prose rounded-2xl p-5 ${t.inset}`}>
+                <p className={`text-[11px] font-semibold uppercase tracking-wider ${t.sub}`}>
                   Example suggestion
                 </p>
-                <p className="mt-2 text-sm text-ink-700 leading-relaxed">
+                <p className={`mt-2 text-sm leading-relaxed ${t.dark ? "text-white/80" : "text-ink-700"}`}>
                   “Sep 3–5 is 30% booked — usually 70% this close to the date.
                   Drop Deluxe Double from $95 to $85?”
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-500 rounded-lg px-3 py-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-sunset rounded-lg px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                     <Check className="w-3.5 h-3.5" /> Approve
                   </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink-600 bg-white border border-ink-200 rounded-lg px-3 py-1.5">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 ${t.chip}`}>
                     Skip
                   </span>
                 </div>
               </div>
 
-              <p className="font-semibold text-ink-800">You stay in control</p>
+              <p className={`font-semibold ${t.lead}`}>You stay in control</p>
               <Bullets
                 items={[
                   "Every suggestion comes with its reasoning — you can always see why.",
@@ -949,22 +1123,7 @@ export default function GuidePage() {
                   },
                 ].map((x) => {
                   const Icon = x.icon;
-                  return (
-                    <div
-                      key={x.t}
-                      className="flex gap-3 rounded-xl border border-ink-100 bg-white p-4 shadow-card"
-                    >
-                      <span className="w-9 h-9 rounded-lg bg-brand-50 text-brand-500 flex items-center justify-center shrink-0">
-                        <Icon className="w-[17px] h-[17px]" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-ink-900">{x.t}</p>
-                        <p className="mt-0.5 text-[13px] text-ink-500 leading-snug">
-                          {x.d}
-                        </p>
-                      </div>
-                    </div>
-                  );
+                  return <FeatureTile key={x.t} icon={Icon} title={x.t} desc={x.d} />;
                 })}
               </div>
 
@@ -1007,90 +1166,90 @@ export default function GuidePage() {
               title="Pricing & commission, in full"
             >
               <div className="not-prose grid sm:grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400">
+                <div className={`${t.card} p-5`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider ${t.sub}`}>
                     Subscription
                   </p>
                   <p className="mt-2 flex items-baseline gap-1.5">
-                    <span className="text-3xl font-black tracking-tighter text-ink-950">
-                      $49
+                    <span className={`font-display text-4xl font-semibold tracking-[-0.04em] ${t.h}`}>
+                      <NumberTicker value={49} prefix="$" />
                     </span>
-                    <span className="text-sm text-ink-500">/ month, flat</span>
+                    <span className={`text-sm ${t.sub}`}>/ month, flat</span>
                   </p>
-                  <p className="mt-1.5 text-[13px] text-ink-500 leading-snug">
+                  <p className={`mt-1.5 text-[13px] leading-snug ${t.sub}`}>
                     Per property — not per room, not per channel. Or $490/year
                     (two months free).
                   </p>
                 </div>
-                <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-5">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-brand-600">
+                <div className={`gradient-border ${t.dark ? "gradient-border-dark" : ""} p-5`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider ${t.eyebrow}`}>
                     Right now
                   </p>
-                  <p className="mt-2 text-lg font-black text-ink-950 leading-tight">
+                  <p className={`mt-2 font-display text-lg font-semibold leading-tight ${t.h}`}>
                     A free “Launch” plan
                   </p>
-                  <p className="mt-1.5 text-[13px] text-ink-600 leading-snug">
+                  <p className={`mt-1.5 text-[13px] leading-snug ${t.body}`}>
                     Same features, no card, while we launch. The paid plan has a
                     3-day free trial — a card is required to start it.
                   </p>
                 </div>
               </div>
 
-              <p className="font-semibold text-ink-800">Commission — two numbers</p>
-              <div className="not-prose overflow-x-auto rounded-2xl border border-ink-100 shadow-card">
+              <p className={`font-semibold ${t.lead}`}>Commission — two numbers</p>
+              <div className={`${t.card} not-prose overflow-x-auto`}>
                 <table className="w-full text-sm min-w-[34rem]">
                   <thead>
-                    <tr className="bg-ink-50/80 text-left">
-                      <th className="px-4 py-3 font-bold text-ink-700">
+                    <tr className={`${t.thead} text-left`}>
+                      <th className="px-4 py-3 font-semibold">
                         Where the booking came from
                       </th>
-                      <th className="px-4 py-3 font-bold text-ink-700 w-32">
+                      <th className="px-4 py-3 font-semibold w-32">
                         Botlify takes
                       </th>
-                      <th className="px-4 py-3 font-bold text-ink-700">Why</th>
+                      <th className="px-4 py-3 font-semibold">Why</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-100 bg-white">
+                  <tbody className={`divide-y ${t.divide}`}>
                     <tr>
-                      <td className="px-4 py-3.5 text-ink-800 font-semibold align-top">
+                      <td className={`px-4 py-3.5 font-semibold align-top ${t.lead}`}>
                         OTA channels
                       </td>
                       <td className="px-4 py-3.5 align-top">
-                        <span className="inline-block rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 font-black px-2.5 py-1 text-xs">
+                        <span className={`inline-block rounded-full font-semibold tabular-nums px-2.5 py-1 text-xs ${t.dark ? "bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"}`}>
                           0%
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-ink-600 align-top">
+                      <td className={`px-4 py-3.5 align-top ${t.body}`}>
                         OTA sync is completely free. You'd have got that booking
                         anyway — we don't charge for carrying it.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-4 py-3.5 text-ink-800 font-semibold align-top">
+                      <td className={`px-4 py-3.5 font-semibold align-top ${t.lead}`}>
                         Closed by the AI — WhatsApp, Instagram, Messenger,
                         Telegram or your direct page
                       </td>
                       <td className="px-4 py-3.5 align-top">
-                        <span className="inline-block rounded-full bg-brand-50 border border-brand-200 text-brand-700 font-black px-2.5 py-1 text-xs">
+                        <span className="inline-block rounded-full bg-sunset text-white font-semibold tabular-nums px-2.5 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                           10%
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-ink-600 align-top">
-                        OTAs charge <b className="text-ink-900">15–18%</b> for
+                      <td className={`px-4 py-3.5 align-top ${t.body}`}>
+                        OTAs charge <b className={t.strong}>15–18%</b> for
                         the same reservation. This is cheaper — and it's on
                         revenue you wouldn't otherwise have had.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-4 py-3.5 text-ink-800 font-semibold align-top">
+                      <td className={`px-4 py-3.5 font-semibold align-top ${t.lead}`}>
                         Airport transfer via our partner network
                       </td>
                       <td className="px-4 py-3.5 align-top">
-                        <span className="inline-block rounded-full bg-ink-100 border border-ink-200 text-ink-700 font-black px-2.5 py-1 text-xs">
+                        <span className={`inline-block rounded-full font-semibold tabular-nums px-2.5 py-1 text-xs whitespace-nowrap ${t.chip}`}>
                           ~5–10%
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-ink-600 align-top">
+                      <td className={`px-4 py-3.5 align-top ${t.body}`}>
                         A small partner margin only when we arrange the ride. Use
                         your own driver and you keep 100%.
                       </td>
@@ -1102,13 +1261,13 @@ export default function GuidePage() {
               <Note icon={Wallet} title="Tracked automatically, settled manually">
                 This is the part worth reading twice. Every commissionable
                 booking is recorded in a{" "}
-                <b className="text-ink-900">ledger</b> in your dashboard as it
+                <b className={t.strong}>ledger</b> in your dashboard as it
                 happens, and at month end we email you a{" "}
-                <b className="text-ink-900">statement</b> of what's owed. You
+                <b className={t.strong}>statement</b> of what's owed. You
                 settle it by bank transfer or invoice.
                 <br />
                 <br />
-                <b className="text-ink-900">
+                <b className={t.strong}>
                   Botlify never takes money out of your account and never sits
                   between your guest and your payments.
                 </b>{" "}
@@ -1123,7 +1282,7 @@ export default function GuidePage() {
                 manually.{" "}
                 <Link
                   to="/consultants"
-                  className="font-bold text-brand-600 hover:text-brand-700 underline decoration-brand-200 underline-offset-2"
+                  className={`font-semibold underline underline-offset-2 transition-colors ${t.link}`}
                 >
                   See the consultant program
                 </Link>
@@ -1133,9 +1292,9 @@ export default function GuidePage() {
               <div className="not-prose">
                 <Link
                   to="/pricing"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-ink-950 text-white font-bold text-sm hover:bg-ink-800 transition"
+                  className={`group ${t.secondaryBtn}`}
                 >
-                  See full pricing <ArrowRight className="w-4 h-4" />
+                  See full pricing <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
                 </Link>
               </div>
             </Section>
@@ -1158,74 +1317,90 @@ export default function GuidePage() {
                     type="button"
                     onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
                     aria-expanded={openFaq === i}
-                    className="w-full text-left rounded-2xl border border-ink-100 bg-white px-5 py-4 hover:border-brand-300 transition"
+                    className={`${t.card} block w-full text-left px-5 py-4 transition-transform duration-500 ease-spring hover:-translate-y-0.5 active:scale-[0.99] ${
+                      openFaq === i ? "ring-1 ring-sunset-flame/30" : ""
+                    }`}
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <span className="font-bold text-ink-900 text-sm">
+                      <span className={`font-semibold text-sm ${t.strong}`}>
                         {f.q}
                       </span>
                       <ChevronDown
-                        className={`w-5 h-5 text-ink-400 shrink-0 transition ${
-                          openFaq === i ? "rotate-180 text-ink-900" : ""
+                        className={`w-5 h-5 shrink-0 transition-transform duration-500 ease-spring ${
+                          openFaq === i
+                            ? `rotate-180 ${t.eyebrow}`
+                            : t.dark
+                              ? "text-white/40"
+                              : "text-ink-400"
                         }`}
                       />
                     </div>
-                    {openFaq === i && (
-                      <p className="mt-3 text-sm text-ink-600 leading-relaxed">
-                        {f.a}
-                      </p>
-                    )}
+                    <AnimatePresence initial={false}>
+                      {openFaq === i && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 380, damping: 36 }}
+                          className="overflow-hidden"
+                        >
+                          <p className={`pt-3 text-sm leading-relaxed ${t.body}`}>
+                            {f.a}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </button>
                 ))}
               </div>
             </Section>
 
             {/* ── Closing CTA ─────────────────────────────── */}
-            <section className="relative overflow-hidden rounded-3xl bg-ink-950 p-8 sm:p-12 text-center">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-brand-500/30 blur-3xl"
-              />
-              <div className="relative">
-                <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-                  Ready to put it together?
-                </h2>
-                <p className="mt-3 text-white/70 text-[15px] max-w-lg mx-auto leading-relaxed">
-                  Create your account, name your hotel, add your rooms. Your
-                  calendar and direct booking page are live before you finish
-                  your coffee.
-                </p>
-                <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Link
-                    to="/register"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-brand-500 text-white font-bold text-[15px] hover:bg-brand-600 transition shadow-glow"
-                  >
-                    Start free <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <a
-                    href="mailto:contactus@botlify.site"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border border-white/20 text-white font-bold text-[15px] hover:bg-white/10 transition"
-                  >
-                    <Mail className="w-4 h-4" /> Email us a question
-                  </a>
+            <Reveal>
+              <section className="relative isolate overflow-hidden rounded-3xl bg-night-950 p-8 sm:p-12 text-center ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_40px_80px_-40px_rgba(255,61,119,0.45)] grain">
+                <Aurora variant="dark" />
+                <div className="relative">
+                  <h2 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.04em] leading-[1] text-white">
+                    Ready to put it{" "}
+                    <span className="font-serif italic font-normal text-sunset pr-1">together</span>?
+                  </h2>
+                  <p className="mt-4 text-white/65 text-[15px] max-w-lg mx-auto leading-relaxed">
+                    Create your account, name your hotel, add your rooms. Your
+                    calendar and direct booking page are live before you finish
+                    your coffee.
+                  </p>
+                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Magnetic>
+                      <Link to="/register" className="btn-primary px-7 py-3.5 text-[15px]">
+                        Start free <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </Magnetic>
+                    <a
+                      href="mailto:contactus@botlify.site"
+                      className="group btn-glass-dark px-7 py-3.5 text-[15px]"
+                    >
+                      <Mail className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-10deg]" /> Email us a question
+                    </a>
+                  </div>
+                  <p className="mt-6 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-white/50">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check className="w-3 h-3 text-sunset-gold" /> Free Launch plan
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check className="w-3 h-3 text-sunset-gold" /> 0% on OTA
+                      bookings
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check className="w-3 h-3 text-sunset-gold" /> Cancel anytime
+                    </span>
+                  </p>
                 </div>
-                <p className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-white/45">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="w-3 h-3 text-brand-400" /> Free Launch plan
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="w-3 h-3 text-brand-400" /> 0% on OTA
-                    bookings
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="w-3 h-3 text-brand-400" /> Cancel anytime
-                  </span>
-                </p>
-              </div>
-            </section>
+              </section>
+            </Reveal>
           </div>
         </div>
       </div>
     </div>
+    </ThemeCtx.Provider>
   );
 }

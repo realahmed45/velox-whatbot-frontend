@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import api from "@/services/api";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { Magnetic, PulseDot, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 import {
   ReadinessModal,
   sessionGet,
@@ -76,6 +77,19 @@ const POPUP_KEY = "botlify.trainAi.popupShown";
 const OTHER = "__other";
 const PHONE_RE = /^\+?[0-9 ()-]{6,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const spring = { type: "spring", stiffness: 420, damping: 30 };
+const hop =
+  "transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]";
+/* Liquid-glass "must-have" ring (cards use box-shadow rings, not borders). */
+const ringWarn =
+  "shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,181,71,0.55),0_10px_28px_-16px_rgba(255,106,43,0.45)]";
+const ringError =
+  "shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(244,63,94,0.5),0_10px_28px_-16px_rgba(244,63,94,0.4)]";
+const ringFocus =
+  "shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.6),0_18px_40px_-18px_rgba(255,61,119,0.45)]";
+const mustHave =
+  "inline-flex items-center rounded-full bg-sunset-soft text-sunset-flame ring-1 ring-sunset-flame/20 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5";
 
 const errMsg = (e, fallback) => e?.response?.data?.message || fallback;
 const hasText = (s) => !!String(s || "").trim();
@@ -376,28 +390,35 @@ export default function TrainAiPage() {
 
   /* ── Render ─────────────────────────────────────────────────────── */
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <header className="flex items-start gap-3 mb-5">
-        <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center shrink-0">
-          <GraduationCap className="w-6 h-6 text-brand-500" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-8">
+      <Reveal as="header" className="group flex items-start gap-3.5 mb-6">
+        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] ${hop}`}>
+          <GraduationCap className="h-5 w-5" strokeWidth={1.8} />
         </div>
         <div className="min-w-0">
-          <h1 className="text-2xl font-black text-ink-900">Train your AI</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+            Train your <span className="font-serif italic font-normal">AI</span>
+          </h1>
           <p className="text-sm text-ink-500 mt-0.5 max-w-2xl">
             Teach your AI what guests ask, who to call, and how to handle tricky
             moments — so it can look after guests on its own, day and night.
           </p>
         </div>
-      </header>
+      </Reveal>
 
       {loading ? (
         <LoadingState />
       ) : loadError ? (
         <div className="card p-10 text-center">
-          <CircleAlert className="w-8 h-8 text-rose-500 mx-auto" />
-          <p className="font-bold text-ink-900 mt-3">{loadError}</p>
-          <button onClick={load} className="btn-secondary mt-4">
-            <RotateCcw className="w-4 h-4" />
+          <div className="relative mx-auto grid h-14 w-14 place-items-center">
+            <span aria-hidden className="absolute inset-0 rounded-full bg-rose-400 opacity-25 blur-2xl" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-rose-50 text-rose-500 ring-1 ring-rose-500/20">
+              <CircleAlert className="w-6 h-6" strokeWidth={1.8} />
+            </span>
+          </div>
+          <p className="font-display font-semibold text-ink-900 mt-4">{loadError}</p>
+          <button onClick={load} className="btn-secondary group mt-4 min-h-[40px]">
+            <RotateCcw className="w-4 h-4 transition-transform duration-700 ease-spring group-hover:-rotate-180" />
             Try again
           </button>
         </div>
@@ -407,40 +428,31 @@ export default function TrainAiPage() {
 
           {/* Segmented control */}
           <div className="mt-6 mb-5 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
-            <div role="tablist" className="inline-flex gap-1 p-1 rounded-xl bg-ink-100/80 min-w-max">
-              {TABS.map((t) => {
-                const Icon = t.icon;
-                const active = tab === t.key;
+            <SlidingTabs
+              className="min-w-max"
+              value={tab}
+              onChange={setTab}
+              items={TABS.map((t) => {
                 const dot =
                   (t.key === "questions" && readiness?.missingAnswers.length > 0) ||
                   (t.key === "contacts" && readiness?.missingContacts.length > 0);
-                return (
-                  <button
-                    key={t.key}
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setTab(t.key)}
-                    className={`relative inline-flex items-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-sm font-bold transition ${
-                      active ? "text-ink-900" : "text-ink-500 hover:text-ink-800"
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="train-tab"
-                        className="absolute inset-0 rounded-lg bg-white shadow-card"
-                        transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
-                      />
-                    )}
-                    <Icon className={`relative w-4 h-4 ${active ? "text-brand-500" : ""}`} />
-                    <span className="relative hidden sm:inline">{t.label}</span>
-                    <span className="relative sm:hidden">{t.short}</span>
-                    {dot && (
-                      <span className="relative w-2 h-2 rounded-full bg-accent-500" aria-label="Needs attention" />
-                    )}
-                  </button>
-                );
+                return {
+                  value: t.key,
+                  icon: t.icon,
+                  label: (
+                    <>
+                      <span className="hidden sm:inline">{t.label}</span>
+                      <span className="sm:hidden">{t.short}</span>
+                      {dot && (
+                        <span aria-label="Needs attention" className="ml-0.5 inline-flex">
+                          <PulseDot color="bg-sunset-flame" />
+                        </span>
+                      )}
+                    </>
+                  ),
+                };
               })}
-            </div>
+            />
           </div>
 
           <div
@@ -475,15 +487,22 @@ export default function TrainAiPage() {
                 <PlaybookPanel playbook={playbook} onSave={savePlaybook} />
               </div>
               {tab === "test" && (
-                <div className="max-w-3xl mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="max-w-3xl mx-auto"
+                >
                   <TestChat messages={chat} setMessages={setChat} onTeach={teach} tall />
-                </div>
+                </motion.div>
               )}
             </div>
 
             {tab !== "test" && (
               <aside className="hidden xl:block xl:sticky xl:top-6">
-                <TestChat messages={chat} setMessages={setChat} onTeach={teach} />
+                <Reveal delay={0.12}>
+                  <TestChat messages={chat} setMessages={setChat} onTeach={teach} />
+                </Reveal>
               </aside>
             )}
           </div>
@@ -505,10 +524,20 @@ export default function TrainAiPage() {
 function LoadingState() {
   return (
     <div className="space-y-4" aria-busy="true">
-      <div className="card h-28 animate-pulse bg-ink-50" />
-      <div className="h-10 w-80 max-w-full rounded-xl bg-ink-100 animate-pulse" />
+      <div className="card h-28 p-5 flex items-center gap-4">
+        <div className="h-16 w-16 shrink-0 rounded-full bg-ink-900/[0.06] animate-pulse" />
+        <div className="flex-1 space-y-2.5">
+          <div className="h-4 w-64 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-3 w-80 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-2 w-full rounded-full bg-ink-900/[0.06] animate-pulse" />
+        </div>
+      </div>
+      <div className="h-11 w-80 max-w-full rounded-2xl bg-ink-900/[0.06] animate-pulse" />
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="card h-20 animate-pulse bg-ink-50" />
+        <div key={i} className="card h-20 p-4 space-y-2.5">
+          <div className="h-3.5 w-1/2 rounded bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-3 w-3/4 rounded bg-ink-900/[0.06] animate-pulse" />
+        </div>
       ))}
     </div>
   );
@@ -522,18 +551,41 @@ function ReadinessCard({ readiness, onFill }) {
 
   if (readiness.complete) {
     return (
-      <div className="card p-5 flex flex-col sm:flex-row sm:items-center gap-4 border-emerald-200 bg-emerald-50/50">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-          <CircleCheck className="w-6 h-6" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-black text-ink-900">Your AI is ready to look after guests on its own</p>
+      <Reveal>
+      <Spotlight className="card relative overflow-hidden p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(16,185,129,0.25),0_18px_40px_-20px_rgba(16,185,129,0.45)]">
+        <div aria-hidden className="pointer-events-none absolute -left-10 -top-16 h-48 w-48 rounded-full bg-emerald-400/25 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -right-10 -bottom-16 h-40 w-40 rounded-full bg-sunset opacity-[0.12] blur-3xl" />
+        <motion.div
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 14, delay: 0.15 }}
+          className="relative grid h-14 w-14 shrink-0 place-items-center"
+        >
+          <span className="absolute inset-0 rounded-2xl bg-emerald-400/40 blur-xl" />
+          <span className="absolute inset-0 rounded-2xl bg-emerald-400/30 animate-ping-soft" />
+          <span className="relative grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_12px_28px_-10px_rgba(16,185,129,0.7)]">
+            <CircleCheck className="w-7 h-7" strokeWidth={2} />
+          </span>
+        </motion.div>
+        <div className="relative min-w-0 flex-1">
+          <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
+            Your AI is <span className="font-serif italic font-normal">ready</span> to look after guests on its own
+          </p>
           <p className="text-sm text-ink-600 mt-0.5">
             Every must-have is filled in. {readiness.answered} of {readiness.total} questions
             answered — the more you answer, the fewer messages reach your team.
           </p>
+          <div className="mt-3 h-1.5 rounded-full bg-emerald-500/15 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${readiness.total ? Math.round((readiness.answered / readiness.total) * 100) : 100}%` }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </div>
         </div>
-      </div>
+      </Spotlight>
+      </Reveal>
     );
   }
 
@@ -542,28 +594,47 @@ function ReadinessCard({ readiness, onFill }) {
   if (people) parts.push(`${people} ${people === 1 ? "contact" : "contacts"}`);
 
   return (
-    <div className="card p-5">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="relative w-14 h-14 shrink-0">
-          <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
-            <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="4" className="stroke-ink-100" />
-            <circle
+    <Reveal>
+    <Spotlight className="card relative overflow-hidden p-5 sm:p-6">
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-sunset opacity-[0.10] blur-3xl" />
+      <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+        <div className="relative w-16 h-16 shrink-0">
+          <span aria-hidden className="absolute inset-1 rounded-full bg-sunset opacity-20 blur-xl" />
+          <svg viewBox="0 0 36 36" className="relative w-16 h-16 -rotate-90">
+            <defs>
+              <linearGradient id="train-ring-sunset" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFB547" />
+                <stop offset="35%" stopColor="#FF6A2B" />
+                <stop offset="70%" stopColor="#FF3D77" />
+                <stop offset="100%" stopColor="#7C5CFF" />
+              </linearGradient>
+            </defs>
+            <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3.5" className="stroke-ink-900/[0.07]" />
+            <motion.circle
               cx="18"
               cy="18"
               r="15.5"
               fill="none"
-              strokeWidth="4"
+              strokeWidth="3.5"
               strokeLinecap="round"
-              className="stroke-brand-500 transition-all duration-500"
-              strokeDasharray={`${(readiness.percent / 100) * 97.4} 97.4`}
+              stroke="url(#train-ring-sunset)"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: Math.max(0.001, readiness.percent / 100) }}
+              transition={{ type: "spring", stiffness: 60, damping: 16 }}
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-black text-ink-900">
+          <motion.span
+            key={readiness.percent}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 18 }}
+            className="absolute inset-0 flex items-center justify-center font-display text-[15px] font-semibold tabular-nums text-ink-900"
+          >
             {readiness.percent}%
-          </span>
+          </motion.span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-black text-ink-900">
+          <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
             {parts.join(" and ")} still missing
           </p>
           <p className="text-sm text-ink-500 mt-0.5">
@@ -571,21 +642,32 @@ function ReadinessCard({ readiness, onFill }) {
             {" "}
             {readiness.answered} of {readiness.total} questions answered so far.
           </p>
-          <div className="mt-3 h-2 rounded-full bg-ink-100 overflow-hidden">
+          <div className="relative mt-3 h-2 rounded-full bg-ink-900/[0.06] overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-500"
-              initial={false}
+              className="relative h-full rounded-full bg-sunset overflow-hidden"
+              initial={{ width: 0 }}
               animate={{ width: `${readiness.percent}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
+              transition={{ type: "spring", stiffness: 70, damping: 18 }}
+            >
+              <motion.span
+                aria-hidden
+                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                initial={{ x: "-120%" }}
+                animate={{ x: "320%" }}
+                transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.6, ease: "easeInOut" }}
+              />
+            </motion.div>
           </div>
         </div>
-        <button onClick={onFill} className="btn-primary shrink-0 self-start sm:self-center">
-          Show me what's missing
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <Magnetic strength={0.25} className="shrink-0 self-start sm:self-center">
+          <button onClick={onFill} className="btn-primary group min-h-[44px]">
+            Show me what's missing
+            <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+          </button>
+        </Magnetic>
       </div>
-    </div>
+    </Spotlight>
+    </Reveal>
   );
 }
 
@@ -660,31 +742,43 @@ function QuestionsPanel({
           {topics.map((t) => {
             const active = t.key === topic;
             return (
-              <button
+              <motion.button
                 key={t.key}
                 data-topic={t.key}
                 onClick={() => setTopic(t.key)}
-                className={`shrink-0 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={spring}
+                className={`relative shrink-0 inline-flex min-h-[40px] items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-ink-900 border-ink-900 text-white"
-                    : "bg-white border-ink-200 text-ink-700 hover:border-ink-300"
+                    ? "text-white"
+                    : "bg-white/70 text-ink-700 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff] hover:bg-white hover:text-ink-900"
                 }`}
               >
-                {t.missingRequired && (
-                  <span
-                    className="w-2 h-2 rounded-full bg-accent-500"
-                    title="Has must-have questions without an answer"
+                {active && (
+                  <motion.span
+                    layoutId="train-topic-pill"
+                    transition={spring}
+                    className="absolute inset-0 rounded-full bg-night-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_20px_-8px_rgba(255,61,119,0.55)]"
                   />
                 )}
-                {t.label}
+                {t.missingRequired && (
+                  <span
+                    className="relative inline-flex"
+                    title="Has must-have questions without an answer"
+                  >
+                    <PulseDot color="bg-sunset-flame" />
+                  </span>
+                )}
+                <span className="relative">{t.label}</span>
                 <span
-                  className={`text-xs font-bold rounded-full px-1.5 ${
-                    active ? "bg-white/15 text-white" : "bg-ink-100 text-ink-500"
+                  className={`relative text-xs font-semibold tabular-nums rounded-full px-1.5 ${
+                    active ? "bg-white/15 text-white" : "bg-ink-900/[0.05] text-ink-500"
                   }`}
                 >
                   {t.count}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -702,23 +796,31 @@ function QuestionsPanel({
             aria-label="Search questions"
           />
         </div>
-        <label className="inline-flex items-center gap-2 text-sm font-semibold text-ink-700 bg-white border border-ink-200 rounded-md px-3 py-2.5 cursor-pointer select-none hover:border-ink-300 transition">
-          <input
-            type="checkbox"
-            checked={unansweredOnly}
-            onChange={(e) => setUnansweredOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-ink-300 text-brand-500 focus:ring-brand-500"
-          />
+        <label
+          className={`inline-flex min-h-[42px] items-center gap-2.5 text-sm font-medium rounded-xl px-3 py-2 cursor-pointer select-none transition-all duration-300 ease-spring hover:-translate-y-0.5 ${
+            unansweredOnly
+              ? "bg-white text-ink-900 shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.5)]"
+              : "bg-white/70 text-ink-700 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff] hover:bg-white"
+          }`}
+        >
+          <span className="toggle shrink-0">
+            <input
+              type="checkbox"
+              checked={unansweredOnly}
+              onChange={(e) => setUnansweredOnly(e.target.checked)}
+            />
+            <span className="slider" />
+          </span>
           Unanswered only
           {current?.unanswered > 0 && (
-            <span className="text-xs font-bold text-ink-400">({current.unanswered})</span>
+            <span className="text-xs font-semibold tabular-nums text-ink-400">({current.unanswered})</span>
           )}
         </label>
         <button
           onClick={() => setAddDraft({ question: "", category: defaultAddCategory })}
-          className="btn-primary"
+          className="btn-primary group min-h-[42px]"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
           Add question
         </button>
       </div>
@@ -726,9 +828,10 @@ function QuestionsPanel({
       <AnimatePresence initial={false}>
         {addDraft && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0, filter: "blur(4px)" }}
+            animate={{ opacity: 1, height: "auto", filter: "blur(0px)" }}
+            exit={{ opacity: 0, height: 0, filter: "blur(4px)" }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
             <div className="pt-3">
@@ -748,52 +851,86 @@ function QuestionsPanel({
       {/* List */}
       <div className="mt-4 space-y-2.5">
         {shown.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={spring}
+            className="card p-10 text-center"
+          >
             {unansweredOnly && !query ? (
               <>
-                <CircleCheck className="w-7 h-7 text-emerald-500 mx-auto" />
-                <p className="font-bold text-ink-900 mt-2">Everything here is answered</p>
+                <motion.div
+                  initial={{ scale: 0, rotate: -40 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 13, delay: 0.1 }}
+                  className="relative mx-auto grid h-14 w-14 place-items-center"
+                >
+                  <span aria-hidden className="absolute inset-0 rounded-full bg-emerald-400 opacity-30 blur-2xl" />
+                  <span className="relative grid h-12 w-12 place-items-center rounded-full bg-emerald-500 text-white shadow-[0_10px_26px_-8px_rgba(16,185,129,0.65)]">
+                    <CircleCheck className="w-6 h-6" />
+                  </span>
+                </motion.div>
+                <p className="font-display text-lg font-semibold text-ink-900 mt-4">Everything here is answered</p>
                 <p className="text-sm text-ink-500 mt-1">Nice work. Pick another topic, or turn off "Unanswered only".</p>
               </>
             ) : faqs.length === 0 ? (
               <>
-                <p className="font-bold text-ink-900">No questions yet</p>
+                <div className="relative mx-auto mb-4 grid h-14 w-14 place-items-center">
+                  <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+                  <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+                    <MessageCircleQuestion className="w-6 h-6" strokeWidth={1.8} />
+                  </span>
+                </div>
+                <p className="font-display text-lg font-semibold text-ink-900">No questions yet</p>
                 <p className="text-sm text-ink-500 mt-1">Add your own, or restore the default questions.</p>
-                <button onClick={onReset} className="btn-secondary mt-4">
-                  <RotateCcw className="w-4 h-4" />
+                <button onClick={onReset} className="btn-primary group mt-4 min-h-[42px]">
+                  <RotateCcw className="w-4 h-4 transition-transform duration-700 ease-spring group-hover:-rotate-180" />
                   Restore default questions
                 </button>
               </>
             ) : (
               <>
-                <p className="font-bold text-ink-900">Nothing matches</p>
+                <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl bg-ink-900/[0.05] text-ink-400">
+                  <Search className="w-5 h-5" />
+                </div>
+                <p className="font-display font-semibold text-ink-900">Nothing matches</p>
                 <p className="text-sm text-ink-500 mt-1">Try a different word or topic.</p>
               </>
             )}
-          </div>
+          </motion.div>
         ) : (
-          shown.map((f) => (
-            <QuestionRow
-              key={f._id}
-              faq={f}
-              topicLabel={topic === "all" ? labelOf(catOf(f)) : ""}
-              onSave={onSave}
-              onDelete={onDelete}
-            />
-          ))
+          <AnimatePresence initial={false}>
+            {shown.map((f, i) => (
+              <motion.div
+                key={f._id}
+                layout="position"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ ...spring, delay: Math.min(i, 10) * 0.03 }}
+              >
+                <QuestionRow
+                  faq={f}
+                  topicLabel={topic === "all" ? labelOf(catOf(f)) : ""}
+                  onSave={onSave}
+                  onDelete={onDelete}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
       {faqs.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-400">
-          <span>
+          <span className="tabular-nums">
             Showing {shown.length} of {faqs.length} questions
           </span>
           <button
             onClick={onReset}
-            className="inline-flex items-center gap-1.5 font-semibold hover:text-ink-700 transition"
+            className="btn-ghost group px-2.5 py-1.5 text-xs text-ink-400"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5 transition-transform duration-700 ease-spring group-hover:-rotate-180" />
             Restore default questions
           </button>
         </div>
@@ -825,24 +962,35 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
 
   return (
     <div
-      className={`rounded-2xl border bg-white p-4 transition ${
+      className={`card group/q p-4 transition-[transform,box-shadow] duration-500 ease-spring ${
         editing
-          ? "border-brand-300 shadow-ring"
+          ? ringFocus
           : !answered && faq.required
-            ? "border-accent-200"
-            : "border-ink-100 hover:border-ink-200"
+            ? `${ringWarn} hover:-translate-y-0.5`
+            : "hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.18),0_16px_36px_-18px_rgba(255,61,119,0.32)]"
       }`}
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5 mb-1">
+            {answered && !editing && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                className="grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white"
+                title="Answered"
+              >
+                <Check className="h-2.5 w-2.5" strokeWidth={3} />
+              </motion.span>
+            )}
             {faq.required && (
-              <span className="inline-flex items-center rounded-full bg-accent-100 text-accent-800 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+              <span className={mustHave}>
                 Must-have
               </span>
             )}
             {topicLabel && (
-              <span className="text-[11px] font-semibold text-ink-400">{topicLabel}</span>
+              <span className="text-[11px] font-medium text-ink-400">{topicLabel}</span>
             )}
           </div>
           {editing ? (
@@ -854,7 +1002,7 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
               maxLength={300}
             />
           ) : (
-            <p className="font-bold text-ink-900 text-[15px]">{faq.question}</p>
+            <p className="font-display font-semibold tracking-[-0.01em] text-ink-900 text-[15px]">{faq.question}</p>
           )}
         </div>
         {!editing && (
@@ -863,7 +1011,7 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
               onClick={open}
               title="Edit"
               aria-label="Edit answer"
-              className="p-2 rounded-lg text-ink-400 hover:text-ink-800 hover:bg-ink-50 transition"
+              className="grid h-10 w-10 place-items-center rounded-xl text-ink-400 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:rotate-[-10deg] hover:text-sunset-flame hover:bg-sunset-soft active:scale-90"
             >
               <Pencil className="w-4 h-4" />
             </button>
@@ -871,7 +1019,7 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
               onClick={() => onDelete(faq)}
               title="Delete"
               aria-label="Delete question"
-              className="p-2 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition"
+              className="grid h-10 w-10 place-items-center rounded-xl text-ink-400 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:text-rose-600 hover:bg-rose-50 active:scale-90"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -879,9 +1027,18 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
         )}
       </div>
 
+      <AnimatePresence initial={false} mode="wait">
       {editing ? (
+        <motion.div
+          key="edit"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="overflow-hidden"
+        >
         <div className="mt-3">
-          <label className="text-xs font-bold text-ink-500">Your AI answers</label>
+          <label className="text-xs font-semibold text-ink-500">Your AI answers</label>
           <textarea
             autoFocus
             value={answer}
@@ -900,36 +1057,48 @@ function QuestionRow({ faq, topicLabel, onSave, onDelete }) {
             Leave it empty if the AI shouldn't answer this yet.
           </p>
           <div className="flex items-center justify-end gap-2 mt-3">
-            <button onClick={() => setEditing(false)} className="btn-ghost">
+            <button onClick={() => setEditing(false)} className="btn-ghost min-h-[40px]">
               Cancel
             </button>
-            <button onClick={save} disabled={!hasText(question) || saving} className="btn-primary">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            <button onClick={save} disabled={!hasText(question) || saving} className="btn-primary group min-h-[40px]">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:scale-125" />}
               Save
             </button>
           </div>
         </div>
+        </motion.div>
       ) : answered ? (
-        <button
+        <motion.button
+          key="answer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={open}
-          className="mt-1.5 block w-full text-left text-sm text-ink-600 whitespace-pre-line leading-relaxed hover:text-ink-900 transition"
+          className="mt-1.5 block w-full text-left text-sm text-ink-600 whitespace-pre-line leading-relaxed hover:text-ink-900 transition-colors"
         >
           {faq.answer}
-        </button>
+        </motion.button>
       ) : (
-        <div className="mt-2.5 rounded-xl border border-dashed border-accent-300 bg-accent-50/60 px-3.5 py-3 flex flex-col sm:flex-row sm:items-center gap-2.5">
-          <p className="text-sm text-accent-900 flex-1">
-            <span className="font-bold">Not answered</span> — the AI won't use this until you answer.
+        <motion.div
+          key="empty"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="mt-2.5 rounded-xl bg-gradient-to-r from-sunset-gold/[0.10] via-sunset-flame/[0.06] to-transparent ring-1 ring-sunset-flame/25 px-3.5 py-3 flex flex-col sm:flex-row sm:items-center gap-2.5"
+        >
+          <p className="text-sm text-ink-700 flex-1">
+            <span className="font-semibold text-ink-900">Not answered</span> — the AI won't use this until you answer.
           </p>
           <button
             onClick={open}
-            className="shrink-0 inline-flex items-center gap-1.5 self-start sm:self-auto bg-white border border-accent-300 hover:border-accent-400 text-accent-900 text-sm font-bold rounded-lg px-3 py-1.5 transition"
+            className="btn-secondary group/w shrink-0 self-start sm:self-auto min-h-[40px] px-3 py-1.5 text-sm"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-3.5 h-3.5 text-sunset-flame transition-transform duration-500 ease-spring group-hover/w:rotate-[-14deg] group-hover/w:-translate-y-0.5" />
             Write the answer
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -949,16 +1118,21 @@ function AddQuestion({ draft, defaultCategory, categories, onAdd, onCancel }) {
   };
 
   return (
-    <div className="rounded-2xl border-2 border-brand-200 bg-white p-4 shadow-card">
+    <div className={`glass-strong rounded-2xl p-4 sm:p-5 ${ringFocus}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-bold text-ink-900">New question</p>
-        <button onClick={onCancel} aria-label="Close" className="p-1 text-ink-400 hover:text-ink-700">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-sunset text-white shadow-[0_6px_16px_-6px_rgba(255,61,119,0.6)]">
+            <Plus className="h-4 w-4" />
+          </span>
+          <p className="font-display font-semibold tracking-[-0.01em] text-ink-900">New question</p>
+        </div>
+        <button onClick={onCancel} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-lg text-ink-400 transition-all duration-300 ease-spring hover:rotate-90 hover:bg-ink-900/[0.05] hover:text-ink-700">
           <X className="w-4 h-4" />
         </button>
       </div>
       <div className="grid sm:grid-cols-[1fr_220px] gap-3 mt-3">
         <div>
-          <label className="text-xs font-bold text-ink-500">When a guest asks</label>
+          <label className="text-xs font-semibold text-ink-500">When a guest asks</label>
           <input
             autoFocus={!draft.question}
             value={question}
@@ -969,7 +1143,7 @@ function AddQuestion({ draft, defaultCategory, categories, onAdd, onCancel }) {
           />
         </div>
         <div>
-          <label className="text-xs font-bold text-ink-500">Topic</label>
+          <label className="text-xs font-semibold text-ink-500">Topic</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="input mt-1">
             {categories.map((c) => (
               <option key={c.key} value={c.key}>
@@ -979,7 +1153,7 @@ function AddQuestion({ draft, defaultCategory, categories, onAdd, onCancel }) {
           </select>
         </div>
       </div>
-      <label className="text-xs font-bold text-ink-500 mt-3 block">Your AI answers</label>
+      <label className="text-xs font-semibold text-ink-500 mt-3 block">Your AI answers</label>
       <textarea
         autoFocus={!!draft.question}
         value={answer}
@@ -993,11 +1167,11 @@ function AddQuestion({ draft, defaultCategory, categories, onAdd, onCancel }) {
         }}
       />
       <div className="flex items-center justify-end gap-2 mt-3">
-        <button onClick={onCancel} className="btn-ghost">
+        <button onClick={onCancel} className="btn-ghost min-h-[40px]">
           Cancel
         </button>
-        <button onClick={submit} disabled={!canSave} className="btn-primary">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        <button onClick={submit} disabled={!canSave} className="btn-primary group min-h-[40px]">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />}
           Add question
         </button>
       </div>
@@ -1109,46 +1283,61 @@ function ContactsPanel({ contacts, roles, onSave }) {
 
   return (
     <div>
-      <div className="rounded-xl border border-ink-100 bg-white px-4 py-3 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+      <Reveal className="card px-4 py-3.5 flex items-start gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15">
+          <ShieldCheck className="w-4.5 h-4.5" strokeWidth={1.8} />
+        </span>
         <p className="text-sm text-ink-600">
           <span className="font-bold text-ink-900">Private numbers stay private.</span> Your AI only
           gives a guest a number when you've switched on{" "}
           <span className="font-semibold">"Guests can get this number"</span>. Everyone else is kept
           on file for you and your team, and is never shared with guests.
         </p>
-      </div>
+      </Reveal>
 
       <div className="mt-4 grid md:grid-cols-2 gap-4">
-        {roles.map((role) => {
+        {roles.map((role, ri) => {
           const meta = ROLE_META[role.key] || { icon: UserRound, help: "" };
           const Icon = meta.icon;
           const list = rows.filter((r) => r.role === role.key);
           const missing = role.required && !list.some((r) => hasText(r.whatsapp));
           return (
-            <section
+            <Reveal
               key={role.key}
+              delay={Math.min(ri, 6) * 0.05}
+              className={`scroll-mt-24 ${meta.multiple ? "md:col-span-2" : ""}`}
+            >
+            <section
               id={`contact-${role.key}`}
-              className={`card p-4 sm:p-5 scroll-mt-24 ${meta.multiple ? "md:col-span-2" : ""} ${
-                missing ? "border-accent-200" : ""
+              className={`card group h-full p-4 sm:p-5 scroll-mt-24 transition-shadow duration-500 ${
+                missing
+                  ? ringWarn
+                  : list.some((r) => hasText(r.whatsapp))
+                    ? "shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(16,185,129,0.18),0_10px_28px_-18px_rgba(16,185,129,0.35)]"
+                    : ""
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-ink-600" />
+                <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${missing ? "bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.55)]" : "bg-sunset-soft text-sunset-flame"} ${hop}`}>
+                  <Icon className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <h3 className="font-bold text-ink-900">{role.label}</h3>
+                    <h3 className="font-display font-semibold tracking-[-0.01em] text-ink-900">{role.label}</h3>
                     {role.required && (
-                      <span className="inline-flex items-center rounded-full bg-accent-100 text-accent-800 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                      <span className={mustHave}>
                         Must-have
+                      </span>
+                    )}
+                    {!missing && list.some((r) => hasText(r.whatsapp)) && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
+                        <PulseDot color="bg-emerald-500" /> Set
                       </span>
                     )}
                   </div>
                   {meta.help && <p className="text-xs text-ink-500 mt-0.5">{meta.help}</p>}
                   {missing && (
-                    <p className="text-xs font-semibold text-accent-700 mt-1">
+                    <p className="text-xs font-semibold text-sunset-flame mt-1">
                       Add a WhatsApp number so your AI can point guests here.
                     </p>
                   )}
@@ -1176,13 +1365,14 @@ function ContactsPanel({ contacts, roles, onSave }) {
               {meta.multiple && (
                 <button
                   onClick={() => setRows((all) => [...all, blankRow(role)])}
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:text-brand-700"
+                  className="btn-secondary group/a mt-3 min-h-[40px] text-sm"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 text-sunset-flame transition-transform duration-500 ease-spring group-hover/a:rotate-90" />
                   Add another {role.key === "taxi" ? "driver or taxi company" : "contact"}
                 </button>
               )}
             </section>
+            </Reveal>
           );
         })}
       </div>
@@ -1205,7 +1395,7 @@ function ContactFields({ row, errors, onChange, removable, clearable, onRemove, 
     const Icon = icon;
     return (
       <div>
-        <label htmlFor={`${row._k}-${f}`} className="text-xs font-bold text-ink-500">
+        <label htmlFor={`${row._k}-${f}`} className="text-xs font-semibold text-ink-500">
           {label}
         </label>
         <div className="relative mt-1">
@@ -1215,29 +1405,41 @@ function ContactFields({ row, errors, onChange, removable, clearable, onRemove, 
             value={row[f]}
             onChange={(e) => onChange({ [f]: e.target.value })}
             aria-invalid={!!err(f)}
-            className={`input pl-9 ${err(f) ? "border-rose-400 focus:ring-rose-400" : ""}`}
+            className={`input pl-9 ${err(f) ? "!border-rose-400 focus:!shadow-[0_0_0_4px_rgba(244,63,94,0.12)]" : ""}`}
             {...props}
           />
         </div>
-        {err(f) && <p className="text-xs text-rose-600 mt-1">{err(f)}</p>}
+        <AnimatePresence>
+          {err(f) && (
+            <motion.p
+              initial={{ opacity: 0, y: -4, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={spring}
+              className="text-xs text-rose-600 mt-1"
+            >
+              {err(f)}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
     );
   };
 
   return (
-    <div id={`row-${row._k}`} className={index ? "rounded-xl border border-ink-100 p-3.5" : ""}>
+    <div id={`row-${row._k}`} className={index ? "rounded-xl bg-white/60 p-3.5 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff]" : ""}>
       {(index > 0 || removable || clearable) && (
         <div className="flex items-center justify-between mb-2 min-h-[20px]">
           <span className="text-[11px] font-bold uppercase tracking-wide text-ink-400">
             {index ? `#${index}` : ""}
           </span>
           {removable ? (
-            <button onClick={onRemove} className="text-xs font-semibold text-ink-400 hover:text-rose-600 inline-flex items-center gap-1">
-              <Trash2 className="w-3.5 h-3.5" />
+            <button onClick={onRemove} className="btn-ghost group/r px-2.5 py-1.5 text-xs text-ink-400 hover:!text-rose-600 hover:!bg-rose-50">
+              <Trash2 className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/r:rotate-[-12deg]" />
               Remove
             </button>
           ) : clearable ? (
-            <button onClick={onClear} className="text-xs font-semibold text-ink-400 hover:text-ink-700">
+            <button onClick={onClear} className="btn-ghost px-2.5 py-1.5 text-xs text-ink-400">
               Clear
             </button>
           ) : null}
@@ -1265,23 +1467,27 @@ function ContactFields({ row, errors, onChange, removable, clearable, onRemove, 
         role="switch"
         aria-checked={row.shareWithGuests}
         onClick={() => onChange({ shareWithGuests: !row.shareWithGuests })}
-        className={`mt-3 w-full flex items-start gap-3 rounded-xl border px-3.5 py-2.5 text-left transition ${
-          row.shareWithGuests ? "border-emerald-200 bg-emerald-50/60" : "border-ink-100 bg-ink-50/60"
+        className={`mt-3 w-full flex items-start gap-3 rounded-xl px-3.5 py-2.5 text-left ring-1 transition-[background-color,box-shadow,transform] duration-300 ease-spring active:scale-[0.99] ${
+          row.shareWithGuests
+            ? "bg-emerald-50/80 ring-emerald-500/25"
+            : "bg-ink-900/[0.03] ring-ink-900/[0.06] hover:bg-white/70"
         }`}
       >
         <span
-          className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full transition ${
-            row.shareWithGuests ? "bg-emerald-500" : "bg-ink-300"
+          className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] transition-colors duration-300 ${
+            row.shareWithGuests ? "bg-emerald-500" : "bg-ink-900/[0.15]"
           }`}
         >
-          <span
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
+          <motion.span
+            layout
+            transition={{ type: "spring", stiffness: 600, damping: 28 }}
+            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-[0_2px_5px_rgba(15,23,42,0.25)] ${
               row.shareWithGuests ? "left-[18px]" : "left-0.5"
             }`}
           />
         </span>
         <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
             {row.shareWithGuests ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             Guests can get this number
           </span>
@@ -1351,33 +1557,55 @@ function PlaybookPanel({ playbook, onSave }) {
 
   return (
     <div>
-      <div className="rounded-xl border border-ink-100 bg-white px-4 py-3 flex items-start gap-3">
-        <Lightbulb className="w-5 h-5 text-accent-500 shrink-0 mt-0.5" />
+      <Reveal className="card px-4 py-3.5 flex items-start gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-sunset-soft text-sunset-flame">
+          <Lightbulb className="w-4.5 h-4.5" strokeWidth={1.8} />
+        </span>
         <p className="text-sm text-ink-600">
           These are <span className="font-bold text-ink-900">instructions to your AI</span>, not
           messages to guests. They tell it what to do in tricky moments — an emergency, an angry
           guest, a refund request — so it handles them the way you would.
         </p>
-      </div>
+      </Reveal>
 
       <div className="mt-4 space-y-3">
         {rules.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
-            <p className="font-bold text-ink-900">No rules yet</p>
+          <div className="card p-8 text-center">
+            <div className="relative mx-auto mb-3 grid h-12 w-12 place-items-center">
+              <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+              <span className="relative grid h-11 w-11 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+                <ShieldCheck className="w-5 h-5" strokeWidth={1.8} />
+              </span>
+            </div>
+            <p className="font-display font-semibold text-ink-900">No rules yet</p>
             <p className="text-sm text-ink-500 mt-1">Add one for each situation you want handled your way.</p>
           </div>
         )}
+        <AnimatePresence initial={false}>
         {rules.map((r, i) => {
           const flagged = showErrors && incomplete(r);
+          const done = !incomplete(r);
           return (
-            <div key={r._k} className={`card p-4 ${flagged ? "border-rose-300" : ""}`}>
+            <motion.div
+              key={r._k}
+              layout="position"
+              initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.97, filter: "blur(4px)" }}
+              transition={spring}
+              className={`card group p-4 transition-shadow duration-500 ${flagged ? ringError : "focus-within:shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.45),0_16px_36px_-18px_rgba(255,61,119,0.35)]"}`}
+            >
               <div className="flex items-start gap-3">
-                <span className="w-7 h-7 rounded-lg bg-ink-100 text-ink-600 text-xs font-black flex items-center justify-center shrink-0 mt-6">
+                <span
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-semibold tabular-nums mt-6 transition-colors duration-300 ${
+                    done ? "bg-sunset text-white shadow-[0_6px_14px_-6px_rgba(255,61,119,0.55)]" : "bg-ink-900/[0.05] text-ink-600"
+                  }`}
+                >
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1 grid gap-3">
                   <div>
-                    <label htmlFor={`rule-${r._k}`} className="text-xs font-bold text-ink-500">
+                    <label htmlFor={`rule-${r._k}`} className="text-xs font-semibold text-ink-500">
                       When…
                     </label>
                     <input
@@ -1386,18 +1614,18 @@ function PlaybookPanel({ playbook, onSave }) {
                       onChange={(e) => update(r._k, { situation: e.target.value })}
                       maxLength={200}
                       placeholder="e.g. A guest asks for a late check-out on a Sunday"
-                      className={`input mt-1 font-semibold ${flagged && !hasText(r.situation) ? "border-rose-400" : ""}`}
+                      className={`input mt-1 font-medium ${flagged && !hasText(r.situation) ? "!border-rose-400" : ""}`}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-ink-500">Your AI should…</label>
+                    <label className="text-xs font-semibold text-ink-500">Your AI should…</label>
                     <textarea
                       value={r.response}
                       onChange={(e) => update(r._k, { response: e.target.value })}
                       maxLength={1000}
                       rows={2}
                       placeholder="e.g. Say yes until 2pm at no charge, later than that costs half a night."
-                      className={`input mt-1 min-h-[72px] ${flagged && !hasText(r.response) ? "border-rose-400" : ""}`}
+                      className={`input mt-1 min-h-[72px] ${flagged && !hasText(r.response) ? "!border-rose-400" : ""}`}
                     />
                   </div>
                   {flagged && (
@@ -1408,18 +1636,19 @@ function PlaybookPanel({ playbook, onSave }) {
                   onClick={() => setRules((list) => list.filter((x) => x._k !== r._k))}
                   aria-label="Remove rule"
                   title="Remove"
-                  className="p-2 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition shrink-0 mt-5"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-400 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:rotate-[-10deg] hover:text-rose-600 hover:bg-rose-50 active:scale-90 mt-5"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
+        </AnimatePresence>
       </div>
 
-      <button onClick={add} className="btn-secondary mt-4" disabled={rules.length >= 60}>
-        <Plus className="w-4 h-4" />
+      <button onClick={add} className="btn-secondary group mt-4 min-h-[42px]" disabled={rules.length >= 60}>
+        <Plus className="w-4 h-4 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-90" />
         Add a rule
       </button>
 
@@ -1443,27 +1672,30 @@ function SaveBar({ dirty, saving, error, onSave, onDiscard, label }) {
     <AnimatePresence>
       {(dirty || error) && (
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(6px)" }}
+          transition={spring}
           className="sticky bottom-16 lg:bottom-0 z-20 mt-5 pb-4"
         >
-          <div className="rounded-2xl bg-ink-900 text-white shadow-card-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-            <p className={`text-sm flex-1 ${error ? "text-rose-200" : "text-ink-200"}`}>
-              {error || "You have unsaved changes. Your AI keeps using the old version until you save."}
+          <div className="card-dark relative overflow-hidden !bg-night-950/90 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_24px_60px_-20px_rgba(255,61,119,0.45)]">
+            <div aria-hidden className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-sunset opacity-25 blur-3xl" />
+            <p className={`relative flex items-start gap-2 text-sm flex-1 ${error ? "text-rose-200" : "text-white/70"}`}>
+              <PulseDot color={error ? "bg-rose-400" : "bg-amber-400"} className="mt-1.5 shrink-0" />
+              <span>{error || "You have unsaved changes. Your AI keeps using the old version until you save."}</span>
             </p>
-            <div className="flex items-center gap-2 justify-end">
+            <div className="relative flex items-center gap-2 justify-end">
               {dirty && (
                 <button
                   onClick={onDiscard}
                   disabled={saving}
-                  className="text-sm font-semibold text-ink-300 hover:text-white px-3 py-2 transition"
+                  className="btn-glass-dark min-h-[40px] px-3 py-2 text-sm"
                 >
                   Discard
                 </button>
               )}
-              <button onClick={onSave} disabled={saving || !dirty} className="btn-primary">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              <button onClick={onSave} disabled={saving || !dirty} className="btn-primary group min-h-[40px]">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:scale-125" />}
                 {label}
               </button>
             </div>
@@ -1522,17 +1754,19 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
 
   return (
     <div
-      className={`rounded-2xl border border-ink-100 bg-white shadow-card overflow-hidden flex flex-col ${
+      className={`card overflow-hidden flex flex-col ${
         tall ? "h-[calc(100vh-260px)] min-h-[480px]" : "h-[calc(100vh-140px)] max-h-[640px] min-h-[420px]"
       }`}
     >
-      <div className="px-4 py-3.5 border-b border-ink-100 flex items-center gap-2.5">
-        <div className="relative w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center">
+      <div className="group px-4 py-3.5 border-b border-ink-900/[0.06] bg-white/60 backdrop-blur flex items-center gap-2.5">
+        <div className={`relative grid h-9 w-9 place-items-center rounded-xl bg-sunset text-white shadow-[0_8px_18px_-8px_rgba(255,61,119,0.6)] ${hop}`}>
           <Bot className="w-4.5 h-4.5" />
-          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-white" />
+          <span className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-white p-[2px]">
+            <PulseDot color="bg-emerald-500" />
+          </span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-ink-900 text-sm">Test your AI</p>
+          <p className="font-display font-semibold text-ink-900 text-sm">Test your AI</p>
           <p className="text-[11px] text-ink-400">
             Ask like a guest would. Real answers — nothing is sent to anyone.
           </p>
@@ -1540,28 +1774,42 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
         {messages.length > 0 && (
           <button
             onClick={() => setMessages([])}
-            className="text-xs font-semibold text-ink-400 hover:text-ink-700 px-2 py-1"
+            className="btn-ghost px-2.5 py-1.5 text-xs text-ink-400"
           >
             Start over
           </button>
         )}
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-ink-50/50">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-ink-900/[0.015] to-ink-900/[0.035]">
         {messages.length === 0 && (
           <div className="text-center pt-4">
-            <Sparkles className="w-6 h-6 text-brand-400 mx-auto" />
-            <p className="text-sm font-semibold text-ink-700 mt-2">See how your AI answers guests</p>
+            <div className="relative mx-auto grid h-12 w-12 place-items-center">
+              <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-25 blur-2xl" />
+              <motion.span
+                animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.08, 1] }}
+                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 1.5 }}
+                className="relative grid h-11 w-11 place-items-center rounded-xl bg-sunset-soft text-sunset-flame"
+              >
+                <Sparkles className="w-5 h-5" strokeWidth={1.8} />
+              </motion.span>
+            </div>
+            <p className="font-display text-sm font-semibold text-ink-800 mt-3">See how your AI answers guests</p>
             <p className="text-xs text-ink-400 mt-0.5">Tap a question or type your own</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {SUGGESTED_TESTS.map((q) => (
-                <button
+              {SUGGESTED_TESTS.map((q, i) => (
+                <motion.button
                   key={q}
                   onClick={() => ask(q)}
-                  className="text-xs font-semibold text-ink-700 bg-white border border-ink-200 hover:border-brand-300 hover:text-brand-700 rounded-full px-3 py-1.5 transition"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ ...spring, delay: i * 0.04 }}
+                  className="min-h-[34px] text-xs font-medium text-ink-700 bg-white/80 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff] hover:bg-white hover:text-ink-900 hover:ring-sunset-flame/35 hover:shadow-[inset_0_1px_0_#fff,0_8px_18px_-10px_rgba(255,106,43,0.5)] rounded-full px-3 py-1.5 transition-[color,background-color,box-shadow]"
                 >
                   {q}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -1570,18 +1818,20 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
         {messages.map((m, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={spring}
+            style={{ originX: m.role === "user" ? 1 : 0 }}
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div className="max-w-[88%]">
               <div
                 className={`rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-line leading-relaxed ${
                   m.role === "user"
-                    ? "bg-brand-500 text-white rounded-br-md"
+                    ? "bg-sunset text-white rounded-br-md shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-10px_rgba(255,61,119,0.55)]"
                     : m.error
-                      ? "bg-rose-50 text-rose-800 border border-rose-100 rounded-bl-md"
-                      : "bg-white text-ink-800 border border-ink-100 rounded-bl-md"
+                      ? "bg-rose-50 text-rose-800 ring-1 ring-rose-500/15 rounded-bl-md"
+                      : "bg-white/90 text-ink-800 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff,0_4px_14px_-10px_rgba(15,23,42,0.3)] rounded-bl-md"
                 }`}
               >
                 {m.content}
@@ -1589,7 +1839,7 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
               {m.role === "assistant" && !m.error && (
                 <div className="mt-1 ml-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                   {m.fromTraining ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                       <GraduationCap className="w-3.5 h-3.5" />
                       From your training
                     </span>
@@ -1600,7 +1850,7 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
                     </span>
                   )}
                   {m.escalate && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-accent-700">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">
                       <Users className="w-3.5 h-3.5" />
                       Would alert your team
                     </span>
@@ -1608,7 +1858,7 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
                   {!m.fromTraining && m.question && onTeach && (
                     <button
                       onClick={() => onTeach(m.question)}
-                      className="text-[11px] font-bold text-brand-600 hover:text-brand-700 underline-offset-2 hover:underline"
+                      className="text-[11px] font-semibold text-sunset-flame hover:text-sunset-magenta underline-offset-2 hover:underline transition-colors"
                     >
                       Teach it the exact answer
                     </button>
@@ -1621,12 +1871,12 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
 
         {thinking && (
           <div className="flex justify-start">
-            <div className="bg-white border border-ink-100 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+            <div className="bg-white/90 ring-1 ring-ink-900/[0.07] rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
               {[0, 1, 2].map((d) => (
                 <motion.span
                   key={d}
-                  className="w-1.5 h-1.5 rounded-full bg-ink-400"
-                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  className="w-1.5 h-1.5 rounded-full bg-sunset"
+                  animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
                   transition={{ duration: 1, repeat: Infinity, delay: d * 0.15 }}
                 />
               ))}
@@ -1640,7 +1890,7 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
           e.preventDefault();
           ask();
         }}
-        className="p-3 border-t border-ink-100 flex items-center gap-2"
+        className="p-3 border-t border-ink-900/[0.06] bg-white/60 backdrop-blur flex items-center gap-2"
       >
         <input
           value={text}
@@ -1653,10 +1903,10 @@ function TestChat({ messages, setMessages, onTeach, tall = false }) {
         <button
           type="submit"
           disabled={!text.trim() || thinking}
-          className="w-10 h-10 shrink-0 inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white rounded-xl transition disabled:opacity-50"
+          className="btn-primary group h-10 w-10 shrink-0 !p-0 justify-center disabled:opacity-50"
           aria-label="Send"
         >
-          {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:rotate-12" />}
         </button>
       </form>
     </div>

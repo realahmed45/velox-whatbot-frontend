@@ -21,6 +21,11 @@ import {
 import StatHero from "@/components/ui/StatHero";
 import StarterGallery from "./components/StarterGallery";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { AnimatePresence, motion } from "framer-motion";
+import { Magnetic, PulseDot, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
+
+const iconBtn =
+  "group/ib w-10 h-10 sm:w-9 sm:h-9 rounded-xl grid place-items-center text-ink-400 transition-all duration-300 ease-spring hover:-translate-y-0.5 active:scale-90";
 
 export default function CustomFlowsPage() {
   const navigate = useNavigate();
@@ -137,7 +142,7 @@ export default function CustomFlowsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10 max-w-5xl mx-auto space-y-8">
       <StatHero
         icon={Workflow}
         title="Custom Flows"
@@ -160,31 +165,33 @@ export default function CustomFlowsPage() {
       >
         <button
           onClick={() => setShowStarters(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-white/15 border border-white/25 text-white font-bold text-sm px-4 py-2 hover:bg-white/25 transition"
+          className="btn-glass-dark group/t text-sm px-3 sm:px-4 py-2"
         >
-          <Sparkles className="w-4 h-4" />
-          Templates
+          <Sparkles className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/t:rotate-[-12deg] group-hover/t:scale-110" />
+          <span className="hidden sm:inline">Templates</span>
         </button>
-        <button
-          onClick={createFlow}
-          disabled={creating}
-          className="inline-flex items-center gap-2 rounded-xl bg-white text-ink-900 font-bold text-sm px-4 py-2 hover:bg-white/90 transition disabled:opacity-60"
-        >
-          {creating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-          New flow
-        </button>
+        <Magnetic strength={0.25}>
+          <button
+            onClick={createFlow}
+            disabled={creating}
+            className="btn-primary group/n text-sm px-3 sm:px-4 py-2 disabled:opacity-60"
+          >
+            {creating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/n:rotate-90" />
+            )}
+            New flow
+          </button>
+        </Magnetic>
       </StatHero>
 
       {/* ── Your flows ── */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-ink-900">Your flows</h2>
+          <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Your flows</h2>
           {flows.length > 0 && (
-            <span className="text-xs text-ink-400">
+            <span className="text-xs text-ink-500 tabular-nums">
               {flows.filter((f) => f.status === "active").length} active ·{" "}
               {flows.length} total
             </span>
@@ -192,45 +199,67 @@ export default function CustomFlowsPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-ink-400 py-8">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading flows…
+          <div className="card divide-y divide-ink-900/[0.06]" aria-busy="true">
+            <span className="sr-only">Loading flows…</span>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <div className="w-2 h-2 rounded-full bg-ink-900/[0.08] animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 w-40 max-w-full rounded-md bg-ink-900/[0.06] animate-pulse" />
+                  <div className="h-3 w-56 max-w-full rounded-md bg-ink-900/[0.06] animate-pulse" />
+                </div>
+                <div className="h-8 w-24 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+              </div>
+            ))}
           </div>
         ) : flows.length === 0 ? (
-          <div className="border-2 border-dashed border-ink-200 rounded-xl p-10 text-center bg-ink-50/30">
-            <Workflow className="w-10 h-10 text-ink-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-ink-700">No flows yet</p>
-            <p className="text-xs text-ink-500 mt-1 max-w-xs mx-auto">
+          <Reveal className="card p-10 text-center">
+            <div className="relative mx-auto w-14 h-14 mb-4">
+              <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-20 blur-2xl" />
+              <div className="relative w-14 h-14 rounded-2xl bg-sunset-soft text-sunset-flame grid place-items-center animate-float">
+                <Workflow className="w-7 h-7" strokeWidth={1.8} />
+              </div>
+            </div>
+            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">No flows yet</p>
+            <p className="text-sm text-ink-500 mt-1 max-w-xs mx-auto">
               Build a multi-step conversation or start from one of the templates
               below.
             </p>
             <button
               onClick={createFlow}
               disabled={creating}
-              className="mt-4 btn btn-primary text-sm inline-flex items-center gap-2"
+              className="mt-5 btn btn-primary group/c text-sm inline-flex items-center gap-2"
             >
               {creating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/c:rotate-90" />
               )}
               Create first flow
             </button>
-          </div>
+          </Reveal>
         ) : (
-          <div className="space-y-2">
-            {flows.map((flow) => (
-              <div
+          <div className="card divide-y divide-ink-900/[0.06] overflow-hidden">
+            <AnimatePresence initial={false}>
+            {flows.map((flow, i) => (
+              <motion.div
                 key={flow._id}
-                className="border border-ink-100 bg-white rounded-xl px-4 py-3 flex items-center gap-3 hover:border-brand-200 hover:shadow-sm transition"
+                layout
+                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { delay: Math.min(i, 8) * 0.04, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
+                exit={{ opacity: 0, x: -16, transition: { duration: 0.25 } }}
+                className="group px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 transition-colors hover:bg-white/80"
               >
-                <div
-                  className={`w-2 h-2 rounded-full flex-shrink-0 ${flow.status === "active" ? "bg-emerald-500" : "bg-ink-300"}`}
-                />
+                {flow.status === "active" ? (
+                  <PulseDot color="bg-emerald-500" className="flex-shrink-0" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full flex-shrink-0 bg-ink-300" />
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink-900 truncate">
                     {flow.name || "Untitled flow"}
                   </p>
-                  <p className="text-xs text-ink-400">
+                  <p className="text-xs text-ink-500 truncate">
                     {flow.nodes?.length || 0} nodes ·{" "}
                     {flow.status === "active" ? "Active" : "Inactive"}
                     {flow.updatedAt
@@ -238,45 +267,47 @@ export default function CustomFlowsPage() {
                       : ""}
                   </p>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   <button
                     onClick={() => toggleFlow(flow)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-emerald-600 hover:bg-emerald-50 transition"
+                    className={`${iconBtn} hover:text-emerald-600 hover:bg-emerald-50`}
                     title={flow.status === "active" ? "Pause" : "Activate"}
                   >
                     {flow.status === "active" ? (
-                      <Pause className="w-4 h-4" />
+                      <Pause className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ib:scale-110" />
                     ) : (
-                      <Play className="w-4 h-4" />
+                      <Play className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ib:scale-110 group-hover/ib:translate-x-0.5" />
                     )}
                   </button>
                   <button
                     onClick={() =>
                       navigate(`/dashboard/flow-builder/${flow._id}`)
                     }
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition"
+                    className={`${iconBtn} hover:text-sunset-flame hover:bg-sunset-soft`}
                     title="Edit"
                   >
-                    <Pencil className="w-4 h-4" />
+                    <Pencil className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ib:rotate-[-12deg]" />
                   </button>
                   <button
                     onClick={() => deleteFlow(flow._id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
+                    className={`${iconBtn} hover:text-rose-600 hover:bg-rose-50`}
                     title="Delete"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/ib:rotate-[-12deg]" />
                   </button>
                 </div>
                 <button
                   onClick={() =>
                     navigate(`/dashboard/flow-builder/${flow._id}`)
                   }
-                  className="text-ink-300 hover:text-brand-600 transition flex-shrink-0"
+                  className="hidden sm:grid w-8 h-8 place-items-center text-ink-300 hover:text-sunset-flame transition-colors flex-shrink-0"
+                  aria-label="Open flow"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5 transition-transform duration-500 ease-spring group-hover:translate-x-0.5" />
                 </button>
-              </div>
+              </motion.div>
             ))}
+            </AnimatePresence>
           </div>
         )}
       </section>
@@ -287,67 +318,64 @@ export default function CustomFlowsPage() {
           <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-500" />
-                <h2 className="text-base font-black text-ink-900">
-                  Start from a template
+                <Sparkles className="w-4 h-4 text-sunset-flame" strokeWidth={1.8} />
+                <h2 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
+                  Start from a{" "}
+                  <span className="font-serif italic font-normal">template</span>
                 </h2>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-2 py-0.5">
+                <span className="badge-brand text-[10px] uppercase tracking-wide tabular-nums">
                   {templates.length} ready
                 </span>
               </div>
-              <p className="text-xs text-ink-500 mt-1">
+              <p className="text-[13px] text-ink-500 mt-1">
                 Proven flows you can install in one click, then reword to match
                 your business.
               </p>
             </div>
-            <div className="flex gap-1.5 flex-wrap">
-              {tplCategories.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setTplCat(c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
-                    tplCat === c
-                      ? "bg-brand-500 text-white border-brand-500"
-                      : "bg-white text-ink-600 border-ink-200 hover:border-brand-300"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+            <div className="max-w-full overflow-x-auto no-scrollbar">
+              <SlidingTabs
+                size="sm"
+                className="whitespace-nowrap"
+                value={tplCat}
+                onChange={setTplCat}
+                items={tplCategories.map((c) => ({ value: c, label: c }))}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {shownTemplates.map((t) => (
-              <button
-                key={t.key}
+            {shownTemplates.map((t, i) => (
+              <Reveal key={t.key} delay={Math.min(i, 9) * 0.05} className="h-full">
+              <Spotlight
+                as="button"
                 type="button"
                 onClick={() => useTemplate(t.key, t.name)}
                 disabled={!!installing}
-                className="group text-left flex flex-col rounded-2xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-500/5 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60"
+                className="card-hover group w-full h-full text-left flex flex-col p-5 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-2xl">{t.icon}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-ink-400 bg-ink-50 rounded-full px-2 py-0.5">
+                  <span className="w-11 h-11 rounded-xl bg-sunset-soft grid place-items-center text-2xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">{t.icon}</span>
+                  <span className="badge-gray text-[10px] uppercase tracking-wide tabular-nums">
                     {t.steps} steps
                   </span>
                 </div>
-                <p className="text-sm font-bold text-ink-900 mt-2.5">{t.name}</p>
-                <p className="text-xs text-ink-500 leading-relaxed flex-1 mt-1">
+                <p className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900 mt-3">{t.name}</p>
+                <p className="text-[13px] text-ink-500 leading-relaxed flex-1 mt-1">
                   {t.description}
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600 group-hover:gap-1.5 transition-all">
+                <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame">
                   {installing === t.key ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Adding…
                     </>
                   ) : (
                     <>
-                      Use this <ChevronRight className="w-3.5 h-3.5" />
+                      Use this <ChevronRight className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
                     </>
                   )}
                 </span>
-              </button>
+              </Spotlight>
+              </Reveal>
             ))}
           </div>
         </section>

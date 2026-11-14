@@ -145,27 +145,27 @@ export default function PhotoUploader({
         onDrop={onDrop}
         disabled={uploading || full}
         className={clsx(
-          "w-full rounded-2xl border-2 border-dashed transition text-center",
+          "group w-full rounded-2xl border-2 border-dashed text-center transition-all duration-500 ease-spring",
           compact ? "px-4 py-5" : "px-5 py-7",
           dragging
-            ? "border-brand-400 bg-brand-50"
-            : "border-ink-200 bg-ink-50/60 hover:border-brand-300 hover:bg-brand-50/40",
+            ? "scale-[1.01] border-sunset-flame/60 bg-sunset-soft shadow-[0_18px_40px_-20px_rgba(255,61,119,0.5)]"
+            : "border-ink-900/15 bg-white/50 hover:border-sunset-flame/40 hover:bg-white/80",
           (uploading || full) && "opacity-60 cursor-not-allowed",
         )}
       >
         {uploading ? (
           <>
-            <Loader2 className="w-6 h-6 text-brand-500 animate-spin mx-auto" />
+            <Loader2 className="w-6 h-6 text-sunset-flame animate-spin mx-auto" />
             <p className="text-sm font-semibold text-ink-600 mt-2">
               Uploading…
             </p>
           </>
         ) : (
           <>
-            <span className="w-10 h-10 rounded-xl bg-white border border-ink-200 flex items-center justify-center mx-auto shadow-card">
-              <ImagePlus className="w-5 h-5 text-brand-500" />
+            <span className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.14),0_8px_20px_-8px_rgba(255,61,119,0.4)] transition-transform duration-500 ease-spring group-hover:-translate-y-1 group-hover:rotate-[-8deg]">
+              <ImagePlus className="w-5 h-5 text-sunset-flame" />
             </span>
-            <p className="text-sm font-bold text-ink-800 mt-2.5">
+            <p className="mt-2.5 text-sm font-semibold text-ink-800">
               {full ? `Photo limit reached (${max})` : "Add photos"}
             </p>
             <p className="text-xs text-ink-500 mt-1">
@@ -200,18 +200,18 @@ export default function PhotoUploader({
           {photos.map((p, i) => (
             <div
               key={`${p.url}-${i}`}
-              className="relative group aspect-[4/3] rounded-xl overflow-hidden border border-ink-200 bg-ink-100"
+              className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-ink-900/[0.06] ring-1 ring-ink-900/[0.08] transition-transform duration-500 ease-spring hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-14px_rgba(15,23,42,0.4)]"
             >
               <img
                 src={p.url}
                 alt={p.caption || `Photo ${i + 1}`}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-105"
                 loading="lazy"
               />
 
               {/* The first photo is the one guests see first — say so. */}
               {i === 0 && (
-                <span className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-sunset px-2 py-0.5 text-[10px] font-semibold text-white shadow-[0_4px_10px_-4px_rgba(255,61,119,0.7)]">
                   <Star className="w-2.5 h-2.5 fill-current" />
                   Cover
                 </span>
@@ -220,7 +220,7 @@ export default function PhotoUploader({
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
+                className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-night-950/60 text-white opacity-0 backdrop-blur transition duration-300 hover:scale-110 hover:bg-rose-500 focus:opacity-100 active:scale-90 group-hover:opacity-100"
                 aria-label={`Remove photo ${i + 1}`}
               >
                 <X className="w-3.5 h-3.5" />

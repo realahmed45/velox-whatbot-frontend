@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import IntegrationsTabs from "./IntegrationsTabs";
 import StatHero from "@/components/ui/StatHero";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { PulseDot, Reveal, Spotlight } from "@/components/fx";
 
 export default function AppsIntegrationsPage() {
   // Mailchimp connection state is lifted here so the StatHero can reflect the
@@ -28,7 +29,7 @@ export default function AppsIntegrationsPage() {
   return (
     <div>
       <IntegrationsTabs />
-      <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-6">
+      <div className="px-4 sm:px-6 lg:px-8 pt-5 pb-10 max-w-7xl mx-auto space-y-6">
         <StatHero
           icon={AppWindow}
           eyebrow="Apps"
@@ -42,11 +43,17 @@ export default function AppsIntegrationsPage() {
 
         {/* Premium integration grid — clean 1-2 col layout */}
         <div className="grid gap-5 sm:grid-cols-2">
-          <MakeCard />
-          <MailchimpCard onStatusChange={setMailchimpConnected} />
+          <Reveal className="h-full">
+            <MakeCard />
+          </Reveal>
+          <Reveal delay={0.06} className="h-full">
+            <MailchimpCard onStatusChange={setMailchimpConnected} />
+          </Reveal>
         </div>
 
-        <ComingSoonCard />
+        <Reveal delay={0.12}>
+          <ComingSoonCard />
+        </Reveal>
       </div>
     </div>
   );
@@ -56,12 +63,13 @@ export default function AppsIntegrationsPage() {
 
 function StatusPill({ connected }) {
   return connected ? (
-    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-700">
+    <span className="badge-green inline-flex items-center gap-1.5 text-[11px] font-semibold">
+      <PulseDot color="bg-emerald-500" className="!h-1.5 !w-1.5 [&>span]:!h-1.5 [&>span]:!w-1.5" />
       <Check className="w-3 h-3" />
       Connected
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold border border-ink-200 bg-ink-50 text-ink-500">
+    <span className="badge-gray inline-flex items-center gap-1 text-[11px] font-semibold">
       Not connected
     </span>
   );
@@ -69,19 +77,21 @@ function StatusPill({ connected }) {
 
 function CardShell({ tile, name, connected, description, children }) {
   return (
-    <div className="group flex flex-col rounded-2xl border border-ink-100 bg-white shadow-sm p-6 transition-all duration-200 hover:shadow-glow hover:-translate-y-0.5">
+    <Spotlight className="card-hover group flex flex-col h-full p-5 sm:p-6">
       <div className="flex items-start gap-4">
-        {tile}
+        <div className="shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          {tile}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-lg text-ink-900">{name}</h3>
+            <h3 className="font-display font-semibold tracking-[-0.02em] text-lg text-ink-900">{name}</h3>
             {connected !== undefined && <StatusPill connected={connected} />}
           </div>
           <p className="text-sm text-ink-500 mt-1">{description}</p>
         </div>
       </div>
       {children && <div className="mt-5">{children}</div>}
-    </div>
+    </Spotlight>
   );
 }
 
@@ -91,8 +101,8 @@ function MakeCard() {
   return (
     <CardShell
       tile={
-        <div className="w-12 h-12 rounded-xl bg-[#6D00CC] flex items-center justify-center text-white shrink-0 shadow-sm">
-          <Workflow className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-xl bg-[#6D00CC] grid place-items-center text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-10px_rgba(109,0,204,0.7)]">
+          <Workflow className="w-6 h-6" strokeWidth={1.8} />
         </div>
       }
       name="Make.com"
@@ -105,10 +115,10 @@ function MakeCard() {
       </p>
       <Link
         to="/dashboard/integrations"
-        className="btn btn-primary w-full sm:w-auto"
+        className="btn btn-primary group/cta w-full sm:w-auto"
       >
         <Link2 className="w-4 h-4" /> Set up webhooks
-        <ArrowRight className="w-4 h-4" />
+        <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/cta:translate-x-1" />
       </Link>
     </CardShell>
   );
@@ -200,8 +210,8 @@ function MailchimpCard({ onStatusChange }) {
   return (
     <CardShell
       tile={
-        <div className="w-12 h-12 rounded-xl bg-[#FFE01B] flex items-center justify-center text-black shrink-0 shadow-sm">
-          <Mail className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-xl bg-[#FFE01B] grid place-items-center text-black shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_8px_20px_-10px_rgba(200,170,0,0.7)]">
+          <Mail className="w-6 h-6" strokeWidth={1.8} />
         </div>
       }
       name="Mailchimp"
@@ -209,13 +219,15 @@ function MailchimpCard({ onStatusChange }) {
       description="Auto-forward emails captured in DMs to your Mailchimp audience for follow-up campaigns."
     >
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-ink-400 py-2">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Loading…
+        <div className="space-y-2.5 py-1" aria-busy="true">
+          <span className="sr-only">Loading…</span>
+          <div className="h-3 w-24 rounded-md bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-10 w-full rounded-xl bg-ink-900/[0.06] animate-pulse" />
+          <div className="h-9 w-28 rounded-xl bg-ink-900/[0.06] animate-pulse" />
         </div>
       ) : state.connected ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 rounded-lg border border-ink-100 bg-ink-50 px-3 py-2 text-xs text-ink-600">
+          <div className="flex items-center gap-2 rounded-xl bg-white/60 ring-1 ring-ink-900/[0.06] px-3 py-2 text-xs text-ink-600">
             <span className="font-medium text-ink-500">Data center</span>
             <code className="font-mono font-semibold text-ink-800">
               {state.serverPrefix}
@@ -242,9 +254,9 @@ function MailchimpCard({ onStatusChange }) {
 
           <button
             onClick={disconnect}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 hover:underline transition"
+            className="group/dc inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 active:scale-95 transition-all duration-300 ease-spring"
           >
-            <Unlink className="w-4 h-4" /> Disconnect
+            <Unlink className="w-4 h-4 transition-transform duration-500 ease-spring group-hover/dc:rotate-[-12deg]" /> Disconnect
           </button>
         </div>
       ) : (
@@ -259,7 +271,7 @@ function MailchimpCard({ onStatusChange }) {
               onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={connect}
               disabled={saving}
@@ -276,9 +288,9 @@ function MailchimpCard({ onStatusChange }) {
               href="https://mailchimp.com/help/about-api-keys/"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-brand-600 hover:underline flex items-center gap-1"
+              className="group/k text-xs font-semibold text-sunset-flame hover:text-sunset-magenta flex items-center gap-1 transition-colors"
             >
-              Get API key <ExternalLink className="w-3 h-3" />
+              Get API key <ExternalLink className="w-3 h-3 transition-transform duration-500 ease-spring group-hover/k:-translate-y-0.5 group-hover/k:translate-x-0.5" />
             </a>
           </div>
         </div>
@@ -291,12 +303,12 @@ function MailchimpCard({ onStatusChange }) {
 
 function ComingSoonCard() {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-dashed border-ink-200 bg-ink-50/50 px-6 py-5">
-      <div className="w-10 h-10 rounded-xl bg-white border border-ink-100 flex items-center justify-center text-ink-400 shrink-0">
-        <Sparkles className="w-5 h-5" />
+    <div className="flex items-center gap-3 rounded-2xl border border-dashed border-ink-900/[0.12] bg-white/40 backdrop-blur px-4 sm:px-6 py-5">
+      <div className="w-10 h-10 rounded-xl bg-sunset-soft text-sunset-flame grid place-items-center shrink-0">
+        <Sparkles className="w-5 h-5" strokeWidth={1.8} />
       </div>
-      <div>
-        <p className="text-sm font-semibold text-ink-700">
+      <div className="min-w-0">
+        <p className="font-display text-sm font-semibold text-ink-800">
           More integrations coming soon
         </p>
         <p className="text-xs text-ink-500 mt-0.5">
