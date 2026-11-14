@@ -1,27 +1,26 @@
 /**
- * AI Assistant — your concierge's brain.
+ * AI assistant — how your AI concierge answers guests inside Airbnb,
+ * Booking.com and Expedia, and on WhatsApp.
  *
- * The hotelier already told us everything about the property: rooms, rates,
- * policies, amenities — either by hand in Property & Rooms or synced from the
- * OTAs they connected. So this screen does NOT ask for it again. It SHOWS what
- * the assistant already knows (read-only, sourced from
- * GET /hotel/properties and /hotel/properties/:id/rooms) and only asks for the
- * handful of things that genuinely cannot be derived from that data:
+ * Six short sections, one per sub-tab (?aiTab= when embedded in Settings):
  *
- *   🗣  tone / brand voice        — a preference, not a fact
- *   🚫  guardrails                — what it must never do
- *   ❓  custom FAQs               — answers not implied by the property data
- *   🙋  handoff keywords          — when to fetch a human
+ *   On / off       — the main switch + the per-channel switches
+ *                    (Booking-site AI replies, WhatsApp AI replies). These save
+ *                    instantly.
+ *   Tone & rules   — brand voice and hard limits
+ *   Handoff        — words that hand a conversation to the front desk
+ *   FAQs           — exact answers not implied by the property data
+ *   What it knows  — read-only view of the property record it reads live
+ *                    (GET /hotel/properties + /hotel/properties/:id/rooms)
+ *   Try it         — sandbox chat, nothing is sent to guests
  *
- * Removed on purpose: product catalog, free-text "business context", the
- * legacy persona fields and the knowledge-source uploader — every one
- * of those is either answered by the property/room record or belongs to the
- * old chatbot product. Their stored values are preserved verbatim on save so
- * nothing is destroyed server-side (workspace.aiSettings is replaced wholesale
- * by PUT /workspaces/:id, so we must send the untouched keys back).
+ * Tone, rules, handoff words and FAQs save together with the Save button.
+ * PUT /workspaces/:id replaces `aiSettings` wholesale, so retired keys (product
+ * catalog, legacy persona fields…) are round-tripped verbatim from the stored
+ * settings and the legacy knowledge text is re-sent untouched.
  */
 import { useEffect, useRef, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Sparkles,
   Save,
@@ -43,6 +42,8 @@ import {
   ScrollText,
   UserCog,
   ExternalLink,
+  Power,
+  ArrowRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/services/api";
@@ -55,6 +56,7 @@ import {
 import { usePropertyStore } from "@/store/propertyStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { PulseDot, Reveal, SlidingTabs } from "@/components/fx";
+import AiChannelToggles from "@/pages/settings/AiChannelToggles";
 
 // Shared pop for popovers + modal panels (design system spring).
 const pop = {
@@ -70,10 +72,8 @@ const DEFAULTS = {
   faqs: [],
 };
 
-// Tabs. "Knows" leads deliberately: the first thing a hotelier should see is
-// that Botlify already has their property, not another empty form.
 const TABS = [
-  { id: "knows", label: "What it knows", icon: BookOpen },
+  { id: "status", label: "On / off", icon: Power },
   {
     id: "voice",
     label: "Tone & rules",
@@ -81,14 +81,32 @@ const TABS = [
     ready: (cfg) => !!(cfg.brandVoice || cfg.guardrails),
   },
   {
+    id: "handoff",
+    label: "Handoff",
+    icon: UserCog,
+    ready: (cfg) => (cfg.handoffKeywords?.length || 0) > 0,
+  },
+  {
     id: "faqs",
-    label: "Custom FAQs",
+    label: "FAQs",
     icon: HelpCircle,
     ready: (cfg) => (cfg.faqs?.length || 0) > 0,
   },
-  { id: "handoff", label: "Handoff", icon: UserCog },
-  { id: "test", label: "Test bot", icon: MessageSquare },
+  { id: "knows", label: "What it knows", icon: BookOpen },
+  { id: "test", label: "Try it", icon: MessageSquare },
 ];
+const DEFAULT_TAB = "status";
+// Sections whose edits go through the Save button.
+const EDIT_TABS = ["voice", "handoff", "faqs"];
+
+// The fields the Save button owns — used to tell whether there's anything to save.
+const editable = (c) =>
+  JSON.stringify({
+    brandVoice: c.brandVoice || "",
+    guardrails: c.guardrails || "",
+    handoffKeywords: c.handoffKeywords || [],
+    faqs: c.faqs || [],
+  });
 
 // Brand-voice presets. Tone is a preference we can't derive from data, but it
 // also doesn't deserve a blank textarea — one tap covers almost everyone.
@@ -120,17 +138,17 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
   // isn't destroyed.
   const [bizText, setBizText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [masterSaving, setMasterSaving] = useState(false);
+  const [savedEditable, setSavedEditable] = useState(() => editable(DEFAULTS));
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [showTemplates, setShowTemplates] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTabState] = useState(() => {
     const t = searchParams.get(paramKey);
-    return TABS.some((x) => x.id === t) ? t : "knows";
+    return TABS.some((x) => x.id === t) ? t : DEFAULT_TAB;
   });
 
   // ── What the assistant already knows ────────────────────────────
-  // Sourced from the hotel record the user already filled in / imported from
-  // their OTAs. Read-only here by design.
   const properties = usePropertyStore((st) => st.properties);
   const fetchProperties = usePropertyStore((st) => st.fetchProperties);
   const activePropertyId = usePropertyStore((st) => st.activeId)(activeWorkspace);
@@ -175,39 +193,54 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
   const setTab = (id) => {
     setTabState(id);
     const next = new URLSearchParams(searchParams);
-    if (id === "knows") next.delete(paramKey);
+    if (id === DEFAULT_TAB) next.delete(paramKey);
     else next.set(paramKey, id);
     setSearchParams(next, { replace: true });
   };
   useEffect(() => {
     const t = searchParams.get(paramKey);
     if (t && TABS.some((x) => x.id === t) && t !== tab) setTabState(t);
-    if (!t && tab !== "knows") setTabState("knows");
+    if (!t && tab !== DEFAULT_TAB) setTabState(DEFAULT_TAB);
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const stored = workspace?.aiSettings;
-    setCfg(
+    const seeded =
       stored && Object.keys(stored).length
         ? { ...DEFAULTS, ...stored }
-        : DEFAULTS,
-    );
+        : DEFAULTS;
+    setCfg(seeded);
+    setSavedEditable(editable(seeded));
     setBizText(workspace?.aiKnowledge?.content || "");
   }, [workspace?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (patch) => setCfg((c) => ({ ...c, ...patch }));
+  const dirty = useMemo(() => editable(cfg) !== savedEditable, [cfg, savedEditable]);
 
-  // How "ready" is the bot? Drives the readiness meter.
-  // Readiness is now mostly earned by data we already hold: a property with
-  // rooms IS a ready assistant. Tone and guardrails are the only manual lifts.
-  const readiness = useMemo(() => {
-    let score = 0;
-    if (property) score += 40;
-    if (rooms.length > 0) score += 30;
-    if (cfg.brandVoice) score += 15;
-    if (cfg.guardrails) score += 15;
-    return Math.min(100, score);
-  }, [property, rooms.length, cfg.brandVoice, cfg.guardrails]);
+  /* ── Main switch — saves straight away ───────────────────────────── */
+  const toggleMaster = async () => {
+    if (!activeWorkspace || masterSaving) return;
+    const next = !cfg.enabled;
+    set({ enabled: next });
+    setMasterSaving(true);
+    try {
+      // Dotted key: flips only this flag, leaving unsaved edits alone.
+      await api.put(`/workspaces/${activeWorkspace}`, {
+        "aiSettings.enabled": next,
+      });
+      await api.put(`/workspaces/${activeWorkspace}/ai-knowledge`, {
+        content: bizText,
+        enabled: next,
+      });
+      await fetchWorkspace(activeWorkspace);
+      toast.success(next ? "AI assistant is on" : "AI assistant paused");
+    } catch (e) {
+      set({ enabled: !next });
+      toast.error(e?.response?.data?.message || "Couldn't update the AI assistant");
+    } finally {
+      setMasterSaving(false);
+    }
+  };
 
   /* ── FAQs ───────────────────────────────────────────────────────── */
   const addFaq = () => {
@@ -259,7 +292,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         ...toAdd.map((t) => ({ question: t.question, answer: t.answer })),
       ],
     });
-    toast.success(`Added ${toAdd.length} FAQ${toAdd.length > 1 ? "s" : ""} ✓`);
+    toast.success(`Added ${toAdd.length} FAQ${toAdd.length > 1 ? "s" : ""}`);
   };
 
   /* ── Save ───────────────────────────────────────────────────────── */
@@ -278,8 +311,9 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         content: bizText,
         enabled: cfg.enabled,
       });
+      setSavedEditable(editable(cfg));
       await fetchWorkspace(activeWorkspace);
-      toast.success("AI bot saved ✓");
+      toast.success("AI assistant saved");
     } catch (e) {
       toast.error(e?.response?.data?.message || "Failed to save");
     } finally {
@@ -287,66 +321,26 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
     }
   };
 
+  const showSaveBar = EDIT_TABS.includes(tab) || dirty;
+
   return (
     <div className="relative min-h-full">
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-24 space-y-6">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-24 space-y-6">
         {/* ── Page header ────────────────────────────────────────── */}
         <Reveal>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-4">
-            <div className="group flex items-center gap-3.5 flex-1 min-w-0">
-              <div className="relative shrink-0">
-                <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-30 blur-xl" />
-                <div className="relative w-11 h-11 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
-                  <Bot className="w-5 h-5" strokeWidth={1.8} />
-                </div>
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
-                    AI{" "}
-                    <span className="font-serif italic font-normal">Assistant</span>
-                  </h1>
-                  <span className="badge-brand inline-flex items-center gap-1 text-[10px] uppercase tracking-wider">
-                    <Sparkles className="w-2.5 h-2.5" /> AI
-                  </span>
-                  <AiBotHelp />
-                </div>
-                <p className="text-sm text-ink-500 mt-1">
-                  Knows your property, rooms and policies. Answers guests 24/7 — in
-                  your voice.
-                </p>
+          <div className="group flex items-center gap-3.5">
+            <div className="relative shrink-0">
+              <div aria-hidden className="absolute inset-0 rounded-2xl bg-sunset opacity-30 blur-xl" />
+              <div className="relative w-11 h-11 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                <Bot className="w-5 h-5" strokeWidth={1.8} />
               </div>
             </div>
-
-            {/* Readiness + master toggle — compact glass chip */}
-            <div className="card shrink-0 flex items-center gap-4 ml-auto px-3.5 py-2.5">
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="h-1.5 w-24 rounded-full bg-ink-900/[0.07] overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full bg-sunset"
-                    initial={false}
-                    animate={{ width: `${readiness}%` }}
-                    transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                  />
-                </div>
-                <span className="text-[12px] font-semibold text-ink-700 tabular-nums">
-                  {readiness}%
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  onClick={() => set({ enabled: !cfg.enabled })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 active:scale-95 ${
-                    cfg.enabled ? "bg-emerald-500" : "bg-ink-900/15"
-                  }`}
-                  aria-label="Toggle AI assistant"
-                >
-                  <span
-                    className={`inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-sm transition-transform duration-500 ease-spring ${
-                      cfg.enabled ? "translate-x-[1.375rem]" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+                  AI{" "}
+                  <span className="font-serif italic font-normal">assistant</span>
+                </h1>
                 <span
                   className={`inline-flex items-center gap-1.5 text-[12px] font-medium ${
                     cfg.enabled ? "text-emerald-700" : "text-ink-500"
@@ -360,11 +354,15 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
                   {cfg.enabled ? "Live" : "Paused"}
                 </span>
               </div>
+              <p className="text-sm text-ink-500 mt-1">
+                Answers guests inside Airbnb, Booking.com and Expedia, and on
+                WhatsApp — in your voice.
+              </p>
             </div>
           </div>
         </Reveal>
 
-        {/* ── Tab bar (no endless scroll — jump to any section) ───── */}
+        {/* ── Section tabs ───────────────────────────────────────── */}
         <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-[#F7F5F2]/70 backdrop-blur-xl">
           <div className="overflow-x-auto no-scrollbar">
             <SlidingTabs
@@ -397,13 +395,72 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
 
+        {/* ── On / off ───────────────────────────────────────────── */}
+        {tab === "status" && (
+          <div className="space-y-6">
+            <Section
+              icon={Power}
+              title="AI assistant"
+              subtitle="The main switch. Off = every guest message waits in your Inbox for you."
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-[13px] text-ink-700">
+                  {cfg.enabled
+                    ? "On — your AI answers guests day and night."
+                    : "Paused — nothing is sent automatically."}
+                </p>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={!!cfg.enabled}
+                  aria-label="AI assistant"
+                  onClick={toggleMaster}
+                  disabled={masterSaving || !activeWorkspace}
+                  className={`relative w-14 h-8 rounded-full transition-colors duration-300 shrink-0 disabled:opacity-60 shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] active:scale-95 ${
+                    cfg.enabled ? "bg-emerald-500" : "bg-ink-300"
+                  }`}
+                >
+                  <motion.span
+                    layout
+                    transition={{ type: "spring", stiffness: 520, damping: 30 }}
+                    className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-[0_2px_6px_rgba(15,23,42,0.25),inset_0_1px_0_#fff] ${
+                      cfg.enabled ? "right-1" : "left-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </Section>
+
+            <Section
+              icon={MessageSquare}
+              title="Where it replies"
+              subtitle="Switch AI replies on or off per channel. Changes save instantly."
+            >
+              <AiChannelToggles
+                workspace={workspace}
+                onSave={() => fetchWorkspace(activeWorkspace)}
+                onChanged={(field, value) => set({ [field]: value })}
+                masterOn={!!cfg.enabled}
+              />
+            </Section>
+
+            <Link
+              to="/dashboard/settings?tab=channels"
+              className="group inline-flex items-center gap-1.5 text-xs font-semibold text-sunset-flame hover:text-sunset-magenta transition-colors"
+            >
+              Reply hours, reply delay and holiday mode are under Channels
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        )}
+
         {/* ── What it knows tab ──────────────────────────────────── */}
         {tab === "knows" && (
         <div className="space-y-6">
           <Section
             icon={BookOpen}
             title="What your assistant knows"
-            subtitle="Everything below is already in your property record — typed in Property & Rooms or synced from the OTAs you connected. Your assistant reads it live, so you never have to repeat it here."
+            subtitle="Read live from your property record — typed in Property & Rooms or synced from Airbnb, Booking.com and Expedia. Nothing to repeat here."
           >
             {loadingKnows ? (
               <div className="space-y-4 py-2">
@@ -641,7 +698,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           <Section
             icon={Bot}
             title="Tone of voice"
-            subtitle="The one thing we can't read off your property record — how you want your assistant to sound."
+            subtitle="How your assistant sounds to guests. Pick a preset or write your own."
           >
             <div className="flex flex-wrap gap-2">
               {VOICE_PRESETS.map((v) => {
@@ -677,7 +734,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           <Section
             icon={ShieldCheck}
             title="What it must never do"
-            subtitle="Hard limits. Your assistant already refuses to invent rates or policies — add anything specific to your hotel."
+            subtitle="Your assistant never invents rates or policies. Add any limits specific to your hotel."
           >
             <PersonaField
               label="Guardrails"
@@ -697,7 +754,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         <Section
           icon={HelpCircle}
           title="Exact-answer FAQs"
-          subtitle="For questions that need a precise reply (check-in time, parking, breakfast, cancellation policy) — your assistant answers these word-for-word."
+          subtitle="Questions that need a precise reply — parking, early check-in, airport pick-up. Your assistant answers these word-for-word."
         >
           {/* Browse the template library */}
           <button
@@ -757,7 +814,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
               onChange={(e) =>
                 setNewFaq((v) => ({ ...v, question: e.target.value }))
               }
-              placeholder="Question — e.g. Do you offer cash on delivery?"
+              placeholder="Question — e.g. Is parking free?"
             />
             <textarea
               className="textarea w-full min-h-[60px]"
@@ -765,7 +822,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
               onChange={(e) =>
                 setNewFaq((v) => ({ ...v, answer: e.target.value }))
               }
-              placeholder="Answer — e.g. Yes! COD is available across Pakistan 🚚"
+              placeholder="Answer — e.g. Yes, free private parking for all guests."
             />
             <button
               onClick={addFaq}
@@ -782,7 +839,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         <Section
           icon={UserCog}
           title="When to fetch a human"
-          subtitle="If a guest's message contains any of these words, your assistant stops replying and flags the conversation for your team."
+          subtitle="If a guest's message contains any of these words, your assistant stops and flags the conversation for your front desk."
         >
           <div className="flex flex-wrap gap-1.5 mb-3">
             <AnimatePresence initial={false}>
@@ -846,22 +903,10 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
         {tab === "test" && (
           <div className="space-y-6">
             <Playground workspaceId={activeWorkspace} enabled={cfg.enabled} />
-            <div className="card p-4 flex items-start gap-3">
-              <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 grid place-items-center shrink-0">
-                <ShieldCheck className="w-4 h-4" strokeWidth={1.8} />
-              </span>
-              <div className="text-[13px] text-ink-500 leading-relaxed">
-                <span className="font-semibold text-ink-900">How replies work: </span>
-                the bot first checks your custom FAQs for an exact match, then
-                your live property and room data — rates, availability,
-                policies. It never makes up prices or policies you haven't
-                given it.
-                <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-400">
-                  <Sparkles className="w-3.5 h-3.5 text-sunset-flame" />
-                  Powered by Google Gemini
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-ink-500 leading-relaxed px-1">
+              Replies check your FAQs first, then your live property and room
+              data. Your assistant never makes up prices or policies.
+            </p>
           </div>
         )}
         </motion.div>
@@ -869,17 +914,18 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
       </div>
 
       {/* ── Sticky save bar (stays inside the content column) ──── */}
+      {showSaveBar && (
       <div className="sticky bottom-0 z-20 border-t border-white/70 bg-white/60 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_-1px_0_rgba(15,23,42,0.05),0_-12px_30px_-20px_rgba(15,23,42,0.18)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
           <p className="text-xs text-ink-500 hidden sm:flex items-center gap-2">
-            {cfg.enabled ? (
-              <PulseDot color="bg-emerald-500" />
+            {dirty ? (
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
             ) : (
-              <span className="w-2 h-2 rounded-full bg-ink-300" />
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
             )}
-            {cfg.enabled
-              ? "Bot is live — it replies automatically to new messages."
-              : "Bot is paused — turn it on above when you're ready."}
+            {dirty
+              ? "You have unsaved changes."
+              : "Tone, rules, handoff words and FAQs are saved."}
           </p>
           <button
             onClick={save}
@@ -896,6 +942,7 @@ export default function IgAiBotPage({ paramKey = "aiTab" } = {}) {
           </button>
         </div>
       </div>
+      )}
 
       <AnimatePresence>
         {showTemplates && (
@@ -1092,8 +1139,7 @@ function KnowsRow({ label, value }) {
   );
 }
 
-// Full-screen "AI is working" overlay — blurs the page so the user knows
-// something is cooking while a document/import/draft is processing.
+/** Labelled textarea used by the tone and guardrail fields. */
 function PersonaField({ label, hint, value, onChange, rows = 2, placeholder, danger }) {
   return (
     <div>
@@ -1178,11 +1224,10 @@ function Playground({ workspaceId, enabled }) {
           </span>
           <div className="min-w-0">
             <h2 className="font-display font-semibold tracking-[-0.02em] text-ink-900 text-[15px] leading-snug">
-              Test your bot
+              Try your assistant
             </h2>
             <p className="text-xs text-ink-500 mt-0.5">
-              A safe sandbox — try messages before going live. No real guest message is
-              sent.
+              Ask it what a guest would. Nothing is sent to real guests.
             </p>
           </div>
         </div>
@@ -1210,11 +1255,11 @@ function Playground({ workspaceId, enabled }) {
               </div>
             </div>
             <p className="font-display text-sm font-semibold text-ink-800">
-              Say hi to your bot 👋
+              Ask a guest question
             </p>
             <p className="text-xs text-ink-400 mt-1 max-w-xs">
-              Try "Do you ship to Lahore?" or "How much is your serum?" to see
-              how it replies with your current setup.
+              Try "Do you have a double room for 2 nights from Friday?" or
+              "What time is check-in?" to see how it replies.
             </p>
           </div>
         )}
@@ -1278,8 +1323,8 @@ function Playground({ workspaceId, enabled }) {
       </div>
       {!enabled && (
         <p className="px-4 pb-3 text-[11px] text-amber-600">
-          Note: the bot is currently paused — testing still works here, but it
-          won't reply to real guests until you turn it on and save.
+          Your assistant is paused — testing still works here, but it won't
+          reply to real guests until you switch it on under On / off.
         </p>
       )}
     </div>
@@ -1305,68 +1350,6 @@ function Section({ title, subtitle, icon: Icon, children }) {
         </div>
       </div>
       {children}
-    </div>
-  );
-}
-
-/* Contextual help popover for the AI Bot hero (dark-styled). */
-function AiBotHelp() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e) =>
-      ref.current && !ref.current.contains(e.target) && setOpen(false);
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("mousedown", onClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  const tips = [
-    "Your AI assistant replies when no rule matches an incoming guest message.",
-    "Add your website and FAQs under Knowledge so answers match your hotel.",
-    "It answers guests on WhatsApp 24/7 — in the tone you set.",
-    "WhatsApp only allows free replies within 24 hours of a guest's last message.",
-    "Watch the readiness meter, then Save before turning the assistant Live.",
-  ];
-
-  return (
-    <div className="relative inline-flex" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="group/help inline-flex items-center gap-1 rounded-lg bg-white/70 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] px-2 py-0.5 text-[11px] font-semibold text-ink-600 hover:bg-white hover:text-ink-900 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 ease-spring"
-        aria-label="Help"
-        aria-expanded={open}
-      >
-        <HelpCircle className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/help:rotate-[-12deg]" /> Help
-      </button>
-      <AnimatePresence>
-      {open && (
-        <motion.div
-          {...pop}
-          style={{ originX: 0, originY: 0 }}
-          className="glass-strong absolute left-0 top-full z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-80 rounded-2xl p-4 text-left"
-        >
-          <p className="text-[13px] font-semibold text-ink-900 mb-2">AI Assistant</p>
-          <ul className="space-y-2">
-            {tips.map((t, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-[13px] text-ink-600 leading-snug"
-              >
-                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-sunset shrink-0" />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-      )}
-      </AnimatePresence>
     </div>
   );
 }

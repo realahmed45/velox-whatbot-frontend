@@ -67,6 +67,7 @@ const TodayPage = lazyWithRetry(() => import("@/pages/hotel/TodayPage"));
 const CalendarPage = lazyWithRetry(() => import("@/pages/hotel/CalendarPage"));
 const GuestsPage = lazyWithRetry(() => import("@/pages/hotel/GuestsPage"));
 const TrainAiPage = lazyWithRetry(() => import("@/pages/hotel/TrainAiPage"));
+const TestAiPage = lazyWithRetry(() => import("@/pages/hotel/TestAiPage"));
 const BookingsPage = lazyWithRetry(() => import("@/pages/hotel/BookingsPage"));
 const PropertyPage = lazyWithRetry(() => import("@/pages/hotel/PropertyPage"));
 const TransfersPage = lazyWithRetry(() => import("@/pages/hotel/TransfersPage"));
@@ -230,6 +231,7 @@ export default function App() {
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="guests" element={<GuestsPage />} />
                 <Route path="train" element={<TrainAiPage />} />
+                <Route path="test-ai" element={<TestAiPage />} />
                 <Route path="property" element={<PropertyPage />} />
                 <Route path="transfers" element={<TransfersPage />} />
                 <Route path="channels" element={<ChannelsPage />} />

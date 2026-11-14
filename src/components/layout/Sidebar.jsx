@@ -23,6 +23,7 @@ import {
   HandCoins,
   MessageSquare,
   GraduationCap,
+  FlaskConical,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import BotlifyMark from "@/components/BotlifyMark";
@@ -48,6 +49,7 @@ const NAV = [
       { to: "/dashboard/calendar", icon: CalendarDays, label: "Calendar" },
       { to: "/dashboard/guests", icon: Users, label: "Guests" },
       { to: "/dashboard/train", icon: GraduationCap, label: "Train your AI" },
+      { to: "/dashboard/test-ai", icon: FlaskConical, label: "Test your AI" },
       { to: "/dashboard/website", icon: Globe, label: "Your website" },
       { to: "/dashboard/settings", icon: SettingsIcon, label: "Settings", perm: "settings" },
     ],
@@ -158,17 +160,12 @@ export default function Sidebar({ onNavigate }) {
       >
         <Link to="/dashboard" onClick={onNavigate} className="group/logo flex min-w-0 items-center gap-2.5">
           <span className="transition-transform duration-500 ease-spring group-hover/logo:-rotate-6 group-hover/logo:scale-110">
-            <BotlifyMark size={34} glow />
+            <BotlifyMark size={34} tile="#24212F" />
           </span>
           {!collapsed && (
             <div className="flex min-w-0 flex-col leading-none">
-              <span className="inline-flex items-baseline font-display text-[19px] font-bold tracking-[-0.045em]">
-                botlify
-                <span className="ml-[2px] inline-block h-[6px] w-[6px] rounded-full bg-sunset shadow-[0_0_10px_rgba(255,61,119,0.8)]" />
-              </span>
-              <span className="mt-1 font-serif text-[12.5px] italic text-white/45">
-                AI channel manager
-              </span>
+              <span className="font-geist text-[19px] font-semibold tracking-[-0.04em]">botlify</span>
+              <span className="mt-1 text-[11.5px] font-medium text-white/45">AI channel manager</span>
             </div>
           )}
         </Link>

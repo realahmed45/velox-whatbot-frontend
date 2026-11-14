@@ -1,51 +1,34 @@
 import BotlifyMark from "@/components/BotlifyMark";
 
 /**
- * Botlify logo — the b-bubble mark + lowercase wordmark ending in a sunset dot.
+ * Botlify logo — ink "b"-bubble mark + a plain Geist wordmark. Deliberately
+ * quiet: no gradients, no effects, the orange spark in the mark is the only
+ * colour.
  *
  * Props:
  *  - size: sm | md | lg | xl | 2xl
  *  - showWordmark (default true)
- *  - dark: white wordmark for night surfaces
- *  - animated: mark floats gently
+ *  - dark: white wordmark + lifted tile for dark surfaces
  */
-export default function Logo({
-  size = "md",
-  showWordmark = true,
-  dark = false,
-  animated = false,
-  className = "",
-}) {
+export default function Logo({ size = "md", showWordmark = true, dark = false, className = "" }) {
   const sizes = {
-    sm: { px: 26, text: "text-[1.15rem]", dot: "h-1.5 w-1.5", gap: "gap-2" },
-    md: { px: 32, text: "text-[1.45rem]", dot: "h-[7px] w-[7px]", gap: "gap-2.5" },
-    lg: { px: 40, text: "text-[1.8rem]", dot: "h-2 w-2", gap: "gap-2.5" },
-    xl: { px: 56, text: "text-[2.6rem]", dot: "h-2.5 w-2.5", gap: "gap-3" },
-    "2xl": { px: 80, text: "text-[3.6rem]", dot: "h-3.5 w-3.5", gap: "gap-4" },
+    sm: { px: 26, text: "text-[1.2rem]", gap: "gap-2" },
+    md: { px: 32, text: "text-[1.5rem]", gap: "gap-2.5" },
+    lg: { px: 40, text: "text-[1.85rem]", gap: "gap-3" },
+    xl: { px: 56, text: "text-[2.6rem]", gap: "gap-3.5" },
+    "2xl": { px: 80, text: "text-[3.6rem]", gap: "gap-4" },
   };
   const s = sizes[size] || sizes.md;
-
   return (
-    <div className={`group/logo inline-flex items-center ${s.gap} ${className}`}>
-      <span
-        className={`relative inline-flex shrink-0 transition-transform duration-500 ease-spring group-hover/logo:-translate-y-0.5 group-hover/logo:rotate-[-4deg] ${
-          animated ? "animate-float" : ""
-        }`}
-      >
-        <BotlifyMark size={s.px} glow={dark} />
-      </span>
+    <div className={`inline-flex items-center ${s.gap} ${className}`}>
+      <BotlifyMark size={s.px} tile={dark ? "#24212F" : "#0E0D14"} className="shrink-0" />
       {showWordmark && (
         <span
-          className={`inline-flex items-baseline font-display font-bold leading-none tracking-[-0.045em] ${s.text} ${
+          className={`font-geist font-semibold leading-none tracking-[-0.04em] ${s.text} ${
             dark ? "text-white" : "text-ink-950"
           }`}
         >
           botlify
-          <span
-            aria-hidden
-            className={`ml-[0.08em] inline-block rounded-full bg-sunset ${s.dot}`}
-            
-          />
         </span>
       )}
     </div>

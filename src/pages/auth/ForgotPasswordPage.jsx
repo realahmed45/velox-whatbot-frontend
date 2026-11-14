@@ -3,27 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  KeyRound,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, MailCheck } from "lucide-react";
 import TurnstileWidget, {
   turnstileEnabled,
 } from "@/components/auth/TurnstileWidget";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
 
-// Shared light form-field classes from index.css.
-const FIELD =
-  "input";
-const LABEL = "label";
-const ICON =
-  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame pointer-events-none";
+import {
+  AUTH_BTN,
+  AUTH_EYE,
+  AUTH_FIELD,
+  AUTH_LABEL,
+  AUTH_SUB,
+  AUTH_TITLE,
+} from "@/layouts/AuthLayout";
 
 /**
  * Forgot-password — 4-digit code flow (same UX as signup verification).
@@ -86,60 +80,52 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="card p-6 sm:p-8 overflow-hidden">
+    <div>
       <Link
         to="/login"
-        className="group inline-flex items-center gap-1.5 text-sm text-ink-600 hover:text-ink-950 mb-6 transition-colors"
+        className="group mb-8 inline-flex items-center gap-1.5 text-[13px] text-ink-500 transition-colors hover:text-ink-950"
       >
-        <ArrowLeft className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-x-1" />{" "}
-        Back to login
+        <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+        Back to sign in
       </Link>
 
       <AnimatePresence mode="wait" initial={false}>
         {step === 1 ? (
           <motion.div
             key="step-1"
-            initial={{ opacity: 0, x: -24 }}
+            initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className="h-11 w-11 rounded-xl grid place-items-center bg-sunset text-white mb-4 shadow-[0_10px_30px_-10px_rgba(255,61,119,0.7)]">
-              <KeyRound className="w-5 h-5" strokeWidth={1.8} />
+            <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+              <KeyRound className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
-              Forgot{" "}
-              <span className="font-serif italic font-normal">password</span>
-            </h2>
-            <p className="text-ink-600 text-sm mb-6">
+            <h1 className={AUTH_TITLE}>Reset your password</h1>
+            <p className={AUTH_SUB}>
               Enter your email and we'll send you a 4-digit reset code.
             </p>
-            <form onSubmit={sendCode} className="space-y-4">
+            <form onSubmit={sendCode} className="mt-8 space-y-5">
               <div>
-                <label className={LABEL}>Email address</label>
-                <div className="relative group">
-                  <Mail strokeWidth={1.8} className={ICON} />
-                  <input
-                    className={`${FIELD} pl-9`}
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
+                <label htmlFor="fp-email" className={AUTH_LABEL}>
+                  Email
+                </label>
+                <input
+                  id="fp-email"
+                  className={AUTH_FIELD}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@hotel.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-              {turnstileEnabled && (
-                <TurnstileWidget onToken={setCaptcha} className="pt-1" />
-              )}
-              <button
-                type="submit"
-                className="btn-primary w-full h-11 group"
-                disabled={loading}
-              >
+              {turnstileEnabled && <TurnstileWidget onToken={setCaptcha} />}
+              <button type="submit" className={AUTH_BTN} disabled={loading}>
                 {loading ? "Sending…" : "Send reset code"}
                 {!loading && (
-                  <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 )}
               </button>
             </form>
@@ -147,28 +133,32 @@ export default function ForgotPasswordPage() {
         ) : (
           <motion.div
             key="step-2"
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 24 }}
-            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
-              Enter the{" "}
-              <span className="font-serif italic font-normal">code</span>
-            </h2>
-            <p className="text-ink-600 text-sm mb-6">
+            <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+              <MailCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            </div>
+            <h1 className={AUTH_TITLE}>Check your email</h1>
+            <p className={AUTH_SUB}>
               We emailed a 4-digit code to{" "}
-              <span className="font-semibold text-ink-950 break-all">{email}</span>.
+              <span className="break-all font-medium text-ink-950">{email}</span>.
               Enter it and choose a new password.
             </p>
-            <form onSubmit={resetPassword} className="space-y-4">
+            <form onSubmit={resetPassword} className="mt-8 space-y-5">
               <div>
-                <label className={LABEL}>4-digit code</label>
+                <label htmlFor="fp-code" className={AUTH_LABEL}>
+                  4-digit code
+                </label>
                 <input
-                  className={`${FIELD} tracking-[0.5em] text-center text-lg font-bold font-mono tabular-nums`}
+                  id="fp-code"
+                  className={`${AUTH_FIELD} text-center font-mono text-lg font-semibold tracking-[0.5em] tabular-nums`}
                   inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={4}
-                  placeholder="1234"
+                  placeholder="0000"
                   required
                   value={code}
                   onChange={(e) =>
@@ -177,14 +167,16 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               <div>
-                <label className={LABEL}>New password</label>
-                <div className="relative group">
-                  <Lock strokeWidth={1.8} className={ICON} />
+                <label htmlFor="fp-password" className={AUTH_LABEL}>
+                  New password
+                </label>
+                <div className="relative">
                   <input
-                    className={`${FIELD} pl-9 pr-11`}
+                    id="fp-password"
+                    className={`${AUTH_FIELD} pr-11`}
                     type={showPw ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="Min. 8 characters"
+                    placeholder="At least 8 characters"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -192,25 +184,24 @@ export default function ForgotPasswordPage() {
                   <button
                     type="button"
                     aria-label={showPw ? "Hide password" : "Show password"}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
+                    className={AUTH_EYE}
                     onClick={() => setShowPw((v) => !v)}
                   >
-                    {showPw ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 <PasswordStrength password={password} email={email} />
               </div>
               <div>
-                <label className={LABEL}>Confirm new password</label>
+                <label htmlFor="fp-confirm" className={AUTH_LABEL}>
+                  Confirm new password
+                </label>
                 <input
-                  className={FIELD}
+                  id="fp-confirm"
+                  className={AUTH_FIELD}
                   type="password"
                   autoComplete="new-password"
-                  placeholder="••••••••"
+                  placeholder="Repeat your new password"
                   required
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
@@ -221,24 +212,20 @@ export default function ForgotPasswordPage() {
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
-                      className="text-[11px] text-rose-600 mt-1"
+                      className="mt-1.5 text-[12px] text-rose-600"
                     >
                       Passwords don't match.
                     </motion.p>
                   )}
                 </AnimatePresence>
               </div>
-              <button
-                type="submit"
-                className="btn-primary w-full h-11"
-                disabled={loading}
-              >
+              <button type="submit" className={AUTH_BTN} disabled={loading}>
                 {loading ? "Resetting…" : "Reset password"}
               </button>
               <button
                 type="button"
                 onClick={sendCode}
-                className="w-full min-h-[40px] text-xs text-ink-600 hover:text-sunset-flame transition-colors"
+                className="min-h-[40px] w-full text-[13px] text-ink-500 transition-colors hover:text-ink-950"
               >
                 Didn't get it? Resend code
               </button>

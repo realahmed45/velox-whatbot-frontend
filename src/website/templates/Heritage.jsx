@@ -5,17 +5,19 @@
  */
 import { ArrowRight, Mail, MapPin, Menu, Phone, X } from "lucide-react";
 import {
-  Img, Lightbox, MapFrame, PAGES, PageLink, Reveal, WhatsAppFab, WhatsAppIcon,
-  formatPrice, paragraphs, useBooking, useBp, useEnquiry, useFonts, useFrameHeight,
-  useGallery, useLightbox, useMenu, useScrolled, useSite, useWhatsApp, year,
+  Img, Lightbox, MapFrame, MobileBookBar, PAGES, PageLink, Reveal, SIZES, WhatsAppFab, WhatsAppIcon,
+  directionsHref, formatPrice, paragraphs, useBookCta, useBooking, useBp, useEnquiry, useFonts, useFrameHeight,
+  useGallery, useLightbox, useMenu, useReviews, useRooms, useScrolled, useSite, useWhatsApp, year,
 } from "../shared";
 
 const CAPS = "'Cinzel', Georgia, serif";
 const BODY = "'EB Garamond', Georgia, serif";
 const PAPER = "#f2e9d8";
 const INK = "#2a1c13";
-const MUTED = "#6e5b4b";
+const MUTED = "#655242";
 const BRASS = "#a8834a";
+// Brass is decorative; small text set in it uses this deeper tone for AA contrast.
+const BRASS_TEXT = "#7d5f2f";
 const LINE = "rgba(168,131,74,0.35)";
 // Subtle paper grain — an inline SVG noise tile, no image request.
 const GRAIN =
@@ -38,6 +40,7 @@ export default function Heritage() {
         {page === "contact" && <Contact wine={wine} />}
       </main>
       <Footer wine={wine} />
+      <MobileBookBar bg={PAPER} fg={INK} muted={MUTED} accent={wine} accentFg={PAPER} font={BODY} displayFont={CAPS} border={LINE} radius={2} uppercase />
       <WhatsAppFab />
       <Lightbox images={gallery} index={lb.index} onClose={lb.close} onIndex={lb.setIndex} />
     </div>
@@ -68,7 +71,7 @@ function Crest({ wine, size = 56 }) {
 }
 
 const Caps = ({ children, className = "", style }) => (
-  <p className={`text-[12px] uppercase tracking-[0.32em] ${className}`} style={{ fontFamily: CAPS, color: BRASS, ...style }}>{children}</p>
+  <p className={`text-[12px] uppercase tracking-[0.32em] ${className}`} style={{ fontFamily: CAPS, color: BRASS_TEXT, ...style }}>{children}</p>
 );
 
 function Heading({ children, size = 44, center, className = "" }) {
@@ -82,7 +85,7 @@ function Heading({ children, size = 44, center, className = "" }) {
 
 function Button({ href, children, wine, ghost, ...rest }) {
   return (
-    <a href={href} {...rest} className="inline-flex items-center gap-2 px-7 py-3.5 text-[12px] uppercase tracking-[0.24em] transition hover:opacity-90" style={{ fontFamily: CAPS, background: ghost ? "transparent" : wine, color: ghost ? INK : PAPER, border: `1px solid ${ghost ? INK : wine}`, boxShadow: ghost ? "none" : `inset 0 0 0 3px ${wine}, inset 0 0 0 4px rgba(242,233,216,0.45)` }}>
+    <a href={href} {...rest} className="inline-flex items-center gap-2 px-7 py-3.5 text-[12px] uppercase tracking-[0.24em] transition-opacity hover:opacity-90" style={{ fontFamily: CAPS, background: ghost ? "transparent" : wine, color: ghost ? INK : PAPER, border: `1px solid ${ghost ? INK : wine}`, boxShadow: ghost ? "none" : `inset 0 0 0 3px ${wine}, inset 0 0 0 4px rgba(242,233,216,0.45)` }}>
       {children}
     </a>
   );
@@ -94,6 +97,7 @@ function Nav({ wine }) {
   const scrolled = useScrolled(80);
   const [open, setOpen] = useMenu();
   const c = site.content.contact || {};
+  const cta = useBookCta();
   return (
     <>
       <header className="fixed left-0 right-0 top-0 z-40 transition-shadow" style={{ backgroundColor: PAPER, backgroundImage: GRAIN, boxShadow: scrolled ? "0 6px 24px -14px rgba(42,28,19,0.5)" : "none" }}>
@@ -112,16 +116,22 @@ function Nav({ wine }) {
               <nav className="mt-3 flex items-center gap-2">
                 {PAGES.map((p, i) => (
                   <span key={p.id} className="flex items-center gap-2">
-                    {i > 0 && <span style={{ color: BRASS }}>·</span>}
-                    <PageLink page={p.id} className="px-2 text-[12px] uppercase tracking-[0.24em] transition hover:opacity-60" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>{p.label}</PageLink>
+                    {i > 0 && <span style={{ color: BRASS }} aria-hidden="true">·</span>}
+                    <PageLink page={p.id} className="px-2 text-[12px] uppercase tracking-[0.24em] transition-opacity hover:opacity-60" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>{p.label}</PageLink>
                   </span>
                 ))}
+                {cta && (
+                  <>
+                    <span style={{ color: BRASS }} aria-hidden="true">·</span>
+                    <a href={cta.href} target={cta.target} rel={cta.rel} className="ml-2 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] transition-opacity hover:opacity-90" style={{ fontFamily: CAPS, background: wine, color: PAPER }}>Reserve</a>
+                  </>
+                )}
               </nav>
             </div>
           ) : (
             <div className="flex h-16 items-center justify-between">
-              <PageLink page="home" className="text-lg uppercase tracking-[0.16em]" style={{ fontFamily: CAPS }}>{site.hotel.name}</PageLink>
-              <button type="button" onClick={() => setOpen(!open)} aria-label="Menu" style={{ color: wine }}>{open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
+              <PageLink page="home" className="min-w-0 truncate text-lg uppercase tracking-[0.16em]" style={{ fontFamily: CAPS }}>{site.hotel.name}</PageLink>
+              <button type="button" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="-mr-2 ml-3 shrink-0 p-2" style={{ color: wine }}>{open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
             </div>
           )}
         </div>
@@ -134,6 +144,7 @@ function Nav({ wine }) {
               <PageLink page={p.id} className="text-2xl uppercase tracking-[0.2em]" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>{p.label}</PageLink>
             </Reveal>
           ))}
+          {cta && <div className="mt-4"><Button href={cta.href} target={cta.target} rel={cta.rel} wine={wine}>{cta.kind === "whatsapp" && <WhatsAppIcon size={15} />} Reserve</Button></div>}
           <Ornament className="mt-4" />
         </div>
       )}
@@ -141,11 +152,11 @@ function Nav({ wine }) {
   );
 }
 
-function Arch({ src, alt = "", className = "", ratio = "3/4" }) {
+function Arch({ src, alt = "", className = "", ratio = "3/4", sizes = SIZES.half, priority = false }) {
   return (
     <div className={`relative p-2 ${className}`} style={{ border: `1px solid ${BRASS}`, borderRadius: "999px 999px 4px 4px" }}>
       <div className="overflow-hidden" style={{ borderRadius: "999px 999px 2px 2px" }}>
-        <Img src={src} alt={alt} className="w-full object-cover transition duration-[1200ms] hover:scale-105" style={{ aspectRatio: ratio }} />
+        <Img src={src} alt={alt} sizes={sizes} priority={priority} fallback="#e3d3b4" className="w-full object-cover transition-transform duration-[1200ms] hover:scale-105" style={{ aspectRatio: ratio }} />
       </div>
     </div>
   );
@@ -156,26 +167,25 @@ function Home({ wine, onPhoto }) {
   const { md, lg } = useBp();
   const h = useFrameHeight(0.9, 560);
   const c = site.content;
-  const wa = useWhatsApp()();
-  const book = useBooking();
   const gallery = useGallery();
-  const ps = paragraphs(c.about.body);
+  const rooms = useRooms();
+  const reviews = useReviews();
+  const ps = paragraphs(c.about?.body);
+  const gCols = md ? 3 : 2;
+  const shown = gallery.slice(0, gallery.length >= gCols * 2 ? gCols * 2 : gallery.length >= gCols ? gCols : gallery.length);
   return (
     <>
       <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: md ? 170 : 96 }}>
         <div className={md ? "grid grid-cols-12 items-center gap-12" : "space-y-10"} style={{ minHeight: md ? h - 170 : undefined }}>
           <Reveal className={md ? "col-span-6" : "text-center"}>
-            <Caps>{[site.hotel.typeLabel, site.hotel.city].filter(Boolean).join(" · ")}</Caps>
-            <h1 className="mt-6 font-normal uppercase leading-[1.05] tracking-[0.04em]" style={{ fontFamily: CAPS, fontSize: lg ? 72 : md ? 58 : 38 }}>{c.hero.title || site.hotel.name}</h1>
+            <Caps>{[site.hotel.typeLabel, site.hotel.city].filter(Boolean).join(" · ") || "Welcome"}</Caps>
+            <h1 className="mt-6 font-normal uppercase leading-[1.05] tracking-[0.04em]" style={{ fontFamily: CAPS, fontSize: lg ? 72 : md ? 58 : 34 }}>{c.hero?.title || site.hotel.name}</h1>
             <Ornament className={`mt-6 ${md ? "justify-start" : ""}`} />
-            {c.hero.subtitle && <p className="mt-6 text-[22px] italic leading-snug" style={{ color: MUTED }}>{c.hero.subtitle}</p>}
-            <div className={`mt-10 flex flex-wrap gap-4 ${md ? "" : "justify-center"}`}>
-              {wa && <Button href={wa} target="_blank" rel="noopener noreferrer" wine={wine}><WhatsAppIcon size={15} /> Reserve on WhatsApp</Button>}
-              {book ? <Button {...book} wine={wine} ghost>Check availability</Button> : <PageLink page="rooms" className="inline-flex items-center px-7 py-3.5 text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: CAPS, border: `1px solid ${INK}` }}>Our rooms</PageLink>}
-            </div>
+            {c.hero?.subtitle && <p className="mt-6 text-[22px] italic leading-snug" style={{ color: MUTED }}>{c.hero.subtitle}</p>}
+            <CtaButtons wine={wine} className={`mt-10 ${md ? "" : "justify-center"}`} rooms={rooms.length > 0} />
           </Reveal>
           <Reveal delay={0.1} className={md ? "col-span-6" : ""}>
-            <Arch src={c.hero.image} alt={site.hotel.name} ratio={md ? "4/5" : "3/4"} />
+            <Arch src={c.hero?.image} alt={site.hotel.name} ratio={md ? "4/5" : "3/4"} sizes={SIZES.half} priority />
           </Reveal>
         </div>
       </section>
@@ -183,7 +193,7 @@ function Home({ wine, onPhoto }) {
       <section className="mx-auto max-w-3xl px-6 text-center" style={{ paddingTop: md ? 130 : 72 }}>
         <Reveal>
           <Crest wine={wine} />
-          <Heading center className="mt-6">{c.about.heading}</Heading>
+          <Heading center className="mt-6">{c.about?.heading || `Welcome to ${site.hotel.name}`}</Heading>
           <Ornament className="mt-6" />
           {ps[0] && (
             <p className="mt-8 text-left text-[20px] leading-[1.75]" style={{ color: MUTED }}>
@@ -195,13 +205,15 @@ function Home({ wine, onPhoto }) {
         </Reveal>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: md ? 130 : 72 }}>
-        <Reveal className="text-center"><Caps>Accommodation</Caps><Heading center className="mt-4">Our rooms</Heading><Ornament className="mt-5" /></Reveal>
-        <div className={`mt-14 grid gap-10 ${lg ? "grid-cols-3" : md ? "grid-cols-2" : "grid-cols-1"}`}>
-          {site.rooms.slice(0, 3).map((r, i) => <RoomCard key={r.id} room={r} wine={wine} delay={i * 0.08} />)}
-        </div>
-        <div className="mt-12 text-center"><PageLink page="rooms" className="italic underline underline-offset-4" style={{ color: wine }}>View all rooms</PageLink></div>
-      </section>
+      {rooms.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: md ? 130 : 72 }}>
+          <Reveal className="text-center"><Caps>Accommodation</Caps><Heading center className="mt-4">Our rooms</Heading><Ornament className="mt-5" /></Reveal>
+          <div className={`mx-auto mt-14 grid gap-x-10 gap-y-16 ${lg && rooms.length >= 3 ? "grid-cols-3" : md && rooms.length >= 2 ? "grid-cols-2" : "max-w-md grid-cols-1"}`}>
+            {rooms.slice(0, lg ? 3 : md ? 2 : 3).map((r, i) => <RoomCard key={r.id || i} room={r} wine={wine} delay={i * 0.08} />)}
+          </div>
+          <div className="mt-12 text-center"><PageLink page="rooms" className="italic underline underline-offset-4" style={{ color: wine }}>{rooms.length > 3 ? `View all ${rooms.length} rooms` : "Room details"}</PageLink></div>
+        </section>
+      )}
 
       {c.amenities?.length > 0 && (
         <section style={{ marginTop: md ? 130 : 72, background: wine, color: PAPER, backgroundImage: GRAIN }}>
@@ -218,30 +230,33 @@ function Home({ wine, onPhoto }) {
         </section>
       )}
 
-      {gallery.length > 0 && (
+      {shown.length > 0 && (
         <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: md ? 130 : 72 }}>
           <Reveal className="text-center"><Caps>Gallery</Caps><Heading center className="mt-4">Scenes from the house</Heading><Ornament className="mt-5" /></Reveal>
-          <div className={`mt-14 grid gap-6 ${md ? "grid-cols-3" : "grid-cols-2"}`}>
-            {gallery.slice(0, 6).map((g, i) => (
+          <div className={`mx-auto mt-14 grid ${md ? "gap-8" : "gap-4"} ${shown.length === 1 ? "max-w-md grid-cols-1" : md && shown.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+            {shown.map((g, i) => (
               <Reveal key={g.url + i} delay={(i % 3) * 0.06} style={{ transform: `rotate(${[-1.2, 0.8, -0.6, 1, -0.9, 0.5][i % 6]}deg)` }}>
-                <button type="button" onClick={() => onPhoto(i)} className="block w-full bg-white p-3 pb-4 text-center shadow-[0_10px_30px_-12px_rgba(42,28,19,0.45)]">
-                  <Img src={g.url} alt={g.caption} className="aspect-square w-full object-cover" />
-                  <span className="mt-3 block text-[15px] italic" style={{ color: MUTED }}>{g.caption || site.hotel.name}</span>
+                <button type="button" onClick={() => onPhoto(i)} aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`} className={`block w-full bg-white text-center shadow-[0_10px_30px_-12px_rgba(42,28,19,0.45)] transition-transform hover:-translate-y-1 ${md ? "p-3 pb-4" : "p-2 pb-3"}`}>
+                  <Img src={g.url} alt={g.caption || ""} sizes={SIZES.thumb} className="aspect-square w-full object-cover" />
+                  <span className={`mt-3 block truncate italic ${md ? "text-[15px]" : "text-[13px]"}`} style={{ color: MUTED }}>{g.caption || site.hotel.name}</span>
                 </button>
               </Reveal>
             ))}
           </div>
+          {gallery.length > shown.length && (
+            <div className="mt-12 text-center"><PageLink page="gallery" className="italic underline underline-offset-4" style={{ color: wine }}>See all {gallery.length} photographs</PageLink></div>
+          )}
         </section>
       )}
 
-      {c.testimonials?.length > 0 && (
+      {reviews.length > 0 && (
         <section className="mx-auto max-w-3xl px-6 text-center" style={{ paddingTop: md ? 130 : 72 }}>
           <Caps>From our guestbook</Caps>
-          {c.testimonials.slice(0, 2).map((t, i) => (
+          {reviews.slice(0, 2).map((t, i) => (
             <Reveal key={i} className="mt-10">
-              <p className="text-[28px] italic leading-snug">“{t.quote}”</p>
-              <p className="mt-4 text-[12px] uppercase tracking-[0.26em]" style={{ fontFamily: CAPS, color: MUTED }}>{t.author}{t.source ? ` · ${t.source}` : ""}</p>
-              {i < Math.min(2, c.testimonials.length) - 1 && <Ornament className="mt-10" />}
+              <p className="italic leading-snug" style={{ fontSize: md ? 28 : 23 }}>“{t.quote}”</p>
+              {(t.author || t.source) && <p className="mt-4 text-[12px] uppercase tracking-[0.26em]" style={{ fontFamily: CAPS, color: MUTED }}>{[t.author, t.source].filter(Boolean).join(" · ")}</p>}
+              {i < Math.min(2, reviews.length) - 1 && <Ornament className="mt-10" />}
             </Reveal>
           ))}
         </section>
@@ -253,33 +268,53 @@ function Home({ wine, onPhoto }) {
 }
 
 function RoomCard({ room, wine, delay }) {
-  const wa = useWhatsApp()(room.name);
+  const cta = useBookCta(room.name);
   const price = formatPrice(room.price, room.currency);
+  const meta = [
+    Number(room.maxOccupancy) > 0 && `For up to ${room.maxOccupancy} guests`,
+    room.bedConfig,
+  ].filter(Boolean).join(" · ");
   return (
     <Reveal delay={delay} className="text-center">
-      <Arch src={room.image} alt={room.name} ratio="4/5" />
+      <Arch src={room.image} alt={room.name} ratio="4/5" sizes={SIZES.third} />
       <h3 className="mt-6 text-[22px] uppercase tracking-[0.1em]" style={{ fontFamily: CAPS }}>{room.name}</h3>
-      <p className="mt-1 italic" style={{ color: MUTED }}>For up to {room.maxOccupancy} guests{price ? ` · from ${price} a night` : ""}</p>
-      {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: CAPS, color: wine, borderBottom: `1px solid ${wine}` }}>Reserve this room</a>}
+      {meta && <p className="mt-1 italic" style={{ color: MUTED }}>{meta}</p>}
+      {price && <p className="mt-1 text-[20px]">from <span style={{ color: wine }}>{price}</span> <span className="italic" style={{ color: MUTED }}>a night</span></p>}
+      {room.breakfastIncluded && <p className="mt-1 text-[15px] italic" style={{ color: MUTED }}>Breakfast included</p>}
+      {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="mt-4 inline-block py-1 text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: CAPS, color: wine, borderBottom: `1px solid ${wine}` }}>Reserve this room</a>}
     </Reveal>
+  );
+}
+
+/** Booking-first buttons; WhatsApp first without a booking page; never empty. */
+function CtaButtons({ wine, className = "", rooms = false }) {
+  const wa = useWhatsApp()();
+  const book = useBooking();
+  const plain = "inline-flex items-center px-7 py-3.5 text-[12px] uppercase tracking-[0.24em]";
+  return (
+    <div className={`flex flex-wrap gap-4 ${className}`}>
+      {book && <Button {...book} wine={wine}>Book now <ArrowRight className="h-4 w-4" /></Button>}
+      {wa && <Button href={wa} target="_blank" rel="noopener noreferrer" wine={wine} ghost={!!book}><WhatsAppIcon size={15} /> {book ? "WhatsApp" : "Reserve on WhatsApp"}</Button>}
+      {!book && !wa && <PageLink page="contact" className={plain} style={{ fontFamily: CAPS, background: wine, color: PAPER }}>Write to us</PageLink>}
+      {rooms && (!book || !wa) && <PageLink page="rooms" className={plain} style={{ fontFamily: CAPS, border: `1px solid ${INK}` }}>Our rooms</PageLink>}
+    </div>
   );
 }
 
 function Cta({ wine }) {
   const { site } = useSite();
   const { md } = useBp();
-  const wa = useWhatsApp()();
   const book = useBooking();
+  const wa = useWhatsApp()();
   return (
     <section className="mx-auto max-w-5xl px-6" style={{ paddingTop: md ? 130 : 72 }}>
       <Reveal className="text-center" style={{ border: `1px solid ${BRASS}`, outline: `1px solid ${BRASS}`, outlineOffset: 6, padding: md ? 64 : 28 }}>
         <Caps>Reservations</Caps>
         <Heading center className="mt-4" size={38}>We would be delighted to welcome you</Heading>
-        <p className="mx-auto mt-5 max-w-xl italic" style={{ color: MUTED }}>Write to us on WhatsApp with your dates, and we shall reply personally — usually within minutes.</p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          {wa && <Button href={wa} target="_blank" rel="noopener noreferrer" wine={wine}><WhatsAppIcon size={15} /> Reserve on WhatsApp</Button>}
-          {book && <Button {...book} wine={wine} ghost>Book online</Button>}
-        </div>
+        <p className="mx-auto mt-5 max-w-xl italic" style={{ color: MUTED }}>
+          {book ? "Reserve directly with the house for our best rate — or write to us with any wish, and we shall reply personally." : wa ? "Write to us on WhatsApp with your dates, and we shall reply personally — usually within minutes." : "Write to us with your dates, and we shall reply personally."}
+        </p>
+        <CtaButtons wine={wine} className="mt-10 justify-center" />
         <p className="mt-6 text-sm italic" style={{ color: MUTED }}>{site.hotel.name}</p>
       </Reveal>
     </section>
@@ -305,31 +340,40 @@ function Rooms({ wine }) {
   const { md } = useBp();
   const wa = useWhatsApp();
   const book = useBooking();
+  const rooms = useRooms();
   return (
     <>
       <PageHead caps={site.hotel.name} title="Rooms & Suites" wine={wine} />
       <section className="mx-auto max-w-6xl px-6">
-        {site.rooms.map((r, i) => {
+        {rooms.length === 0 && (
+          <Reveal className="mx-auto max-w-2xl pt-14 text-center">
+            <p className="text-[22px] italic leading-snug" style={{ color: MUTED }}>Our chambers are being readied for their portraits. Write to us with your dates and we shall suggest the perfect room.</p>
+            <CtaButtons wine={wine} className="mt-10 justify-center" />
+          </Reveal>
+        )}
+        {rooms.map((r, i) => {
           const price = formatPrice(r.price, r.currency);
           const link = wa(r.name);
           return (
-            <div key={r.id} className={md ? "grid grid-cols-12 items-center gap-14" : "space-y-8"} style={{ paddingTop: md ? 100 : 56 }}>
-              <Reveal className={md ? `col-span-5 ${i % 2 ? "order-2" : ""}` : ""}><Arch src={r.image} alt={r.name} ratio="4/5" /></Reveal>
+            <div key={r.id || i} className={md ? "grid grid-cols-12 items-center gap-14" : "space-y-8"} style={{ paddingTop: md ? 100 : 56 }}>
+              <Reveal className={md ? `col-span-5 ${i % 2 ? "order-2" : ""}` : ""}><Arch src={r.image} alt={r.name} ratio="4/5" sizes="(min-width: 820px) 40vw, 100vw" /></Reveal>
               <Reveal delay={0.08} className={md ? "col-span-7" : ""}>
-                <Caps>Chamber {["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][i] || i + 1}</Caps>
+                <Caps>Chamber {["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][i] || i + 1}</Caps>
                 <Heading className="mt-3" size={40}>{r.name}</Heading>
-                <p className="mt-5 text-[20px] leading-[1.7]" style={{ color: MUTED }}>{r.description}</p>
+                {r.description && <p className="mt-5 text-[20px] leading-[1.7]" style={{ color: MUTED }}>{r.description}</p>}
                 <ul className="mt-6 space-y-1 italic">
-                  <li>❦ For up to {r.maxOccupancy} guests</li>
-                  {r.bedConfig && <li>❦ {r.bedConfig}</li>}
-                  {r.sizeSqm && <li>❦ {r.sizeSqm} square metres</li>}
-                  {r.breakfastIncluded && <li>❦ Breakfast is included</li>}
-                  {r.amenities?.length > 0 && <li>❦ {r.amenities.join(", ")}</li>}
+                  {Number(r.maxOccupancy) > 0 && <li><span aria-hidden="true">❦ </span>For up to {r.maxOccupancy} guests</li>}
+                  {r.bedConfig && <li><span aria-hidden="true">❦ </span>{r.bedConfig}</li>}
+                  {Number(r.sizeSqm) > 0 && <li><span aria-hidden="true">❦ </span>{r.sizeSqm} square metres</li>}
+                  {r.breakfastIncluded && <li><span aria-hidden="true">❦ </span>Breakfast is included</li>}
+                  {r.amenities?.length > 0 && <li><span aria-hidden="true">❦ </span>{r.amenities.join(", ")}</li>}
                 </ul>
                 <div className="mt-8 flex flex-wrap items-center gap-5 pt-6" style={{ borderTop: `1px solid ${LINE}` }}>
-                  {price && <p className="text-2xl italic">{price} <span className="text-base" style={{ color: MUTED }}>per night</span></p>}
-                  {link && <Button href={link} target="_blank" rel="noopener noreferrer" wine={wine}><WhatsAppIcon size={15} /> Reserve</Button>}
-                  {book && <a {...book} className="italic underline underline-offset-4" style={{ color: wine }}>or book online</a>}
+                  {price && <p className="text-2xl italic"><span className="text-base" style={{ color: MUTED }}>from </span>{price} <span className="text-base" style={{ color: MUTED }}>per night</span></p>}
+                  {book && <Button {...book} wine={wine}>Reserve</Button>}
+                  {link && (book
+                    ? <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 italic underline underline-offset-4" style={{ color: wine }}><WhatsAppIcon size={14} /> or ask on WhatsApp</a>
+                    : <Button href={link} target="_blank" rel="noopener noreferrer" wine={wine}><WhatsAppIcon size={15} /> Reserve</Button>)}
                 </div>
               </Reveal>
             </div>
@@ -348,12 +392,13 @@ function Gallery({ wine, onPhoto }) {
   return (
     <>
       <PageHead caps={site.hotel.name} title="The Gallery" wine={wine} />
-      <section className={`mx-auto grid max-w-6xl gap-8 px-6 ${lg ? "grid-cols-3" : md ? "grid-cols-2" : "grid-cols-1"}`} style={{ paddingTop: md ? 80 : 48 }}>
+      {gallery.length === 0 && <p className="mx-auto max-w-md px-6 pt-14 text-center italic" style={{ color: MUTED }}>Photographs of the house are on their way.</p>}
+      <section className={`mx-auto grid max-w-6xl px-6 ${md ? "gap-8" : "gap-4"} ${lg ? "grid-cols-3" : "grid-cols-2"}`} style={{ paddingTop: md ? 80 : 48 }}>
         {gallery.map((g, i) => (
           <Reveal key={g.url + i} delay={(i % 3) * 0.06}>
-            <button type="button" onClick={() => onPhoto(i)} className="block w-full p-3 text-center" style={{ border: `1px solid ${LINE}`, background: "rgba(255,255,255,0.45)" }}>
-              <div className="overflow-hidden"><Img src={g.url} alt={g.caption} className="aspect-[4/3] w-full object-cover transition duration-700 hover:scale-105" /></div>
-              <span className="mt-3 block italic" style={{ color: MUTED }}>{g.caption || `Plate ${i + 1}`}</span>
+            <button type="button" onClick={() => onPhoto(i)} aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`} className={`group block w-full text-center ${md ? "p-3" : "p-2"}`} style={{ border: `1px solid ${LINE}`, background: "rgba(255,255,255,0.45)" }}>
+              <div className="overflow-hidden"><Img src={g.url} alt={g.caption || ""} sizes={SIZES.thumb} className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-105" /></div>
+              <span className={`mt-3 block truncate italic ${md ? "" : "text-[14px]"}`} style={{ color: MUTED }}>{g.caption || `Plate ${i + 1}`}</span>
             </button>
           </Reveal>
         ))}
@@ -368,15 +413,17 @@ function About({ wine }) {
   const c = site.content;
   return (
     <>
-      <PageHead caps="Our story" title={c.about.heading || `About ${site.hotel.name}`} wine={wine} />
+      <PageHead caps="Our story" title={c.about?.heading || `About ${site.hotel.name}`} wine={wine} />
       <section className={`mx-auto max-w-6xl px-6 ${md ? "grid grid-cols-12 gap-14" : "space-y-10"}`} style={{ paddingTop: md ? 80 : 48 }}>
-        <Reveal className={md ? "col-span-5" : ""}><Arch src={c.about.image} ratio="3/4" /></Reveal>
-        <Reveal delay={0.08} className={md ? "col-span-7" : ""}>
-          {paragraphs(c.about.body).map((p, i) => <p key={i} className="mb-6 text-[20px] leading-[1.75]" style={{ color: i ? MUTED : INK }}>{p}</p>)}
-          <div className="mt-8 grid grid-cols-2 text-center" style={{ border: `1px solid ${LINE}` }}>
-            <div className="p-5" style={{ borderRight: `1px solid ${LINE}` }}><Caps>Arrival</Caps><p className="mt-2 text-3xl italic">from {site.hotel.checkIn}</p></div>
-            <div className="p-5"><Caps>Departure</Caps><p className="mt-2 text-3xl italic">by {site.hotel.checkOut}</p></div>
-          </div>
+        {(c.about?.image || c.hero?.image) && <Reveal className={md ? "col-span-5" : "mx-auto max-w-sm"}><Arch src={c.about?.image || c.hero?.image} alt={site.hotel.name} ratio="3/4" sizes="(min-width: 820px) 40vw, 100vw" /></Reveal>}
+        <Reveal delay={0.08} className={md ? (c.about?.image || c.hero?.image ? "col-span-7" : "col-span-12 mx-auto max-w-3xl") : ""}>
+          {paragraphs(c.about?.body).map((p, i) => <p key={i} className="mb-6 text-[20px] leading-[1.75]" style={{ color: i ? MUTED : INK }}>{p}</p>)}
+          {(site.hotel.checkIn || site.hotel.checkOut) && (
+            <div className="mt-8 grid grid-cols-2 text-center" style={{ border: `1px solid ${LINE}` }}>
+              <div className="p-5" style={{ borderRight: `1px solid ${LINE}` }}><Caps>Arrival</Caps><p className="mt-2 text-3xl italic">{site.hotel.checkIn ? `from ${site.hotel.checkIn}` : "flexible"}</p></div>
+              <div className="p-5"><Caps>Departure</Caps><p className="mt-2 text-3xl italic">{site.hotel.checkOut ? `by ${site.hotel.checkOut}` : "flexible"}</p></div>
+            </div>
+          )}
           {c.amenities?.length > 0 && <p className="mt-8 italic leading-relaxed" style={{ color: MUTED }}>{c.amenities.join(" · ")}</p>}
         </Reveal>
       </section>
@@ -396,9 +443,12 @@ function Location({ wine }) {
         <Reveal className={md ? "col-span-4" : ""}>
           {loc.address && <p className="flex gap-3 text-[20px]"><MapPin className="mt-1 h-5 w-5 shrink-0" style={{ color: wine }} />{loc.address}</p>}
           {loc.directions && <p className="mt-4 italic leading-relaxed" style={{ color: MUTED }}>{loc.directions}</p>}
+          <a href={directionsHref(loc.mapQuery || loc.address || site.hotel.name)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 py-1 text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: CAPS, color: wine, borderBottom: `1px solid ${wine}` }}>
+            Get directions <ArrowRight className="h-4 w-4" />
+          </a>
         </Reveal>
         <Reveal delay={0.08} className={md ? "col-span-8" : ""}>
-          <div className="p-2" style={{ border: `1px solid ${BRASS}` }}><MapFrame query={loc.mapQuery || loc.address || site.hotel.name} className="h-[400px] w-full" style={{ filter: "sepia(0.35)" }} /></div>
+          <div className="p-2" style={{ border: `1px solid ${BRASS}` }}><MapFrame title={`Map showing ${site.hotel.name}`} query={loc.mapQuery || loc.address || site.hotel.name} className={`${md ? "h-[400px]" : "h-[300px]"} w-full`} style={{ filter: "sepia(0.35)" }} /></div>
         </Reveal>
       </div>
     </section>
@@ -411,7 +461,7 @@ function Contact({ wine }) {
   const c = site.content.contact || {};
   const wa = useWhatsApp()();
   const f = useEnquiry();
-  const input = "w-full bg-transparent px-1 py-3 text-[19px] outline-none placeholder:italic placeholder:text-[#9b8775]";
+  const input = "w-full bg-transparent px-1 py-3 text-[19px] outline-none placeholder:italic placeholder:text-[#7a6654]";
   const st = { borderBottom: `1px solid ${BRASS}` };
   return (
     <>
@@ -429,13 +479,13 @@ function Contact({ wine }) {
           <form onSubmit={f.submit} style={{ border: `1px solid ${BRASS}`, outline: `1px solid ${BRASS}`, outlineOffset: 5, padding: md ? 44 : 22, background: "rgba(255,255,255,0.35)" }}>
             <Heading size={30}>A letter to the house</Heading>
             <div className="mt-6 space-y-3">
-              <input className={input} style={st} placeholder="Your name" value={f.v.name} onChange={f.set("name")} />
+              <input className={input} style={st} aria-label="Your name" autoComplete="name" placeholder="Your name" value={f.v.name} onChange={f.set("name")} />
               <div className="grid grid-cols-2 gap-5">
                 <input type="date" className={input} style={st} value={f.v.checkIn} onChange={f.set("checkIn")} aria-label="Arrival" />
                 <input type="date" className={input} style={st} value={f.v.checkOut} onChange={f.set("checkOut")} aria-label="Departure" />
               </div>
-              <input className={input} style={st} placeholder="Number of guests" value={f.v.guests} onChange={f.set("guests")} />
-              <textarea className={input} style={st} rows={3} placeholder="Your wishes" value={f.v.message} onChange={f.set("message")} />
+              <input className={input} style={st} aria-label="Number of guests" inputMode="numeric" placeholder="Number of guests" value={f.v.guests} onChange={f.set("guests")} />
+              <textarea className={input} style={st} rows={3} aria-label="Your wishes" placeholder="Your wishes" value={f.v.message} onChange={f.set("message")} />
             </div>
             <button type="submit" className="mt-8 inline-flex items-center gap-2 px-7 py-3.5 text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: CAPS, background: wine, color: PAPER }}>Send via {f.via} <ArrowRight className="h-4 w-4" /></button>
           </form>
@@ -454,12 +504,13 @@ function Footer({ wine }) {
       <div className="mx-auto max-w-4xl px-6" style={{ paddingTop: 72, paddingBottom: 40 }}>
         <span className="inline-flex h-14 w-14 items-center justify-center rounded-full text-2xl" style={{ border: "1px solid #e3c48e", color: "#e3c48e", fontFamily: CAPS }}>{(site.hotel.name || "H").charAt(0)}</span>
         <p className="mt-5 text-2xl uppercase tracking-[0.2em] text-[#f2e9d8]" style={{ fontFamily: CAPS }}>{site.hotel.name}</p>
-        <p className="mt-2 italic">{site.content.location?.address}</p>
+        {site.content.location?.address && <p className="mt-2 italic">{site.content.location.address}</p>}
+        {(site.content.contact?.phone || site.content.contact?.email) && <p className="mt-1 italic">{[site.content.contact?.phone, site.content.contact?.email].filter(Boolean).join("  ·  ")}</p>}
         <nav className="mt-8 flex flex-wrap justify-center gap-6">
           {PAGES.map((p) => <PageLink key={p.id} page={p.id} className="text-[12px] uppercase tracking-[0.24em] hover:text-white" style={{ fontFamily: CAPS }}>{p.label}</PageLink>)}
         </nav>
         <Ornament color="#e3c48e" className="mt-10" />
-        <p className="mt-6 text-sm italic" style={{ color: "rgba(242,233,216,0.5)" }}>© {year()} {site.hotel.name} · Website by <a href="https://botlify.site" className="underline" style={{ color: wine === INK ? "#fff" : "rgba(242,233,216,0.7)" }}>Botlify</a></p>
+        <p className="mt-6 text-sm italic" style={{ color: "rgba(242,233,216,0.65)" }}>© {year()} {site.hotel.name} · Website by <a href="https://botlify.site" className="underline" style={{ color: wine === INK ? "#fff" : "rgba(242,233,216,0.7)" }}>Botlify</a></p>
       </div>
     </footer>
   );

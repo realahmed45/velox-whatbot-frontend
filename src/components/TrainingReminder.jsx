@@ -66,7 +66,9 @@ export default function TrainingReminder() {
   const lastFetch = useRef(0);
   const prevPath = useRef(location.pathname);
 
-  const onTrainPage = location.pathname.startsWith(TRAIN_PATH);
+  // The test page is part of training too — no nagging banner there.
+  const onTrainPage =
+    location.pathname.startsWith(TRAIN_PATH) || location.pathname.startsWith("/dashboard/test-ai");
 
   useEffect(() => {
     if (!activeWorkspace || dismissed) return;

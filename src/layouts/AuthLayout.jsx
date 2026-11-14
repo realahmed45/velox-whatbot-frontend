@@ -1,131 +1,158 @@
 import { Outlet, Link } from "react-router-dom";
-import { Sparkles, Shield, Check, Zap, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
 import BotlifyMark from "@/components/BotlifyMark";
-import { Aurora, Reveal } from "@/components/fx";
+import OtaLogo from "@/components/OtaLogo";
+import { WhatsAppMark } from "@/components/ChannelMarks";
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Shared auth styling tokens — imported by Login / Register / Forgot /
+ * Reset / Verify so every auth screen draws the exact same controls.
+ * Calm, crisp, ink-first: 1px borders, ink focus ring, one dark button.
+ * ──────────────────────────────────────────────────────────────────────── */
+export const AUTH_FIELD =
+  "block w-full h-11 rounded-lg border border-ink-200 bg-white px-3.5 text-[14px] text-ink-950 placeholder:text-ink-400 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[border-color,box-shadow] duration-150 hover:border-ink-300 focus:border-ink-900 focus:outline-none focus:ring-4 focus:ring-ink-900/[0.07] disabled:opacity-60";
+export const AUTH_LABEL = "mb-1.5 block text-[13px] font-medium text-ink-800";
+export const AUTH_BTN =
+  "group inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-ink-950 px-4 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(2,6,23,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] transition-colors duration-150 hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sunset-flame/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+export const AUTH_TITLE = "text-[26px] font-semibold leading-tight tracking-[-0.025em] text-ink-950 sm:text-[28px]";
+export const AUTH_SUB = "mt-2 text-[14px] leading-relaxed text-ink-500";
+export const AUTH_LINK = "font-medium text-ink-950 underline decoration-ink-300 underline-offset-4 transition-colors hover:decoration-ink-950";
+export const AUTH_EYE =
+  "absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
+
+export function AuthDivider({ children = "or" }) {
+  return (
+    <div className="relative flex items-center gap-3 py-1" role="separator">
+      <span className="h-px flex-1 bg-ink-200" />
+      <span className="text-[12px] text-ink-400">{children}</span>
+      <span className="h-px flex-1 bg-ink-200" />
+    </div>
+  );
+}
 
 const POINTS = [
-  "Syncs rooms, rates & availability across Airbnb, Booking.com & Expedia",
-  "AI answers every guest inside your OTA inboxes and on WhatsApp",
-  "Replies instantly, in your guest's language — 24/7",
-  "Turns questions into confirmed bookings",
+  "Rooms, rates & availability synced across Airbnb, Booking.com & Expedia",
+  "AI replies inside every OTA inbox and on WhatsApp, 24/7",
+  "0% commission on OTA bookings · set up in about 10 minutes",
 ];
 
+/** Calm product vignette for the brand panel — a single answered thread. */
+function PanelMockup() {
+  return (
+    <div className="w-full max-w-[420px] rounded-xl border border-ink-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_24px_48px_-24px_rgba(15,23,42,0.18)]">
+      <div className="flex items-center gap-3 border-b border-ink-100 px-4 py-3">
+        <OtaLogo channelKey="airbnb" size={28} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-medium text-ink-950">Maya Fischer</p>
+          <p className="truncate text-[11.5px] text-ink-500">Airbnb · Deluxe Ocean · Fri – Sun</p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Answered
+        </span>
+      </div>
+      <div className="space-y-3 px-4 py-4">
+        <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-ink-100 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800">
+          Hi! We land at 11am — any chance of an early check-in?
+        </div>
+        <div className="ml-auto max-w-[85%]">
+          <div className="rounded-2xl rounded-tr-md bg-ink-950 px-3.5 py-2.5 text-[13px] leading-relaxed text-white">
+            Hi Maya! Your room is free that morning, so I've noted early check-in from 12pm at no charge. See you Friday.
+          </div>
+          <p className="mt-1.5 flex items-center justify-end gap-1 text-[11px] text-ink-400">
+            <Sparkles className="h-3 w-3 text-sunset-flame" /> Botlify AI · 8 seconds
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
- * Auth shell — warm, light canvas with a static sunset aurora. The brand
- * story sits on the left; the form sits on the right in a light card drawn
- * by each auth page.
+ * Auth shell — split layout. The form lives on a clean white column; a calm
+ * brand panel with a product vignette sits on the right from lg up.
+ * No animated backgrounds, no blur: it paints once and stays still.
  */
 export default function AuthLayout() {
   return (
-    <div className="relative isolate flex min-h-screen overflow-hidden bg-[#FBFAF8] text-ink-950">
-      <Aurora />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
-      />
-
-      {/* ── Left brand panel ───────────────────────────────────────── */}
-      <div className="relative hidden w-[44%] flex-col items-center justify-center p-10 text-center lg:flex xl:w-2/5 xl:p-14">
-        <Link to="/" className="group relative flex flex-col items-center gap-5">
-          <span aria-hidden className="absolute top-6 h-36 w-36 rounded-full bg-sunset opacity-20 blur-3xl" />
-          <BotlifyMark
-            size={112}
-            className="relative drop-shadow-xl transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105"
-          />
-          <span className="relative inline-flex items-baseline font-display text-5xl font-bold tracking-[-0.05em] text-ink-950 xl:text-6xl">
-            botlify
-            <span className="ml-1 inline-block h-2.5 w-2.5 rounded-full bg-sunset" />
-          </span>
-        </Link>
-
-        <div className="relative mt-10 max-w-sm">
-          <Reveal delay={0.05}>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-ink-700 shadow-sm ring-1 ring-ink-900/[0.08]">
-              <Sparkles className="h-3 w-3 text-sunset-flame" /> The AI channel manager for hotels
-            </span>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h1 className="mt-5 font-display text-3xl font-semibold leading-[1.04] tracking-[-0.045em] text-ink-950 xl:text-[2.6rem]">
-              AI answers your{" "}
-              <span className="font-serif font-normal italic tracking-[-0.02em] text-ink-800">Airbnb, Booking.com</span>{" "}
-              <span className="text-sunset">& WhatsApp guests.</span>
-            </h1>
-          </Reveal>
-          <ul className="mx-auto mt-8 inline-block space-y-3 text-left">
-            {POINTS.map((p, i) => (
-              <Reveal as="li" key={p} delay={0.15 + i * 0.05} y={10}>
-                <span className="flex items-start gap-3 text-sm text-ink-600">
-                  <span className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-sunset">
-                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
-                  </span>
-                  <span>{p}</span>
-                </span>
-              </Reveal>
-            ))}
-          </ul>
+    <div className="flex min-h-screen bg-white font-geist text-ink-950 antialiased">
+      {/* ── Form column ───────────────────────────────────────────── */}
+      <div className="flex min-w-0 flex-1 flex-col px-4 py-5 sm:px-8 sm:py-6">
+        <div className="flex items-center justify-between">
+          <Link to="/" aria-label="Botlify home">
+            <Logo size="sm" />
+          </Link>
+          <Link
+            to="/"
+            className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] text-ink-500 transition-colors hover:text-ink-950"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+            Home
+          </Link>
         </div>
 
-        <div className="relative mt-10 flex items-center justify-center gap-5 text-[11px] text-ink-500">
-          <span className="flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-sunset-flame" /> Official OTA connections
-          </span>
-          <span className="h-3 w-px bg-ink-900/15" aria-hidden />
-          <span className="flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-sunset-flame" /> Replies in seconds
-          </span>
-        </div>
-      </div>
-
-      {/* ── Right form panel ───────────── */}
-      <div className="relative flex flex-1 items-center justify-center p-4 py-8 sm:p-10">
-        <div className="relative w-full max-w-md">
-          {/* mobile header */}
-          <div className="mb-6 flex items-center justify-between lg:hidden">
-            <Link to="/">
-              <Logo size="lg" />
-            </Link>
-            <Link
-              to="/"
-              className="group inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-ink-500 transition hover:bg-ink-900/[0.05] hover:text-ink-900"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" /> Home
-            </Link>
+        <main className="flex flex-1 items-center justify-center py-10 sm:py-14">
+          <div className="w-full max-w-[400px]">
+            <Outlet />
           </div>
+        </main>
 
-          <div className="relative">
-            {/* The auth pages draw their own light card (Login, Register…),
-                so this is just a positioning shell. */}
-            <div className="relative text-ink-950">
-              <div className="mb-2 hidden items-center justify-end lg:flex">
-                <Link
-                  to="/"
-                  className="group inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 transition hover:text-ink-900"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-x-0.5" /> Back home
-                </Link>
-              </div>
-              <Outlet />
-            </div>
-          </div>
-
-          <p className="mt-6 text-center text-[11px] text-ink-500">
+        <div className="flex flex-col items-center justify-between gap-2 text-[12px] text-ink-400 sm:flex-row">
+          <p>© {new Date().getFullYear()} Botlify</p>
+          <p>
             By continuing you agree to our{" "}
-            <Link to="/terms" className="text-ink-700 underline-offset-2 hover:text-ink-950 hover:underline">
+            <Link to="/terms" className="text-ink-600 hover:text-ink-950">
               Terms
             </Link>{" "}
-            &{" "}
-            <Link to="/privacy" className="text-ink-700 underline-offset-2 hover:text-ink-950 hover:underline">
-              Privacy
+            and{" "}
+            <Link to="/privacy" className="text-ink-600 hover:text-ink-950">
+              Privacy Policy
             </Link>
             .
           </p>
-
-          <p className="mt-3 text-center text-[11px] text-ink-400">
-            © {new Date().getFullYear()} Botlify. All rights reserved.
-          </p>
         </div>
       </div>
+
+      {/* ── Brand panel ───────────────────────────────────────────── */}
+      <aside className="relative hidden w-[46%] max-w-[720px] flex-col overflow-hidden border-l border-ink-200/80 bg-[#F7F7F5] lg:flex">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_75%)]"
+        />
+        <div className="relative flex flex-1 flex-col justify-center px-12 py-14 xl:px-16">
+          <div className="flex items-center gap-2 text-[12.5px] font-medium text-ink-500">
+            <BotlifyMark size={18} />
+            The AI channel manager for hotels
+          </div>
+          <h2 className="mt-5 max-w-md text-[34px] font-semibold leading-[1.1] tracking-[-0.03em] text-ink-950 xl:text-[38px]">
+            Every calendar in sync. Every guest answered.
+          </h2>
+          <ul className="mt-7 max-w-md space-y-3">
+            {POINTS.map((p) => (
+              <li key={p} className="flex items-start gap-3 text-[14px] leading-relaxed text-ink-600">
+                <Check className="mt-1 h-3.5 w-3.5 shrink-0 text-ink-950" strokeWidth={2.5} />
+                {p}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-10">
+            <PanelMockup />
+          </div>
+
+          <div className="mt-10 flex items-center gap-3 text-[12px] text-ink-500">
+            <span>Works with</span>
+            <span className="flex items-center gap-2">
+              <OtaLogo channelKey="booking" size={22} />
+              <OtaLogo channelKey="airbnb" size={22} />
+              <OtaLogo channelKey="expedia" size={22} />
+              <span className="grid h-[22px] w-[22px] place-items-center rounded-[6px] bg-[#25D366] text-white">
+                <WhatsAppMark className="h-3.5 w-3.5" />
+              </span>
+            </span>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

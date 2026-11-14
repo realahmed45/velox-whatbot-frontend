@@ -5,9 +5,8 @@ import {
   useNavigate,
   Link,
 } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Mail, Loader, RotateCw } from "lucide-react";
-import { Reveal } from "@/components/fx";
+import { AUTH_SUB, AUTH_TITLE } from "@/layouts/AuthLayout";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
@@ -110,86 +109,57 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="card p-6 sm:p-8 text-center">
-      <Reveal>
-        <div className="relative w-16 h-16 mx-auto mb-5">
-          <div
-            aria-hidden
-            className="absolute -inset-3 rounded-full bg-sunset opacity-20 blur-2xl"
-          />
-          <div
-            className="relative w-16 h-16 rounded-2xl bg-sunset text-white grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_14px_36px_-12px_rgba(255,61,119,0.8)]"
-          >
-            {submitting ? (
-              <Loader className="w-7 h-7 animate-spin" />
-            ) : (
-              <Mail className="w-7 h-7" strokeWidth={1.8} />
-            )}
-          </div>
-        </div>
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-2">
-          Verify your <span className="font-serif italic font-normal">email</span>
-        </h2>
-        <p className="text-ink-600 text-sm mb-7">
-          We sent a 4-digit code to{" "}
-          <strong className="text-ink-950 font-semibold break-all">{email}</strong>.
-        </p>
-      </Reveal>
+    <div className="text-center">
+      <div className="mx-auto mb-6 grid h-12 w-12 place-items-center rounded-xl border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05),0_8px_20px_-12px_rgba(15,23,42,0.25)]">
+        {submitting ? (
+          <Loader className="h-5 w-5 animate-spin" />
+        ) : (
+          <Mail className="h-5 w-5" strokeWidth={1.8} />
+        )}
+      </div>
+      <h1 className={AUTH_TITLE}>Verify your email</h1>
+      <p className={AUTH_SUB}>
+        We sent a 4-digit code to{" "}
+        <strong className="break-all font-medium text-ink-950">{email}</strong>.
+      </p>
 
       <div
-        className="flex justify-center gap-2.5 sm:gap-3 mb-7"
+        className="mb-8 mt-8 flex justify-center gap-2.5 sm:gap-3"
         onPaste={handlePaste}
       >
         {digits.map((d, i) => (
-          <motion.input
+          <input
             key={i}
             ref={(el) => (inputsRef.current[i] = el)}
             inputMode="numeric"
+            autoComplete={i === 0 ? "one-time-code" : "off"}
+            aria-label={`Digit ${i + 1}`}
             maxLength={1}
             value={d}
             disabled={submitting}
             onChange={(e) => setDigit(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: d ? [1, 1.08, 1] : 1,
-            }}
-            transition={{
-              delay: 0.08 + i * 0.06,
-              type: "spring",
-              stiffness: 420,
-              damping: 26,
-            }}
-            className={`w-14 h-16 text-center text-2xl font-bold font-display tabular-nums text-ink-950 rounded-xl outline-none transition-[box-shadow,background-color] duration-300 disabled:opacity-50 focus:ring-2 focus:ring-sunset-flame/70 focus:bg-white focus:shadow-[0_0_0_5px_rgba(255,106,43,0.14),0_10px_28px_-12px_rgba(255,61,119,0.7)] ${
-              d
-                ? "bg-white ring-1 ring-sunset-flame/50"
-                : "bg-white ring-1 ring-ink-900/10 hover:ring-ink-900/20"
+            className={`h-14 w-12 rounded-lg border bg-white text-center text-2xl font-semibold tabular-nums text-ink-950 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-ink-900 focus:ring-4 focus:ring-ink-900/[0.07] disabled:opacity-50 sm:h-16 sm:w-14 ${
+              d ? "border-ink-400" : "border-ink-200 hover:border-ink-300"
             }`}
           />
         ))}
       </div>
 
-      <p className="text-xs text-ink-500">
+      <p className="text-[13px] text-ink-500">
         Didn't get it?{" "}
         <button
           type="button"
           onClick={resend}
           disabled={resendIn > 0}
-          className="inline-flex items-center gap-1 text-sunset-flame font-semibold hover:underline underline-offset-4 disabled:text-ink-400 disabled:no-underline tabular-nums"
+          className="inline-flex items-center gap-1 font-medium text-ink-950 tabular-nums underline decoration-ink-300 underline-offset-4 hover:decoration-ink-950 disabled:text-ink-400 disabled:no-underline"
         >
-          <RotateCw
-            className={`w-3 h-3 ${resendIn > 0 ? "" : "transition-transform duration-500 ease-spring hover:rotate-180"}`}
-          />
+          <RotateCw className="h-3 w-3" />
           {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
         </button>
-        {" · "}
-        <Link
-          to="/login"
-          className="text-ink-700 hover:text-ink-950 hover:underline underline-offset-4"
-        >
-          Back to login
+        <span className="mx-2 text-ink-300">·</span>
+        <Link to="/login" className="text-ink-600 hover:text-ink-950">
+          Back to sign in
         </Link>
       </p>
     </div>

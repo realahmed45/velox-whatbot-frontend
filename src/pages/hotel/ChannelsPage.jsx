@@ -9,8 +9,10 @@
  *
  * Messenger and Telegram are kept in CHANNELS (and their connect code below)
  * so they can be switched back on, but only ACTIVE_CHANNEL_KEYS are shown.
- * WhatsApp/Messenger use the hosted /channels OAuth flow; Telegram pairs via a
- * short code in a guided modal that polls until the link completes.
+ * WhatsApp connects through AiSensy (WhatsAppConnectModal: Project ID + API
+ * password, then the webhook URL to add in AiSensy); Messenger uses the hosted /channels OAuth flow;
+ * Telegram pairs via a short code in a guided modal that polls until the link
+ * completes.
  *
  * Zodomus (channel manager, the primary OTA provider) gets a "Connect a
  * booking site" card: pick the OTA, type the property/listing ID, done. The
@@ -54,7 +56,7 @@ const CHANNELS = [
     Mark: WhatsAppMark,
     tint: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15",
     ring: "hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(16,185,129,0.28),0_18px_40px_-16px_rgba(16,185,129,0.35)]",
-    desc: "Where most guests book. Your AI answers, quotes rooms and confirms reservations on your WhatsApp number.",
+    desc: "Guests who message you directly get instant answers. Your AI quotes rooms and confirms reservations on your WhatsApp number.",
   },
   {
     key: "messenger",
@@ -293,8 +295,7 @@ export default function ChannelsPage({ hideHeader = false }) {
   const [loading, setLoading] = useState(true);
   const [statusMap, setStatusMap] = useState({});
   const [busy, setBusy] = useState(null);
-  // WhatsApp has two very different starting points — existing number vs no
-  // number at all — so it opens a chooser instead of firing a blind redirect.
+  // WhatsApp opens the AiSensy connect modal.
   const [waOpen, setWaOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -377,7 +378,6 @@ export default function ChannelsPage({ hideHeader = false }) {
       return;
     }
     if (key === "whatsapp") {
-      // Two paths: connect their existing WhatsApp number, or get a new one.
       setWaOpen(true);
       return;
     }
@@ -399,7 +399,7 @@ export default function ChannelsPage({ hideHeader = false }) {
     }
   };
 
-  const disconnect = async (key, name) => {
+  const disconnect = async (key, name, provider) => {
     const ok = await confirm({
       title: `Disconnect ${name}?`,
       description:
@@ -410,7 +410,13 @@ export default function ChannelsPage({ hideHeader = false }) {
     if (!ok) return;
     setBusy(key);
     try {
-      await api.delete(`/channels/${key}`);
+      // AiSensy numbers have their own disconnect; everything else keeps the
+      // generic channel route.
+      if (key === "whatsapp" && provider === "aisensy") {
+        await api.delete("/channels/whatsapp/aisensy");
+      } else {
+        await api.delete(`/channels/${key}`);
+      }
       toast.success(`${name} disconnected`);
       load();
     } catch (e) {
@@ -580,15 +586,23 @@ export default function ChannelsPage({ hideHeader = false }) {
                       </span>
                     </p>
                   )}
-                  {/* WhatsApp can read "connected" while every send fails
-                      (Meta 133005) — surface the real state and the PIN fix. */}
+                  {/* WhatsApp state: AiSensy shows number, last message and
+                      the webhook URL to add in AiSensy;
+                      older numbers can read "connected" while every send fails
+                      (Meta 133005), so they keep the health check + PIN fix. */}
                   {connected && ch.key === "whatsapp" && (
-                    <WhatsAppHealthStrip webhookError={!!st.webhookError} />
+                    <WhatsAppHealthStrip
+                      webhookError={!!st.webhookError}
+                      provider={st.provider}
+                      phoneNumber={st.phoneNumber}
+                      lastWebhookAt={st.lastWebhookAt}
+                      webhookUrl={st.webhookUrl}
+                    />
                   )}
                   <div className="relative mt-5">
                     {connected ? (
                       <button
-                        onClick={() => disconnect(ch.key, ch.name)}
+                        onClick={() => disconnect(ch.key, ch.name, st.provider)}
                         disabled={busy === ch.key}
                         className="btn group/btn w-full min-h-[44px] justify-center text-rose-600 bg-rose-50/80 ring-1 ring-rose-500/20 hover:bg-rose-100 hover:-translate-y-0.5 disabled:opacity-60"
                       >
@@ -627,7 +641,7 @@ export default function ChannelsPage({ hideHeader = false }) {
       </p>
       </div>
 
-      {/* WhatsApp chooser — existing number, or a new one from us */}
+      {/* WhatsApp connect — AiSensy Project ID + API password */}
       {waOpen && (
         <WhatsAppConnectModal
           from="channels"
@@ -636,7 +650,7 @@ export default function ChannelsPage({ hideHeader = false }) {
             if (result?.connected) {
               if (result.webhookError) {
                 toast(
-                  "WhatsApp number is ready, but we couldn't switch on live messages yet. Try disconnecting and connecting again.",
+                  "WhatsApp is connected, but we couldn't switch on live messages yet. Try disconnecting and connecting again.",
                   { icon: "⚠️", duration: 7000 },
                 );
               } else {

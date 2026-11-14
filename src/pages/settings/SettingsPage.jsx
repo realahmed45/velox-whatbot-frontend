@@ -31,14 +31,11 @@ import {
   Hotel,
   Bot,
   PackagePlus,
-  Tag,
   Car,
   Users,
   CreditCard,
   SlidersHorizontal,
   MessageCircle,
-  PauseCircle,
-  Sparkles,
   AlertTriangle,
   ArrowRight,
   Clock,
@@ -46,10 +43,9 @@ import {
 import HolidayModeCard from "@/components/HolidayModeCard";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { checkPassword } from "@/utils/passwordPolicy";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import ExtrasSettings from "@/pages/settings/ExtrasSettings";
-import PricingSettings from "@/pages/settings/PricingSettings";
 
 // Heavy, self-contained screens that used to own a sidebar entry. Lazy so the
 // Settings bundle doesn't pull all of them in at once.
@@ -139,13 +135,6 @@ export default function SettingsPage() {
           icon: Car,
           subtitle: "Taxi and pick-up prices your AI can offer and book.",
         },
-        {
-          id: "pricing",
-          label: "Pricing",
-          icon: Tag,
-          subtitle:
-            "Direct-booking prices and the limits smart pricing must stay within.",
-        },
       ],
     },
     {
@@ -153,16 +142,17 @@ export default function SettingsPage() {
       tabs: [
         {
           id: "channels",
-          label: "WhatsApp",
+          label: "Channels",
           icon: MessageCircle,
           subtitle:
-            "Connect your WhatsApp number, switch AI replies on or off, and set when it answers.",
+            "Connect Airbnb, Booking.com, Expedia and WhatsApp, and set when your AI answers.",
         },
         {
           id: "assistant",
           label: "AI assistant",
           icon: Bot,
-          subtitle: "How your AI concierge sounds and when it hands over to you.",
+          subtitle:
+            "Switch AI replies on or off, set how it sounds and when it hands over to you.",
         },
       ],
     },
@@ -210,7 +200,7 @@ export default function SettingsPage() {
             Settings
           </h1>
           <p className="text-[13px] sm:text-sm text-ink-500 mt-1">
-            Your hotel, WhatsApp, AI assistant and{" "}
+            Your hotel, channels, AI assistant and{" "}
             <span className="font-serif italic text-[15px] text-ink-700">account</span>.
           </p>
         </Reveal>
@@ -348,14 +338,9 @@ export default function SettingsPage() {
                   <TransfersPage />
                 </div>
               )}
-              {tab === "pricing" && <PricingSettings />}
 
               {tab === "channels" && (
                 <div className="space-y-6">
-                  <div className="max-w-3xl space-y-6">
-                    <OtaAiToggle workspace={workspace} onSave={refresh} />
-                    <WhatsAppAiToggle workspace={workspace} onSave={refresh} />
-                  </div>
                   <div className="settings-embed">
                     <ChannelsPage hideHeader />
                   </div>
@@ -392,162 +377,6 @@ export default function SettingsPage() {
             </motion.div>
             </AnimatePresence>
           </main>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * WhatsApp AI replies — the one switch a hotelier reaches for when they want
- * to answer guests themselves. Writes aiSettings.whatsappAiEnabled through the
- * dotted-key path on PUT /workspaces/:id (so the rest of aiSettings is never
- * touched). Off = guest messages still land in the Inbox; nothing automated is
- * sent on WhatsApp.
- */
-function WhatsAppAiToggle(props) {
-  return (
-    <AiChannelToggle
-      {...props}
-      field="whatsappAiEnabled"
-      title="WhatsApp AI replies"
-      onText="Your AI answers guests on WhatsApp automatically, day and night."
-    />
-  );
-}
-
-/** AI replies inside the Airbnb / Booking.com / Expedia guest inboxes. */
-function OtaAiToggle(props) {
-  return (
-    <AiChannelToggle
-      {...props}
-      field="otaAiEnabled"
-      title="Booking-site AI replies"
-      onText="Your AI answers guests inside their Airbnb, Booking.com and Expedia inboxes, day and night."
-    />
-  );
-}
-
-function AiChannelToggle({ workspace, onSave, field, title, onText }) {
-  const stored = workspace?.aiSettings?.[field] !== false;
-  const [on, setOn] = useState(stored);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setOn(stored);
-  }, [stored]);
-
-  // Other switches that silently stop every reply — surfaced so "on" is honest.
-  const automationOff = workspace?.settings?.automationEnabled === false;
-  const assistantOff = workspace?.aiSettings?.enabled === false;
-
-  const toggle = async () => {
-    if (!workspace?._id || saving) return;
-    const next = !on;
-    setOn(next);
-    setSaving(true);
-    try {
-      await api.put(`/workspaces/${workspace._id}`, {
-        [`aiSettings.${field}`]: next,
-      });
-      // The legacy global automation switch drops guest messages entirely when
-      // off and no longer has its own control — make sure it's on.
-      if (next && automationOff) {
-        await api.put("/instagram/settings", { automationEnabled: true });
-      }
-      toast.success(next ? "AI replies are on" : "AI replies paused");
-      onSave?.();
-    } catch (err) {
-      setOn(!next);
-      toast.error(err.response?.data?.message || "Couldn't update AI replies");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div
-      className={`group card p-4 sm:p-5 overflow-hidden ring-1 transition-shadow duration-500 ${
-        on ? "ring-emerald-500/25" : "ring-amber-500/30"
-      }`}
-    >
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full blur-3xl transition-colors duration-700 ${
-          on ? "bg-emerald-400/20" : "bg-amber-400/20"
-        }`}
-      />
-      <div className="relative flex items-start gap-3 sm:gap-4">
-        <span
-          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ring-1 transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
-            on
-              ? "bg-emerald-50 text-emerald-600 ring-emerald-500/15"
-              : "bg-amber-50 text-amber-600 ring-amber-500/15"
-          }`}
-        >
-          {on ? (
-            <Sparkles className="w-5 h-5" />
-          ) : (
-            <PauseCircle className="w-5 h-5" />
-          )}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h3 className="text-[15px] font-semibold text-ink-900">
-                {title}
-              </h3>
-              <p className="text-[13px] text-ink-500 mt-0.5">
-                {on
-                  ? onText
-                  : "AI is paused — you'll reply to guests yourself from the Inbox."}
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={on}
-              aria-label={title}
-              onClick={toggle}
-              disabled={saving || !workspace?._id}
-              className={`relative w-14 h-8 rounded-full transition-colors duration-300 shrink-0 disabled:opacity-60 shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] active:scale-95 ${
-                on ? "bg-emerald-500" : "bg-ink-300"
-              }`}
-            >
-              <motion.span
-                layout
-                transition={{ type: "spring", stiffness: 520, damping: 30 }}
-                className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-[0_2px_6px_rgba(15,23,42,0.25),inset_0_1px_0_#fff] ${
-                  on ? "right-1" : "left-1"
-                }`}
-              />
-            </button>
-          </div>
-
-          {!on && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-amber-50/80 ring-1 ring-amber-500/15 px-3 py-2 text-[12.5px] text-amber-800">
-              <span>
-                Guest messages still arrive in your Inbox — nothing is sent
-                automatically until you switch this back on.
-              </span>
-              <Link
-                to="/dashboard/inbox"
-                className="group/link inline-flex items-center gap-1 font-semibold text-amber-900 hover:underline"
-              >
-                Open Inbox <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-spring group-hover/link:translate-x-0.5" />
-              </Link>
-            </div>
-          )}
-
-          {on && assistantOff && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50/80 ring-1 ring-amber-500/15 px-3 py-2 text-[12.5px] text-amber-800">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
-              <span>
-                Your AI assistant is switched off in the AI assistant tab, so it
-                won't reply yet. Turn it on there too.
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -966,7 +795,7 @@ function GeneralSettings({ workspace, onSave }) {
 
 /**
  * Reply timing — how quickly and during which hours the AI answers guests.
- * The on/off switch now lives in WhatsAppAiToggle above; the old global
+ * The on/off switches live in Settings → AI assistant; the old global
  * "automationEnabled" toggle is gone because switching it off dropped guest
  * messages entirely instead of leaving them in the Inbox.
  *

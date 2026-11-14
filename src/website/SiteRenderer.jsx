@@ -14,6 +14,37 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SiteCtx } from "./shared";
 import { templateById } from "./templates";
 
+/**
+ * Site-wide polish every template shares: visible keyboard focus, headings
+ * that never overflow a 360px phone, and calmer motion for people who ask
+ * for it. Injected once per document.
+ */
+const SITE_CSS = `
+.bsite :focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:2px}
+.bsite input:focus-visible,.bsite textarea:focus-visible,.bsite select:focus-visible{outline-offset:1px}
+.bsite a,.bsite button{-webkit-tap-highlight-color:transparent}
+.bsite h1,.bsite h2,.bsite h3{overflow-wrap:break-word;text-wrap:balance}
+.bsite img{-webkit-user-drag:none}
+@media (prefers-reduced-motion: reduce){.bsite *,.bsite *::before,.bsite *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+`;
+
+function useSiteCss() {
+  useEffect(() => {
+    if (typeof document === "undefined" || document.getElementById("bsite-css")) return;
+    const el = document.createElement("style");
+    el.id = "bsite-css";
+    el.textContent = SITE_CSS;
+    document.head.appendChild(el);
+  }, []);
+}
+
+/** Scopes the shared CSS without adding a layout box. */
+const Scope = ({ children }) => (
+  <div className="bsite" style={{ display: "contents" }}>
+    {children}
+  </div>
+);
+
 export default function SiteRenderer({
   site,
   templateId,
@@ -25,6 +56,7 @@ export default function SiteRenderer({
   virtualHeight = 800,
   className = "",
 }) {
+  useSiteCss();
   const [ownPage, setOwnPage] = useState("home");
   const page = controlledPage || ownPage;
   const scrollRoot = useRef(null);
@@ -83,7 +115,7 @@ export default function SiteRenderer({
   if (mode === "live") {
     return (
       <SiteCtx.Provider value={ctx}>
-        <Template />
+        <Scope><Template /></Scope>
       </SiteCtx.Provider>
     );
   }
@@ -98,7 +130,7 @@ export default function SiteRenderer({
         >
           <div ref={scrollRoot} style={{ width: virtualWidth, height: virtualHeight, overflow: "hidden", transform: "translateZ(0)" }}>
             <SiteCtx.Provider value={ctx}>
-              <Template />
+              <Scope><Template /></Scope>
             </SiteCtx.Provider>
           </div>
         </div>
@@ -119,7 +151,7 @@ export default function SiteRenderer({
           <div className="relative h-full w-full overflow-hidden" style={{ transform: "translateZ(0)" }}>
             <div ref={scrollRoot} className="h-full w-full overflow-y-auto overflow-x-hidden overscroll-contain">
               <SiteCtx.Provider value={{ ...ctx, width: vw, height: box.h / scale }}>
-                <Template />
+                <Scope><Template /></Scope>
               </SiteCtx.Provider>
             </div>
           </div>
@@ -132,7 +164,7 @@ export default function SiteRenderer({
     <div ref={outer} className={`relative overflow-hidden ${className}`} style={{ transform: "translateZ(0)" }}>
       <div ref={scrollRoot} className="h-full w-full overflow-y-auto overflow-x-hidden overscroll-contain">
         <SiteCtx.Provider value={ctx}>
-          <Template />
+          <Scope><Template /></Scope>
         </SiteCtx.Provider>
       </div>
     </div>

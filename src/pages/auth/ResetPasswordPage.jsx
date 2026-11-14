@@ -3,20 +3,21 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, Lock, ShieldCheck, Link2Off } from "lucide-react";
-import { Reveal } from "@/components/fx";
+import { Eye, EyeOff, ShieldCheck, Link2Off } from "lucide-react";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import TurnstileWidget, {
   turnstileEnabled,
 } from "@/components/auth/TurnstileWidget";
 import { checkPassword } from "@/utils/passwordPolicy";
 
-// Shared light form-field classes from index.css.
-const FIELD =
-  "input";
-const LABEL = "label";
-const ICON =
-  "w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame pointer-events-none";
+import {
+  AUTH_BTN,
+  AUTH_EYE,
+  AUTH_FIELD,
+  AUTH_LABEL,
+  AUTH_SUB,
+  AUTH_TITLE,
+} from "@/layouts/AuthLayout";
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
@@ -66,51 +67,44 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="card p-6 sm:p-8">
-        <Reveal>
-          <div className="h-11 w-11 rounded-xl grid place-items-center bg-rose-50 ring-1 ring-rose-200 text-rose-600 mb-4">
-            <Link2Off className="w-5 h-5" strokeWidth={1.8} />
-          </div>
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
-            Link <span className="font-serif italic font-normal">expired</span>
-          </h2>
-          <p className="text-ink-600 text-sm mb-6">
-            This password reset link is missing or invalid. Please request a new
-            one.
-          </p>
-          <button
-            onClick={() => navigate("/forgot-password")}
-            className="btn-primary w-full h-11"
-          >
-            Request new link
-          </button>
-        </Reveal>
+      <div>
+        <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600">
+          <Link2Off className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </div>
+        <h1 className={AUTH_TITLE}>This link has expired</h1>
+        <p className={AUTH_SUB}>
+          This password reset link is missing or invalid. Please request a new
+          one.
+        </p>
+        <button
+          onClick={() => navigate("/forgot-password")}
+          className={`${AUTH_BTN} mt-8`}
+        >
+          Request new link
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="card p-6 sm:p-8">
-      <Reveal>
-        <div className="h-11 w-11 rounded-xl grid place-items-center bg-sunset text-white mb-4 shadow-[0_10px_30px_-10px_rgba(255,61,119,0.7)]">
-          <ShieldCheck className="w-5 h-5" strokeWidth={1.8} />
-        </div>
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-950 mb-1">
-          Set new <span className="font-serif italic font-normal">password</span>
-        </h2>
-        <p className="text-ink-600 text-sm mb-6">
-          Choose a strong password for your account.
-        </p>
-      </Reveal>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Reveal delay={0.06}>
-          <label className={LABEL}>New password</label>
-          <div className="relative group">
-            <Lock strokeWidth={1.8} className={ICON} />
+    <div>
+      <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+        <ShieldCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
+      </div>
+      <h1 className={AUTH_TITLE}>Set a new password</h1>
+      <p className={AUTH_SUB}>Choose a strong password for your account.</p>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <div>
+          <label htmlFor="rp-password" className={AUTH_LABEL}>
+            New password
+          </label>
+          <div className="relative">
             <input
-              className={`${FIELD} pl-9 pr-11`}
+              id="rp-password"
+              className={`${AUTH_FIELD} pr-11`}
               type={show ? "text" : "password"}
-              placeholder="Min. 8 characters"
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
               required
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -118,24 +112,24 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
+              className={AUTH_EYE}
               onClick={() => setShow(!show)}
             >
-              {show ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           <PasswordStrength password={form.password} />
-        </Reveal>
-        <Reveal delay={0.1}>
-          <label className={LABEL}>Confirm password</label>
+        </div>
+        <div>
+          <label htmlFor="rp-confirm" className={AUTH_LABEL}>
+            Confirm password
+          </label>
           <input
-            className={FIELD}
+            id="rp-confirm"
+            className={AUTH_FIELD}
             type="password"
-            placeholder="••••••••"
+            autoComplete="new-password"
+            placeholder="Repeat your new password"
             required
             value={form.confirmPassword}
             onChange={(e) =>
@@ -148,25 +142,17 @@ export default function ResetPasswordPage() {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="text-[11px] text-rose-600 mt-1"
+                className="mt-1.5 text-[12px] text-rose-600"
               >
                 Passwords don't match.
               </motion.p>
             )}
           </AnimatePresence>
-        </Reveal>
-        {turnstileEnabled && (
-          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
-        )}
-        <Reveal delay={0.14}>
-          <button
-            type="submit"
-            className="btn-primary w-full h-11"
-            disabled={loading}
-          >
-            {loading ? "Resetting…" : "Reset password"}
-          </button>
-        </Reveal>
+        </div>
+        {turnstileEnabled && <TurnstileWidget onToken={setCaptcha} />}
+        <button type="submit" className={AUTH_BTN} disabled={loading}>
+          {loading ? "Resetting…" : "Reset password"}
+        </button>
       </form>
     </div>
   );

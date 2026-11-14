@@ -1,124 +1,86 @@
 /**
- * Botlify Unified Footer
- * One footer for the marketing site — warm light canvas, a big editorial
- * sign-off, then the link columns. Hover: links slide, icons hop.
+ * Botlify public footer — shared by the landing page and every marketing page.
+ * Quiet and structured: brand blurb, three link columns, a hairline bottom bar.
  */
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
-import { Magnetic } from "@/components/fx";
 
-function FooterLink({ to, children }) {
-  return (
-    <Link
-      to={to}
-      className="group inline-flex items-center gap-1 text-ink-600 transition-colors duration-300 hover:text-ink-950"
-    >
-      <span className="transition-transform duration-500 ease-spring group-hover:translate-x-0.5">{children}</span>
-      <ArrowUpRight className="h-3 w-3 -translate-x-1 opacity-0 transition-all duration-500 ease-spring group-hover:translate-x-0 group-hover:opacity-100" />
-    </Link>
-  );
-}
+const COLS = [
+  {
+    title: "Product",
+    links: [
+      { label: "How it works", href: "/#how" },
+      { label: "Features", href: "/#features" },
+      { label: "Pricing", to: "/pricing" },
+      { label: "Guide", to: "/guide" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "Consultant program", to: "/consultants" },
+      { label: "Help", to: "/help" },
+      { label: "Contact", to: "/contact" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Terms of Service", to: "/terms" },
+    ],
+  },
+];
+
+const LINK = "text-[14px] text-ink-500 transition-colors hover:text-ink-950";
 
 export default function Footer() {
   return (
-    <footer className="relative isolate overflow-hidden bg-[#F5F2EE] pb-10 pt-20 text-ink-600 sm:pt-28">
-      {/* soft sunset wash rising from below the sign-off (static) */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(50% 60% at 50% 115%, rgba(255,106,43,0.14), transparent 70%), radial-gradient(35% 45% at 90% 100%, rgba(124,92,255,0.08), transparent 70%)",
-        }}
-      />
-      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ink-900/10 to-transparent" />
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        {/* ── Editorial sign-off ───────────────────────────────── */}
-        <div className="mb-16 flex flex-col items-start justify-between gap-8 sm:mb-20 lg:flex-row lg:items-end">
-          <h2 className="max-w-3xl font-display text-[2.6rem] font-semibold leading-[0.95] tracking-[-0.05em] text-ink-950 sm:text-6xl md:text-7xl">
-            Every guest,
-            <br />
-            <span className="font-serif font-normal italic tracking-[-0.02em] text-ink-800">answered</span>{" "}
-            <span className="text-sunset">instantly.</span>
-          </h2>
-          <Magnetic strength={0.3}>
+    <footer className="border-t border-ink-200/80 bg-white font-geist">
+      <div className="mx-auto max-w-6xl px-4 pb-10 pt-14 sm:px-6 sm:pt-16">
+        <div className="grid gap-10 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <Logo size="sm" />
+            <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-ink-500">
+              The AI channel manager for hotels. Rooms, rates and availability in sync across Airbnb,
+              Booking.com and Expedia — and every guest message answered, 24/7.
+            </p>
             <a
               href="mailto:contactus@botlify.site"
-              className="btn-secondary group rounded-full px-5 py-3 text-sm"
+              className="mt-4 inline-block text-[14px] text-ink-700 underline decoration-ink-300 underline-offset-4 transition-colors hover:decoration-ink-950"
             >
-              <Mail className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" />
               contactus@botlify.site
             </a>
-          </Magnetic>
-        </div>
-
-        <div className="mb-12 grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4 md:gap-8">
-          {/* Brand Column */}
-          <div className="space-y-5 sm:col-span-2 md:col-span-1">
-            <Logo size="sm" />
-            <p className="text-sm leading-relaxed text-ink-500">
-              The AI channel manager for hotels. Botlify syncs rooms, rates and
-              availability across Airbnb, Booking.com and Expedia — and its AI
-              answers every guest message inside those inboxes and on WhatsApp,
-              24/7.
-            </p>
           </div>
-
-          {/* Product Column */}
-          <div>
-            <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Product</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <FooterLink to="/pricing">Pricing</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/#platform">Platform</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/guide">Guide</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/help">Help & Resources</FooterLink>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company Column */}
-          <div>
-            <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Company</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <FooterLink to="/privacy">Privacy Policy</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/terms">Terms of Service</FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/contact">Contact Us</FooterLink>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Column */}
-          <div>
-            <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Get in Touch</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2">
-                <Mail size={16} className="text-ink-400" />
-                <a href="mailto:contactus@botlify.site" className="break-all text-ink-600 transition hover:text-ink-950">
-                  contactus@botlify.site
-                </a>
-              </li>
-            </ul>
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+            {COLS.map((c) => (
+              <div key={c.title}>
+                <p className="text-[13px] font-medium text-ink-950">{c.title}</p>
+                <ul className="mt-4 space-y-2.5">
+                  {c.links.map((l) => (
+                    <li key={l.label}>
+                      {l.to ? (
+                        <Link to={l.to} className={LINK}>
+                          {l.label}
+                        </Link>
+                      ) : (
+                        <a href={l.href} className={LINK}>
+                          {l.label}
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Bottom Bar */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-ink-900/[0.07] pt-8 text-sm text-ink-500 sm:flex-row">
+        <div className="mt-14 flex flex-col gap-2 border-t border-ink-100 pt-6 text-[13px] text-ink-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Botlify. All rights reserved.</p>
-          <p className="font-serif text-[15px] italic text-ink-500">Made with care · Karachi · Pakistan</p>
+          <p className="inline-flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
+            Answering guests 24/7
+          </p>
         </div>
       </div>
     </footer>

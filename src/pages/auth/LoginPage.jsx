@@ -4,17 +4,22 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/services/api";
 import toast from "react-hot-toast";
-import { Eye, EyeOff, ArrowRight, Mail, Lock, Wrench } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Wrench } from "lucide-react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import TurnstileWidget, {
   turnstileEnabled,
 } from "@/components/auth/TurnstileWidget";
-import { Magnetic, Reveal } from "@/components/fx";
+import {
+  AUTH_BTN,
+  AUTH_EYE,
+  AUTH_FIELD,
+  AUTH_LABEL,
+  AUTH_LINK,
+  AUTH_SUB,
+  AUTH_TITLE,
+  AuthDivider,
+} from "@/layouts/AuthLayout";
 
-// Shared light form-field classes from index.css.
-const FIELD =
-  "input";
-const LABEL = "label";
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -61,67 +66,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="card p-6 sm:p-8">
-      <Reveal>
-        <h2 className="font-display text-3xl sm:text-[34px] font-semibold tracking-[-0.03em] text-ink-950 leading-tight">
-          Welcome{" "}
-          <span className="font-serif italic font-normal text-sunset">back</span>
-        </h2>
-        <p className="text-ink-600 text-sm mt-2 mb-7">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-sunset-flame font-semibold underline-offset-4 hover:underline"
-          >
-            Sign up free
-          </Link>
-        </p>
-      </Reveal>
+    <div>
+      <h1 className={AUTH_TITLE}>Welcome back</h1>
+      <p className={AUTH_SUB}>
+        Sign in to your hotel's inbox and calendar.
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Reveal delay={0.06}>
-          <div className="mb-2 rounded-xl overflow-hidden ring-1 ring-ink-900/[0.08] transition-transform duration-500 ease-spring hover:-translate-y-0.5">
-            <GoogleSignInButton />
-          </div>
-        </Reveal>
-        <div className="relative py-1">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-ink-900/10 to-transparent"></div>
-          </div>
-          <div className="relative flex justify-center text-[11px] uppercase tracking-[0.14em]">
-            <span className="px-3 text-ink-400 bg-white rounded-full">
-              Or continue with email
-            </span>
-          </div>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <div className="overflow-hidden rounded-lg">
+          <GoogleSignInButton />
         </div>
-        <Reveal delay={0.1}>
-          <label className={LABEL}>Email address</label>
-          <div className="relative group">
-            <Mail
-              strokeWidth={1.8}
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame"
-            />
-            <input
-              className={`${FIELD} pl-9`}
-              type="email"
-              placeholder="you@example.com"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
+        <AuthDivider>or continue with email</AuthDivider>
+        <div>
+          <label htmlFor="login-email" className={AUTH_LABEL}>
+            Email
+          </label>
+          <input
+            id="login-email"
+            className={AUTH_FIELD}
+            type="email"
+            autoComplete="email"
+            placeholder="you@hotel.com"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+        </div>
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="login-password" className={`${AUTH_LABEL} !mb-0`}>
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              className="text-[13px] text-ink-500 transition-colors hover:text-ink-950"
+            >
+              Forgot password?
+            </Link>
           </div>
-        </Reveal>
-        <Reveal delay={0.14}>
-          <label className={LABEL}>Password</label>
-          <div className="relative group">
-            <Lock
-              strokeWidth={1.8}
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 transition-colors group-focus-within:text-sunset-flame"
-            />
+          <div className="relative">
             <input
-              className={`${FIELD} pl-9 pr-11`}
+              id="login-password"
+              className={`${AUTH_FIELD} pr-11`}
               type={show ? "text" : "password"}
-              placeholder="••••••••"
+              autoComplete="current-password"
+              placeholder="Your password"
               required
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -129,59 +118,43 @@ export default function LoginPage() {
             <button
               type="button"
               aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center rounded-lg text-ink-500 hover:text-ink-950 hover:bg-ink-900/[0.06] active:scale-90 transition duration-300 ease-spring"
+              className={AUTH_EYE}
               onClick={() => setShow(!show)}
             >
-              {show ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <div className="text-right mt-1.5">
-            <Link
-              to="/forgot-password"
-              className="text-xs text-ink-600 hover:text-sunset-flame transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
-        </Reveal>
-        {turnstileEnabled && (
-          <TurnstileWidget onToken={setCaptcha} className="pt-1" />
-        )}
-        <Reveal delay={0.18}>
-          <Magnetic strength={0.12} className="w-full">
-            <button
-              type="submit"
-              className="btn-primary w-full group h-11"
-              disabled={loading}
-            >
-              {loading ? "Signing in…" : "Sign in"}
-              {!loading && (
-                <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
-              )}
-            </button>
-          </Magnetic>
-        </Reveal>
+        </div>
+        {turnstileEnabled && <TurnstileWidget onToken={setCaptcha} />}
+        <button type="submit" className={AUTH_BTN} disabled={loading}>
+          {loading ? "Signing in…" : "Sign in"}
+          {!loading && (
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          )}
+        </button>
       </form>
 
       {import.meta.env.DEV && (
         <motion.button
           type="button"
-          whileHover={{ y: -2 }}
-          whileTap={{ scale: 0.96 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => {
             devLogin();
             toast.success("Dev session — UI only (no backend)");
             navigate("/dashboard");
           }}
-          className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-sunset-flame/40 text-sunset-flame text-sm font-semibold hover:bg-ink-900/[0.04] transition-colors"
+          className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-ink-300 text-[13px] font-medium text-ink-600 transition-colors hover:bg-ink-50 hover:text-ink-950"
         >
-          <Wrench className="w-4 h-4" /> Enter as Dev (UI only · local)
+          <Wrench className="h-4 w-4" /> Enter as Dev (UI only · local)
         </motion.button>
       )}
+
+      <p className="mt-8 text-center text-[14px] text-ink-500">
+        New to Botlify?{" "}
+        <Link to="/register" className={AUTH_LINK}>
+          Create an account
+        </Link>
+      </p>
     </div>
   );
 }

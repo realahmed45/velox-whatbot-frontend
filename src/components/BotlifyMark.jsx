@@ -1,21 +1,20 @@
-import { useId } from "react";
-
 /**
- * BotlifyMark — a lowercase "b" whose bowl is a chat bubble with three typing
- * dots: Botlify, replying to your guests. One silhouette, readable from a 16px
- * favicon to the hero, filled with the sunset gradient.
+ * BotlifyMark — an ink tile holding a geometric lowercase "b" whose bowl is a
+ * chat bubble (note the tail), with an orange spark for the AI.
+ *
+ * Built from primitives (stem + circle + tail) on a 48px grid so it stays crisp
+ * from a 16px favicon to the hero. Monochrome-first: the only colour is the
+ * spark, which keeps it classy on light and dark surfaces alike.
  *
  * Props:
  *   size      px (width = height), default 36
- *   mono      single colour (currentColor), dots knocked out in white
- *   glow      soft sunset shadow under the mark
+ *   tile      tile colour (default ink). On dark UIs pass a lifted ink, e.g. "#24212F".
+ *   mono      no tile: just the glyph in currentColor (for inline/badge use)
  *   className extra classes on the <svg>
  */
-export default function BotlifyMark({ size = 36, className = "", mono = false, glow = false }) {
-  const uid = useId().replace(/:/g, "");
-  const g = `blf-g-${uid}`;
-  const fill = mono ? "currentColor" : `url(#${g})`;
-
+export default function BotlifyMark({ size = 36, className = "", tile = "#0E0D14", mono = false }) {
+  const fg = mono ? "currentColor" : "#FFFFFF";
+  const counter = mono ? "var(--blf-bg, #fff)" : tile;
   return (
     <svg
       width={size}
@@ -26,25 +25,13 @@ export default function BotlifyMark({ size = 36, className = "", mono = false, g
       className={className}
       role="img"
       aria-label="Botlify"
-      style={glow ? { filter: "drop-shadow(0 4px 10px rgba(255,61,119,0.35))" } : undefined}
     >
-      <path
-        d="M12.5 3.5h0a4.5 4.5 0 0 1 4.5 4.5v8.6c2-.7 4.2-1.1 6.5-1.1H30a13 13 0 0 1 13 13v1a13 13 0 0 1-8.1 12l1.7 4.4c.4 1-.7 1.9-1.6 1.3l-6.3-4.7h-5.2A15.5 15.5 0 0 1 8 27V8a4.5 4.5 0 0 1 4.5-4.5Z"
-        fill={fill}
-      />
-      <circle cx="20.5" cy="29" r="2.6" fill="#fff" />
-      <circle cx="27.5" cy="29" r="2.6" fill="#fff" fillOpacity="0.85" />
-      <circle cx="34.5" cy="29" r="2.6" fill="#fff" fillOpacity="0.7" />
-      {!mono && (
-        <defs>
-          <linearGradient id={g} x1="6" y1="4" x2="44" y2="46" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FFB547" />
-            <stop offset="0.35" stopColor="#FF6A2B" />
-            <stop offset="0.72" stopColor="#FF3D77" />
-            <stop offset="1" stopColor="#7C5CFF" />
-          </linearGradient>
-        </defs>
-      )}
+      {!mono && <rect width="48" height="48" rx="11" fill={tile} />}
+      <rect x="12.5" y="9" width="7" height="27.5" rx="3.5" fill={fg} />
+      <circle cx="26" cy="27" r="10.5" fill={fg} />
+      <path d="M32.6 34.9l4.6 4.3c.5.5.1 1.4-.6 1.3l-6.7-1.1Z" fill={fg} />
+      <circle cx="26" cy="27" r="4.6" fill={counter} />
+      <circle cx="36.5" cy="11.5" r="3.4" fill="#FF6A2B" />
     </svg>
   );
 }

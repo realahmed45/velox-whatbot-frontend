@@ -77,6 +77,8 @@ export default {
         // Editorial accent: one or two italic words per headline, never body.
         serif: ["'Instrument Serif'", "Georgia", "serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+        // Public site + sign-in/sign-up (Nov 2026): one modern grotesk, no serif accents.
+        geist: ["Geist", "Inter", "system-ui", "sans-serif"],
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",

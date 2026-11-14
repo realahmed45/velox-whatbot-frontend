@@ -70,12 +70,6 @@ const ENTRIES = [
     group: "Settings",
   },
   {
-    label: "Pricing",
-    icon: TrendingUp,
-    to: "/dashboard/settings?tab=pricing",
-    group: "Settings",
-  },
-  {
     label: "Plan & Billing",
     icon: CreditCard,
     to: "/dashboard/settings?tab=billing",

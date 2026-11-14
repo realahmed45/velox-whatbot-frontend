@@ -11,11 +11,17 @@
  * error 133005 — the channel still reads "connected" while every single send
  * fails. Re-registering with their real 6-digit PIN fixes it, and it's the most
  * common post-connect failure there is.
+ *
+ * AiSensy numbers (provider === "aisensy") don't go through that flow, so they
+ * get a simple strip instead: the connected number, when the last guest
+ * message arrived (lastWebhookAt from GET /channels/status) and the webhook URL
+ * the hotel must add in AiSensy (whatsapp.webhookUrl). No PIN UI.
  */
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
+  Copy,
   KeyRound,
   Loader2,
   X,
@@ -75,7 +81,131 @@ function readHealth(h) {
   return { tone: "ok", label: "Delivering normally" };
 }
 
-export default function WhatsAppHealthStrip({ webhookError = false }) {
+/* "just now", "5 min ago", "3 h ago", "2 days ago" — or a date past a week. */
+function timeAgo(value) {
+  if (!value) return null;
+  const t = new Date(value).getTime();
+  if (!Number.isFinite(t)) return null;
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 60) return "just now";
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.round(h / 24);
+  if (d <= 7) return `${d} day${d === 1 ? "" : "s"} ago`;
+  return new Date(t).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+/**
+ * The AiSensy webhook URL in a copy box, with the one instruction that goes
+ * with it. Shared with WhatsAppConnectModal's success step.
+ */
+export function WebhookUrlBox({ url, compact = false }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Webhook URL copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — the URL is on screen to select */
+    }
+  };
+  return (
+    <div
+      className={`rounded-xl bg-white/70 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] ${
+        compact ? "p-2.5" : "p-3"
+      }`}
+    >
+      <p className={`${compact ? "text-[11px]" : "text-xs"} text-ink-600 leading-relaxed`}>
+        In AiSensy → Developer Hub → Webhooks, add this URL and enable incoming
+        messages. Guest messages will then reach Botlify.
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <code className="min-w-0 flex-1 truncate rounded-lg bg-ink-900/[0.04] px-2.5 py-1.5 font-mono text-[11.5px] text-ink-800 select-all">
+          {url}
+        </code>
+        <button
+          type="button"
+          onClick={copy}
+          className="btn-secondary shrink-0 px-2.5 py-1.5 text-xs"
+          aria-label="Copy webhook URL"
+        >
+          {copied ? (
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** AiSensy: connected number, last message received, webhook URL. */
+function AiSensyStrip({ phoneNumber, lastWebhookAt, webhookUrl, webhookError }) {
+  const last = timeAgo(lastWebhookAt);
+  const waiting = !last;
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <span
+          className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+            waiting || webhookError ? "bg-amber-500" : "bg-emerald-500"
+          }`}
+        />
+        <span className="font-semibold text-ink-700">
+          {waiting ? "Waiting for the first message" : "Receiving messages"}
+        </span>
+        {phoneNumber && (
+          <>
+            <span className="text-ink-300">·</span>
+            <span className="text-ink-500 font-mono">{phoneNumber}</span>
+          </>
+        )}
+      </div>
+      <p className="text-xs text-ink-400 mt-0.5">
+        {waiting
+          ? "Check the webhook is added in AiSensy."
+          : `Last guest message received ${last}`}
+      </p>
+      {webhookUrl && (
+        <div className="mt-2.5">
+          <WebhookUrlBox url={webhookUrl} compact />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function WhatsAppHealthStrip({
+  webhookError = false,
+  provider,
+  phoneNumber,
+  lastWebhookAt,
+  webhookUrl,
+}) {
+  if (provider === "aisensy") {
+    return (
+      <AiSensyStrip
+        phoneNumber={phoneNumber}
+        lastWebhookAt={lastWebhookAt}
+        webhookUrl={webhookUrl}
+        webhookError={webhookError}
+      />
+    );
+  }
+  return <ZernioHealthStrip webhookError={webhookError} />;
+}
+
+/** Legacy (Zernio-connected) numbers: Meta health + the two-step PIN fix. */
+function ZernioHealthStrip({ webhookError = false }) {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPin, setShowPin] = useState(false);

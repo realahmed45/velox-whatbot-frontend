@@ -21,6 +21,7 @@ const ROUTE_TITLES = {
   "/dashboard/calendar": "Calendar",
   "/dashboard/guests": "Guests",
   "/dashboard/train": "Train your AI",
+  "/dashboard/test-ai": "Test your AI",
   "/dashboard/inbox": "Inbox",
   "/dashboard/contacts": "Contacts",
   "/dashboard/automation": "Automations",
