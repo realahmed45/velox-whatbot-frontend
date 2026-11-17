@@ -152,9 +152,11 @@ function nextOf(s) {
   }
 }
 
-// Rooms are named "Room 1", "Room 2"… by default — easy to understand, and
-// easy to rename. `photos` is [{ url, caption, position }] like the room type.
-const blankRoom = (n = 1) => ({ name: `Room ${n}`, units: 1, price: "", photos: [] });
+// Each room is one room (units: 1). The name field shows "Room 1", "Room 2"…
+// as its placeholder; a room left unnamed is saved under that name.
+// `photos` is [{ url, caption, position }] like the room type.
+// eslint-disable-next-line no-unused-vars
+const blankRoom = (n = 1) => ({ name: "", units: 1, price: "", photos: [] });
 
 /** A room typed in by hand must have at least one photo; imported ones don't. */
 const roomNeedsPhoto = (r) => !r.imported && !(r.photos || []).some((p) => p.url);
@@ -350,7 +352,7 @@ export default function HotelOnboarding() {
     for (let i = 0; i < s.rooms.length; i++) {
       const r = s.rooms[i];
       const payload = {
-        name: r.name.trim(),
+        name: r.name.trim() || `Room ${i + 1}`,
         unitsCount: Math.max(1, Number(r.units) || 1),
         baseRate: Number(r.price),
         currency: s.currency,
@@ -564,7 +566,7 @@ export default function HotelOnboarding() {
 
   // ── What makes Next available ─────────────────────────────────────────
   const roomsPriced =
-    s.rooms.length > 0 && s.rooms.every((r) => r.name.trim() && Number(r.price) > 0);
+    s.rooms.length > 0 && s.rooms.every((r) => Number(r.price) > 0);
   const roomsPhotosOk = s.rooms.every((r) => !roomNeedsPhoto(r));
   const roomsOk = roomsPriced && roomsPhotosOk;
   const canNext = useMemo(() => {
@@ -1290,7 +1292,7 @@ const PHASES = {
   },
   2: {
     title: "Make it stand out",
-    body: "Now your rooms — how many of each, the price per night, and a photo of each. Your AI quotes these and your calendar is built from them.",
+    body: "Now your rooms — the price per night and a photo of each. Your AI quotes these and your calendar is built from them.",
   },
   3: {
     title: "Your website & AI",
@@ -1475,7 +1477,7 @@ function RoomsEditor({ s, set }) {
                   <input
                     value={r.name}
                     onChange={(e) => update({ name: e.target.value })}
-                    placeholder={`Room name, e.g. Room ${i + 1}`}
+                    placeholder={`Room ${i + 1}`}
                     aria-label={`Room ${i + 1} name`}
                     className="flex-1 min-w-0 font-semibold text-ink-950 placeholder:text-ink-400 outline-none text-[17px] bg-transparent"
                   />
@@ -1491,10 +1493,6 @@ function RoomsEditor({ s, set }) {
                   )}
                 </div>
                 <div className="mt-3 pt-3 border-t border-ink-900/[0.07] flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-ink-600">How many</span>
-                    <Stepper value={r.units} onChange={(units) => update({ units })} />
-                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-ink-600">Per night</span>
                     <div className="flex items-center rounded-xl px-3 py-1.5 bg-white ring-1 ring-ink-900/10 focus-within:ring-2 focus-within:ring-sunset-flame/60 transition">
