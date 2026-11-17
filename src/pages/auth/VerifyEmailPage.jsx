@@ -6,7 +6,7 @@ import {
   Link,
 } from "react-router-dom";
 import { Mail, Loader, RotateCw } from "lucide-react";
-import { AUTH_SUB, AUTH_TITLE } from "@/layouts/AuthLayout";
+import { AUTH_DOT, AUTH_ICON, AUTH_SUB, AUTH_TITLE } from "@/layouts/AuthLayout";
 import toast from "react-hot-toast";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
@@ -110,17 +110,19 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="text-center">
-      <div className="mx-auto mb-6 grid h-12 w-12 place-items-center rounded-xl border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05),0_8px_20px_-12px_rgba(15,23,42,0.25)]">
+      <div className={`${AUTH_ICON} mx-auto`}>
         {submitting ? (
           <Loader className="h-5 w-5 animate-spin" />
         ) : (
           <Mail className="h-5 w-5" strokeWidth={1.8} />
         )}
       </div>
-      <h1 className={AUTH_TITLE}>Verify your email</h1>
+      <h1 className={AUTH_TITLE}>
+        Verify your email<span className={AUTH_DOT}>.</span>
+      </h1>
       <p className={AUTH_SUB}>
         We sent a 4-digit code to{" "}
-        <strong className="break-all font-medium text-ink-950">{email}</strong>.
+        <strong className="break-all font-semibold text-[#0A0A0A]">{email}</strong>.
       </p>
 
       <div
@@ -139,26 +141,26 @@ export default function VerifyEmailPage() {
             disabled={submitting}
             onChange={(e) => setDigit(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
-            className={`h-14 w-12 rounded-lg border bg-white text-center text-2xl font-semibold tabular-nums text-ink-950 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-ink-900 focus:ring-4 focus:ring-ink-900/[0.07] disabled:opacity-50 sm:h-16 sm:w-14 ${
-              d ? "border-ink-400" : "border-ink-200 hover:border-ink-300"
+            className={`h-16 w-14 rounded-2xl border-2 bg-white text-center text-[28px] font-semibold tabular-nums text-[#0A0A0A] outline-none transition-[border-color,box-shadow,background-color] duration-150 focus:border-[#FF5A1F] focus:ring-4 focus:ring-[#FF5A1F]/20 disabled:opacity-50 sm:h-[72px] sm:w-16 ${
+              d ? "border-[#0A0A0A] bg-[#FFF1EA]" : "border-neutral-300 hover:border-neutral-400"
             }`}
           />
         ))}
       </div>
 
-      <p className="text-[13px] text-ink-500">
+      <p className="text-[13px] text-neutral-600">
         Didn't get it?{" "}
         <button
           type="button"
           onClick={resend}
           disabled={resendIn > 0}
-          className="inline-flex items-center gap-1 font-medium text-ink-950 tabular-nums underline decoration-ink-300 underline-offset-4 hover:decoration-ink-950 disabled:text-ink-400 disabled:no-underline"
+          className="inline-flex items-center gap-1 font-semibold text-[#0A0A0A] tabular-nums underline decoration-[#FF5A1F] decoration-2 underline-offset-4 hover:text-[#E84A12] disabled:text-neutral-400 disabled:no-underline"
         >
           <RotateCw className="h-3 w-3" />
           {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
         </button>
-        <span className="mx-2 text-ink-300">·</span>
-        <Link to="/login" className="text-ink-600 hover:text-ink-950">
+        <span className="mx-2 text-neutral-300">·</span>
+        <Link to="/login" className="font-medium text-neutral-700 hover:text-[#0A0A0A]">
           Back to sign in
         </Link>
       </p>

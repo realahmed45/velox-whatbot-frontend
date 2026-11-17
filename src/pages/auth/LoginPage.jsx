@@ -17,6 +17,7 @@ import {
   AUTH_LINK,
   AUTH_SUB,
   AUTH_TITLE,
+  AUTH_DOT,
   AuthDivider,
 } from "@/layouts/AuthLayout";
 
@@ -67,13 +68,15 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h1 className={AUTH_TITLE}>Welcome back</h1>
+      <h1 className={AUTH_TITLE}>
+        Welcome back<span className={AUTH_DOT}>.</span>
+      </h1>
       <p className={AUTH_SUB}>
         Sign in to your hotel's inbox and calendar.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        <div className="overflow-hidden rounded-lg">
+        <div className="overflow-hidden rounded-xl">
           <GoogleSignInButton />
         </div>
         <AuthDivider>or continue with email</AuthDivider>
@@ -99,7 +102,7 @@ export default function LoginPage() {
             </label>
             <Link
               to="/forgot-password"
-              className="text-[13px] text-ink-500 transition-colors hover:text-ink-950"
+              className="text-[13px] font-medium text-neutral-600 underline-offset-4 transition-colors hover:text-[#0A0A0A] hover:underline hover:decoration-[#FF5A1F] hover:decoration-2"
             >
               Forgot password?
             </Link>
@@ -143,13 +146,13 @@ export default function LoginPage() {
             toast.success("Dev session — UI only (no backend)");
             navigate("/dashboard");
           }}
-          className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-ink-300 text-[13px] font-medium text-ink-600 transition-colors hover:bg-ink-50 hover:text-ink-950"
+          className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-300 text-[13px] font-medium text-neutral-600 transition-colors hover:border-[#0A0A0A] hover:bg-[#FFF1EA] hover:text-[#0A0A0A]"
         >
           <Wrench className="h-4 w-4" /> Enter as Dev (UI only · local)
         </motion.button>
       )}
 
-      <p className="mt-8 text-center text-[14px] text-ink-500">
+      <p className="mt-8 text-center text-[14px] text-neutral-600">
         New to Botlify?{" "}
         <Link to="/register" className={AUTH_LINK}>
           Create an account

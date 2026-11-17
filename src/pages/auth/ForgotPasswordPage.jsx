@@ -17,6 +17,8 @@ import {
   AUTH_LABEL,
   AUTH_SUB,
   AUTH_TITLE,
+  AUTH_DOT,
+  AUTH_ICON,
 } from "@/layouts/AuthLayout";
 
 /**
@@ -83,7 +85,7 @@ export default function ForgotPasswordPage() {
     <div>
       <Link
         to="/login"
-        className="group mb-8 inline-flex items-center gap-1.5 text-[13px] text-ink-500 transition-colors hover:text-ink-950"
+        className="group mb-8 inline-flex items-center gap-1.5 text-[13px] font-medium text-neutral-600 transition-colors hover:text-[#0A0A0A]"
       >
         <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
         Back to sign in
@@ -98,10 +100,12 @@ export default function ForgotPasswordPage() {
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+            <div className={AUTH_ICON}>
               <KeyRound className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </div>
-            <h1 className={AUTH_TITLE}>Reset your password</h1>
+            <h1 className={AUTH_TITLE}>
+              Reset your password<span className={AUTH_DOT}>.</span>
+            </h1>
             <p className={AUTH_SUB}>
               Enter your email and we'll send you a 4-digit reset code.
             </p>
@@ -138,13 +142,15 @@ export default function ForgotPasswordPage() {
             exit={{ opacity: 0, x: 12 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+            <div className={AUTH_ICON}>
               <MailCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </div>
-            <h1 className={AUTH_TITLE}>Check your email</h1>
+            <h1 className={AUTH_TITLE}>
+              Check your email<span className={AUTH_DOT}>.</span>
+            </h1>
             <p className={AUTH_SUB}>
               We emailed a 4-digit code to{" "}
-              <span className="break-all font-medium text-ink-950">{email}</span>.
+              <span className="break-all font-semibold text-[#0A0A0A]">{email}</span>.
               Enter it and choose a new password.
             </p>
             <form onSubmit={resetPassword} className="mt-8 space-y-5">
@@ -225,7 +231,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="button"
                 onClick={sendCode}
-                className="min-h-[40px] w-full text-[13px] text-ink-500 transition-colors hover:text-ink-950"
+                className="min-h-[40px] w-full text-[13px] font-medium text-neutral-600 transition-colors hover:text-[#0A0A0A]"
               >
                 Didn't get it? Resend code
               </button>

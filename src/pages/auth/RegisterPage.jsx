@@ -19,6 +19,7 @@ import {
   AUTH_LINK,
   AUTH_SUB,
   AUTH_TITLE,
+  AUTH_DOT,
   AuthDivider,
 } from "@/layouts/AuthLayout";
 
@@ -106,13 +107,19 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <h1 className={AUTH_TITLE}>Create your account</h1>
+      <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#FFF1EA] py-1 pl-1 pr-3 text-[12.5px] font-semibold text-[#0A0A0A]">
+        <span className="rounded-full bg-[#FF5A1F] px-2 py-0.5 text-[11px] font-bold">3-day</span>
+        Free trial · 0% OTA commission
+      </p>
+      <h1 className={AUTH_TITLE}>
+        Create your account<span className={AUTH_DOT}>.</span>
+      </h1>
       <p className={AUTH_SUB}>
         Connect your channels and let the AI answer your guests. Setup takes
         about 10 minutes.
       </p>
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        <div className="overflow-hidden rounded-lg">
+        <div className="overflow-hidden rounded-xl">
           <GoogleSignInButton label="Sign up with Google" />
         </div>
         <AuthDivider>or sign up with email</AuthDivider>
@@ -154,7 +161,7 @@ export default function RegisterPage() {
           </label>
           <input
             id="reg-email"
-            className={`${AUTH_FIELD} ${invitedEmail ? "cursor-not-allowed !bg-ink-50 text-ink-500" : ""}`}
+            className={`${AUTH_FIELD} ${invitedEmail ? "cursor-not-allowed !bg-neutral-100 !text-neutral-600" : ""}`}
             type="email"
             autoComplete="email"
             placeholder="you@hotel.com"
@@ -164,7 +171,7 @@ export default function RegisterPage() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
           {invitedEmail && (
-            <p className="mt-1.5 text-[12px] text-ink-500">
+            <p className="mt-1.5 text-[12px] text-neutral-600">
               This is the email your team invite was sent to.
             </p>
           )}
@@ -206,16 +213,19 @@ export default function RegisterPage() {
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           )}
         </button>
-        <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[12px] text-ink-500">
+        <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[12.5px] font-medium text-neutral-600">
           {["0% OTA commission", "Setup in ~10 minutes", "Cancel anytime"].map((t) => (
             <li key={t} className="inline-flex items-center gap-1.5">
-              <Check className="h-3 w-3 text-ink-950" strokeWidth={2.5} /> {t}
+              <span className="grid h-4 w-4 place-items-center rounded-full bg-[#0A0A0A]">
+                <Check className="h-2.5 w-2.5 text-[#FF5A1F]" strokeWidth={3.5} />
+              </span>{" "}
+              {t}
             </li>
           ))}
         </ul>
       </form>
 
-      <p className="mt-8 text-center text-[14px] text-ink-500">
+      <p className="mt-8 text-center text-[14px] text-neutral-600">
         Already have an account?{" "}
         <Link
           to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}

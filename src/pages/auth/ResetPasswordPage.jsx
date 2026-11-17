@@ -17,6 +17,8 @@ import {
   AUTH_LABEL,
   AUTH_SUB,
   AUTH_TITLE,
+  AUTH_DOT,
+  AUTH_ICON,
 } from "@/layouts/AuthLayout";
 
 export default function ResetPasswordPage() {
@@ -68,10 +70,12 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div>
-        <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600">
+        <div className="mb-6 grid h-12 w-12 place-items-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600">
           <Link2Off className="h-[18px] w-[18px]" strokeWidth={1.8} />
         </div>
-        <h1 className={AUTH_TITLE}>This link has expired</h1>
+        <h1 className={AUTH_TITLE}>
+          This link has expired<span className={AUTH_DOT}>.</span>
+        </h1>
         <p className={AUTH_SUB}>
           This password reset link is missing or invalid. Please request a new
           one.
@@ -88,10 +92,12 @@ export default function ResetPasswordPage() {
 
   return (
     <div>
-      <div className="mb-5 grid h-10 w-10 place-items-center rounded-lg border border-ink-200 bg-white text-ink-900 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+      <div className={AUTH_ICON}>
         <ShieldCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
       </div>
-      <h1 className={AUTH_TITLE}>Set a new password</h1>
+      <h1 className={AUTH_TITLE}>
+        Set a new password<span className={AUTH_DOT}>.</span>
+      </h1>
       <p className={AUTH_SUB}>Choose a strong password for your account.</p>
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div>
