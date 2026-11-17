@@ -12,10 +12,11 @@
  * fails. Re-registering with their real 6-digit PIN fixes it, and it's the most
  * common post-connect failure there is.
  *
- * AiSensy numbers (provider === "aisensy") don't go through that flow, so they
- * get a simple strip instead: the connected number, when the last guest
- * message arrived (lastWebhookAt from GET /channels/status) and the webhook URL
- * the hotel must add in AiSensy (whatsapp.webhookUrl). No PIN UI.
+ * WasenderAPI numbers (provider === "wasender") — and legacy AiSensy ones —
+ * don't go through that flow, so they get a simple strip instead: the
+ * connected number and when the last guest message arrived (lastWebhookAt from
+ * GET /channels/status). Until the first message arrives, a WasenderAPI number
+ * set up in paste mode also shows its webhook URL (whatsapp.webhookUrl). No PIN UI.
  */
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -101,8 +102,8 @@ function timeAgo(value) {
 }
 
 /**
- * The AiSensy webhook URL in a copy box, with the one instruction that goes
- * with it. Shared with WhatsAppConnectModal's success step.
+ * The WasenderAPI webhook URL in a copy box, with the one instruction that
+ * goes with it. Shared with WhatsAppConnectModal's paste-mode success step.
  */
 export function WebhookUrlBox({ url, compact = false }) {
   const [copied, setCopied] = useState(false);
@@ -123,8 +124,8 @@ export function WebhookUrlBox({ url, compact = false }) {
       }`}
     >
       <p className={`${compact ? "text-[11px]" : "text-xs"} text-ink-600 leading-relaxed`}>
-        In AiSensy → Developer Hub → Webhooks, add this URL and enable incoming
-        messages. Guest messages will then reach Botlify.
+        In WasenderAPI → your session → Webhook, paste this URL, set the same
+        webhook secret, and enable 'messages.received'.
       </p>
       <div className="mt-2 flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate rounded-lg bg-ink-900/[0.04] px-2.5 py-1.5 font-mono text-[11.5px] text-ink-800 select-all">
@@ -148,8 +149,8 @@ export function WebhookUrlBox({ url, compact = false }) {
   );
 }
 
-/** AiSensy: connected number, last message received, webhook URL. */
-function AiSensyStrip({ phoneNumber, lastWebhookAt, webhookUrl, webhookError }) {
+/** WasenderAPI (and legacy AiSensy): connected number + last message received. */
+function SessionStrip({ phoneNumber, lastWebhookAt, webhookUrl, webhookError }) {
   const last = timeAgo(lastWebhookAt);
   const waiting = !last;
   return (
@@ -161,7 +162,7 @@ function AiSensyStrip({ phoneNumber, lastWebhookAt, webhookUrl, webhookError }) 
           }`}
         />
         <span className="font-semibold text-ink-700">
-          {waiting ? "Waiting for the first message" : "Receiving messages"}
+          {waiting ? "Waiting for the first guest message" : "Receiving messages"}
         </span>
         {phoneNumber && (
           <>
@@ -172,10 +173,10 @@ function AiSensyStrip({ phoneNumber, lastWebhookAt, webhookUrl, webhookError }) 
       </div>
       <p className="text-xs text-ink-400 mt-0.5">
         {waiting
-          ? "Check the webhook is added in AiSensy."
+          ? "Your AI replies as soon as a guest writes to this number."
           : `Last guest message received ${last}`}
       </p>
-      {webhookUrl && (
+      {waiting && webhookUrl && (
         <div className="mt-2.5">
           <WebhookUrlBox url={webhookUrl} compact />
         </div>
@@ -191,12 +192,12 @@ export default function WhatsAppHealthStrip({
   lastWebhookAt,
   webhookUrl,
 }) {
-  if (provider === "aisensy") {
+  if (provider === "wasender" || provider === "aisensy") {
     return (
-      <AiSensyStrip
+      <SessionStrip
         phoneNumber={phoneNumber}
         lastWebhookAt={lastWebhookAt}
-        webhookUrl={webhookUrl}
+        webhookUrl={provider === "wasender" ? webhookUrl : null}
         webhookError={webhookError}
       />
     );

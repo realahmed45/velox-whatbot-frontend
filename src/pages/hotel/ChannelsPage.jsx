@@ -2,21 +2,22 @@
  * Channels — connect the messaging channel your AI concierge answers on.
  *
  * Two sections, in pitch order:
- *   1. Booking sites — Airbnb, Booking.com, Expedia. One connection syncs
+ *   1. Booking sites — Airbnb, Booking.com, Expedia, Trip.com. One connection syncs
  *      rooms/rates/availability AND brings guest messages into the inbox,
  *      where the AI answers them.
  *   2. WhatsApp — the one direct messaging channel hotels connect.
  *
  * Messenger and Telegram are kept in CHANNELS (and their connect code below)
  * so they can be switched back on, but only ACTIVE_CHANNEL_KEYS are shown.
- * WhatsApp connects through AiSensy (WhatsAppConnectModal: Project ID + API
- * password, then the webhook URL to add in AiSensy); Messenger uses the hosted /channels OAuth flow;
+ * WhatsApp connects through WasenderAPI (WhatsAppConnectModal: phone number →
+ * scan a QR code, or paste an existing session's API key); Messenger uses the hosted /channels OAuth flow;
  * Telegram pairs via a short code in a guided modal that polls until the link
  * completes.
  *
- * Zodomus (channel manager, the primary OTA provider) gets a "Connect a
- * booking site" card: pick the OTA, type the property/listing ID, done. The
- * card hides itself when the backend reports Zodomus isn't switched on (503).
+ * WuBook (WooDoo) is the channel manager: WubookConnectCard takes the hotel's
+ * WuBook property code and imports rooms + linked sites. The older Zodomus
+ * card is kept but only rendered while WuBook isn't configured (it also hides
+ * itself when the backend reports Zodomus isn't switched on).
  */
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,7 @@ import ChannelWall from "@/components/ChannelWall";
 import FacebookPagePicker from "@/components/FacebookPagePicker";
 import WhatsAppConnectModal from "@/components/WhatsAppConnectModal";
 import WhatsAppHealthStrip from "@/components/WhatsAppHealthStrip";
+import WubookConnectCard from "@/components/WubookConnectCard";
 import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import { CHANNEL_COUNT_PHRASE, OTA_CHANNELS } from "@/data/otaChannels";
 import { Magnetic, PulseDot, Reveal, Spotlight } from "@/components/fx";
@@ -295,8 +297,10 @@ export default function ChannelsPage({ hideHeader = false }) {
   const [loading, setLoading] = useState(true);
   const [statusMap, setStatusMap] = useState({});
   const [busy, setBusy] = useState(null);
-  // WhatsApp opens the AiSensy connect modal.
+  // WhatsApp opens the WasenderAPI connect modal.
   const [waOpen, setWaOpen] = useState(false);
+  // null until GET /hotel/wubook/status answers; true hides the Zodomus card.
+  const [wubookConfigured, setWubookConfigured] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -410,9 +414,11 @@ export default function ChannelsPage({ hideHeader = false }) {
     if (!ok) return;
     setBusy(key);
     try {
-      // AiSensy numbers have their own disconnect; everything else keeps the
-      // generic channel route.
-      if (key === "whatsapp" && provider === "aisensy") {
+      // WasenderAPI (and legacy AiSensy) numbers have their own disconnect;
+      // everything else keeps the generic channel route.
+      if (key === "whatsapp" && provider === "wasender") {
+        await api.delete("/channels/whatsapp/wasender");
+      } else if (key === "whatsapp" && provider === "aisensy") {
         await api.delete("/channels/whatsapp/aisensy");
       } else {
         await api.delete(`/channels/${key}`);
@@ -468,8 +474,8 @@ export default function ChannelsPage({ hideHeader = false }) {
                   Sync + AI replies in their inbox. One connection keeps your
                   rooms, rates and availability in step across{" "}
                   {CHANNEL_COUNT_PHRASE} — and your AI answers every guest
-                  message from Airbnb, Booking.com and Expedia right inside
-                  their inbox.
+                  message from Airbnb, Booking.com, Expedia and Trip.com right
+                  inside their inbox.
                 </p>
               </div>
             </div>
@@ -485,7 +491,12 @@ export default function ChannelsPage({ hideHeader = false }) {
           </div>
         </Reveal>
 
-        <ZodomusConnectCard onConnected={load} />
+        <WubookConnectCard
+          onConfigured={setWubookConfigured}
+          onConnected={load}
+        />
+
+        {wubookConfigured === false && <ZodomusConnectCard onConnected={load} />}
 
         <Reveal delay={0.06}>
           <div className="card mt-5 p-4 sm:p-5">
@@ -586,8 +597,8 @@ export default function ChannelsPage({ hideHeader = false }) {
                       </span>
                     </p>
                   )}
-                  {/* WhatsApp state: AiSensy shows number, last message and
-                      the webhook URL to add in AiSensy;
+                  {/* WhatsApp state: WasenderAPI shows number and last
+                      message received;
                       older numbers can read "connected" while every send fails
                       (Meta 133005), so they keep the health check + PIN fix. */}
                   {connected && ch.key === "whatsapp" && (
@@ -641,27 +652,14 @@ export default function ChannelsPage({ hideHeader = false }) {
       </p>
       </div>
 
-      {/* WhatsApp connect — AiSensy Project ID + API password */}
+      {/* WhatsApp connect — WasenderAPI QR scan (or paste an API key). The
+          modal shows the success toast itself; we just refresh. */}
       {waOpen && (
         <WhatsAppConnectModal
           from="channels"
           onClose={(result) => {
             setWaOpen(false);
-            if (result?.connected) {
-              if (result.webhookError) {
-                toast(
-                  "WhatsApp is connected, but we couldn't switch on live messages yet. Try disconnecting and connecting again.",
-                  { icon: "⚠️", duration: 7000 },
-                );
-              } else {
-                toast.success(
-                  result.phoneNumber
-                    ? `WhatsApp connected — ${result.phoneNumber}`
-                    : "WhatsApp connected",
-                );
-              }
-              load();
-            }
+            if (result?.connected) load();
           }}
         />
       )}

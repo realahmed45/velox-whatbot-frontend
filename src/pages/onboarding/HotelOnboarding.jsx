@@ -990,7 +990,7 @@ export default function HotelOnboarding() {
               </motion.button>
             )}
             <p className="text-xs text-ink-500 mt-4">
-              Your AI also answers guests inside your Airbnb, Booking.com and Expedia inboxes once those are connected.
+              Your AI also answers guests inside your Airbnb, Booking.com, Expedia and Trip.com inboxes once those are connected.
             </p>
           </Question>
         )}
@@ -1077,12 +1077,11 @@ export default function HotelOnboarding() {
       {waOpen && (
         <WhatsAppConnectModal
           from="onboarding"
+          defaultPhone={s.whatsapp}
           onClose={(result) => {
             setWaOpen(false);
-            if (result?.connected) {
-              setWaConnected(true);
-              toast.success("WhatsApp connected");
-            }
+            // The modal shows the "WhatsApp connected" toast itself.
+            if (result?.connected) setWaConnected(true);
           }}
         />
       )}
