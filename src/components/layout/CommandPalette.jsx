@@ -16,6 +16,10 @@ import {
   X,
   Search,
   CornerDownLeft,
+  MessageSquare,
+  GraduationCap,
+  FlaskConical,
+  Globe,
 } from "lucide-react";
 
 /**
@@ -37,7 +41,11 @@ const ENTRIES = [
     to: "/dashboard/calendar",
     group: "Go to",
   },
+  { label: "Messages", icon: MessageSquare, to: "/dashboard/inbox", group: "Go to" },
   { label: "Guests", icon: Users, to: "/dashboard/guests", group: "Go to" },
+  { label: "Train AI", icon: GraduationCap, to: "/dashboard/train", group: "Go to" },
+  { label: "Test AI", icon: FlaskConical, to: "/dashboard/test-ai", group: "Go to" },
+  { label: "Website", icon: Globe, to: "/dashboard/website", group: "Go to" },
   {
     label: "Settings",
     icon: SettingsIcon,
@@ -112,23 +120,19 @@ export default function CommandPalette({ open, onClose }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
         >
-          <div className="absolute inset-0 bg-night-950/40 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.96, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
             exit={{ opacity: 0, scale: 0.97, y: -6 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="glass-strong relative w-full max-w-xl overflow-hidden rounded-3xl"
+            className="popover relative w-full max-w-xl overflow-hidden rounded-3xl"
           >
-            <div aria-hidden className="pointer-events-none absolute inset-x-10 top-0 h-px bg-sunset opacity-70" />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -left-16 -top-20 h-40 w-40 rounded-full bg-sunset opacity-[0.12] blur-3xl"
-            />
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[#FF5A1F]" />
             <Command label="Command palette" className="relative w-full">
               <div className="flex items-center gap-2 border-b border-ink-900/[0.06] px-4">
-                <Search className="h-4 w-4 shrink-0 text-sunset-flame" strokeWidth={2} />
+                <Search className="h-4 w-4 shrink-0 text-[#FF5A1F]" strokeWidth={2} />
                 <Command.Input
                   autoFocus
                   placeholder="Type to search or jump to a page…"
@@ -155,19 +159,19 @@ export default function CommandPalette({ open, onClose }) {
                         key={to}
                         value={label}
                         onSelect={() => go(to)}
-                        className="group/item relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-700 transition-colors aria-selected:bg-white aria-selected:text-ink-900 aria-selected:shadow-[0_1px_2px_rgba(15,23,42,0.06),0_6px_16px_-8px_rgba(255,61,119,0.35),inset_0_1px_0_#fff]"
+                        className="group/item relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-700 transition-colors aria-selected:bg-[#0A0A0A] aria-selected:text-white"
                       >
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-900/[0.04] text-ink-500 transition-all duration-500 ease-spring group-aria-selected/item:-translate-y-0.5 group-aria-selected/item:rotate-[-8deg] group-aria-selected/item:bg-sunset-soft group-aria-selected/item:text-sunset-flame">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-900/[0.04] text-ink-500 transition-all duration-500 ease-spring group-aria-selected/item:-translate-y-0.5 group-aria-selected/item:rotate-[-8deg] group-aria-selected/item:bg-[#FF5A1F] group-aria-selected/item:text-white">
                           <Icon className="h-4 w-4" strokeWidth={1.8} />
                         </span>
                         <span className="flex-1">{label}</span>
-                        <CornerDownLeft className="h-3.5 w-3.5 text-ink-300 opacity-0 transition-opacity group-aria-selected/item:opacity-100" />
+                        <CornerDownLeft className="h-3.5 w-3.5 text-white/60 opacity-0 transition-opacity group-aria-selected/item:opacity-100" />
                       </Command.Item>
                     ))}
                   </Command.Group>
                 ))}
               </Command.List>
-              <div className="flex items-center justify-between border-t border-ink-900/[0.06] bg-white/40 px-4 py-2.5 text-[11px] text-ink-400">
+              <div className="flex items-center justify-between border-t border-ink-900/[0.06] bg-neutral-50 px-4 py-2.5 text-[11px] text-ink-400">
                 <span>
                   Tip: Press <kbd className={kbd}>↑↓</kbd> to navigate, <kbd className={kbd}>Enter</kbd> to select
                 </span>

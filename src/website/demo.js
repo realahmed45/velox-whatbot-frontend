@@ -114,6 +114,15 @@ export const DEMO_SITE = {
       amenities: ["Private pool", "Kitchenette", "Outdoor bath"], breakfastIncluded: true,
     },
   ],
+  services: [
+    { name: "Balinese massage", description: "Sixty unhurried minutes in your room or our garden pavilion, with warm coconut oil.", price: 28, priceUnit: "per hour", currency: "USD", icon: "HandHeart", image: STOCK.spa },
+    { name: "Airport pickup", description: "Your driver waits at arrivals with a cold towel and water. Send us your flight number.", price: 25, priceUnit: "per trip", currency: "USD", icon: "Plane", image: "" },
+    { name: "Island tours", description: "Rice terraces, temples and waterfalls with a local guide who knows the quiet times.", price: 45, priceUnit: "per person", currency: "USD", icon: "Map", image: STOCK.beach },
+    { name: "Sunrise yoga", description: "Morning flow on the yoga deck, all levels welcome. Mats and fresh coconut included.", price: 12, priceUnit: "per class", currency: "USD", icon: "Sparkles", image: "" },
+    { name: "Scooter rental", description: "Well-kept scooters with helmets, delivered to the door. The easiest way to explore.", price: 8, priceUnit: "per day", currency: "USD", icon: "Bike", image: "" },
+    { name: "Same-day laundry", description: "Washed, dried and folded — back in your room by evening.", price: 3, priceUnit: "per kg", currency: "USD", icon: "Shirt", image: "" },
+    { name: "Breakfast in the garden", description: "Tropical fruit, fresh pastries and eggs any way, served until 11:00.", price: null, priceUnit: "", currency: "USD", icon: "Coffee", image: STOCK.restaurant },
+  ],
 };
 
 /**
@@ -141,5 +150,6 @@ export function withDemoFallback(site) {
       testimonials: c.testimonials || [],
     },
     rooms: site.rooms?.length ? site.rooms : DEMO_SITE.rooms,
+    services: site.services?.length ? site.services : DEMO_SITE.services,
   };
 }

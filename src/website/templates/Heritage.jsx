@@ -5,9 +5,10 @@
  */
 import { ArrowRight, Mail, MapPin, Menu, Phone, X } from "lucide-react";
 import {
-  Img, Lightbox, MapFrame, MobileBookBar, PAGES, PageLink, Reveal, SIZES, WhatsAppFab, WhatsAppIcon,
-  directionsHref, formatPrice, paragraphs, useBookCta, useBooking, useBp, useEnquiry, useFonts, useFrameHeight,
-  useGallery, useLightbox, useMenu, useReviews, useRooms, useScrolled, useSite, useWhatsApp, year,
+  Counter, DrawLine, Img, KenBurns, Lightbox, MapFrame, MobileBookBar, PageLink, Reveal, RevealText, Rise, SIZES,
+  ScrollProgress, ServiceIcon, WhatsAppFab, WhatsAppIcon, directionsHref, formatPrice, paragraphs, servicePrice,
+  useActivePage, useBookCta, useBooking, useBp, useEnquiry, useFonts, useFrameHeight, useGallery, useLightbox, useMenu,
+  useNavPages, useReviews, useRooms, useScrolled, useServiceCta, useServices, useSite, useWhatsApp, year,
 } from "../shared";
 
 const CAPS = "'Cinzel', Georgia, serif";
@@ -25,7 +26,8 @@ const GRAIN =
 
 export default function Heritage() {
   useFonts("heritage", "family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500");
-  const { site, page } = useSite();
+  const { site } = useSite();
+  const page = useActivePage();
   const wine = site.accent || "#7a2b25";
   const gallery = useGallery();
   const lb = useLightbox();
@@ -35,6 +37,7 @@ export default function Heritage() {
       <main>
         {page === "home" && <Home wine={wine} onPhoto={lb.open} />}
         {page === "rooms" && <Rooms wine={wine} />}
+        {page === "services" && <ServicesPage wine={wine} />}
         {page === "gallery" && <Gallery wine={wine} onPhoto={lb.open} />}
         {page === "about" && <About wine={wine} />}
         {page === "contact" && <Contact wine={wine} />}
@@ -50,13 +53,13 @@ export default function Heritage() {
 function Ornament({ color = BRASS, className = "" }) {
   return (
     <div className={`flex items-center justify-center gap-3 ${className}`} aria-hidden="true">
-      <span className="h-px w-16" style={{ background: color }} />
-      <svg width="34" height="14" viewBox="0 0 34 14" fill="none" stroke={color} strokeWidth="1.1">
+      <DrawLine origin="right" className="h-px w-16" style={{ background: color }} />
+      <svg width="34" height="14" viewBox="0 0 34 14" fill="none" stroke={color} strokeWidth="1.1" className="shrink-0">
         <path d="M1 7h8M25 7h8" />
         <path d="M17 1l5 6-5 6-5-6 5-6z" />
         <circle cx="17" cy="7" r="1.4" fill={color} />
       </svg>
-      <span className="h-px w-16" style={{ background: color }} />
+      <DrawLine className="h-px w-16" style={{ background: color }} />
     </div>
   );
 }
@@ -85,22 +88,25 @@ function Heading({ children, size = 44, center, className = "" }) {
 
 function Button({ href, children, wine, ghost, ...rest }) {
   return (
-    <a href={href} {...rest} className="inline-flex items-center gap-2 px-7 py-3.5 text-[12px] uppercase tracking-[0.24em] transition-opacity hover:opacity-90" style={{ fontFamily: CAPS, background: ghost ? "transparent" : wine, color: ghost ? INK : PAPER, border: `1px solid ${ghost ? INK : wine}`, boxShadow: ghost ? "none" : `inset 0 0 0 3px ${wine}, inset 0 0 0 4px rgba(242,233,216,0.45)` }}>
+    <a href={href} {...rest} className="inline-flex items-center gap-2 px-7 py-3.5 text-[12px] uppercase tracking-[0.24em] transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.98]" style={{ fontFamily: CAPS, background: ghost ? "transparent" : wine, color: ghost ? INK : PAPER, border: `1px solid ${ghost ? INK : wine}`, boxShadow: ghost ? "none" : `inset 0 0 0 3px ${wine}, inset 0 0 0 4px rgba(242,233,216,0.45)` }}>
       {children}
     </a>
   );
 }
 
 function Nav({ wine }) {
-  const { site, page } = useSite();
-  const { md } = useBp();
+  const { site } = useSite();
+  const page = useActivePage();
+  const pages = useNavPages();
+  const { md: mdBp, lg } = useBp();
+  const md = pages.length > 5 ? lg : mdBp;
   const scrolled = useScrolled(80);
   const [open, setOpen] = useMenu();
   const c = site.content.contact || {};
   const cta = useBookCta();
   return (
     <>
-      <header className="fixed left-0 right-0 top-0 z-40 transition-shadow" style={{ backgroundColor: PAPER, backgroundImage: GRAIN, boxShadow: scrolled ? "0 6px 24px -14px rgba(42,28,19,0.5)" : "none" }}>
+      <header className="fixed left-0 right-0 top-0 z-40" style={{ backgroundColor: scrolled ? "rgba(242,233,216,0.86)" : PAPER, backgroundImage: GRAIN, backdropFilter: scrolled ? "blur(12px) saturate(130%)" : undefined, WebkitBackdropFilter: scrolled ? "blur(12px) saturate(130%)" : undefined, boxShadow: scrolled ? "0 6px 24px -14px rgba(42,28,19,0.5)" : "none" }}>
         {md && !scrolled && (
           <div className="text-center text-[13px] italic" style={{ background: wine, color: "rgba(242,233,216,0.85)", padding: "6px 0" }}>
             {[site.content.location?.address, c.phone].filter(Boolean).join("  ·  ") || `Welcome to ${site.hotel.name}`}
@@ -114,16 +120,19 @@ function Nav({ wine }) {
                 <span className="text-[24px] uppercase tracking-[0.2em]" style={{ fontFamily: CAPS }}>{site.hotel.name}</span>
               </PageLink>
               <nav className="mt-3 flex items-center gap-2">
-                {PAGES.map((p, i) => (
+                {pages.map((p, i) => (
                   <span key={p.id} className="flex items-center gap-2">
                     {i > 0 && <span style={{ color: BRASS }} aria-hidden="true">·</span>}
-                    <PageLink page={p.id} className="px-2 text-[12px] uppercase tracking-[0.24em] transition-opacity hover:opacity-60" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>{p.label}</PageLink>
+                    <PageLink page={p.id} className="group relative px-2 py-1 text-[12px] uppercase tracking-[0.22em]" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>
+                      {p.label}
+                      <span aria-hidden="true" className={`absolute bottom-0 left-2 right-2 h-px origin-center transition-transform duration-500 ${page === p.id ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} style={{ background: BRASS }} />
+                    </PageLink>
                   </span>
                 ))}
                 {cta && (
                   <>
                     <span style={{ color: BRASS }} aria-hidden="true">·</span>
-                    <a href={cta.href} target={cta.target} rel={cta.rel} className="ml-2 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] transition-opacity hover:opacity-90" style={{ fontFamily: CAPS, background: wine, color: PAPER }}>Reserve</a>
+                    <a href={cta.href} target={cta.target} rel={cta.rel} className="ml-2 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] transition-transform duration-300 hover:-translate-y-0.5" style={{ fontFamily: CAPS, background: wine, color: PAPER }}>Reserve</a>
                   </>
                 )}
               </nav>
@@ -135,11 +144,12 @@ function Nav({ wine }) {
             </div>
           )}
         </div>
+        {scrolled && <ScrollProgress color={wine} height={2} style={{ opacity: 0.7 }} />}
       </header>
       {open && !md && (
-        <div className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-5" style={{ backgroundColor: PAPER, backgroundImage: GRAIN }}>
+        <div className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-5 overflow-y-auto py-20" style={{ backgroundColor: PAPER, backgroundImage: GRAIN }}>
           <Crest wine={wine} size={64} />
-          {PAGES.map((p, i) => (
+          {pages.map((p, i) => (
             <Reveal key={p.id} delay={i * 0.05} y={10}>
               <PageLink page={p.id} className="text-2xl uppercase tracking-[0.2em]" style={{ fontFamily: CAPS, color: page === p.id ? wine : INK }}>{p.label}</PageLink>
             </Reveal>
@@ -152,11 +162,12 @@ function Nav({ wine }) {
   );
 }
 
-function Arch({ src, alt = "", className = "", ratio = "3/4", sizes = SIZES.half, priority = false }) {
+function Arch({ src, alt = "", className = "", ratio = "3/4", sizes = SIZES.half, priority = false, kenBurns = false }) {
+  const img = <Img src={src} alt={alt} sizes={sizes} priority={priority} fallback="#e3d3b4" className="w-full object-cover" style={{ aspectRatio: ratio }} />;
   return (
     <div className={`relative p-2 ${className}`} style={{ border: `1px solid ${BRASS}`, borderRadius: "999px 999px 4px 4px" }}>
-      <div className="overflow-hidden" style={{ borderRadius: "999px 999px 2px 2px" }}>
-        <Img src={src} alt={alt} sizes={sizes} priority={priority} fallback="#e3d3b4" className="w-full object-cover transition-transform duration-[1200ms] hover:scale-105" style={{ aspectRatio: ratio }} />
+      <div className="bs-zoom" style={{ borderRadius: "999px 999px 2px 2px", transform: "translateZ(0)" }}>
+        {kenBurns ? <KenBurns from={1.14} duration={9}>{img}</KenBurns> : img}
       </div>
     </div>
   );
@@ -177,16 +188,24 @@ function Home({ wine, onPhoto }) {
     <>
       <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: md ? 170 : 96 }}>
         <div className={md ? "grid grid-cols-12 items-center gap-12" : "space-y-10"} style={{ minHeight: md ? h - 170 : undefined }}>
-          <Reveal className={md ? "col-span-6" : "text-center"}>
-            <Caps>{[site.hotel.typeLabel, site.hotel.city].filter(Boolean).join(" · ") || "Welcome"}</Caps>
-            <h1 className="mt-6 font-normal uppercase leading-[1.05] tracking-[0.04em]" style={{ fontFamily: CAPS, fontSize: lg ? 72 : md ? 58 : 34 }}>{c.hero?.title || site.hotel.name}</h1>
+          <div className={md ? "col-span-6" : "text-center"}>
+            <Rise delay={0.1}><Caps>{[site.hotel.typeLabel, site.hotel.city].filter(Boolean).join(" · ") || "Welcome"}</Caps></Rise>
+            <RevealText
+              text={c.hero?.title || site.hotel.name}
+              className="mt-6 font-normal uppercase leading-[1.08] tracking-[0.04em]"
+              style={{ fontFamily: CAPS, fontSize: lg ? 72 : md ? 58 : 33 }}
+              delay={0.2}
+              stagger={0.1}
+              duration={1.1}
+            />
             <Ornament className={`mt-6 ${md ? "justify-start" : ""}`} />
-            {c.hero?.subtitle && <p className="mt-6 text-[22px] italic leading-snug" style={{ color: MUTED }}>{c.hero.subtitle}</p>}
-            <CtaButtons wine={wine} className={`mt-10 ${md ? "" : "justify-center"}`} rooms={rooms.length > 0} />
-          </Reveal>
-          <Reveal delay={0.1} className={md ? "col-span-6" : ""}>
-            <Arch src={c.hero?.image} alt={site.hotel.name} ratio={md ? "4/5" : "3/4"} sizes={SIZES.half} priority />
-          </Reveal>
+            {c.hero?.subtitle && <Rise delay={0.7} as="p" className="mt-6 text-[22px] italic leading-snug" style={{ color: MUTED }}>{c.hero.subtitle}</Rise>}
+            <Rise delay={0.85}><CtaButtons wine={wine} className={`mt-10 ${md ? "" : "justify-center"}`} rooms={rooms.length > 0} /></Rise>
+            <HeroFacts wine={wine} center={!md} />
+          </div>
+          <Rise delay={0.2} y={30} className={md ? "col-span-6" : ""}>
+            <Arch src={c.hero?.image} alt={site.hotel.name} ratio={md ? "4/5" : "3/4"} sizes={SIZES.half} priority kenBurns />
+          </Rise>
         </div>
       </section>
 
@@ -215,6 +234,8 @@ function Home({ wine, onPhoto }) {
         </section>
       )}
 
+      <Services wine={wine} limit={6} />
+
       {c.amenities?.length > 0 && (
         <section style={{ marginTop: md ? 130 : 72, background: wine, color: PAPER, backgroundImage: GRAIN }}>
           <div className="mx-auto max-w-5xl px-6 text-center" style={{ paddingTop: md ? 100 : 60, paddingBottom: md ? 100 : 60 }}>
@@ -235,8 +256,8 @@ function Home({ wine, onPhoto }) {
           <Reveal className="text-center"><Caps>Gallery</Caps><Heading center className="mt-4">Scenes from the house</Heading><Ornament className="mt-5" /></Reveal>
           <div className={`mx-auto mt-14 grid ${md ? "gap-8" : "gap-4"} ${shown.length === 1 ? "max-w-md grid-cols-1" : md && shown.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
             {shown.map((g, i) => (
-              <Reveal key={g.url + i} delay={(i % 3) * 0.06} style={{ transform: `rotate(${[-1.2, 0.8, -0.6, 1, -0.9, 0.5][i % 6]}deg)` }}>
-                <button type="button" onClick={() => onPhoto(i)} aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`} className={`block w-full bg-white text-center shadow-[0_10px_30px_-12px_rgba(42,28,19,0.45)] transition-transform hover:-translate-y-1 ${md ? "p-3 pb-4" : "p-2 pb-3"}`}>
+              <Reveal key={g.url + i} delay={(i % 3) * 0.06}>
+                <button type="button" onClick={() => onPhoto(i)} aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`} className={`bs-tilt block w-full bg-white text-center shadow-[0_10px_30px_-12px_rgba(42,28,19,0.45)] ${md ? "p-3 pb-4" : "p-2 pb-3"}`} style={{ "--bs-r": `${[-1.2, 0.8, -0.6, 1, -0.9, 0.5][i % 6]}deg` }}>
                   <Img src={g.url} alt={g.caption || ""} sizes={SIZES.thumb} className="aspect-square w-full object-cover" />
                   <span className={`mt-3 block truncate italic ${md ? "text-[15px]" : "text-[13px]"}`} style={{ color: MUTED }}>{g.caption || site.hotel.name}</span>
                 </button>
@@ -267,6 +288,99 @@ function Home({ wine, onPhoto }) {
   );
 }
 
+/** Arrival, stars and rooms — set like an engraved plaque under the hero copy. */
+function HeroFacts({ wine, center }) {
+  const { site } = useSite();
+  const rooms = useRooms();
+  const stars = Math.min(5, Number(site.hotel.starRating) || 0);
+  const items = [
+    stars > 0 && { k: "s", value: <><Counter value={stars} duration={1.2} /><span style={{ color: BRASS }}> ★</span></>, label: "Stars" },
+    rooms.length > 0 && { k: "r", value: <Counter value={rooms.length} duration={1.2} />, label: rooms.length === 1 ? "Chamber" : "Chambers" },
+    site.hotel.checkIn && { k: "c", value: site.hotel.checkIn, label: "Arrival" },
+  ].filter(Boolean);
+  if (!items.length) return null;
+  return (
+    <Rise delay={1} className={`mt-10 flex ${center ? "justify-center" : ""}`}>
+      <div className="inline-flex" style={{ borderTop: `1px solid ${LINE}`, borderBottom: `1px solid ${LINE}` }}>
+        {items.map((x, i) => (
+          <div key={x.k} className="px-5 py-3 text-center" style={{ borderLeft: i ? `1px solid ${LINE}` : "none" }}>
+            <p className="text-[26px] leading-none" style={{ fontFamily: CAPS, color: wine }}>{x.value}</p>
+            <p className="mt-1.5 text-[10px] uppercase tracking-[0.26em]" style={{ fontFamily: CAPS, color: BRASS_TEXT }}>{x.label}</p>
+          </div>
+        ))}
+      </div>
+    </Rise>
+  );
+}
+
+/** Services, set like a menu card — dotted leaders run to the price. Hidden when empty. */
+function Services({ wine, limit, page = false }) {
+  const { md } = useBp();
+  const all = useServices();
+  if (!all.length) return null;
+  const list = limit ? all.slice(0, limit) : all;
+  return (
+    <section className="mx-auto max-w-6xl px-6" style={{ paddingTop: page ? (md ? 72 : 44) : md ? 130 : 72 }}>
+      {!page && <Reveal className="text-center"><Caps>At your request</Caps><Heading center className="mt-4">Services of the house</Heading><Ornament className="mt-5" /></Reveal>}
+      <div
+        className={`mx-auto ${page ? "" : "mt-14"} max-w-5xl`}
+        style={{ border: `1px solid ${BRASS}`, outline: `1px solid ${BRASS}`, outlineOffset: 6, padding: md ? "48px 56px" : "28px 20px", background: "rgba(255,255,255,0.32)" }}
+      >
+        <div className={`grid ${md ? "grid-cols-2 gap-x-14" : "grid-cols-1"}`}>
+          {list.map((s, i) => <ServiceItem key={s.name + i} service={s} wine={wine} delay={(i % 2) * 0.06} />)}
+        </div>
+        {all.length > list.length && (
+          <div className="mt-8 text-center"><PageLink page="services" className="italic underline underline-offset-4" style={{ color: wine }}>All {all.length} services of the house</PageLink></div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ServiceItem({ service, wine, delay }) {
+  const cta = useServiceCta(service.name);
+  const price = servicePrice(service);
+  return (
+    <Reveal delay={delay} y={12} className="group flex gap-4 py-5" style={{ borderBottom: `1px dotted ${LINE}` }}>
+      <span className="mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:rotate-[8deg]" style={{ border: `1px solid ${BRASS}`, boxShadow: `inset 0 0 0 3px rgba(242,233,216,0.9), inset 0 0 0 4px ${LINE}`, color: wine }}>
+        <ServiceIcon icon={service.icon} name={service.name} className="h-[18px] w-[18px]" strokeWidth={1.4} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-3">
+          <h3 className="shrink-0 text-[15px] uppercase tracking-[0.12em]" style={{ fontFamily: CAPS, maxWidth: "70%" }}>{service.name}</h3>
+          <span aria-hidden="true" className="min-w-[24px] flex-1 translate-y-[-4px]" style={{ borderBottom: `1px dotted ${BRASS}` }} />
+          <span className="shrink-0 text-right italic" style={{ color: price ? wine : MUTED }}>{price ? price.amount : "Ask us"}</span>
+        </div>
+        {(service.description || price?.unit) && (
+          <p className="mt-1 text-[16px] italic leading-snug" style={{ color: MUTED }}>
+            {service.description}
+            {price?.unit && <span style={{ color: BRASS_TEXT }}>{service.description ? " — " : ""}from {price.amount} {price.unit}</span>}
+          </p>
+        )}
+        {cta && (
+          <a href={cta.href} target={cta.target} rel={cta.rel} className="mt-2 inline-flex items-center gap-1.5 py-1 text-[11px] uppercase tracking-[0.22em]" style={{ fontFamily: CAPS, color: wine }} aria-label={`Arrange ${service.name}`}>
+            {cta.kind === "whatsapp" && <WhatsAppIcon size={13} />} Arrange <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          </a>
+        )}
+      </div>
+    </Reveal>
+  );
+}
+
+function ServicesPage({ wine }) {
+  const { site } = useSite();
+  return (
+    <>
+      <PageHead caps={site.hotel.name} title="Services" wine={wine} />
+      <Reveal className="mx-auto max-w-2xl px-6 pt-10 text-center">
+        <p className="text-[22px] italic leading-snug" style={{ color: MUTED }}>Whatever you wish for during your stay, simply write to us — the house will see to it.</p>
+      </Reveal>
+      <Services wine={wine} page />
+      <Cta wine={wine} />
+    </>
+  );
+}
+
 function RoomCard({ room, wine, delay }) {
   const cta = useBookCta(room.name);
   const price = formatPrice(room.price, room.currency);
@@ -275,7 +389,7 @@ function RoomCard({ room, wine, delay }) {
     room.bedConfig,
   ].filter(Boolean).join(" · ");
   return (
-    <Reveal delay={delay} className="text-center">
+    <Reveal delay={delay} className="bs-hover text-center">
       <Arch src={room.image} alt={room.name} ratio="4/5" sizes={SIZES.third} />
       <h3 className="mt-6 text-[22px] uppercase tracking-[0.1em]" style={{ fontFamily: CAPS }}>{room.name}</h3>
       {meta && <p className="mt-1 italic" style={{ color: MUTED }}>{meta}</p>}
@@ -328,7 +442,7 @@ function PageHead({ caps, title, wine }) {
       <Reveal>
         <Crest wine={wine} />
         <Caps className="mt-6">{caps}</Caps>
-        <h1 className="mt-4 font-normal uppercase tracking-[0.06em]" style={{ fontFamily: CAPS, fontSize: md ? 64 : 38 }}>{title}</h1>
+        <RevealText text={title} className="mt-4 font-normal uppercase tracking-[0.06em]" style={{ fontFamily: CAPS, fontSize: md ? 64 : 36 }} delay={0.15} stagger={0.1} />
         <Ornament className="mt-6" />
       </Reveal>
     </section>
@@ -498,6 +612,7 @@ function Contact({ wine }) {
 
 function Footer({ wine }) {
   const { site } = useSite();
+  const pages = useNavPages();
   const { md } = useBp();
   return (
     <footer className="text-center" style={{ marginTop: md ? 130 : 72, background: INK, color: "rgba(242,233,216,0.8)" }}>
@@ -507,7 +622,7 @@ function Footer({ wine }) {
         {site.content.location?.address && <p className="mt-2 italic">{site.content.location.address}</p>}
         {(site.content.contact?.phone || site.content.contact?.email) && <p className="mt-1 italic">{[site.content.contact?.phone, site.content.contact?.email].filter(Boolean).join("  ·  ")}</p>}
         <nav className="mt-8 flex flex-wrap justify-center gap-6">
-          {PAGES.map((p) => <PageLink key={p.id} page={p.id} className="text-[12px] uppercase tracking-[0.24em] hover:text-white" style={{ fontFamily: CAPS }}>{p.label}</PageLink>)}
+          {pages.map((p) => <PageLink key={p.id} page={p.id} className="text-[12px] uppercase tracking-[0.24em] transition-colors hover:text-white" style={{ fontFamily: CAPS }}>{p.label}</PageLink>)}
         </nav>
         <Ornament color="#e3c48e" className="mt-10" />
         <p className="mt-6 text-sm italic" style={{ color: "rgba(242,233,216,0.65)" }}>© {year()} {site.hotel.name} · Website by <a href="https://botlify.site" className="underline" style={{ color: wine === INK ? "#fff" : "rgba(242,233,216,0.7)" }}>Botlify</a></p>

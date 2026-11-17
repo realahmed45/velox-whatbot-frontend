@@ -7,10 +7,10 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, GraduationCap, Loader2, Send, Sparkles, Users } from "lucide-react";
+import { ArrowUp, Bot, GraduationCap, Loader2, RotateCcw, Sparkles, Users } from "lucide-react";
 import api from "@/services/api";
-import { PulseDot } from "@/components/fx";
-import { SUGGESTED_TESTS, errMsg, hop, spring } from "./shared";
+import { SUGGESTED_TESTS, errMsg } from "./shared";
+import { btnGhost, panel } from "./ui";
 
 export default function TestChat({ messages, setMessages, onTeach, className = "" }) {
   const [text, setText] = useState("");
@@ -59,53 +59,47 @@ export default function TestChat({ messages, setMessages, onTeach, className = "
     }
   };
 
+  const used = new Set(messages.filter((m) => m.role === "user").map((m) => m.content));
+  const moreIdeas = SUGGESTED_TESTS.filter((q) => !used.has(q)).slice(0, 3);
+
   return (
-    <div className={`card overflow-hidden flex flex-col ${className}`}>
-      <div className="group px-4 sm:px-5 py-3.5 border-b border-ink-900/[0.06] bg-white/80 flex items-center gap-3">
-        <div className={`relative grid h-10 w-10 place-items-center rounded-xl bg-sunset text-white shadow-[0_8px_18px_-8px_rgba(255,61,119,0.6)] ${hop}`}>
-          <Bot className="w-5 h-5" strokeWidth={1.8} />
-          <span className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-white p-[2px]">
-            <PulseDot color="bg-emerald-500" />
-          </span>
+    <div className={`${panel} flex flex-col overflow-hidden ${className}`}>
+      <div className="flex items-center gap-3 border-b border-neutral-100 px-4 py-3 sm:px-5">
+        <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F]">
+          <Bot className="h-5 w-5" strokeWidth={1.9} />
+          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-display font-semibold text-ink-900">Your AI concierge</p>
-          <p className="text-xs text-ink-400">Test mode · replies stay on this screen</p>
+          <p className="text-[15px] font-semibold text-[#0A0A0A]">Your AI concierge</p>
+          <p className="text-[12px] text-neutral-400">Test mode · replies stay on this screen</p>
         </div>
         {messages.length > 0 && (
-          <button onClick={() => setMessages([])} className="btn-ghost px-2.5 py-1.5 text-xs text-ink-500">
+          <button onClick={() => setMessages([])} className={btnGhost}>
+            <RotateCcw className="h-3.5 w-3.5" />
             Start over
           </button>
         )}
       </div>
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4 bg-gradient-to-b from-ink-900/[0.015] to-ink-900/[0.035]"
-      >
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto bg-neutral-50/60 px-4 py-6 sm:px-6">
         {messages.length === 0 && (
-          <div className="text-center pt-6 sm:pt-12 max-w-lg mx-auto">
-            <div className="relative mx-auto grid h-14 w-14 place-items-center">
-              <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-25 blur-2xl" />
-              <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
-                <Sparkles className="w-6 h-6" strokeWidth={1.8} />
-              </span>
-            </div>
-            <p className="font-display text-lg font-semibold tracking-[-0.01em] text-ink-900 mt-4">
+          <div className="mx-auto max-w-lg pt-4 text-center sm:pt-10">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#FF5A1F] text-[#0A0A0A] shadow-[0_3px_0_0_#0A0A0A]">
+              <Sparkles className="h-6 w-6" strokeWidth={1.9} />
+            </span>
+            <p className="mt-5 text-[19px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
               Ask anything a guest might ask
             </p>
-            <p className="text-sm text-ink-500 mt-1">Tap a question to start, or type your own below.</p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <p className="mt-1 text-[14px] text-neutral-500">Tap a question to start, or type your own below.</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
               {SUGGESTED_TESTS.map((q, i) => (
                 <motion.button
                   key={q}
                   onClick={() => ask(q)}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ ...spring, delay: i * 0.04 }}
-                  className="min-h-[38px] text-sm font-medium text-ink-700 bg-white/80 ring-1 ring-ink-900/[0.08] shadow-[inset_0_1px_0_#fff] hover:bg-white hover:text-ink-900 hover:ring-sunset-flame/35 rounded-full px-3.5 py-1.5 transition-[color,background-color,box-shadow]"
+                  transition={{ duration: 0.3, delay: i * 0.04 }}
+                  className="min-h-[40px] rounded-full border border-neutral-200 bg-white px-4 py-2 text-[14px] font-medium text-neutral-700 transition-colors hover:border-[#FF5A1F] hover:text-[#0A0A0A] active:scale-[0.97]"
                 >
                   {q}
                 </motion.button>
@@ -117,47 +111,46 @@ export default function TestChat({ messages, setMessages, onTeach, className = "
         {messages.map((m, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 10, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={spring}
-            style={{ originX: m.role === "user" ? 1 : 0 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
           >
-            <div className="max-w-[85%] sm:max-w-[75%]">
+            <div className="max-w-[85%] sm:max-w-[72%]">
               <div
-                className={`rounded-2xl px-4 py-2.5 text-[15px] whitespace-pre-line leading-relaxed ${
+                className={`whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed ${
                   m.role === "user"
-                    ? "bg-sunset text-white rounded-br-md shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_20px_-10px_rgba(255,61,119,0.55)]"
+                    ? "rounded-br-md bg-[#0A0A0A] text-white"
                     : m.error
-                      ? "bg-rose-50 text-rose-800 ring-1 ring-rose-500/15 rounded-bl-md"
-                      : "bg-white/90 text-ink-800 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff,0_4px_14px_-10px_rgba(15,23,42,0.3)] rounded-bl-md"
+                      ? "rounded-bl-md border border-rose-200 bg-rose-50 text-rose-800"
+                      : "rounded-bl-md border border-neutral-200 bg-white text-[#0A0A0A]"
                 }`}
               >
                 {m.content}
               </div>
               {m.role === "assistant" && !m.error && (
-                <div className="mt-1.5 ml-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="ml-1 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                   {m.fromTraining ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                      <GraduationCap className="w-3.5 h-3.5" />
+                    <span className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-700">
+                      <GraduationCap className="h-3.5 w-3.5" />
                       From your training
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-500">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <span className="inline-flex items-center gap-1 text-[12px] font-medium text-neutral-500">
+                      <Sparkles className="h-3.5 w-3.5" />
                       Written by the AI from your hotel's info
                     </span>
                   )}
                   {m.escalate && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">
-                      <Users className="w-3.5 h-3.5" />
+                    <span className="inline-flex items-center gap-1 text-[12px] font-medium text-amber-700">
+                      <Users className="h-3.5 w-3.5" />
                       Would alert your team
                     </span>
                   )}
                   {!m.fromTraining && m.question && onTeach && (
                     <button
                       onClick={() => onTeach(m.question)}
-                      className="text-[11px] font-semibold text-sunset-flame hover:text-sunset-magenta underline-offset-2 hover:underline transition-colors"
+                      className="text-[12px] font-semibold text-[#FF5A1F] underline-offset-2 transition-colors hover:text-[#E84A12] hover:underline"
                     >
                       Teach it the exact answer
                     </button>
@@ -170,11 +163,11 @@ export default function TestChat({ messages, setMessages, onTeach, className = "
 
         {thinking && (
           <div className="flex justify-start">
-            <div className="bg-white/90 ring-1 ring-ink-900/[0.07] rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+            <div className="flex gap-1 rounded-2xl rounded-bl-md border border-neutral-200 bg-white px-4 py-3.5">
               {[0, 1, 2].map((d) => (
                 <motion.span
                   key={d}
-                  className="w-1.5 h-1.5 rounded-full bg-sunset"
+                  className="h-1.5 w-1.5 rounded-full bg-[#FF5A1F]"
                   animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
                   transition={{ duration: 1, repeat: Infinity, delay: d * 0.15 }}
                 />
@@ -184,31 +177,46 @@ export default function TestChat({ messages, setMessages, onTeach, className = "
         )}
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          ask();
-        }}
-        className="p-3 sm:p-4 border-t border-ink-900/[0.06] bg-white/80 flex items-center gap-2"
-      >
-        <input
-          ref={inputRef}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message as a guest…"
-          className="input flex-1 min-h-[44px]"
-          maxLength={2000}
-          aria-label="Test question"
-        />
-        <button
-          type="submit"
-          disabled={!text.trim() || thinking}
-          className="btn-primary group h-11 w-11 shrink-0 !p-0 justify-center disabled:opacity-50"
-          aria-label="Send"
+      <div className="border-t border-neutral-100 bg-white p-3 sm:p-4">
+        {messages.length > 0 && moreIdeas.length > 0 && !thinking && (
+          <div className="no-scrollbar -mx-1 mb-2.5 flex gap-1.5 overflow-x-auto px-1">
+            {moreIdeas.map((q) => (
+              <button
+                key={q}
+                onClick={() => ask(q)}
+                className="min-h-[34px] shrink-0 whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 text-[13px] text-neutral-600 transition-colors hover:border-[#FF5A1F] hover:text-[#0A0A0A]"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            ask();
+          }}
+          className="flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-1.5 pl-4 transition-[border-color,box-shadow] focus-within:border-[#FF5A1F] focus-within:ring-4 focus-within:ring-[#FF5A1F]/15"
         >
-          {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:rotate-12" />}
-        </button>
-      </form>
+          <input
+            ref={inputRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message as a guest…"
+            className="min-h-[40px] flex-1 bg-transparent text-[15px] text-[#0A0A0A] placeholder:text-neutral-400 focus:outline-none"
+            maxLength={2000}
+            aria-label="Test question"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || thinking}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FF5A1F] text-[#0A0A0A] transition-[transform,background-color,opacity] hover:bg-[#FF6B33] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Send"
+          >
+            {thinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.4} />}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

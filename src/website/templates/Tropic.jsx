@@ -7,9 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, BedDouble, Clock, Mail, MapPin, Menu, Phone, Sparkles, Users, X } from "lucide-react";
 import {
-  Img, Lightbox, MapFrame, MobileBookBar, PAGES, PageLink, Reveal, SIZES, WhatsAppFab, WhatsAppIcon,
-  directionsHref, formatPrice, paragraphs, useBookCta, useBooking, useBp, useCheapestRoom, useEnquiry, useFonts, useFrameHeight,
-  useGallery, useLightbox, useMenu, useReviews, useRooms, useSite, useWhatsApp, year,
+  Counter, Img, KenBurns, Lightbox, MapFrame, MobileBookBar, PageLink, Reveal, RevealText, Rise, SIZES, ScrollProgress,
+  ServiceIcon, WhatsAppFab, WhatsAppIcon, directionsHref, formatPrice, paragraphs, servicePrice, useActivePage, useBookCta,
+  useBooking, useBp, useCalm, useCheapestRoom, useEnquiry, useFonts, useFrameHeight, useGallery, useLightbox, useMenu,
+  useNavPages, useReviews, useRooms, useScrolled, useServiceCta, useServices, useSite, useWhatsApp, year,
 } from "../shared";
 
 const DISPLAY = "'Fraunces', Georgia, serif";
@@ -21,7 +22,8 @@ const LIME = "#d6f06a";
 
 export default function Tropic() {
   useFonts("tropic", "family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Outfit:wght@300;400;500;600;700");
-  const { site, page } = useSite();
+  const { site } = useSite();
+  const page = useActivePage();
   const green = site.accent || "#1c4a35";
   const gallery = useGallery();
   const lb = useLightbox();
@@ -31,6 +33,7 @@ export default function Tropic() {
       <main>
         {page === "home" && <Home green={green} onPhoto={lb.open} />}
         {page === "rooms" && <Rooms green={green} />}
+        {page === "services" && <ServicesPage green={green} />}
         {page === "gallery" && <Gallery green={green} onPhoto={lb.open} />}
         {page === "about" && <About green={green} />}
         {page === "contact" && <Contact green={green} />}
@@ -60,7 +63,7 @@ const Tag = ({ children, bg = "#fff", color = INK }) => (
 
 function Pill({ href, children, bg, color, ...rest }) {
   return (
-    <a href={href} {...rest} className="inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px] font-semibold shadow-[0_8px_24px_-14px_rgba(0,0,0,0.5)] transition-transform hover:-translate-y-0.5" style={{ background: bg, color }}>
+    <a href={href} {...rest} className="inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px] font-semibold shadow-[0_8px_24px_-14px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.97]" style={{ background: bg, color }}>
       {children}
     </a>
   );
@@ -88,36 +91,45 @@ function CtaPills({ green, onDark = true }) {
 }
 
 function Nav({ green }) {
-  const { site, page } = useSite();
-  const { md } = useBp();
+  const { site } = useSite();
+  const page = useActivePage();
+  const pages = useNavPages();
+  const { md, lg } = useBp();
+  const wide = pages.length > 5 ? lg : md;
+  const scrolled = useScrolled(30);
   const [open, setOpen] = useMenu();
   const cta = useBookCta();
   return (
     <>
       <header className="fixed left-0 right-0 top-4 z-40 px-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full bg-white/90 py-2 pl-6 pr-2 shadow-[0_8px_30px_-12px_rgba(16,38,28,0.35)] backdrop-blur">
+        <div
+          className="relative mx-auto flex max-w-6xl items-center justify-between overflow-hidden rounded-full py-2 pl-6 pr-2"
+          style={{ background: scrolled ? "rgba(255,255,255,0.86)" : "rgba(255,255,255,0.94)", backdropFilter: "blur(14px) saturate(150%)", WebkitBackdropFilter: "blur(14px) saturate(150%)", boxShadow: "0 10px 34px -14px rgba(16,38,28,0.4), inset 0 0 0 1px rgba(255,255,255,0.6)" }}
+        >
           <PageLink page="home" className="min-w-0 truncate text-xl font-bold" style={{ fontFamily: DISPLAY, color: green }}>{site.hotel.name}</PageLink>
-          {md ? (
-            <nav className="flex items-center gap-1">
-              {PAGES.map((p) => (
-                <PageLink key={p.id} page={p.id} className="rounded-full px-4 py-2 text-[14px] font-medium transition" style={{ background: page === p.id ? CREAM : "transparent", color: INK }}>
-                  {p.label}
+          {wide ? (
+            <nav className="flex shrink-0 items-center gap-1">
+              {pages.map((p) => (
+                <PageLink key={p.id} page={p.id} className="group relative rounded-full px-4 py-2 text-[14px] font-medium" style={{ color: INK }}>
+                  <span aria-hidden="true" className={`absolute inset-0 rounded-full transition-[transform,opacity] duration-300 ${page === p.id ? "scale-100 opacity-100" : "scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-60"}`} style={{ background: CREAM }} />
+                  <span className="relative">{p.label}</span>
                 </PageLink>
               ))}
-              {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="ml-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[14px] font-semibold" style={{ background: green, color: LIME }}>{cta.kind === "whatsapp" && <WhatsAppIcon size={16} />} Book now</a>}
+              {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="ml-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[14px] font-semibold transition-transform duration-300 hover:scale-[1.04]" style={{ background: green, color: LIME }}>{cta.kind === "whatsapp" && <WhatsAppIcon size={16} />} Book now</a>}
             </nav>
           ) : (
             <button type="button" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="ml-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-full" style={{ background: green, color: LIME }}>
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           )}
+          {scrolled && <ScrollProgress color={green} height={2} style={{ opacity: 0.55 }} />}
         </div>
       </header>
-      {open && !md && (
-        <div className="fixed inset-0 z-30 flex flex-col justify-end p-6 pb-28" style={{ background: green }}>
-          {PAGES.map((p, i) => (
+      {open && !wide && (
+        <div className="fixed inset-0 z-30 flex flex-col justify-end overflow-y-auto p-6 pb-28 pt-28" style={{ background: green }}>
+          {pages.map((p, i) => (
             <Reveal key={p.id} delay={i * 0.05} y={14}>
-              <PageLink page={p.id} className="block py-2 text-5xl font-bold" style={{ fontFamily: DISPLAY, color: page === p.id ? LIME : "#fff" }}>{p.label}</PageLink>
+              <PageLink page={p.id} className="block py-1.5 text-[44px] font-bold leading-tight" style={{ fontFamily: DISPLAY, color: page === p.id ? LIME : "#fff" }}>{p.label}</PageLink>
             </Reveal>
           ))}
           {cta && <div className="mt-8"><Pill href={cta.href} target={cta.target} rel={cta.rel} bg={LIME} color={INK}>{cta.kind === "whatsapp" && <WhatsAppIcon size={18} />} {cta.label}</Pill></div>}
@@ -181,35 +193,34 @@ function Home({ green, onPhoto }) {
     <>
       <section className="p-3" style={{ paddingTop: 12 }}>
         <div className="relative flex items-end overflow-hidden rounded-[36px]" style={{ minHeight: h, background: green }}>
-          <Img src={c.hero?.image} alt={site.hotel.name} priority fallback={green} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(8,24,16,0.1) 30%, rgba(8,24,16,0.75))" }} />
-          <div className="relative w-full p-6" style={{ padding: md ? 56 : 24 }}>
-            <Reveal>
-              <div className="flex flex-wrap gap-2">
-                {site.hotel.city && <Tag bg="rgba(255,255,255,0.18)" color="#fff"><MapPin className="h-3.5 w-3.5" /> {site.hotel.city}</Tag>}
-                {site.hotel.typeLabel && <Tag bg="rgba(255,255,255,0.18)" color="#fff">{site.hotel.typeLabel}</Tag>}
-              </div>
-              <h1 className="mt-6 max-w-4xl font-extrabold leading-[0.92] tracking-tight text-white" style={{ fontFamily: DISPLAY, fontSize: lg ? 112 : md ? 84 : 48 }}>
-                {c.hero?.title || site.hotel.name}
-              </h1>
-              <div className={`mt-8 ${md ? "flex items-end justify-between gap-10" : "space-y-6"}`}>
-                {c.hero?.subtitle && <p className="max-w-lg text-lg font-light text-white/90">{c.hero.subtitle}</p>}
-                <CtaPills green={green} />
-              </div>
-            </Reveal>
+          <KenBurns className="absolute inset-0" from={1.15} duration={9}>
+            <Img src={c.hero?.image} alt={site.hotel.name} priority fallback={green} className="h-full w-full object-cover" />
+          </KenBurns>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(8,24,16,0.18) 0%, rgba(8,24,16,0.05) 35%, rgba(8,24,16,0.78))" }} />
+          <div className="relative w-full p-6" style={{ padding: md ? 56 : 24, paddingTop: 110 }}>
+            <Rise delay={0.15} className="flex flex-wrap gap-2">
+              {site.hotel.city && <Tag bg="rgba(255,255,255,0.2)" color="#fff"><MapPin className="h-3.5 w-3.5" /> {site.hotel.city}</Tag>}
+              {site.hotel.typeLabel && <Tag bg="rgba(255,255,255,0.2)" color="#fff">{site.hotel.typeLabel}</Tag>}
+              {Number(site.hotel.starRating) > 0 && <Tag bg={LIME} color={INK}><Counter value={Math.min(5, site.hotel.starRating)} duration={1} />★</Tag>}
+            </Rise>
+            <RevealText
+              text={c.hero?.title || site.hotel.name}
+              className="mt-6 max-w-4xl font-extrabold leading-[0.94] tracking-tight text-white"
+              style={{ fontFamily: DISPLAY, fontSize: lg ? 112 : md ? 84 : 46 }}
+              delay={0.25}
+              stagger={0.09}
+            />
+            <div className={`mt-8 ${md ? "flex items-end justify-between gap-10" : "space-y-6"}`}>
+              {c.hero?.subtitle && <Rise delay={0.7} as="p" className="max-w-lg text-lg font-light text-white/90">{c.hero.subtitle}</Rise>}
+              <Rise delay={0.85}><CtaPills green={green} /></Rise>
+            </div>
           </div>
           {cheapest && md && formatPrice(cheapest.price, cheapest.currency) && (
-            <motion.div
-              className="absolute right-10 top-28 flex h-36 w-36 flex-col items-center justify-center rounded-full text-center"
-              style={{ background: LIME, color: INK }}
-              initial={{ rotate: -12, scale: 0.9 }}
-              animate={{ rotate: -8, scale: 1 }}
-              transition={{ duration: 0.8 }}
-            >
+            <PriceBadge>
               <span className="text-xs font-semibold uppercase tracking-wider">from</span>
               <span className="text-2xl font-bold leading-none" style={{ fontFamily: DISPLAY }}>{formatPrice(cheapest.price, cheapest.currency)}</span>
               <span className="text-xs">per night</span>
-            </motion.div>
+            </PriceBadge>
           )}
         </div>
       </section>
@@ -254,6 +265,8 @@ function Home({ green, onPhoto }) {
         </section>
       )}
 
+      <Services green={green} limit={6} />
+
       {c.highlights?.length > 0 && (
         <section className="mx-auto max-w-6xl px-4" style={{ paddingTop: md ? 120 : 72 }}>
           <div className={`grid gap-5 ${md ? "grid-cols-3" : "grid-cols-1"}`}>
@@ -290,7 +303,7 @@ function Home({ green, onPhoto }) {
                 aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`}
                 className={`group overflow-hidden rounded-[24px] ${bento && i === 0 ? "col-span-2 row-span-2" : ""} ${bento && i === 3 ? "col-span-2" : ""}`}
               >
-                <Img src={g.url} alt={g.caption || ""} sizes={bento && (i === 0 || i === 3) ? SIZES.half : SIZES.quarter} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <Img src={g.url} alt={g.caption || ""} sizes={bento && (i === 0 || i === 3) ? SIZES.half : SIZES.quarter} className="h-full w-full object-cover transition-transform duration-[1300ms] ease-out group-hover:scale-[1.07]" />
               </button>
             ))}
           </div>
@@ -303,15 +316,105 @@ function Home({ green, onPhoto }) {
   );
 }
 
+function PriceBadge({ children }) {
+  const calm = useCalm();
+  return (
+    <motion.div
+      className="absolute right-10 top-28 flex h-36 w-36 flex-col items-center justify-center rounded-full text-center"
+      style={{ background: LIME, color: INK, boxShadow: "0 18px 40px -18px rgba(0,0,0,0.55)" }}
+      initial={calm ? false : { rotate: -30, scale: 0.6, opacity: 0 }}
+      animate={{ rotate: -8, scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 150, damping: 13, delay: 1 }}
+      whileHover={calm ? undefined : { rotate: 0, scale: 1.06 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+const CARD_THEMES = [
+  { bg: "#fff", fg: INK, sub: MUTED, chip: CREAM, icon: CREAM, iconFg: null },
+  { bg: "#fff", fg: INK, sub: MUTED, chip: CREAM, icon: LIME, iconFg: INK },
+  { bg: null, fg: "#fff", sub: "rgba(255,255,255,0.82)", chip: "rgba(255,255,255,0.14)", icon: LIME, iconFg: INK },
+  { bg: "#fff", fg: INK, sub: MUTED, chip: CREAM, icon: CREAM, iconFg: null },
+  { bg: LIME, fg: INK, sub: "rgba(16,38,28,0.8)", chip: "rgba(255,255,255,0.6)", icon: "#fff", iconFg: null },
+];
+
+/** Services as playful bento cards. Hidden when there are none. */
+function Services({ green, limit, page = false }) {
+  const { md, lg } = useBp();
+  const all = useServices();
+  if (!all.length) return null;
+  const list = limit ? all.slice(0, limit) : all;
+  return (
+    <section className="mx-auto max-w-6xl px-4" style={{ paddingTop: page ? (md ? 56 : 32) : md ? 120 : 72 }}>
+      {!page && (
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <Reveal><Tag bg="#fff"><Sparkles className="h-3.5 w-3.5" style={{ color: green }} /> Extras</Tag><Big className="mt-5">Make it your trip</Big></Reveal>
+          {all.length > list.length && (
+            <PageLink page="services" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-semibold transition-transform duration-300 hover:-translate-y-0.5">All {all.length} services <ArrowRight className="h-4 w-4" /></PageLink>
+          )}
+        </div>
+      )}
+      <div className={`${page ? "" : "mt-12"} grid gap-4 ${lg ? "grid-cols-3" : md ? "grid-cols-2" : "grid-cols-1"}`}>
+        {list.map((s, i) => <ServiceCard key={s.name + i} service={s} green={green} theme={CARD_THEMES[i % CARD_THEMES.length]} delay={(i % 3) * 0.07} />)}
+      </div>
+    </section>
+  );
+}
+
+function ServiceCard({ service, green, theme, delay }) {
+  const cta = useServiceCta(service.name);
+  const price = servicePrice(service);
+  const dark = theme.bg === null;
+  return (
+    <Reveal delay={delay} className="h-full">
+      <div className="bs-lift group flex h-full flex-col rounded-[28px] p-7" style={{ background: theme.bg || green, color: theme.fg, minHeight: 250, "--bs-shadow": "0 30px 50px -30px rgba(16,38,28,0.45)" }}>
+        <div className="flex items-start justify-between gap-4">
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110" style={{ background: theme.icon, color: theme.iconFg || green }}>
+            <ServiceIcon icon={service.icon} name={service.name} className="h-6 w-6" strokeWidth={1.75} />
+          </span>
+          <span className="rounded-full px-3 py-1.5 text-right text-[13px] font-semibold" style={{ background: theme.chip }}>
+            {price ? price.label : "Ask us"}
+          </span>
+        </div>
+        <h3 className="mt-6 text-[26px] font-bold leading-tight" style={{ fontFamily: DISPLAY }}>{service.name}</h3>
+        {service.description && <p className="mt-2 font-light leading-relaxed" style={{ color: theme.sub }}>{service.description}</p>}
+        {cta && (
+          <a href={cta.href} target={cta.target} rel={cta.rel} className="mt-auto inline-flex items-center gap-2 self-start pt-6 font-semibold" aria-label={`Arrange ${service.name}`}>
+            <span className="grid h-10 w-10 place-items-center rounded-full transition-transform duration-500 group-hover:rotate-45" style={{ background: dark ? LIME : green, color: dark ? INK : LIME }}>
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
+            {cta.kind === "whatsapp" ? "Arrange it" : "Book your stay"}
+          </a>
+        )}
+      </div>
+    </Reveal>
+  );
+}
+
+function ServicesPage({ green }) {
+  const { site } = useSite();
+  const services = useServices();
+  return (
+    <>
+      <PageHead tag={`${services.length} ${services.length === 1 ? "service" : "services"}`} title="Services" image={services.find((s) => s.image)?.image || site.content.gallery?.[1]?.url || site.content.hero?.image} green={green} />
+      <Services green={green} page />
+      <Cta green={green} />
+    </>
+  );
+}
+
 function RoomCard({ room, green, delay }) {
   const cta = useBookCta(room.name);
   const price = formatPrice(room.price, room.currency);
   const guests = Number(room.maxOccupancy) > 0 ? `Up to ${room.maxOccupancy} guests` : "";
   const meta = [guests, room.bedConfig].filter(Boolean).join(" · ");
   return (
-    <Reveal delay={delay} className="group flex flex-col overflow-hidden rounded-[28px] bg-white p-3">
-      <div className="relative overflow-hidden rounded-[22px]">
-        <Img src={room.image} alt={room.name} sizes={SIZES.third} fallback={LIME} className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+    <Reveal delay={delay} className="h-full">
+    <div className="bs-lift bs-hover group flex h-full flex-col rounded-[28px] bg-white p-3" style={{ "--bs-shadow": "0 30px 50px -30px rgba(16,38,28,0.45)" }}>
+      <div className="bs-zoom relative rounded-[22px]" style={{ transform: "translateZ(0)" }}>
+        <Img src={room.image} alt={room.name} sizes={SIZES.third} fallback={LIME} className="aspect-[4/3] w-full object-cover" />
         {price && <span className="absolute left-3 top-3 rounded-full px-3 py-1.5 text-sm font-semibold" style={{ background: LIME, color: INK }}>from {price} / night</span>}
         {room.breakfastIncluded && <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold" style={{ color: INK }}>Breakfast included</span>}
       </div>
@@ -319,8 +422,9 @@ function RoomCard({ room, green, delay }) {
         <h3 className="text-2xl font-bold" style={{ fontFamily: DISPLAY }}>{room.name}</h3>
         {meta && <p className="mt-1 flex items-center gap-1.5 text-sm" style={{ color: MUTED }}><Users className="h-4 w-4 shrink-0" aria-hidden="true" /> {meta}</p>}
         {room.description && <p className="mt-3 line-clamp-2 font-light" style={{ color: MUTED }}>{room.description}</p>}
-        {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="mt-auto flex w-full items-center justify-center gap-2 rounded-full py-3.5 font-semibold" style={{ background: green, color: LIME, marginTop: 20 }}>{cta.kind === "whatsapp" && <WhatsAppIcon size={16} />} Book this room</a>}
+        {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="mt-auto flex w-full items-center justify-center gap-2 rounded-full py-3.5 font-semibold transition-transform duration-300 active:scale-[0.98]" style={{ background: green, color: LIME, marginTop: 20 }}>{cta.kind === "whatsapp" && <WhatsAppIcon size={16} />} Book this room</a>}
       </div>
+    </div>
     </Reveal>
   );
 }
@@ -372,12 +476,14 @@ function PageHead({ tag, title, image, green }) {
   return (
     <section className="p-3">
       <div className="relative flex items-end overflow-hidden rounded-[36px]" style={{ minHeight: md ? 460 : 340, background: green }}>
-        <Img src={image} alt="" priority fallback={green} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(8,24,16,0.2), rgba(8,24,16,0.7))" }} />
-        <Reveal className="relative p-8" style={{ padding: md ? 56 : 24 }}>
-          <Tag bg={LIME} color={green}>{tag}</Tag>
-          <h1 className="mt-5 font-extrabold leading-none tracking-tight text-white" style={{ fontFamily: DISPLAY, fontSize: md ? 92 : 52 }}>{title}</h1>
-        </Reveal>
+        <KenBurns key={image} className="absolute inset-0" from={1.1} duration={7}>
+          <Img src={image} alt="" priority fallback={green} className="h-full w-full object-cover" />
+        </KenBurns>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(8,24,16,0.25), rgba(8,24,16,0.72))" }} />
+        <div className="relative p-8" style={{ padding: md ? 56 : 24 }}>
+          <Rise delay={0.1}><Tag bg={LIME} color={INK}>{tag}</Tag></Rise>
+          <RevealText text={title} className="mt-5 font-extrabold leading-none tracking-tight text-white" style={{ fontFamily: DISPLAY, fontSize: md ? 92 : 50 }} delay={0.2} />
+        </div>
       </div>
     </section>
   );
@@ -447,7 +553,7 @@ function Gallery({ green, onPhoto }) {
           return (
             <Reveal key={g.url + i} delay={(i % 4) * 0.05} className={`${big ? "col-span-2 row-span-2" : ""} ${i % 5 === 3 && md ? "row-span-2" : ""}`}>
               <button type="button" onClick={() => onPhoto(i)} aria-label={`Open photo${g.caption ? `: ${g.caption}` : ` ${i + 1}`}`} className="group relative block h-full w-full overflow-hidden rounded-[24px]">
-                <Img src={g.url} alt={g.caption || ""} sizes={big ? SIZES.half : SIZES.quarter} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <Img src={g.url} alt={g.caption || ""} sizes={big ? SIZES.half : SIZES.quarter} className="h-full w-full object-cover transition-transform duration-[1300ms] ease-out group-hover:scale-[1.07]" />
                 {g.caption && <span className={`absolute bottom-3 left-3 max-w-[85%] truncate rounded-full bg-white/90 px-3 py-1 text-sm font-medium transition-opacity ${md ? "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" : ""}`} style={{ color: INK }}>{g.caption}</span>}
               </button>
             </Reveal>
@@ -566,6 +672,7 @@ function Contact({ green }) {
 
 function Footer({ green }) {
   const { site } = useSite();
+  const pages = useNavPages();
   const { md } = useBp();
   return (
     <footer className="p-3" style={{ paddingTop: md ? 110 : 64 }}>
@@ -573,7 +680,7 @@ function Footer({ green }) {
         <div className={md ? "flex items-end justify-between gap-10" : "space-y-8"}>
           <p className="font-extrabold leading-none" style={{ fontFamily: DISPLAY, fontSize: md ? 72 : 44, color: LIME }}>{site.hotel.name}</p>
           <nav className="flex flex-wrap gap-2">
-            {PAGES.map((p) => <PageLink key={p.id} page={p.id} className="rounded-full px-4 py-2 text-sm" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>{p.label}</PageLink>)}
+            {pages.map((p) => <PageLink key={p.id} page={p.id} className="rounded-full px-4 py-2 text-sm transition-transform duration-300 hover:-translate-y-0.5" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>{p.label}</PageLink>)}
           </nav>
         </div>
         <div className="mt-10 flex flex-wrap justify-between gap-3 pt-6 text-sm text-white/65" style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}>

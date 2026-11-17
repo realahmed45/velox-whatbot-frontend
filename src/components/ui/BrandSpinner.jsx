@@ -12,11 +12,11 @@ export default function BrandSpinner({ fullScreen = true, label = "Loading" }) {
     <div className="flex flex-col items-center gap-5" role="status" aria-live="polite">
       <div className="relative h-16 w-16">
         {/* halo */}
-        <div aria-hidden className="absolute -inset-4 rounded-full bg-sunset opacity-25 blur-2xl animate-glow-pulse" />
+        <div aria-hidden className="absolute -inset-4 rounded-full bg-[#FF5A1F] opacity-20 blur-2xl" />
         {/* conic sunset ring, masked to a thin band */}
         <div
           aria-hidden
-          className="absolute inset-0 rounded-full bg-sunset-conic animate-spin"
+          className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#FF5A1F,#FFB08A,#0A0A0A,#FF5A1F)] animate-spin"
           style={{
             animationDuration: "1.1s",
             WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px))",

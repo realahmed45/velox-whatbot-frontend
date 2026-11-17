@@ -2,21 +2,33 @@
  * Shared toolkit for the hotel website templates.
  *
  * Every template is a plain React component that takes the same `site` object
- * (see backend services/website/siteBuilder.js → buildSite) and renders five
- * pages: home, rooms, gallery, about, contact. They're rendered in three
+ * (see backend services/website/siteBuilder.js → buildSite) and renders the
+ * pages in PAGES: home, rooms, services (only when the hotel lists services),
+ * gallery, about, contact. They're rendered in three
  * places — the live site (botlify.site/<slug>), the full-screen preview, and
  * scaled-down thumbnails — so layout must never depend on the browser
  * viewport. Templates read the width of their own frame through useBp()
  * instead of Tailwind's md:/lg: prefixes; that's what makes the "mobile"
  * preview inside a desktop browser actually show the mobile layout.
  */
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Fragment, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion } from "framer-motion";
+import {
+  Anchor, Baby, Bath, Bike, Binoculars, Bus, Camera, Car, ChefHat, ChevronLeft, ChevronRight, Coffee, Compass,
+  ConciergeBell, CookingPot, Croissant, Dumbbell, Fish, Flame, Flower2, Footprints, Gift, HandHeart, Heart, Key,
+  Landmark, Leaf, Luggage, Map as MapIcon, Martini, Mountain, Music, PawPrint, PersonStanding, Plane, Sailboat, Scissors,
+  Shirt, Ship, Sparkles, Sun, Sunrise, Tent, Ticket, TreePalm, Umbrella, Utensils, UtensilsCrossed, WashingMachine,
+  Waves, Wifi, Wine, X,
+} from "lucide-react";
 
+/**
+ * The site's pages. "services" only appears in navigation when the hotel
+ * actually lists services — use useNavPages() for menus, PAGES for routing.
+ */
 export const PAGES = [
   { id: "home", label: "Home" },
   { id: "rooms", label: "Rooms" },
+  { id: "services", label: "Services" },
   { id: "gallery", label: "Gallery" },
   { id: "about", label: "About" },
   { id: "contact", label: "Contact" },
@@ -368,15 +380,19 @@ export function MobileBookBar({
   const wa = useWhatsApp()();
   const cheapest = useCheapestRoom();
   const { site } = useSite();
+  const calm = useCalm();
   if (!show || !cta) return null;
   const price = cheapest ? formatPrice(cheapest.price, cheapest.currency) : null;
   const pad = "env(safe-area-inset-bottom, 0px)";
   return (
     <>
       <div aria-hidden="true" style={{ height: `calc(${BAR_H}px + ${pad})` }} />
-      <div
+      <motion.div
         className="fixed inset-x-0 bottom-0 z-20"
-        style={{ background: bg, color: fg, borderTop: `1px solid ${border}`, paddingBottom: pad, boxShadow: "0 -10px 30px -18px rgba(0,0,0,0.45)", fontFamily: font }}
+        initial={calm ? false : { y: "110%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.7, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        style={{ background: bg, color: fg, borderTop: `1px solid ${border}`, paddingBottom: pad, boxShadow: "0 -14px 34px -20px rgba(0,0,0,0.5)", fontFamily: font }}
       >
         <div className="mx-auto flex items-center gap-3 px-4" style={{ height: BAR_H, maxWidth: 640 }}>
           <div className="min-w-0 flex-1 leading-tight">
@@ -398,7 +414,7 @@ export function MobileBookBar({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Chat with us on WhatsApp"
-              className="flex h-11 w-11 shrink-0 items-center justify-center"
+              className="flex h-11 w-11 shrink-0 items-center justify-center transition-transform duration-200 active:scale-[0.94]"
               style={{ background: "#25D366", color: "#fff", borderRadius: radius }}
             >
               <WhatsAppIcon size={22} color="#fff" />
@@ -408,14 +424,14 @@ export function MobileBookBar({
             href={cta.href}
             target={cta.target}
             rel={cta.rel}
-            className={`inline-flex h-11 shrink-0 items-center justify-center gap-2 px-5 font-semibold ${uppercase ? "text-[12px] uppercase tracking-[0.16em]" : "text-[15px]"}`}
-            style={{ background: accent, color: accentFg, borderRadius: radius }}
+            className={`inline-flex h-11 shrink-0 items-center justify-center gap-2 px-5 font-semibold transition-transform duration-200 active:scale-[0.96] ${uppercase ? "text-[12px] uppercase tracking-[0.16em]" : "text-[15px]"}`}
+            style={{ background: accent, color: accentFg, borderRadius: radius, boxShadow: "0 8px 20px -10px rgba(0,0,0,0.45)" }}
           >
             {cta.kind === "whatsapp" && <WhatsAppIcon size={16} />}
             Book now
           </a>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -664,4 +680,257 @@ export function useEnquiry() {
     if (target) window.open(target, "_blank", "noopener");
   };
   return { v, set, submit, via: site?.whatsapp ? "WhatsApp" : "email" };
+}
+
+/* ------------------------------------------------------------------------ */
+/* Services                                                                  */
+/* ------------------------------------------------------------------------ */
+
+/** The hotel's services (Settings → Services) that are safe to render. */
+export function useServices() {
+  const { site } = useSite();
+  return (Array.isArray(site?.services) ? site.services : [])
+    .filter((s) => s && typeof s.name === "string" && s.name.trim())
+    .map((s) => ({
+      ...s,
+      name: s.name.trim(),
+      description: typeof s.description === "string" ? s.description.trim() : "",
+      priceUnit: typeof s.priceUnit === "string" ? s.priceUnit.trim() : "",
+    }));
+}
+
+/** Pages to show in menus: "Services" only when there are services. */
+export function useNavPages() {
+  const has = useServices().length > 0;
+  return has ? PAGES : PAGES.filter((p) => p.id !== "services");
+}
+
+/** The page to render: an empty Services page (or an unknown id) falls back to home. */
+export function useActivePage() {
+  const { page } = useSite();
+  const has = useServices().length > 0;
+  if (page === "services" && !has) return "home";
+  return PAGES.some((p) => p.id === page) ? page : "home";
+}
+
+/** { amount: "$25", unit: "per hour", label: "from $25 per hour" } or null ("Ask us"). */
+export function servicePrice(s) {
+  const amount = Number(s?.price) > 0 ? formatPrice(s.price, s.currency || "USD") : null;
+  if (!amount) return null;
+  const unit = (s.priceUnit || "").trim();
+  return { amount, unit, label: `from ${amount}${unit ? ` ${unit}` : ""}` };
+}
+
+/**
+ * The action for a service: WhatsApp with the service named (extras are
+ * arranged in chat), otherwise the booking page. null when neither exists.
+ */
+export function useServiceCta(name) {
+  const { site } = useSite();
+  const book = useBookCta();
+  const hotel = site?.hotel?.name || "there";
+  const wa = waLink(site?.whatsapp, `Hi ${hotel}! I'd like to arrange ${name || "a service"} during my stay. Could you share the details?`);
+  if (wa) return { href: wa, target: "_blank", rel: "noopener noreferrer", kind: "whatsapp", label: "Arrange on WhatsApp" };
+  if (book?.kind === "booking") return { ...book, label: "Book your stay" };
+  return null;
+}
+
+const ICONS = {
+  sparkles: Sparkles, handheart: HandHeart, flower2: Flower2, flower: Flower2, plane: Plane, planelanding: Plane,
+  planetakeoff: Plane, map: MapIcon, compass: Compass, utensilscrossed: UtensilsCrossed, utensils: Utensils,
+  coffee: Coffee, conciergebell: ConciergeBell, shirt: Shirt, bike: Bike, bicycle: Bike, car: Car, carfront: Car,
+  cartaxifront: Car, waves: Waves, dumbbell: Dumbbell, baby: Baby, chefhat: ChefHat, flame: Flame, wifi: Wifi,
+  bath: Bath, wine: Wine, sun: Sun, sunrise: Sunrise, mountain: Mountain, camera: Camera, ship: Ship, sailboat: Sailboat,
+  bus: Bus, luggage: Luggage, key: Key, pawprint: PawPrint, heart: Heart, gift: Gift, music: Music, treepalm: TreePalm,
+  palmtree: TreePalm, fish: Fish, washingmachine: WashingMachine, croissant: Croissant, leaf: Leaf, tent: Tent,
+  landmark: Landmark, binoculars: Binoculars, martini: Martini, anchor: Anchor, umbrella: Umbrella, ticket: Ticket,
+  scissors: Scissors, footprints: Footprints, cookingpot: CookingPot, personstanding: PersonStanding,
+  // Preset keys (frontend/src/data/hotelServices.js) and friendly aliases.
+  massage: HandHeart, spa: Flower2, wellness: Flower2, airportpickup: Plane, airport: Plane, transfer: Car,
+  tours: MapIcon, tour: MapIcon, excursions: Compass, restaurant: UtensilsCrossed, breakfast: Coffee,
+  roomservice: ConciergeBell, laundry: Shirt, yoga: Sparkles, scooterrental: Bike, scooter: Bike, carrental: Car,
+  pool: Waves, gym: Dumbbell, babysitting: Baby, cookingclass: ChefHat, bbq: Flame, diving: Fish, snorkeling: Fish,
+  boat: Sailboat, hiking: Mountain, bar: Martini, parking: Car, pets: PawPrint,
+};
+
+// Last resort: guess from the service's name.
+const NAME_HINTS = [
+  [/massage|reflex/i, HandHeart], [/spa|wellness|facial|scrub/i, Flower2], [/airport|pick-?up|arrival|flight/i, Plane],
+  [/transfer|driver|taxi|car|chauffeur/i, Car], [/tour|excursion|trip|sightsee/i, MapIcon], [/yoga|pilates|meditat/i, Sparkles],
+  [/scooter|motor|bike|bicycle|cycl/i, Bike], [/laundry|wash|iron|dry clean/i, Shirt], [/breakfast|brunch|coffee/i, Coffee],
+  [/dinner|lunch|restaurant|meal|food/i, UtensilsCrossed], [/bbq|barbecue|grill/i, Flame], [/cook/i, ChefHat],
+  [/pool|swim/i, Waves], [/gym|fitness/i, Dumbbell], [/baby|child|kid|nanny/i, Baby], [/div|snorkel/i, Fish],
+  [/boat|sail|cruise/i, Sailboat], [/surf|beach/i, Umbrella], [/hik|trek|volcano|sunrise/i, Mountain], [/bar|cocktail/i, Martini],
+  [/wine/i, Wine], [/photo/i, Camera], [/wifi|internet/i, Wifi], [/luggage|storage/i, Luggage], [/pet|dog/i, PawPrint],
+];
+
+/** Resolve a lucide icon name / preset key / service name to a component. Never undefined. */
+export function serviceIcon(icon, name) {
+  const k = String(icon || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (k && ICONS[k]) return ICONS[k];
+  const hint = NAME_HINTS.find(([re]) => re.test(String(name || "")));
+  return hint ? hint[1] : Sparkles;
+}
+
+export function ServiceIcon({ icon, name, className = "h-5 w-5", style, strokeWidth = 1.5 }) {
+  const C = serviceIcon(icon, name);
+  return <C className={className} style={style} strokeWidth={strokeWidth} aria-hidden="true" />;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Motion primitives — transform/opacity only, static in thumbnails and for  */
+/* people who prefer reduced motion.                                         */
+/* ------------------------------------------------------------------------ */
+
+export function useCalm() {
+  const { still } = useSite();
+  const reduce = useReducedMotion();
+  return still || !!reduce;
+}
+
+/**
+ * Slow, one-time "Ken Burns" settle: the image eases from a gentle zoom to
+ * rest. Wrap an absolutely-filling <Img> (or anything) with it.
+ */
+export function KenBurns({ children, className = "", style, from = 1.12, duration = 7 }) {
+  const calm = useCalm();
+  const [done, setDone] = useState(false);
+  return (
+    <motion.div
+      className={className}
+      // Promote to its own layer only while it moves.
+      style={{ ...style, willChange: calm || done ? undefined : "transform" }}
+      initial={calm ? false : { scale: from }}
+      animate={{ scale: 1 }}
+      transition={{ duration, ease: [0.16, 1, 0.3, 1] }}
+      onAnimationComplete={() => setDone(true)}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * A headline whose words rise into place one after another. Screen readers
+ * get the plain sentence; `inView` waits until it scrolls into view.
+ */
+export function RevealText({ text, as = "h1", className = "", style, delay = 0, stagger = 0.07, duration = 0.95, inView = false }) {
+  const calm = useCalm();
+  const Tag = as;
+  const str = String(text ?? "").trim();
+  if (!str) return null;
+  if (calm) return <Tag className={className} style={style}>{str}</Tag>;
+  const words = str.split(/\s+/);
+  const trigger = inView
+    ? { whileInView: { y: "0%", opacity: 1 }, viewport: { once: true, margin: "-40px" } }
+    : { animate: { y: "0%", opacity: 1 } };
+  return (
+    <Tag className={className} style={style}>
+      <span className="sr-only">{str}</span>
+      <span aria-hidden="true">
+        {words.map((w, i) => (
+          <Fragment key={i}>
+            <span className="inline-block overflow-hidden align-bottom" style={{ padding: "0.08em 0.06em 0.14em", margin: "-0.08em -0.06em -0.14em" }}>
+              <motion.span
+                className="inline-block"
+                initial={{ y: "110%", opacity: 0 }}
+                {...trigger}
+                transition={{ duration, delay: delay + i * stagger, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {w}
+              </motion.span>
+            </span>
+            {i < words.length - 1 ? " " : null}
+          </Fragment>
+        ))}
+      </span>
+    </Tag>
+  );
+}
+
+/** Fade + rise on mount (hero copy that sits above the fold). */
+export function Rise({ children, className = "", style, delay = 0, y = 18, as = "div" }) {
+  const calm = useCalm();
+  if (calm) {
+    const Tag = as;
+    return <Tag className={className} style={style}>{children}</Tag>;
+  }
+  const M = motion[as] || motion.div;
+  return (
+    <M className={className} style={style} initial={{ opacity: 0, y }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}>
+      {children}
+    </M>
+  );
+}
+
+/** A hairline that draws itself (scaleX) when scrolled into view. */
+export function DrawLine({ className = "", style, origin = "left", delay = 0 }) {
+  const calm = useCalm();
+  if (calm) return <span aria-hidden="true" className={`block ${className}`} style={style} />;
+  return (
+    <motion.span
+      aria-hidden="true"
+      className={`block ${className}`}
+      style={{ ...style, transformOrigin: origin === "center" ? "50% 50%" : origin === "right" ? "100% 50%" : "0% 50%" }}
+      initial={{ scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
+    />
+  );
+}
+
+/** Counts up to `value` once it scrolls into view. */
+export function Counter({ value, duration = 1.8, className = "", style, format }) {
+  const calm = useCalm();
+  const ref = useRef(null);
+  const seen = useInView(ref, { once: true, margin: "-30px" });
+  const target = Number(value) || 0;
+  const fmt = format || ((n) => Math.round(n).toLocaleString());
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || calm || !seen) return undefined;
+    const ctl = animate(0, target, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => { el.textContent = fmt(v); } });
+    return () => ctl.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seen, calm, target]);
+  return (
+    <span ref={ref} className={className} style={{ fontVariantNumeric: "tabular-nums", ...style }}>
+      {calm ? fmt(target) : fmt(0)}
+    </span>
+  );
+}
+
+/** A thin reading-progress bar (transform only) — sits at the bottom edge of a nav. */
+export function ScrollProgress({ color = "currentColor", height = 2, className = "", style }) {
+  const { scrollRoot, still, page } = useSite();
+  const mv = useMotionValue(0);
+  useEffect(() => {
+    if (still) return undefined;
+    const el = scrollRoot?.current || window;
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const top = el === window ? window.scrollY : el.scrollTop;
+      const max = el === window ? document.documentElement.scrollHeight - window.innerHeight : el.scrollHeight - el.clientHeight;
+      mv.set(max > 0 ? Math.min(1, Math.max(0, top / max)) : 0);
+    };
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(read);
+    };
+    read();
+    el.addEventListener("scroll", on, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", on);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [scrollRoot, still, page, mv]);
+  if (still) return null;
+  return (
+    <motion.span
+      aria-hidden="true"
+      className={`pointer-events-none absolute bottom-0 left-0 right-0 block ${className}`}
+      style={{ height, background: color, scaleX: mv, transformOrigin: "0% 50%", ...style }}
+    />
+  );
 }

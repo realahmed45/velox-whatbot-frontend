@@ -11,8 +11,10 @@
  * when the parent saves — so a hotelier who bails halfway leaves no orphan
  * room, just an unreferenced image.
  *
- * Photos are ALWAYS optional. The empty state says so out loud, because the
- * fastest way to lose a hotelier mid-signup is to make them go find photos.
+ * Photos are optional by default — the empty state says so out loud. Pass
+ * `required` where a photo is mandatory (a room added by hand needs at least
+ * one picture); the label then says "(required)" and the empty-state hint is
+ * shown as a warning. `error` shows an inline message under the grid.
  *
  * Props
  *  photos     [{ url, caption, position }]
@@ -21,6 +23,8 @@
  *  label      heading text
  *  hint       line under the heading
  *  compact    denser grid, for the room editor
+ *  required   at least one photo is needed (label + hint change)
+ *  error      inline error message (e.g. after a blocked save)
  */
 import { useCallback, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Star, X } from "lucide-react";
@@ -37,6 +41,8 @@ export default function PhotoUploader({
   label = "Photos",
   hint = "You can add these later — skipping won't hold anything up.",
   compact = false,
+  required = false,
+  error = "",
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -123,7 +129,11 @@ export default function PhotoUploader({
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
         <span className="label mb-0">
           {label}{" "}
-          <span className="font-normal text-ink-400">(optional)</span>
+          {required ? (
+            <span className="font-normal text-rose-600">(required)</span>
+          ) : (
+            <span className="font-normal text-ink-400">(optional)</span>
+          )}
         </span>
         {photos.length > 0 && (
           <span className="text-xs font-semibold text-ink-400">
@@ -187,7 +197,14 @@ export default function PhotoUploader({
       />
 
       {photos.length === 0 ? (
-        <p className="text-xs text-ink-400 mt-2">{hint}</p>
+        <p
+          className={clsx(
+            "text-xs mt-2",
+            required ? "font-medium text-amber-700" : "text-ink-400",
+          )}
+        >
+          {hint}
+        </p>
       ) : (
         <div
           className={clsx(
@@ -220,7 +237,7 @@ export default function PhotoUploader({
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-night-950/60 text-white opacity-0 backdrop-blur transition duration-300 hover:scale-110 hover:bg-rose-500 focus:opacity-100 active:scale-90 group-hover:opacity-100"
+                className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-night-950/60 text-white sm:opacity-0 transition duration-300 hover:scale-110 hover:bg-rose-500 focus:opacity-100 active:scale-90 sm:group-hover:opacity-100"
                 aria-label={`Remove photo ${i + 1}`}
               >
                 <X className="w-3.5 h-3.5" />
@@ -253,6 +270,12 @@ export default function PhotoUploader({
             </div>
           ))}
         </div>
+      )}
+
+      {error && (
+        <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
+          {error}
+        </p>
       )}
     </div>
   );

@@ -1,10 +1,14 @@
-/** ContactsSection — who the AI points guests to (and who stays private). */
+/**
+ * ContactsSection — who the AI points guests to (and who stays private).
+ * One tidy row per role; tap to open a short form. Must-haves that are still
+ * missing start open. Saved with PUT /training/contacts via onSave(list).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock, Eye, EyeOff, Mail, Phone, Plus, ShieldCheck, Trash2, UserRound } from "lucide-react";
-import { PulseDot } from "@/components/fx";
+import { Check, ChevronDown, Eye, EyeOff, Lock, Plus, Trash2, UserRound } from "lucide-react";
 import SaveBar from "./SaveBar";
-import { EMAIL_RE, PHONE_RE, ROLE_META, hasText, hop, mustHave, newKey, ringWarn, spring } from "./shared";
+import { EMAIL_RE, PHONE_RE, ROLE_META, hasText, newKey } from "./shared";
+import { Switch, btnGhost, btnSecondary, field, fieldError, labelCls, mustHavePill, panel } from "./ui";
 
 function toRows(contacts, roles) {
   const rows = contacts.map((c) => ({
@@ -45,6 +49,14 @@ export default function ContactsSection({ contacts, roles, onSave }) {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [open, setOpen] = useState(
+    () =>
+      new Set(
+        roles
+          .filter((r) => r.required && !contacts.some((c) => c.role === r.key && hasText(c.whatsapp)))
+          .map((r) => r.key),
+      ),
+  );
   const baseline = useMemo(() => sig(toRows(contacts, roles)), [contacts, roles]);
   const dirty = sig(rows) !== baseline;
 
@@ -52,6 +64,14 @@ export default function ContactsSection({ contacts, roles, onSave }) {
   useEffect(() => {
     setRows(toRows(contacts, roles));
   }, [contacts, roles]);
+
+  const toggle = (key) =>
+    setOpen((s) => {
+      const n = new Set(s);
+      if (n.has(key)) n.delete(key);
+      else n.add(key);
+      return n;
+    });
 
   const update = (k, patch) => {
     setRows((list) => list.map((r) => (r._k === k ? { ...r, ...patch } : r)));
@@ -74,13 +94,22 @@ export default function ContactsSection({ contacts, roles, onSave }) {
     return e;
   };
 
+  const openRolesFor = (errs) => {
+    const ks = new Set(Object.keys(errs).map((x) => x.split(".")[0]));
+    const roleKeys = rows.filter((r) => ks.has(r._k)).map((r) => r.role);
+    if (roleKeys.length) setOpen((s) => new Set([...s, ...roleKeys]));
+  };
+
   const save = async () => {
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) {
       setFormError("A couple of details need fixing — they're marked in red.");
+      openRolesFor(e);
       const first = Object.keys(e)[0].split(".")[0];
-      document.getElementById(`row-${first}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => {
+        document.getElementById(`row-${first}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 80);
       return;
     }
     setSaving(true);
@@ -96,7 +125,11 @@ export default function ContactsSection({ contacts, roles, onSave }) {
       // The server names the contact ("The number for "Wayan" doesn't look right…").
       const quoted = /"([^"]+)"/.exec(res.message || "")?.[1];
       const hit = quoted && rows.find((r) => isFilled(r) && (r.name.trim() === quoted || r.role === quoted));
-      if (hit) setErrors({ [`${hit._k}.whatsapp`]: res.message });
+      if (hit) {
+        const errs = { [`${hit._k}.whatsapp`]: res.message };
+        setErrors(errs);
+        openRolesFor(errs);
+      }
       setFormError(res.message);
     }
   };
@@ -109,87 +142,102 @@ export default function ContactsSection({ contacts, roles, onSave }) {
 
   return (
     <div>
-      <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50/70 ring-1 ring-emerald-500/15 px-3.5 py-2.5">
-        <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600" strokeWidth={1.8} />
-        <p className="text-sm text-ink-600">
-          <span className="font-semibold text-ink-900">Private numbers stay private.</span> Your AI only
-          gives a guest a number when you've switched on{" "}
-          <span className="font-semibold">"Guests can get this number"</span>. Everyone else is kept
-          on file for you and your team, and is never shared with guests.
+      <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-neutral-50 px-3.5 py-3 text-[13px] text-neutral-600">
+        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
+        <p>
+          <span className="font-semibold text-[#0A0A0A]">Private numbers stay private.</span> Your AI only gives a
+          guest a number when you switch on <span className="font-semibold">"Guests can get this number"</span>.
+          Everyone else is kept on file for your team and never shared with guests.
         </p>
       </div>
 
-      <div className="mt-4 grid md:grid-cols-2 gap-4">
+      <div className={`${panel} divide-y divide-neutral-100 overflow-hidden`}>
         {roles.map((role) => {
           const meta = ROLE_META[role.key] || { icon: UserRound, help: "" };
           const Icon = meta.icon;
           const list = rows.filter((r) => r.role === role.key);
           const set = list.some((r) => hasText(r.whatsapp));
           const missing = role.required && !set;
+          const isOpen = open.has(role.key);
+          const filled = list.filter(isFilled);
+          const summary = filled.length
+            ? filled
+                .map((r) => [r.name, r.whatsapp].filter(hasText).join(" · "))
+                .join(", ")
+            : "Not added yet";
           return (
-            <section
-              key={role.key}
-              id={`contact-${role.key}`}
-              className={`card group h-full p-4 sm:p-5 scroll-mt-24 transition-shadow duration-500 ${
-                meta.multiple ? "md:col-span-2" : ""
-              } ${
-                missing
-                  ? ringWarn
-                  : set
-                    ? "shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(16,185,129,0.18),0_10px_28px_-18px_rgba(16,185,129,0.35)]"
-                    : ""
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${missing ? "bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.55)]" : "bg-sunset-soft text-sunset-flame"} ${hop}`}>
-                  <Icon className="w-5 h-5" strokeWidth={1.8} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h4 className="font-display font-semibold tracking-[-0.01em] text-ink-900">{role.label}</h4>
-                    {role.required && <span className={mustHave}>Must-have</span>}
-                    {!missing && set && (
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
-                        <PulseDot color="bg-emerald-500" /> Set
+            <section key={role.key} id={`contact-${role.key}`} className="scroll-mt-24">
+              <button
+                type="button"
+                onClick={() => toggle(role.key)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-neutral-50/80 sm:px-5"
+              >
+                <span
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                    missing ? "bg-[#FF5A1F] text-[#0A0A0A]" : set ? "bg-[#0A0A0A] text-white" : "bg-neutral-100 text-neutral-500"
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[15px] font-semibold tracking-[-0.01em] text-[#0A0A0A]">{role.label}</span>
+                    {missing && <span className={mustHavePill}>Must-have</span>}
+                    {set && (
+                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-600">
+                        <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> Set
                       </span>
                     )}
-                  </div>
-                  {meta.help && <p className="text-xs text-ink-500 mt-0.5">{meta.help}</p>}
-                  {missing && (
-                    <p className="text-xs font-semibold text-sunset-flame mt-1">
-                      Add a WhatsApp number so your AI can point guests here.
-                    </p>
-                  )}
-                </div>
-              </div>
+                  </span>
+                  <span className={`mt-0.5 block truncate text-[13px] ${filled.length ? "text-neutral-600" : "text-neutral-400"}`}>
+                    {summary}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-              <div className={`mt-4 ${meta.multiple ? "grid lg:grid-cols-2 gap-4" : "space-y-4"}`}>
-                {list.map((r, i) => (
-                  <ContactFields
-                    key={r._k}
-                    row={r}
-                    errors={errors}
-                    onChange={(patch) => update(r._k, patch)}
-                    removable={meta.multiple && list.length > 1}
-                    clearable={isFilled(r)}
-                    onRemove={() => setRows((all) => all.filter((x) => x._k !== r._k))}
-                    onClear={() =>
-                      update(r._k, { name: "", whatsapp: "", email: "", availability: "", notes: "" })
-                    }
-                    index={meta.multiple && list.length > 1 ? i + 1 : 0}
-                  />
-                ))}
-              </div>
-
-              {meta.multiple && (
-                <button
-                  onClick={() => setRows((all) => [...all, blankRow(role)])}
-                  className="btn-secondary group/a mt-3 min-h-[40px] text-sm"
-                >
-                  <Plus className="w-4 h-4 text-sunset-flame transition-transform duration-500 ease-spring group-hover/a:rotate-90" />
-                  Add another {role.key === "taxi" ? "driver or taxi company" : "contact"}
-                </button>
-              )}
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="px-4 pb-5 sm:px-5 sm:pl-[72px]"
+                  >
+                    {meta.help && <p className="mb-3 text-[13px] text-neutral-500">{meta.help}</p>}
+                    <div className="space-y-4">
+                      {list.map((r, i) => (
+                        <ContactFields
+                          key={r._k}
+                          row={r}
+                          errors={errors}
+                          onChange={(patch) => update(r._k, patch)}
+                          removable={meta.multiple && list.length > 1}
+                          clearable={isFilled(r)}
+                          onRemove={() => setRows((all) => all.filter((x) => x._k !== r._k))}
+                          onClear={() =>
+                            update(r._k, { name: "", whatsapp: "", email: "", availability: "", notes: "" })
+                          }
+                          index={meta.multiple && list.length > 1 ? i + 1 : 0}
+                        />
+                      ))}
+                    </div>
+                    {meta.multiple && (
+                      <button
+                        onClick={() => setRows((all) => [...all, blankRow(role)])}
+                        className={`${btnSecondary} mt-3 min-h-[40px] text-[13px]`}
+                      >
+                        <Plus className="h-4 w-4 text-[#FF5A1F]" />
+                        Add another {role.key === "taxi" ? "driver or taxi company" : "contact"}
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </section>
           );
         })}
@@ -208,114 +256,85 @@ export default function ContactsSection({ contacts, roles, onSave }) {
 }
 
 function ContactFields({ row, errors, onChange, removable, clearable, onRemove, onClear, index }) {
+  const [more, setMore] = useState(() => hasText(row.email) || hasText(row.availability));
   const err = (f) => errors[`${row._k}.${f}`];
-  const field = (f, label, icon, props = {}) => {
-    const Icon = icon;
-    return (
-      <div>
-        <label htmlFor={`${row._k}-${f}`} className="text-xs font-semibold text-ink-500">
-          {label}
-        </label>
-        <div className="relative mt-1">
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400 pointer-events-none" />
-          <input
-            id={`${row._k}-${f}`}
-            value={row[f]}
-            onChange={(e) => onChange({ [f]: e.target.value })}
-            aria-invalid={!!err(f)}
-            className={`input pl-9 ${err(f) ? "!border-rose-400 focus:!shadow-[0_0_0_4px_rgba(244,63,94,0.12)]" : ""}`}
-            {...props}
-          />
-        </div>
-        <AnimatePresence>
-          {err(f) && (
-            <motion.p
-              initial={{ opacity: 0, y: -4, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={spring}
-              className="text-xs text-rose-600 mt-1"
-            >
-              {err(f)}
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  };
+  const showMore = more || !!err("email");
+
+  const input = (f, label, props = {}) => (
+    <div>
+      <label htmlFor={`${row._k}-${f}`} className={labelCls}>
+        {label}
+      </label>
+      <input
+        id={`${row._k}-${f}`}
+        value={row[f]}
+        onChange={(e) => onChange({ [f]: e.target.value })}
+        aria-invalid={!!err(f)}
+        className={`${field} mt-1.5 ${err(f) ? fieldError : ""}`}
+        {...props}
+      />
+      {err(f) && <p className="mt-1 text-[12px] text-rose-600">{err(f)}</p>}
+    </div>
+  );
 
   return (
-    <div id={`row-${row._k}`} className={index ? "rounded-xl bg-white/60 p-3.5 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff]" : ""}>
+    <div id={`row-${row._k}`} className={index ? "rounded-xl border border-neutral-200 p-3.5" : ""}>
       {(index > 0 || removable || clearable) && (
-        <div className="flex items-center justify-between mb-2 min-h-[20px]">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-ink-400">
-            {index ? `#${index}` : ""}
-          </span>
+        <div className="mb-2 flex min-h-[24px] items-center justify-between">
+          <span className="text-[12px] font-semibold text-neutral-400">{index ? `#${index}` : ""}</span>
           {removable ? (
-            <button onClick={onRemove} className="btn-ghost group/r px-2.5 py-1.5 text-xs text-ink-400 hover:!text-rose-600 hover:!bg-rose-50">
-              <Trash2 className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover/r:rotate-[-12deg]" />
+            <button onClick={onRemove} className={`${btnGhost} min-h-[32px] px-2 text-[12px] hover:!bg-rose-50 hover:!text-rose-600`}>
+              <Trash2 className="h-3.5 w-3.5" />
               Remove
             </button>
           ) : clearable ? (
-            <button onClick={onClear} className="btn-ghost px-2.5 py-1.5 text-xs text-ink-400">
+            <button onClick={onClear} className={`${btnGhost} min-h-[32px] px-2 text-[12px]`}>
               Clear
             </button>
           ) : null}
         </div>
       )}
-      <div className="grid sm:grid-cols-2 gap-3">
-        {field("name", "Name", UserRound, { placeholder: "e.g. Wayan", maxLength: 120 })}
-        {field("whatsapp", "WhatsApp number", Phone, {
-          placeholder: "+62 812 3456 7890",
-          inputMode: "tel",
-          maxLength: 30,
-        })}
-        {field("email", "Email (optional)", Mail, {
-          placeholder: "name@hotel.com",
-          type: "email",
-          maxLength: 160,
-        })}
-        {field("availability", "When they're available", Clock, {
-          placeholder: "e.g. 24/7 or Mon–Sat, 8am–5pm",
-          maxLength: 120,
-        })}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {input("name", "Name", { placeholder: "e.g. Wayan", maxLength: 120 })}
+        {input("whatsapp", "WhatsApp number", { placeholder: "+62 812 3456 7890", inputMode: "tel", maxLength: 30 })}
+        {showMore && (
+          <>
+            {input("email", "Email (optional)", { placeholder: "name@hotel.com", type: "email", maxLength: 160 })}
+            {input("availability", "When they're available", {
+              placeholder: "e.g. 24/7 or Mon–Sat, 8am–5pm",
+              maxLength: 120,
+            })}
+          </>
+        )}
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={row.shareWithGuests}
-        onClick={() => onChange({ shareWithGuests: !row.shareWithGuests })}
-        className={`mt-3 w-full flex items-start gap-3 rounded-xl px-3.5 py-2.5 text-left ring-1 transition-[background-color,box-shadow,transform] duration-300 ease-spring active:scale-[0.99] ${
-          row.shareWithGuests
-            ? "bg-emerald-50/80 ring-emerald-500/25"
-            : "bg-ink-900/[0.03] ring-ink-900/[0.06] hover:bg-white/70"
-        }`}
-      >
-        <span
-          className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full shadow-[inset_0_1px_2px_rgba(15,23,42,0.15)] transition-colors duration-300 ${
-            row.shareWithGuests ? "bg-emerald-500" : "bg-ink-900/[0.15]"
-          }`}
+      {!showMore && (
+        <button
+          type="button"
+          onClick={() => setMore(true)}
+          className="mt-2 text-[13px] font-medium text-neutral-500 underline-offset-4 hover:text-[#0A0A0A] hover:underline"
         >
-          <motion.span
-            layout
-            transition={{ type: "spring", stiffness: 600, damping: 28 }}
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-[0_2px_5px_rgba(15,23,42,0.25)] ${
-              row.shareWithGuests ? "left-[18px]" : "left-0.5"
-            }`}
-          />
-        </span>
-        <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-            {row.shareWithGuests ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          + Email and hours (optional)
+        </button>
+      )}
+
+      <div className="mt-3 flex items-center gap-3 rounded-xl bg-neutral-50 px-3.5 py-3">
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5 text-[14px] font-semibold text-[#0A0A0A]">
+            {row.shareWithGuests ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
             Guests can get this number
           </span>
-          <span className="block text-xs text-ink-500 mt-0.5">
+          <span className="mt-0.5 block text-[12px] text-neutral-500">
             {row.shareWithGuests
               ? "Your AI may give this number to a guest who needs it."
               : "Private — never given to guests. The AI tells them your team will help instead."}
           </span>
         </span>
-      </button>
+        <Switch
+          checked={row.shareWithGuests}
+          onChange={(v) => onChange({ shareWithGuests: v })}
+          label="Guests can get this number"
+        />
+      </div>
     </div>
   );
 }

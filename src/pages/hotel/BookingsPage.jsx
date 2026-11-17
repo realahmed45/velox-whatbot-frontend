@@ -7,6 +7,7 @@
  * cancel-with-confirm. Matches the Appointments/Billing page patterns.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import GuestInboxPage from "@/pages/inbox/GuestInboxPage";
 import api from "@/services/api";
@@ -88,7 +89,44 @@ const money = (amount, currency) =>
     maximumFractionDigits: 2,
   })}`;
 
-function BookingsTable() {
+/* Premium KPI tile — black hero variant for the money number. */
+function KpiTile({ icon: Icon, label, hero = false, tone = "brand", children }) {
+  return (
+    <div
+      className={`group relative h-full overflow-hidden rounded-2xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 sm:p-5 ${
+        hero
+          ? "bg-[#0A0A0A] text-white shadow-[0_24px_48px_-28px_rgba(10,10,10,0.8)]"
+          : "bg-white ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(10,10,10,0.04)] hover:shadow-[0_20px_40px_-26px_rgba(255,90,31,0.55)] hover:ring-[#FF5A1F]/25"
+      }`}
+    >
+      {hero && (
+        <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#FF5A1F] opacity-30 blur-2xl" />
+      )}
+      <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-[#FF5A1F] transition-transform duration-500 ease-out group-hover:scale-x-100" />
+      <div className="relative flex items-start justify-between gap-2">
+        <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${hero ? "text-white/55" : "text-black/45"}`}>
+          {label}
+        </p>
+        {Icon && (
+          <div
+            className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+              hero
+                ? "bg-[#FF5A1F] text-white"
+                : tone === "green"
+                  ? "bg-emerald-500/10 text-emerald-600"
+                  : "bg-[#FFF1EA] text-[#FF5A1F]"
+            }`}
+          >
+            <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+          </div>
+        )}
+      </div>
+      <div className="relative mt-3">{children}</div>
+    </div>
+  );
+}
+
+function BookingsTable({ focusCode = "", onClearFocus }) {
   const confirm = useConfirm();
   // Which hotel this list is about (multi-property accounts only).
   const { activeWorkspace } = useAuthStore();
@@ -119,6 +157,8 @@ function BookingsTable() {
           source: source || undefined,
           page,
           limit: 20,
+          // Deep link from a notification (?code=…) narrows to that booking.
+          search: focusCode || undefined,
           // Multi-property accounts scope to the sidebar's chosen hotel;
           // single-property accounts send nothing and get the default.
           ...scopeParams,
@@ -132,7 +172,17 @@ function BookingsTable() {
     } finally {
       setLoading(false);
     }
-  }, [status, source, page, scopeParams]);
+  }, [status, source, page, scopeParams, focusCode]);
+
+  // Bring the deep-linked booking into view once it has rendered.
+  useEffect(() => {
+    if (!focusCode || loading) return;
+    const el = [
+      document.getElementById(`booking-${focusCode}`),
+      document.getElementById(`booking-m-${focusCode}`),
+    ].find((x) => x && x.offsetParent !== null);
+    if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [focusCode, loading, bookings]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -207,28 +257,28 @@ function BookingsTable() {
   };
 
   const statusSelect =
-    "input w-auto min-w-[150px] cursor-pointer py-2 text-sm";
+    "input w-full min-w-0 cursor-pointer rounded-xl py-2.5 text-sm sm:w-auto sm:min-w-[170px]";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 lg:px-8">
       {/* Header */}
-      <Reveal className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <Reveal className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3.5">
-          <div className="group grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+          <div className="group grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)]">
             <CalendarCheck className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+            <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
               Bookings
             </h1>
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-black/55">
               Every reservation — from your OTAs, your AI concierge, and manual
               entries.
             </p>
           </div>
         </div>
         <Magnetic strength={0.25}>
-          <button onClick={() => setShowNew(true)} className="btn-primary group">
+          <button onClick={() => setShowNew(true)} className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group">
             <Plus className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />{" "}
             New booking
           </button>
@@ -236,67 +286,67 @@ function BookingsTable() {
       </Reveal>
 
       {/* Stats row */}
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Reveal delay={0} className="h-full">
-          <Spotlight className="card group h-full p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[13px] text-ink-500">Upcoming check-ins</p>
-              <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
-                <CalendarCheck className="h-4 w-4" strokeWidth={1.8} />
-              </div>
-            </div>
-            <p className="mt-1.5 font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+          <KpiTile icon={CalendarCheck} label="Upcoming check-ins">
+            <p className="font-geist text-3xl font-semibold tracking-[-0.04em] text-[#0A0A0A] tabular-nums sm:text-[34px]">
               <NumberTicker value={stats.upcoming} />
             </p>
-          </Spotlight>
+          </KpiTile>
         </Reveal>
         <Reveal delay={0.06} className="h-full">
-          <Spotlight className="card group h-full p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[13px] text-ink-500">Bookings this month</p>
-              <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
-                <BedDouble className="h-4 w-4" strokeWidth={1.8} />
-              </div>
-            </div>
-            <p className="mt-1.5 font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+          <KpiTile icon={BedDouble} label="Bookings this month">
+            <p className="font-geist text-3xl font-semibold tracking-[-0.04em] text-[#0A0A0A] tabular-nums sm:text-[34px]">
               <NumberTicker value={stats.monthCount} />
             </p>
-          </Spotlight>
+          </KpiTile>
         </Reveal>
         <Reveal delay={0.12} className="h-full">
-          <Spotlight className="card group h-full p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[13px] text-ink-500">Revenue this month</p>
-              <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
-                <TrendingUp className="h-4 w-4" strokeWidth={1.8} />
-              </div>
-            </div>
-            <p className="mt-1.5 truncate font-display text-lg font-semibold tabular-nums tracking-[-0.02em] text-ink-900 sm:text-xl">
+          <KpiTile icon={TrendingUp} label="Revenue this month" hero>
+            <p className="truncate font-geist text-xl font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-2xl">
               {stats.revenueLabel}
             </p>
-          </Spotlight>
+          </KpiTile>
         </Reveal>
         <Reveal delay={0.18} className="h-full">
-          <Spotlight className="card h-full p-4 sm:p-5">
-            <p className="mb-2 text-[13px] text-ink-500">By source</p>
+          <KpiTile label="By source">
             <div className="flex flex-wrap gap-1.5">
               {Object.keys(stats.bySource).length === 0 ? (
-                <p className="font-display text-lg font-semibold text-ink-300">—</p>
+                <p className="font-geist text-lg font-semibold text-black/25">—</p>
               ) : (
                 Object.entries(stats.bySource).map(([s, n]) => (
-                  <span key={s} className="inline-flex items-center gap-1">
+                  <span key={s} className="inline-flex items-center gap-1 rounded-full bg-black/[0.03] py-0.5 pl-0.5 pr-2">
                     <SourceBadge source={s} />
-                    <span className="text-xs font-semibold tabular-nums text-ink-700">{n}</span>
+                    <span className="text-xs font-semibold tabular-nums text-[#0A0A0A]">{n}</span>
                   </span>
                 ))
               )}
             </div>
-          </Spotlight>
+          </KpiTile>
         </Reveal>
       </div>
 
+      {/* Deep-link banner (?code=…) */}
+      {focusCode && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-[#FFF1EA] px-4 py-3 text-sm ring-1 ring-inset ring-[#FF5A1F]/20">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#FF5A1F] text-white">
+            <CalendarCheck className="h-4 w-4" strokeWidth={1.8} />
+          </span>
+          <span className="min-w-0 flex-1 text-[#0A0A0A]">
+            Showing booking <span className="font-mono font-semibold">#{focusCode}</span>
+          </span>
+          <button
+            type="button"
+            onClick={onClearFocus}
+            className="min-h-[36px] rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-[#0A0A0A] ring-1 ring-black/10 transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
+          >
+            Show all bookings
+          </button>
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 grid grid-cols-2 items-center gap-2 rounded-2xl bg-white p-2 ring-1 ring-black/[0.06] sm:flex sm:flex-wrap">
         <select
           value={status}
           onChange={(e) => {
@@ -329,14 +379,14 @@ function BookingsTable() {
           <option value="manual">Manual</option>
           <option value="other_ota">Other OTA</option>
         </select>
-        <span className="ml-auto rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium tabular-nums text-ink-500 ring-1 ring-ink-900/[0.06]">
+        <span className="col-span-2 justify-self-start rounded-full bg-[#0A0A0A] px-3 py-1 text-xs font-semibold tabular-nums text-white sm:col-span-1 sm:ml-auto sm:mr-1">
           {total} booking{total === 1 ? "" : "s"}
         </span>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div className="card overflow-hidden">
+        <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06]">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
@@ -358,18 +408,93 @@ function BookingsTable() {
           title="No bookings yet"
           description="When your AI concierge books a guest — or a reservation syncs from Booking.com or Airbnb — it shows up here."
           action={
-            <button onClick={() => setShowNew(true)} className="btn-primary">
+            <button onClick={() => setShowNew(true)} className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97]">
               <Plus className="h-4 w-4" /> Add a booking
             </button>
           }
         />
       ) : (
         <>
-          <Reveal y={16} className="card overflow-hidden">
+          {/* Phones: one card per booking */}
+          <div className="space-y-2.5 md:hidden">
+            {bookings.map((b) => {
+              const focused =
+                focusCode && String(b.code || "").toLowerCase() === focusCode.toLowerCase();
+              return (
+                <div
+                  key={b._id}
+                  id={b.code ? `booking-m-${b.code}` : undefined}
+                  className={`rounded-2xl bg-white p-4 ring-1 ${
+                    focused ? "ring-2 ring-[#FF5A1F] shadow-[0_16px_32px_-20px_rgba(255,90,31,0.6)]" : "ring-black/[0.06]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-[#FFF1EA] font-geist text-sm font-semibold text-[#FF5A1F]">
+                      {(b.guestName || "?").trim().charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="truncate font-semibold text-[#0A0A0A]">{b.guestName || "—"}</p>
+                        <span
+                          className={`${STATUS_STYLE[b.status] || STATUS_STYLE.completed} flex-shrink-0 whitespace-nowrap capitalize`}
+                        >
+                          <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${STATUS_DOT[b.status] || STATUS_DOT.completed}`} />
+                          {(b.status || "").replace("_", " ")}
+                        </span>
+                      </div>
+                      <p className="truncate text-xs text-black/45">
+                        <span className="font-mono">{b.code ? `#${b.code}` : ""}</span>
+                        {b.roomTypeId?.name ? ` · ${b.roomTypeId.name}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-black/[0.05] pt-3 text-xs">
+                    <span className="tabular-nums text-black/60">
+                      {fmtDate(b.checkIn)} → {fmtDate(b.checkOut)}
+                    </span>
+                    <span className="font-semibold tabular-nums text-[#0A0A0A]">
+                      {money(b.totalAmount, b.currency)}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                    <SourceBadge source={b.source} />
+                    <div className="ml-auto flex items-center gap-1.5">
+                      {b.status === "pending" && (
+                        <button
+                          onClick={() => setBookingStatus(b, "confirmed")}
+                          className="min-h-[36px] rounded-lg bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-500/20 active:scale-95"
+                        >
+                          Confirm
+                        </button>
+                      )}
+                      {b.status === "confirmed" && (
+                        <button
+                          onClick={() => setBookingStatus(b, "completed")}
+                          className="min-h-[36px] rounded-lg bg-white px-3 text-xs font-semibold text-[#0A0A0A] ring-1 ring-inset ring-black/10 active:scale-95"
+                        >
+                          Done
+                        </button>
+                      )}
+                      {["pending", "confirmed"].includes(b.status) && (
+                        <button
+                          onClick={() => cancelBooking(b)}
+                          className="inline-flex min-h-[36px] items-center gap-1 rounded-lg bg-rose-500/10 px-3 text-xs font-semibold text-rose-600 ring-1 ring-inset ring-rose-500/20 active:scale-95"
+                        >
+                          <XCircle className="h-3.5 w-3.5" /> Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <Reveal y={16} className="hidden overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.35)] md:block">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <thead>
-                  <tr className="border-b border-ink-900/[0.06] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+                  <tr className="border-b border-black/[0.06] bg-[#FAFAFA] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-black/45">
                     <th className="px-4 py-3">Guest</th>
                     <th className="px-4 py-3">Room</th>
                     <th className="px-4 py-3">Check-in → out</th>
@@ -379,22 +504,27 @@ function BookingsTable() {
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ink-900/[0.05]">
+                <tbody className="divide-y divide-black/[0.05]">
                   {bookings.map((b, i) => (
                     <motion.tr
                       key={b._id}
+                      id={b.code ? `booking-${b.code}` : undefined}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.45, delay: Math.min(i, 12) * 0.03, ease: [0.16, 1, 0.3, 1] }}
-                      className="group transition-colors duration-300 hover:bg-white/80"
+                      className={`group transition-colors duration-200 hover:bg-[#FFF1EA]/50 ${
+                        focusCode && String(b.code || "").toLowerCase() === focusCode.toLowerCase()
+                          ? "bg-[#FFF1EA] shadow-[inset_3px_0_0_#FF5A1F]"
+                          : "hover:shadow-[inset_3px_0_0_#FF5A1F]"
+                      }`}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-sunset-soft font-display text-sm font-semibold text-sunset-flame ring-1 ring-sunset-flame/15 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105">
+                          <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-[#FFF1EA] font-geist text-sm font-semibold text-[#FF5A1F] ring-1 ring-[#FF5A1F]/15 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105">
                             {(b.guestName || "?").trim().charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate font-semibold text-ink-900">
+                            <div className="truncate font-semibold text-[#0A0A0A]">
                               {b.guestName || "—"}
                             </div>
                             <div className="truncate text-xs text-ink-400">
@@ -439,7 +569,7 @@ function BookingsTable() {
                           </motion.span>
                         </AnimatePresence>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums text-ink-900">
+                      <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums text-[#0A0A0A]">
                         {money(b.totalAmount, b.currency)}
                         {b.commission?.amount > 0 && (
                           <div className="text-[11px] font-normal text-ink-400">
@@ -489,18 +619,18 @@ function BookingsTable() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
                 aria-label="Previous page"
-                className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 text-ink-500 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-all duration-300 ease-spring hover:-translate-x-0.5 hover:bg-white hover:text-ink-900 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#0A0A0A] ring-1 ring-black/[0.08] transition-all duration-300 ease-spring hover:-translate-x-0.5 hover:bg-[#0A0A0A] hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-40"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm font-medium tabular-nums text-ink-600">
+              <span className="rounded-full bg-white px-3 py-1.5 text-sm font-medium tabular-nums text-black/60 ring-1 ring-black/[0.06]">
                 Page {page} of {pages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
                 disabled={page >= pages}
                 aria-label="Next page"
-                className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 text-ink-500 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-all duration-300 ease-spring hover:translate-x-0.5 hover:bg-white hover:text-ink-900 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#0A0A0A] ring-1 ring-black/[0.08] transition-all duration-300 ease-spring hover:translate-x-0.5 hover:bg-[#0A0A0A] hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-40"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -641,7 +771,7 @@ function NewBookingModal({ open, onClose, onCreated }) {
           <button
             onClick={submit}
             disabled={saving}
-            className="btn-primary disabled:opacity-60"
+            className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Create booking
@@ -762,7 +892,7 @@ function NewBookingModal({ open, onClose, onCreated }) {
         </div>
 
         {/* Computed total */}
-        <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl bg-sunset-soft px-4 py-3.5 text-sm ring-1 ring-inset ring-sunset-flame/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+        <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl bg-[#FFF1EA] px-4 py-3.5 text-sm ring-1 ring-inset ring-[#FF5A1F]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
           <span className="text-ink-600">
             {nights > 0
               ? `${nights} night${nights === 1 ? "" : "s"} × ${form.nightlyRate || 0}${
@@ -775,7 +905,7 @@ function NewBookingModal({ open, onClose, onCreated }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="whitespace-nowrap font-display text-base font-semibold tabular-nums text-ink-900"
+            className="whitespace-nowrap font-geist text-base font-semibold tabular-nums text-ink-900"
           >
             {room?.currency || ""} {totalPreview.toLocaleString()}
           </motion.span>
@@ -796,6 +926,17 @@ function NewBookingModal({ open, onClose, onCreated }) {
  */
 export default function BookingsPage() {
   const [tab, setTab] = useState("bookings");
+  // Notification deep link: /dashboard/bookings?code=<bookingCode>
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusCode = (searchParams.get("code") || "").trim();
+  useEffect(() => {
+    if (focusCode) setTab("bookings");
+  }, [focusCode]);
+  const clearFocus = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("code");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const TABS = [
     { id: "bookings", label: "Bookings", icon: CalendarCheck },
@@ -803,9 +944,9 @@ export default function BookingsPage() {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col font-geist">
       <div className="flex-shrink-0 px-4 pt-5 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-[1400px]">
           <SlidingTabs
             items={TABS.map((t) => ({ value: t.id, label: t.label, icon: t.icon }))}
             value={tab}
@@ -815,7 +956,7 @@ export default function BookingsPage() {
       </div>
 
       {tab === "bookings" ? (
-        <BookingsTable />
+        <BookingsTable focusCode={focusCode} onClearFocus={clearFocus} />
       ) : (
         // The inbox pins itself with `h-full`, so it needs an ancestor with a
         // real height. The dashboard's animated <main> wrapper doesn't provide

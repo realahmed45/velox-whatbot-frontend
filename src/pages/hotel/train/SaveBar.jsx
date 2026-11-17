@@ -1,38 +1,36 @@
 /** Sticky "unsaved changes" bar shared by the contacts and rules sections. */
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
-import { PulseDot } from "@/components/fx";
-import { spring } from "./shared";
+import { btnPrimary } from "./ui";
 
 export default function SaveBar({ dirty, saving, error, onSave, onDiscard, label }) {
   return (
     <AnimatePresence>
       {(dirty || error) && (
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.97 }}
-          transition={spring}
-          className="sticky bottom-16 lg:bottom-0 z-20 mt-5 pb-4"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+          className="sticky bottom-16 z-20 mt-5 pb-4 lg:bottom-0"
         >
-          <div className="card-dark relative overflow-hidden !bg-night-950/90 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_24px_60px_-20px_rgba(255,61,119,0.45)]">
-            <div aria-hidden className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-sunset opacity-25 blur-3xl" />
-            <p className={`relative flex items-start gap-2 text-sm flex-1 ${error ? "text-rose-200" : "text-white/70"}`}>
-              <PulseDot color={error ? "bg-rose-400" : "bg-amber-400"} className="mt-1.5 shrink-0" />
-              <span>{error || "You have unsaved changes. Your AI keeps using the old version until you save."}</span>
+          <div className="flex flex-col gap-3 rounded-2xl bg-[#0A0A0A] px-4 py-3 shadow-[0_18px_40px_-16px_rgba(10,10,10,0.55)] sm:flex-row sm:items-center">
+            <p className={`flex flex-1 items-start gap-2 text-[14px] ${error ? "text-rose-300" : "text-white/75"}`}>
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${error ? "bg-rose-400" : "bg-[#FF5A1F]"}`} />
+              <span>{error || "Unsaved changes. Your AI keeps using the old version until you save."}</span>
             </p>
-            <div className="relative flex items-center gap-2 justify-end">
+            <div className="flex items-center justify-end gap-2">
               {dirty && (
                 <button
                   onClick={onDiscard}
                   disabled={saving}
-                  className="btn-glass-dark min-h-[40px] px-3 py-2 text-sm"
+                  className="min-h-[40px] rounded-xl px-3 text-[14px] font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
                 >
                   Discard
                 </button>
               )}
-              <button onClick={onSave} disabled={saving || !dirty} className="btn-primary group min-h-[40px]">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:scale-125" />}
+              <button onClick={onSave} disabled={saving || !dirty} className={`${btnPrimary} min-h-[40px] shadow-none hover:shadow-none`}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 {label}
               </button>
             </div>

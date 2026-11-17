@@ -16,7 +16,8 @@
   }
   :root {
     --sidebar-width: 248px;
-    --sunset: linear-gradient(115deg, #ffb547 0%, #ff6a2b 28%, #ff3d77 62%, #7c5cff 100%);
+    /* Rebranded Nov 2026: Botlify orange only (the old multi-colour sunset is retired). */
+    --sunset: linear-gradient(115deg, #ff7a3d 0%, #ff5a1f 55%, #e84a12 100%);
     --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --canvas: #f7f5f2;
@@ -39,7 +40,7 @@
     @apply font-display tracking-tight;
   }
   ::selection {
-    background: rgba(255, 61, 119, 0.22);
+    background: rgba(255, 90, 31, 0.22);
     color: inherit;
   }
   :focus-visible {
@@ -73,14 +74,11 @@
   /* Primary: the sunset. Specular edge on top, a light sweep on hover. */
   .btn-primary {
     @apply btn text-white overflow-hidden;
-    background: var(--sunset);
-    background-size: 160% 100%;
-    background-position: 0% 50%;
+    background: #ff5a1f;
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
-      inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
-      0 6px 18px -6px rgba(255, 61, 119, 0.55),
-      0 2px 4px -1px rgba(255, 106, 43, 0.35);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+      0 1px 2px rgba(10, 10, 10, 0.12),
+      0 8px 20px -10px rgba(255, 90, 31, 0.7);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
   }
   .btn-primary::after {
@@ -94,13 +92,12 @@
     pointer-events: none;
   }
   .btn-primary:hover {
-    background-position: 100% 50%;
-    transform: translateY(-2px);
+    background: #e84a12;
+    transform: translateY(-1px);
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
-      0 14px 34px -10px rgba(255, 61, 119, 0.65),
-      0 4px 10px -2px rgba(124, 92, 255, 0.35);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+      0 2px 4px rgba(10, 10, 10, 0.12),
+      0 14px 28px -12px rgba(255, 90, 31, 0.75);
   }
   .btn-primary:hover::after {
     transform: translateX(120%);
@@ -168,7 +165,7 @@
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
       0 0 0 1px rgba(255, 255, 255, 0.2),
-      0 12px 30px -12px rgba(255, 61, 119, 0.5);
+      0 12px 30px -12px rgba(255, 90, 31, 0.5);
   }
 
   /* ── Inputs ──────────────────────────────────────────────────────────── */
@@ -190,7 +187,7 @@
     border-color: rgba(255, 106, 43, 0.65);
     box-shadow:
       0 0 0 4px rgba(255, 106, 43, 0.12),
-      0 6px 20px -10px rgba(255, 61, 119, 0.4);
+      0 6px 20px -10px rgba(255, 90, 31, 0.4);
   }
   .textarea {
     @apply input resize-none;
@@ -222,7 +219,7 @@
     box-shadow:
       inset 0 1px 0 0 #fff,
       0 0 0 1px rgba(255, 106, 43, 0.22),
-      0 18px 40px -16px rgba(255, 61, 119, 0.35);
+      0 18px 40px -16px rgba(255, 90, 31, 0.35);
   }
   /* Dark liquid glass — sidebar, marketing surfaces. */
   .card-dark {
@@ -288,7 +285,7 @@
   }
   .badge-premium {
     @apply badge text-violet-700 ring-violet-600/15;
-    background: linear-gradient(115deg, rgba(255, 181, 71, 0.18), rgba(255, 61, 119, 0.12), rgba(124, 92, 255, 0.16));
+    background: linear-gradient(115deg, rgba(255, 181, 71, 0.18), rgba(255, 90, 31, 0.12), rgba(232, 74, 18, 0.16));
   }
 
   .gradient-text,
@@ -338,7 +335,7 @@
     background: var(--sunset);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 14px -4px rgba(255, 61, 119, 0.55);
+      0 4px 14px -4px rgba(255, 90, 31, 0.55);
   }
   .toggle input:checked + .slider::before {
     transform: translateX(20px);
@@ -468,7 +465,7 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, #ffb547, #ff6a2b, #ff3d77, #7c5cff, #ffb547);
+    background: linear-gradient(135deg, #ffb547, #ff6a2b, #ff5a1f, #e84a12, #ffb547);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -495,7 +492,7 @@
   }
   .tilt-card:hover {
     transform: perspective(1200px) rotateX(4deg) rotateY(-6deg) translateY(-6px);
-    box-shadow: 0 35px 80px -20px rgba(255, 61, 119, 0.4);
+    box-shadow: 0 35px 80px -20px rgba(255, 90, 31, 0.4);
   }
   .tilt-card-r:hover {
     transform: perspective(1200px) rotateX(4deg) rotateY(6deg) translateY(-6px);
@@ -536,7 +533,7 @@
     background: radial-gradient(
       420px circle at var(--mx, 50%) var(--my, 50%),
       rgba(255, 106, 43, 0.14),
-      rgba(255, 61, 119, 0.08) 35%,
+      rgba(255, 90, 31, 0.08) 35%,
       transparent 65%
     );
     pointer-events: none;
@@ -550,15 +547,15 @@
     background-color: #fbfaf8;
     background-image:
       radial-gradient(at 12% 18%, rgba(255, 181, 71, 0.18) 0px, transparent 50%),
-      radial-gradient(at 88% 12%, rgba(124, 92, 255, 0.12) 0px, transparent 50%),
-      radial-gradient(at 70% 92%, rgba(255, 61, 119, 0.12) 0px, transparent 50%);
+      radial-gradient(at 88% 12%, rgba(232, 74, 18, 0.12) 0px, transparent 50%),
+      radial-gradient(at 70% 92%, rgba(255, 90, 31, 0.12) 0px, transparent 50%);
   }
   .bg-mesh-dark {
     background-color: #06050a;
     background-image:
       radial-gradient(at 18% 12%, rgba(255, 106, 43, 0.28) 0px, transparent 50%),
-      radial-gradient(at 85% 20%, rgba(124, 92, 255, 0.28) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(255, 61, 119, 0.22) 0px, transparent 55%);
+      radial-gradient(at 85% 20%, rgba(232, 74, 18, 0.28) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(255, 90, 31, 0.22) 0px, transparent 55%);
   }
   .bg-dot-grid {
     background-image: radial-gradient(rgba(15, 23, 42, 0.09) 1px, transparent 1px);
@@ -610,7 +607,7 @@
   .ring-glow {
     box-shadow:
       0 0 0 1px rgba(255, 106, 43, 0.3),
-      0 0 24px 4px rgba(255, 61, 119, 0.35);
+      0 0 24px 4px rgba(255, 90, 31, 0.35);
   }
 
   .reveal-up {
@@ -630,7 +627,7 @@
   }
 
   .text-gradient-animated {
-    background: linear-gradient(120deg, #ffb547, #ff6a2b, #ff3d77, #7c5cff, #ff3d77, #ffb547);
+    background: linear-gradient(120deg, #ffb547, #ff6a2b, #ff5a1f, #e84a12, #ff5a1f, #ffb547);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -663,4 +660,120 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dashboard shell (Nov 2026) — Botlify orange / black / white.
+   Additive only: new tokens + new classes. Nothing above is changed.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --brand: #ff5a1f;
+  --brand-hover: #e84a12;
+  --brand-tint: #fff1ea;
+  --ink: #0a0a0a;
+  --hairline: rgba(10, 10, 10, 0.08);
+  --topbar-h: 64px;
+}
+
+@layer components {
+  /* Solid orange primary — the dashboard's main action button. */
+  .btn-brand {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      select-none whitespace-nowrap text-white
+      focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none;
+    background: var(--brand);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 1px 2px rgba(10, 10, 10, 0.12),
+      0 8px 20px -10px rgba(255, 90, 31, 0.7);
+    transition:
+      transform 0.3s var(--spring),
+      background-color 0.2s ease,
+      box-shadow 0.3s var(--out-expo);
+  }
+  .btn-brand:hover {
+    background: var(--brand-hover);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 2px 4px rgba(10, 10, 10, 0.12),
+      0 14px 28px -12px rgba(255, 90, 31, 0.75);
+  }
+  .btn-brand:active {
+    transform: scale(0.97);
+  }
+  /* Solid black — confident secondary for the shell. */
+  .btn-ink {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      select-none whitespace-nowrap text-white
+      focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none;
+    background: var(--ink);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 6px 16px -10px rgba(10, 10, 10, 0.6);
+    transition:
+      transform 0.3s var(--spring),
+      background-color 0.2s ease;
+  }
+  .btn-ink:hover {
+    background: #262626;
+    transform: translateY(-1px);
+  }
+  .btn-ink:active {
+    transform: scale(0.97);
+  }
+  /* Plain white surface with a crisp hairline — readable all day. */
+  .surface {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow:
+      0 0 0 1px var(--hairline),
+      0 1px 2px rgba(10, 10, 10, 0.04),
+      0 8px 24px -16px rgba(10, 10, 10, 0.14);
+  }
+  /* Floating menus/popovers in the shell. Solid — no backdrop blur. */
+  .popover {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow:
+      0 0 0 1px var(--hairline),
+      0 4px 8px -2px rgba(10, 10, 10, 0.06),
+      0 24px 56px -20px rgba(10, 10, 10, 0.28);
+  }
+  .kbd {
+    @apply inline-flex min-w-[20px] items-center justify-center rounded-md bg-white px-1.5 py-0.5 font-mono text-[10px] font-medium text-ink-500;
+    box-shadow: inset 0 -1px 0 rgba(10, 10, 10, 0.08), 0 0 0 1px rgba(10, 10, 10, 0.08);
+  }
+}
+
+@layer utilities {
+  /* The only backdrop-blur in the shell: the sticky top bar. */
+  .topbar-glass {
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
+  .text-brand-ink {
+    color: var(--brand);
+  }
+  .animate-bell-ring {
+    animation: bellRing 0.9s var(--out-expo) 1;
+    transform-origin: 50% 10%;
+  }
+  .animate-badge-pop {
+    animation: badgePop 0.5s var(--spring) 1;
+  }
+}
+
+@keyframes bellRing {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(16deg); }
+  30% { transform: rotate(-13deg); }
+  45% { transform: rotate(9deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(3deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes badgePop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
 }

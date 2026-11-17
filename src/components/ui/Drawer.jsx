@@ -5,7 +5,8 @@ import { clsx } from "clsx";
 
 /**
  * Side drawer that slides in from the right (default) or left.
- * Closes on ESC or backdrop click. Liquid-glass panel on a spring.
+ * Closes on ESC or backdrop click. Crisp white panel on a spring with an
+ * orange top edge.
  */
 export default function Drawer({
   open,
@@ -37,40 +38,39 @@ export default function Drawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-night-950/40 backdrop-blur-md"
+            transition={{ duration: 0.18 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
             onClick={onClose}
           />
           <motion.div
-            initial={{ x: fromRight ? "104%" : "-104%", opacity: 0.6 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: fromRight ? "104%" : "-104%", opacity: 0.6 }}
-            transition={{ type: "spring", stiffness: 380, damping: 36, mass: 0.9 }}
+            initial={{ x: fromRight ? "104%" : "-104%" }}
+            animate={{ x: 0 }}
+            exit={{ x: fromRight ? "104%" : "-104%", transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } }}
+            transition={{ type: "spring", stiffness: 420, damping: 40, mass: 0.9 }}
             className={clsx(
-              "glass-strong absolute bottom-0 top-0 flex flex-col overflow-hidden sm:bottom-2 sm:top-2",
+              "absolute bottom-0 top-0 flex flex-col overflow-hidden bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.06),0_32px_80px_-24px_rgba(10,10,10,0.45)] sm:bottom-2 sm:top-2",
               fromRight ? "right-0 rounded-l-3xl sm:right-2 sm:rounded-3xl" : "left-0 rounded-r-3xl sm:left-2 sm:rounded-3xl",
               width,
             )}
             role="dialog"
             aria-modal="true"
           >
-            {/* sunset hairline along the top edge */}
-            <div aria-hidden className="absolute inset-x-6 top-0 h-px bg-sunset opacity-60" />
+            <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-[#FF5A1F]" />
             {title && (
-              <div className="flex items-center justify-between gap-4 border-b border-ink-900/[0.06] px-5 py-4">
-                <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">{title}</h2>
+              <div className="flex items-center justify-between gap-4 border-b border-black/[0.06] px-5 py-4">
+                <h2 className="font-geist text-base font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="group -mr-1 grid h-9 w-9 place-items-center rounded-xl text-ink-400 transition hover:bg-ink-900/[0.05] hover:text-ink-800 active:scale-90"
+                  className="group -mr-1 grid h-9 w-9 place-items-center rounded-full text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 active:scale-90"
                   aria-label="Close"
                 >
-                  <X className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />
+                  <X className="h-4 w-4 transition-transform duration-300 ease-spring group-hover:rotate-90" />
                 </button>
               </div>
             )}
             <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
             {footer && (
-              <div className="flex items-center justify-end gap-2 border-t border-ink-900/[0.06] bg-white/50 px-5 py-4">
+              <div className="flex items-center justify-end gap-2 border-t border-black/[0.06] bg-neutral-50/80 px-5 py-4">
                 {footer}
               </div>
             )}

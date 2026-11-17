@@ -8,11 +8,11 @@
  *
  * Layout: a grouped left rail on desktop, a scrollable chip strip on phones.
  * Tab ids are the ?tab= deep-link contract (CommandPalette, ConnectChannelGate
- * and the AI Assistant link to them) — keep them stable.
+ * and the AI Assistant link to them) — keep them stable. ?tab=services opens
+ * the hotel's services editor (ServicesSettings.jsx).
  */
 import { useEffect, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Reveal } from "@/components/fx";
 import api from "@/services/api";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -39,6 +39,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import HolidayModeCard from "@/components/HolidayModeCard";
 import PasswordStrength from "@/components/auth/PasswordStrength";
@@ -55,6 +56,7 @@ const TransfersPage = lazy(() => import("@/pages/hotel/TransfersPage"));
 const IgAiBotPage = lazy(() => import("@/pages/ai-bot/IgAiBotPage"));
 const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
+const ServicesSettings = lazy(() => import("@/pages/settings/ServicesSettings"));
 
 const SUPPORT_EMAIL = "contactus@botlify.site";
 
@@ -64,12 +66,12 @@ const OWN_HEADER = ["property", "transfers", "assistant"];
 function TabFallback() {
   return (
     <div className="space-y-4 py-2" aria-busy="true">
-      <div className="h-6 w-48 rounded-lg bg-ink-900/[0.06] animate-pulse" />
-      <div className="card p-5 space-y-3">
-        <div className="h-4 w-1/3 rounded bg-ink-900/[0.06] animate-pulse" />
-        <div className="h-10 rounded-xl bg-ink-900/[0.06] animate-pulse" />
-        <div className="h-10 rounded-xl bg-ink-900/[0.06] animate-pulse" />
-        <div className="h-10 w-2/3 rounded-xl bg-ink-900/[0.06] animate-pulse" />
+      <div className="h-6 w-48 rounded-lg bg-neutral-100 animate-pulse" />
+      <div className="rounded-2xl border border-neutral-200/80 bg-white p-5 space-y-3">
+        <div className="h-4 w-1/3 rounded bg-neutral-100 animate-pulse" />
+        <div className="h-10 rounded-xl bg-neutral-100 animate-pulse" />
+        <div className="h-10 rounded-xl bg-neutral-100 animate-pulse" />
+        <div className="h-10 w-2/3 rounded-xl bg-neutral-100 animate-pulse" />
       </div>
     </div>
   );
@@ -78,18 +80,18 @@ function TabFallback() {
 /** Section title + one plain-English line, shown above every tab's content. */
 function SectionHeader({ title, subtitle, icon: Icon }) {
   return (
-    <div className="mb-6 flex items-start gap-3">
+    <div className="mb-6 flex items-start gap-3.5 border-b border-neutral-200/70 pb-5 font-geist">
       {Icon && (
-        <span className="hidden sm:grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ring-1 ring-sunset-flame/10">
-          <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        <span className="hidden sm:grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F]">
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
         </span>
       )}
       <div className="min-w-0">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+        <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-[13px] text-ink-500 mt-1 max-w-2xl">{subtitle}</p>
+          <p className="text-[14px] text-neutral-500 mt-0.5 max-w-2xl">{subtitle}</p>
         )}
       </div>
     </div>
@@ -121,6 +123,13 @@ export default function SettingsPage() {
           icon: Hotel,
           subtitle:
             "Rooms, rates, photos, address and the booking sites your rooms sell on.",
+        },
+        {
+          id: "services",
+          label: "Services",
+          icon: Sparkles,
+          subtitle:
+            "Massage, airport pickup, tours and more — shown on your website and offered by your AI.",
         },
         {
           id: "extras",
@@ -195,25 +204,24 @@ export default function SettingsPage() {
   return (
     <div className="min-h-full">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
-        <Reveal className="mb-5 lg:mb-8" y={14}>
-          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
-            Settings
+        <header className="mb-6 lg:mb-8 font-geist">
+          <h1 className="text-[26px] sm:text-[30px] font-semibold tracking-[-0.03em] text-[#0A0A0A]">
+            Settings<span className="text-[#FF5A1F]">.</span>
           </h1>
-          <p className="text-[13px] sm:text-sm text-ink-500 mt-1">
-            Your hotel, channels, AI assistant and{" "}
-            <span className="font-serif italic text-[15px] text-ink-700">account</span>.
+          <p className="text-[14px] sm:text-[15px] text-neutral-500 mt-1">
+            Your hotel, channels, AI assistant and account — all in one place.
           </p>
-        </Reveal>
+        </header>
 
-        <div className="lg:flex lg:gap-8">
+        <div className="lg:flex lg:gap-10">
           {/* Left rail (desktop) / chip strip (phones & tablets). */}
           <nav
             aria-label="Settings sections"
-            className="lg:w-[236px] lg:shrink-0 mb-6 lg:mb-0"
+            className="lg:w-[220px] lg:shrink-0 mb-6 lg:mb-0 font-geist"
           >
-            {/* Phones/tablets: one scrollable row of glass chips with a sliding pill. */}
+            {/* Phones/tablets: one scrollable row of chips with a sliding pill. */}
             <div className="lg:hidden -mx-4 px-4 overflow-x-auto no-scrollbar pb-1">
-              <div className="inline-flex gap-1 rounded-2xl bg-ink-900/[0.04] p-1 ring-1 ring-ink-900/[0.06]">
+              <div className="inline-flex gap-1 rounded-2xl bg-neutral-100 p-1">
                 {TABS.map((t) => {
                   const Icon = t.icon;
                   const active = tab === t.id;
@@ -222,22 +230,20 @@ export default function SettingsPage() {
                       key={t.id}
                       onClick={() => setTab(t.id)}
                       aria-current={active ? "page" : undefined}
-                      className={`group relative shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[13px] font-medium transition-colors active:scale-[0.96] ${
-                        active ? "text-ink-900" : "text-ink-500 hover:text-ink-800"
+                      className={`relative shrink-0 inline-flex min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-xl px-3.5 text-[13.5px] font-semibold transition-colors active:scale-[0.97] ${
+                        active ? "text-white" : "text-neutral-500 hover:text-[#0A0A0A]"
                       }`}
                     >
                       {active && (
                         <motion.span
                           layoutId="settings-tab-pill-m"
-                          className="absolute inset-0 -z-0 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_4px_12px_-4px_rgba(15,23,42,0.12),inset_0_1px_0_#fff]"
-                          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                          className="absolute inset-0 rounded-xl bg-[#0A0A0A]"
+                          transition={{ type: "spring", stiffness: 500, damping: 38 }}
                         />
                       )}
                       <Icon
-                        className={`relative h-3.5 w-3.5 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
-                          active ? "text-sunset-flame" : ""
-                        }`}
-                        strokeWidth={1.8}
+                        className={`relative h-3.5 w-3.5 ${active ? "text-[#FF5A1F]" : ""}`}
+                        strokeWidth={2}
                       />
                       <span className="relative">{t.label}</span>
                     </button>
@@ -246,55 +252,48 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Desktop: grouped vertical glass rail, sticky while scrolling. */}
-            <div className="hidden lg:block sticky top-6">
-              <div className="card p-2.5 space-y-4">
-                {GROUPS.filter((g) => g.tabs.length).map((g) => (
-                  <div key={g.label}>
-                    <p className="px-3 pt-1.5 mb-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-400">
-                      {g.label}
-                    </p>
-                    <div className="space-y-0.5">
-                      {g.tabs.map((t) => {
-                        const Icon = t.icon;
-                        const active = tab === t.id;
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => setTab(t.id)}
-                            aria-current={active ? "page" : undefined}
-                            className={`group relative w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] transition-[color,transform] duration-300 ease-spring active:scale-[0.97] ${
-                              active
-                                ? "text-ink-900 font-medium"
-                                : "text-ink-600 hover:text-ink-900 hover:translate-x-0.5"
+            {/* Desktop: grouped vertical rail, sticky while scrolling. */}
+            <div className="hidden lg:block sticky top-6 space-y-6">
+              {GROUPS.filter((g) => g.tabs.length).map((g) => (
+                <div key={g.label}>
+                  <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+                    {g.label}
+                  </p>
+                  <div className="space-y-0.5">
+                    {g.tabs.map((t) => {
+                      const Icon = t.icon;
+                      const active = tab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => setTab(t.id)}
+                          aria-current={active ? "page" : undefined}
+                          className={`relative w-full flex min-h-[40px] items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[14px] transition-colors active:scale-[0.98] ${
+                            active
+                              ? "text-white font-semibold"
+                              : "text-neutral-600 hover:bg-neutral-100 hover:text-[#0A0A0A]"
+                          }`}
+                        >
+                          {active && (
+                            <motion.span
+                              layoutId="settings-tab-pill"
+                              className="absolute inset-0 rounded-xl bg-[#0A0A0A] shadow-[0_6px_16px_-8px_rgba(10,10,10,0.5)]"
+                              transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                            />
+                          )}
+                          <Icon
+                            className={`relative h-4 w-4 shrink-0 ${
+                              active ? "text-[#FF5A1F]" : "text-neutral-400"
                             }`}
-                          >
-                            {active && (
-                              <motion.span
-                                layoutId="settings-tab-pill"
-                                className="absolute inset-0 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08),0_6px_16px_-6px_rgba(255,106,43,0.28),inset_0_1px_0_#fff] ring-1 ring-sunset-flame/15"
-                                transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                              >
-                                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-sunset" />
-                              </motion.span>
-                            )}
-                            <span
-                              className={`relative grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
-                                active
-                                  ? "bg-sunset-soft text-sunset-flame"
-                                  : "bg-ink-900/[0.04] text-ink-400 group-hover:text-ink-700"
-                              }`}
-                            >
-                              <Icon className="h-4 w-4" strokeWidth={1.8} />
-                            </span>
-                            <span className="relative truncate">{t.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            strokeWidth={2}
+                          />
+                          <span className="relative truncate">{t.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </nav>
 
@@ -330,6 +329,11 @@ export default function SettingsPage() {
               {tab === "property" && (
                 <div className="settings-embed">
                   <PropertyPage />
+                </div>
+              )}
+              {tab === "services" && (
+                <div className="max-w-4xl">
+                  <ServicesSettings />
                 </div>
               )}
               {tab === "extras" && <ExtrasSettings />}

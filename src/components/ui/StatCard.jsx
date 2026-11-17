@@ -4,8 +4,8 @@ import { Spotlight, NumberTicker } from "@/components/fx";
 
 /**
  * KPI stat card used on Dashboard + Analytics.
- * Liquid glass + cursor spotlight, a hopping icon tile, and numeric values
- * count up when they scroll into view.
+ * Crisp white surface + cursor spotlight, a hopping icon tile, and numeric
+ * values count up when they scroll into view.
  */
 export default function StatCard({
   icon: Icon,
@@ -17,15 +17,15 @@ export default function StatCard({
   className,
 }) {
   const tileMap = {
-    brand: "bg-sunset-soft text-sunset-flame ring-sunset-flame/10",
+    brand: "bg-[#FFF1EA] text-[#FF5A1F] ring-[#FF5A1F]/10",
     accent: "bg-amber-500/10 text-amber-600 ring-amber-500/10",
     emerald: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/10",
     amber: "bg-amber-500/10 text-amber-600 ring-amber-500/10",
   };
-  const glowMap = {
-    brand: "bg-sunset",
+  const barMap = {
+    brand: "bg-[#FF5A1F]",
     accent: "bg-amber-400",
-    emerald: "bg-emerald-400",
+    emerald: "bg-emerald-500",
     amber: "bg-amber-400",
   };
 
@@ -33,31 +33,36 @@ export default function StatCard({
   const decimals = isNumber && !Number.isInteger(value) ? Math.min(2, (String(value).split(".")[1] || "").length) : 0;
 
   return (
-    <Spotlight className={clsx("card group relative overflow-hidden p-5", className)}>
-      {/* faint accent glow in the corner, brightens on hover */}
-      <div
+    <Spotlight
+      className={clsx(
+        "surface group relative overflow-hidden p-5 transition-transform duration-300 ease-spring hover:-translate-y-0.5",
+        className,
+      )}
+    >
+      {/* accent bar that grows on hover */}
+      <span
         aria-hidden
         className={clsx(
-          "pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full opacity-[0.12] blur-2xl transition-opacity duration-500 group-hover:opacity-25",
-          glowMap[accent] || glowMap.brand,
+          "absolute left-5 top-0 h-[3px] w-8 origin-left rounded-b-full transition-transform duration-500 ease-out-expo group-hover:scale-x-[2.5]",
+          barMap[accent] || barMap.brand,
         )}
       />
       <div className="relative">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <span className="text-[13px] font-medium text-ink-500">{label}</span>
+          <span className="text-[13px] font-medium text-neutral-500">{label}</span>
           {Icon && (
             <div
               className={clsx(
-                "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 ring-inset transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] group-hover:scale-105",
+                "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 ring-inset transition-transform duration-300 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] group-hover:scale-105",
                 tileMap[accent] || tileMap.brand,
               )}
             >
-              <Icon className="h-4.5 w-4.5" strokeWidth={1.8} />
+              <Icon className="h-4.5 w-4.5" strokeWidth={1.9} />
             </div>
           )}
         </div>
         <div className="flex flex-wrap items-baseline gap-2">
-          <span className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink-900 tabular-nums">
+          <span className="font-geist text-3xl font-semibold tracking-[-0.04em] text-neutral-950 tabular-nums">
             {isNumber ? <NumberTicker value={value} decimals={decimals} /> : value}
           </span>
           {typeof trend === "number" && (
@@ -74,7 +79,7 @@ export default function StatCard({
             </span>
           )}
         </div>
-        {hint && <p className="mt-2 text-xs text-ink-400">{hint}</p>}
+        {hint && <p className="mt-2 text-xs text-neutral-400">{hint}</p>}
       </div>
     </Spotlight>
   );

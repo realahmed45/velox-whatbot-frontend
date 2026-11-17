@@ -6,8 +6,9 @@
  * never pay a complexity tax for a feature built for groups. It only appears
  * once a second property exists.
  *
- * Lives in the sidebar under the logo, on the dark surface, so it reads as
- * "which account am I in" rather than as a filter control.
+ * variant="chip"  → compact pill in the top bar (default)
+ * variant="block" → full-width card (mobile "More" sheet)
+ * `collapsed` (legacy) renders an icon-only button that opens Property & Rooms.
  */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +18,7 @@ import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
 import { usePropertyStore } from "@/store/propertyStore";
 
-export default function PropertySwitcher({ collapsed, onNavigate }) {
+export default function PropertySwitcher({ collapsed, onNavigate, variant = "chip", className }) {
   const navigate = useNavigate();
   const { activeWorkspace } = useAuthStore();
   const properties = usePropertyStore((s) => s.properties);
@@ -32,7 +33,7 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
     if (activeWorkspace) fetchProperties(activeWorkspace);
   }, [activeWorkspace, fetchProperties]);
 
-  // Close on outside click / Escape — the sidebar has no overlay of its own.
+  // Close on outside click / Escape.
   useEffect(() => {
     if (!open) return undefined;
     const onDown = (e) => {
@@ -52,9 +53,7 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
 
   const chosen = activeWorkspace ? selectedByWorkspace[activeWorkspace] : null;
   const activeId =
-    chosen && properties.some((p) => String(p._id) === String(chosen))
-      ? chosen
-      : properties[0]?._id;
+    chosen && properties.some((p) => String(p._id) === String(chosen)) ? chosen : properties[0]?._id;
   const active = properties.find((p) => String(p._id) === String(activeId));
 
   const pick = (id) => {
@@ -72,44 +71,55 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
 
   if (collapsed) {
     return (
-      <div className="px-3 pt-3" ref={wrapRef}>
+      <div className={className} ref={wrapRef}>
         <button
           type="button"
           onClick={() => navigate("/dashboard/property")}
           title={active?.name || "Properties"}
-          className="group flex h-10 w-full items-center justify-center rounded-xl bg-white/[0.06] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-white/[0.08] transition hover:bg-white/[0.1] hover:text-white active:scale-95"
+          className="grid h-9 w-9 place-items-center rounded-full text-neutral-600 ring-1 ring-black/[0.08] transition hover:bg-neutral-50 hover:text-neutral-950 active:scale-95"
         >
-          <Hotel className="h-4 w-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]" strokeWidth={1.8} />
+          <Hotel className="h-4 w-4" strokeWidth={1.9} />
         </button>
       </div>
     );
   }
 
+  const block = variant === "block";
+
   return (
-    <div className="relative px-3 pt-3" ref={wrapRef}>
+    <div className={clsx("relative", className)} ref={wrapRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
+        title={active?.name}
         className={clsx(
-          "group flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 transition active:scale-[0.98]",
-          open ? "bg-white/[0.1] ring-white/[0.14]" : "bg-white/[0.05] ring-white/[0.08] hover:bg-white/[0.09]",
+          "group flex items-center text-left ring-1 transition active:scale-[0.98]",
+          block ? "w-full gap-3 rounded-2xl bg-white px-3 py-2.5" : "h-9 max-w-[190px] gap-2 rounded-full pl-1 pr-2.5",
+          open ? "bg-neutral-100 ring-black/[0.12]" : "bg-white ring-black/[0.08] hover:bg-neutral-50 hover:ring-black/[0.14]",
         )}
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_16px_-6px_rgba(255,61,119,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
-          <Hotel className="h-4 w-4" strokeWidth={1.8} />
+        <span
+          className={clsx(
+            "grid shrink-0 place-items-center bg-[#FFF1EA] text-[#FF5A1F] transition-transform duration-300 ease-spring group-hover:-rotate-6",
+            block ? "h-9 w-9 rounded-xl" : "h-7 w-7 rounded-full",
+          )}
+        >
+          <Hotel className="h-4 w-4" strokeWidth={1.9} />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">Property</span>
-          <span className="block truncate text-[13px] font-semibold text-white">
+        <span className={clsx("min-w-0 flex-1", !block && "hidden xl:block")}>
+          {block && (
+            <span className="block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-neutral-400">Property</span>
+          )}
+          <span className={clsx("block truncate font-semibold text-neutral-900", block ? "text-[14px]" : "text-[13px]")}>
             {active?.name || "Choose a property"}
           </span>
         </span>
         <ChevronDown
           className={clsx(
-            "h-4 w-4 shrink-0 text-white/40 transition-transform duration-500 ease-spring",
-            open && "rotate-180 text-white/80",
+            "h-3.5 w-3.5 shrink-0 text-neutral-400 transition-transform duration-300 ease-spring",
+            open && "rotate-180 text-neutral-700",
           )}
         />
       </button>
@@ -118,14 +128,18 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
         {open && (
           <motion.div
             role="listbox"
-            initial={{ opacity: 0, scale: 0.96, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, scale: 0.96, y: -6 }}
-            transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            style={{ transformOrigin: "top center" }}
-            className="glass-darker absolute left-3 right-3 top-full z-30 mt-2 overflow-hidden rounded-2xl py-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)]"
+            initial={{ opacity: 0, scale: 0.98, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: -4, transition: { duration: 0.12 } }}
+            transition={{ type: "spring", stiffness: 520, damping: 36 }}
+            style={{ transformOrigin: block ? "top center" : "top right" }}
+            className={clsx(
+              "popover absolute top-full z-50 mt-2.5 overflow-hidden py-1.5",
+              block ? "left-0 right-0" : "right-0 w-72",
+            )}
           >
-            <div className="sidebar-scroll max-h-64 overflow-y-auto px-1.5">
+            <p className="px-3 pb-1 pt-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-neutral-400">Properties</p>
+            <div className="max-h-64 overflow-y-auto px-1.5">
               {properties.map((p) => {
                 const isActive = String(p._id) === String(activeId);
                 return (
@@ -136,34 +150,31 @@ export default function PropertySwitcher({ collapsed, onNavigate }) {
                     aria-selected={isActive}
                     onClick={() => pick(p._id)}
                     className={clsx(
-                      "group/opt relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition",
-                      isActive ? "bg-white/[0.08] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white",
+                      "relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors",
+                      isActive ? "bg-[#FFF1EA] text-neutral-950" : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950",
                     )}
                   >
-                    {isActive && (
-                      <span aria-hidden className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-sunset" />
-                    )}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[13px] font-semibold">{p.name}</span>
                       {(p.city || p.country) && (
-                        <span className="block truncate text-[11px] text-white/40">
+                        <span className="block truncate text-[11.5px] text-neutral-500">
                           {[p.city, p.country].filter(Boolean).join(", ")}
                         </span>
                       )}
                     </span>
-                    {isActive && <Check className="h-4 w-4 shrink-0 text-sunset-gold" strokeWidth={2.5} />}
+                    {isActive && <Check className="h-4 w-4 shrink-0 text-[#FF5A1F]" strokeWidth={2.5} />}
                   </button>
                 );
               })}
             </div>
 
-            <div className="mx-1.5 mt-1.5 border-t border-white/[0.08] pt-1.5">
+            <div className="mx-1.5 mt-1.5 border-t border-black/[0.06] pt-1.5">
               <button
                 type="button"
                 onClick={addAnother}
-                className="group/add flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-white/65 transition hover:bg-white/[0.06] hover:text-white"
+                className="group/add flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950"
               >
-                <Plus className="h-4 w-4 shrink-0 text-sunset-gold transition-transform duration-500 ease-spring group-hover/add:rotate-90" />
+                <Plus className="h-4 w-4 shrink-0 text-[#FF5A1F] transition-transform duration-300 ease-spring group-hover/add:rotate-90" />
                 <span className="text-[13px] font-semibold">Add another property</span>
               </button>
             </div>

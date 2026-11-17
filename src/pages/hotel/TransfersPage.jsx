@@ -24,7 +24,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 import DriversPanel from "@/components/DriversPanel";
 import AssignDriver from "@/components/AssignDriver";
 import { AnimatePresence, motion } from "framer-motion";
-import { Magnetic, PulseDot, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
+import { Magnetic, NumberTicker, PulseDot, Reveal, SlidingTabs, Spotlight } from "@/components/fx";
 
 const STATUS_STYLE = {
   pending: "badge-yellow",
@@ -120,28 +120,42 @@ export default function TransfersPage() {
 
   const rows = tab === "upcoming" ? upcoming : past;
 
+  // Read-only counts for the KPI strip.
+  const kpis = useMemo(() => {
+    const now = new Date();
+    const today = upcoming.filter(
+      (t) => new Date(t.pickupAt).toDateString() === now.toDateString(),
+    ).length;
+    return {
+      upcoming: upcoming.length,
+      today,
+      pending: transfers.filter((t) => t.status === "pending").length,
+      completed: transfers.filter((t) => t.status === "completed").length,
+    };
+  }, [upcoming, transfers]);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
       <Reveal>
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
+        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
           <div className="group flex items-center gap-3.5 min-w-0">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
               <Car className="h-5 w-5" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+              <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
                 Transfers
               </h1>
-              <p className="text-sm text-ink-500">
+              <p className="text-sm text-black/55">
                 Airport pickups and drop-offs for your{" "}
-                <span className="font-serif italic">guests</span>.
+                <span className="font-semibold text-[#FF5A1F]">guests</span>.
               </p>
             </div>
           </div>
           <Magnetic strength={0.25}>
             <button
               onClick={() => setShowNew(true)}
-              className="btn-primary group min-h-[44px]"
+              className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px]"
             >
               <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" />{" "}
               Add transfer
@@ -150,8 +164,48 @@ export default function TransfersPage() {
         </div>
       </Reveal>
 
+      {/* KPI strip */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {[
+          { label: "Upcoming", value: kpis.upcoming, icon: PlaneLanding, hero: true },
+          { label: "Today", value: kpis.today, icon: Car },
+          { label: "Pending", value: kpis.pending, icon: Loader2 },
+          { label: "Completed", value: kpis.completed, icon: CheckCircle2 },
+        ].map((k, i) => (
+          <Reveal key={k.label} delay={i * 0.05} className="h-full">
+            <div
+              className={`group relative h-full overflow-hidden rounded-2xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 sm:p-5 ${
+                k.hero
+                  ? "bg-[#0A0A0A] text-white shadow-[0_24px_48px_-28px_rgba(10,10,10,0.8)]"
+                  : "bg-white ring-1 ring-black/[0.06] hover:shadow-[0_20px_40px_-26px_rgba(255,90,31,0.55)] hover:ring-[#FF5A1F]/25"
+              }`}
+            >
+              {k.hero && (
+                <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#FF5A1F] opacity-30 blur-2xl" />
+              )}
+              <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-[#FF5A1F] transition-transform duration-500 group-hover:scale-x-100" />
+              <div className="relative flex items-start justify-between gap-2">
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${k.hero ? "text-white/55" : "text-black/45"}`}>
+                  {k.label}
+                </p>
+                <span
+                  className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                    k.hero ? "bg-[#FF5A1F] text-white" : "bg-[#FFF1EA] text-[#FF5A1F]"
+                  }`}
+                >
+                  <k.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                </span>
+              </div>
+              <p className={`relative mt-3 font-geist text-3xl font-semibold tracking-[-0.04em] tabular-nums sm:text-[34px] ${k.hero ? "text-white" : "text-[#0A0A0A]"}`}>
+                {loading ? "—" : <NumberTicker value={k.value} />}
+              </p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
       {/* Tabs + status filter */}
-      <div className="flex flex-wrap items-center gap-2 mb-5">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <SlidingTabs
           items={[
             { value: "upcoming", label: `Upcoming (${upcoming.length})`, icon: PlaneLanding },
@@ -163,7 +217,7 @@ export default function TransfersPage() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="input ml-auto w-auto min-h-[40px] py-2 pr-8"
+          className="input w-full min-h-[42px] rounded-xl bg-white py-2 pr-8 sm:ml-auto sm:w-auto"
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
@@ -176,7 +230,7 @@ export default function TransfersPage() {
       {loading ? (
         <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="card flex items-center gap-3 p-4">
+            <div key={i} className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/[0.06]">
               <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
               <div className="flex-1 space-y-2">
                 <div className="h-4 w-48 max-w-full rounded bg-ink-900/[0.06] animate-pulse" />
@@ -193,14 +247,14 @@ export default function TransfersPage() {
           action={
             <button
               onClick={() => setShowNew(true)}
-              className="btn-primary group min-h-[44px]"
+              className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px]"
             >
               <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" /> Add a transfer
             </button>
           }
         />
       ) : (
-        <motion.div layout className="space-y-2.5">
+        <motion.div layout className="grid gap-3 xl:grid-cols-2">
           <AnimatePresence initial={false}>
           {rows.map((t, i) => {
             const DirIcon = t.direction === "dropoff" ? PlaneTakeoff : PlaneLanding;
@@ -214,20 +268,20 @@ export default function TransfersPage() {
                 transition={{ ...spring, delay: Math.min(i, 8) * 0.04 }}
               >
               <Spotlight
-                className="card group p-4 flex flex-wrap items-center gap-3 transition-[transform,box-shadow] duration-500 ease-spring hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgba(255,106,43,0.18),0_16px_36px_-18px_rgba(255,61,119,0.35)]"
+                className="card group h-full p-4 flex flex-wrap items-center gap-3 overflow-hidden transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(255,90,31,0.25),0_20px_40px_-24px_rgba(255,90,31,0.45)] sm:p-5"
               >
                 <div
                   className={`grid h-11 w-11 place-items-center rounded-xl shrink-0 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
                     t.direction === "dropoff"
                       ? "bg-sky-50 text-sky-600 ring-1 ring-sky-500/15"
-                      : "bg-sunset-soft text-sunset-flame"
+                      : "bg-[#FFF1EA] text-[#FF5A1F]"
                   }`}
                 >
                   <DirIcon className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="flex-1 min-w-[200px]">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-display font-semibold tracking-[-0.01em] text-ink-900">
+                    <span className="font-geist text-[15px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
                       {t.direction === "dropoff"
                         ? "Hotel → Airport"
                         : "Airport → Hotel"}
@@ -253,7 +307,7 @@ export default function TransfersPage() {
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 mt-1.5">
-                    <span className="font-semibold text-ink-700">
+                    <span className="rounded-md bg-[#0A0A0A] px-1.5 py-0.5 font-semibold text-white">
                       {fmtDT(t.pickupAt)}
                     </span>
                     {t.guestName && (
@@ -418,7 +472,7 @@ function NewTransferModal({ open, onClose, onCreated }) {
           <button
             onClick={submit}
             disabled={saving}
-            className="btn-primary min-h-[40px] disabled:opacity-60"
+            className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] min-h-[40px] disabled:opacity-60"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Add transfer
@@ -441,13 +495,13 @@ function NewTransferModal({ open, onClose, onCreated }) {
               transition={spring}
               className={`group flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-[background-color,box-shadow,color] ${
                 form.direction === val
-                  ? "bg-white text-ink-900 shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.6),0_10px_24px_-12px_rgba(255,61,119,0.45)]"
+                  ? "bg-[#FFF1EA] text-[#0A0A0A] shadow-[0_0_0_1.5px_#FF5A1F,0_10px_24px_-12px_rgba(255,90,31,0.45)]"
                   : "bg-white/60 text-ink-600 ring-1 ring-ink-900/[0.08] hover:bg-white"
               }`}
             >
               <Icon
                 className={`w-4 h-4 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 ${
-                  form.direction === val ? "text-sunset-flame" : ""
+                  form.direction === val ? "text-[#FF5A1F]" : ""
                 }`}
               />{" "}
               {l}

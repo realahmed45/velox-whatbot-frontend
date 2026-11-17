@@ -19,9 +19,14 @@
  *
  *   Manual lane — type → name → location → rooms → pickups → website step.
  *
- * Then: choose a website design (full live previews) → WhatsApp number for
- * the site → photos (or stock for now) → "your site is live at
- * botlify.site/<slug>" → connect WhatsApp → done.
+ * Then: photos (gallery + more per room, or stock for now) → the services the
+ * hotel offers (spa, tours… shown on the website) → WhatsApp number for the
+ * site → choose a website design LAST (full live previews; picking one builds
+ * the site) → "your site is live at botlify.site/<slug>" → connect WhatsApp
+ * → done.
+ *
+ * A room added by hand needs at least one photo before Next unlocks. Imported
+ * rooms (they come with OTA photos) don't.
  *
  * Saving happens as you go so a refresh or a WhatsApp OAuth round trip never
  * loses work. Answers are mirrored to sessionStorage, and the OAuth return URL
@@ -70,6 +75,8 @@ import { LIVE_OTA_CHANNELS } from "@/data/otaChannels";
 import TemplateGallery from "@/website/TemplateGallery";
 import SiteRenderer from "@/website/SiteRenderer";
 import { GalleryManager } from "@/website/editor";
+import PhotoUploader from "@/components/PhotoUploader";
+import ServicesStep, { cleanServices } from "./ServicesStep";
 import { SITE_HOST, siteUrl, websiteApi } from "@/website/api";
 import { templateById } from "@/website/templates";
 
@@ -110,9 +117,10 @@ const SCREENS = [
   { id: "rooms", phase: 2 },
   { id: "pickup", phase: 2 },
   { id: "phase3", phase: 3, intro: true },
-  { id: "template", phase: 3 },
-  { id: "whatsapp", phase: 3 },
   { id: "photos", phase: 3 },
+  { id: "services", phase: 3 },
+  { id: "whatsapp", phase: 3 },
+  { id: "template", phase: 3 }, // last — picking a design makes the site live
   { id: "sitelive", phase: 3 },
   { id: "messaging", phase: 3 },
   { id: "done", phase: 3 },
@@ -133,17 +141,23 @@ function nextOf(s) {
     case "phase2": return "rooms";
     case "rooms": return "pickup";
     case "pickup": return "phase3";
-    case "phase3": return "template";
-    case "template": return "whatsapp";
-    case "whatsapp": return "photos";
-    case "photos": return "sitelive";
+    case "phase3": return "photos";
+    case "photos": return "services";
+    case "services": return "whatsapp";
+    case "whatsapp": return "template";
+    case "template": return "sitelive";
     case "sitelive": return "messaging";
     case "messaging": return "done";
     default: return "done";
   }
 }
 
-const blankRoom = () => ({ name: "", units: 1, price: "" });
+// Rooms are named "Room 1", "Room 2"… by default — easy to understand, and
+// easy to rename. `photos` is [{ url, caption, position }] like the room type.
+const blankRoom = (n = 1) => ({ name: `Room ${n}`, units: 1, price: "", photos: [] });
+
+/** A room typed in by hand must have at least one photo; imported ones don't. */
+const roomNeedsPhoto = (r) => !r.imported && !(r.photos || []).some((p) => p.url);
 
 const initial = () => ({
   screen: "welcome",
@@ -155,7 +169,7 @@ const initial = () => ({
   country: "Indonesia",
   address: "",
   currency: "IDR",
-  rooms: [{ name: "Standard Room", units: 1, price: "" }],
+  rooms: [blankRoom(1)],
   otas: {}, // { booking: "1234567", airbnb: "" }
   imported: false,
   ownTaxi: null,
@@ -166,6 +180,7 @@ const initial = () => ({
   siteSlug: null,
   whatsapp: "",
   photos: [], // the hotel's own photos for the website gallery
+  services: [], // [{ key, name, description, price, priceUnit, icon, enabled }]
 });
 
 function load() {
@@ -265,6 +280,13 @@ export default function HotelOnboarding() {
       .catch(() => {});
   }, [s.screen, waOpen]);
 
+  // The site is generated after this screen now, so prefill from the account.
+  useEffect(() => {
+    if (s.screen !== "whatsapp" || s.whatsapp || !user?.phone) return;
+    set({ whatsapp: user.phone });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.screen]);
+
   // The template gallery previews every design with the hotel's own details.
   useEffect(() => {
     if (s.screen !== "template" || previewSite) return;
@@ -333,6 +355,11 @@ export default function HotelOnboarding() {
         baseRate: Number(r.price),
         currency: s.currency,
       };
+      if (Array.isArray(r.photos)) {
+        payload.photos = r.photos
+          .filter((p) => p.url)
+          .map((p, j) => ({ url: p.url, caption: p.caption || "", position: j }));
+      }
       if (!ids[i]) {
         payload.maxAdults = 2;
         payload.maxOccupancy = 2;
@@ -377,6 +404,13 @@ export default function HotelOnboarding() {
     }
   };
 
+  // Services → the property (the website's Services section + the AI read it).
+  const saveServices = async () => {
+    const services = cleanServices(s.services);
+    if (!services.length || !s.propertyId) return; // skipped
+    await api.put(`/hotel/properties/${s.propertyId}`, { services });
+  };
+
   // ── Fast lane: import from the OTA listing ────────────────────────────
   const applyImport = (data) => {
     const p = data.property || {};
@@ -391,7 +425,13 @@ export default function HotelOnboarding() {
       address: p.address || "",
       currency: p.currency || s.currency,
       rooms: rts.length
-        ? rts.map((r) => ({ name: r.name, units: r.unitsCount || 1, price: r.baseRate ? String(r.baseRate) : "" }))
+        ? rts.map((r) => ({
+            name: r.name,
+            units: r.unitsCount || 1,
+            price: r.baseRate ? String(r.baseRate) : "",
+            photos: (r.photos || []).map((p) => ({ url: p.url, caption: p.caption || "" })),
+            imported: true,
+          }))
         : s.rooms,
       roomIds: rts.map((r) => r._id),
     });
@@ -433,16 +473,24 @@ export default function HotelOnboarding() {
     setBusy(true);
     setChoosing(templateId);
     try {
-      const res = await websiteApi.generate({ templateId });
-      setLiveSite(res.site);
-      const own = (res.website.content?.gallery || []).filter((g) => !g.stock);
+      // Design is the last step: the WhatsApp number and photos were collected
+      // before it, so they go onto the site the moment it's built.
+      const hasWa = String(s.whatsapp || "").replace(/\D/g, "").length >= 8;
+      const res = await websiteApi.generate({
+        templateId,
+        ...(hasWa ? { whatsappNumber: s.whatsapp } : {}),
+      });
       set({
         templateId,
         siteSlug: res.website.slug,
-        whatsapp: s.whatsapp || (res.website.whatsappNumber ? `+${res.website.whatsappNumber}` : user?.phone || ""),
-        photos: s.photos?.length ? s.photos : own,
+        whatsapp: res.website.whatsappNumber ? `+${res.website.whatsappNumber}` : s.whatsapp || user?.phone || "",
       });
-      go("whatsapp");
+      const site = (await savePhotos()) || res.site;
+      setLiveSite(site);
+      if (!(s.photos || []).some((p) => p.url)) {
+        set({ photos: (res.website.content?.gallery || []).filter((g) => !g.stock) });
+      }
+      go("sitelive");
     } catch (e) {
       toast.error(e?.response?.data?.message || "Couldn't create your website — try again.");
     } finally {
@@ -457,9 +505,11 @@ export default function HotelOnboarding() {
     set({ whatsapp: res.website.whatsappNumber ? `+${res.website.whatsappNumber}` : s.whatsapp });
   };
 
+  // Website gallery. Only possible once the site exists (it's built on the
+  // last step) — before that the photos just wait in state.
   const savePhotos = async () => {
     const own = (s.photos || []).filter((p) => p.url);
-    if (!own.length) return; // skipped — the stock gallery stays
+    if (!own.length) return null; // skipped — the stock gallery stays
     const content = {
       gallery: own,
       hero: { image: own[0].url },
@@ -467,6 +517,7 @@ export default function HotelOnboarding() {
     };
     const res = await websiteApi.update({ content });
     setLiveSite(res.site);
+    return res.site;
   };
 
   const finish = async () => {
@@ -495,8 +546,13 @@ export default function HotelOnboarding() {
         await saveRooms(id);
       }
       if (s.screen === "pickup") await savePickup();
-      if (s.screen === "whatsapp") await saveWhatsapp();
-      if (s.screen === "photos") await savePhotos();
+      // The site only exists here if they came Back after building it.
+      if (s.screen === "whatsapp" && s.siteSlug) await saveWhatsapp();
+      if (s.screen === "photos") {
+        await saveRooms(); // the extra room photos
+        if (s.siteSlug) await savePhotos();
+      }
+      if (s.screen === "services") await saveServices();
       if (s.screen === "done") return finish();
       next();
     } catch (e) {
@@ -507,8 +563,10 @@ export default function HotelOnboarding() {
   };
 
   // ── What makes Next available ─────────────────────────────────────────
-  const roomsOk =
+  const roomsPriced =
     s.rooms.length > 0 && s.rooms.every((r) => r.name.trim() && Number(r.price) > 0);
+  const roomsPhotosOk = s.rooms.every((r) => !roomNeedsPhoto(r));
+  const roomsOk = roomsPriced && roomsPhotosOk;
   const canNext = useMemo(() => {
     switch (s.screen) {
       case "start":
@@ -531,6 +589,8 @@ export default function HotelOnboarding() {
         return roomsOk;
       case "pickup":
         return s.ownTaxi === false || (s.ownTaxi === true && s.driver.name.trim() && s.driver.phone.trim());
+      case "photos":
+        return roomsPhotosOk;
       case "template":
         return !!s.templateId && !!s.siteSlug;
       case "whatsapp":
@@ -538,7 +598,7 @@ export default function HotelOnboarding() {
       default:
         return true;
     }
-  }, [s, roomsOk, importChoices]);
+  }, [s, roomsOk, roomsPhotosOk, importChoices]);
 
   // Which way the flow is moving — screens slide in from the right going
   // forward and from the left going back.
@@ -577,9 +637,11 @@ export default function HotelOnboarding() {
           : s.screen === "review"
             ? "All good — continue"
             : s.screen === "template"
-              ? s.templateId ? "Next" : "Pick a design above"
+              ? s.templateId ? "Continue" : "Pick a design above"
               : s.screen === "photos"
                 ? ownPhotos ? "Use these photos" : "Skip — use stock photos for now"
+                : s.screen === "services"
+                  ? cleanServices(s.services).length ? "Next" : "Skip for now"
                 : s.screen === "sitelive"
                   ? "Continue to WhatsApp"
                   : s.screen === "messaging" && !waConnected
@@ -726,11 +788,7 @@ export default function HotelOnboarding() {
             </div>
             <p className="mt-8 mb-3 font-display font-semibold text-ink-950">Rooms &amp; nightly prices</p>
             <RoomsEditor s={s} set={set} />
-            {!roomsOk && (
-              <p className="mt-3 text-sm font-medium text-amber-700">
-                Add a nightly price for every room — your AI quotes these to guests.
-              </p>
-            )}
+            <RoomsWarning priced={roomsPriced} photos={roomsPhotosOk} />
           </Question>
         )}
 
@@ -823,9 +881,10 @@ export default function HotelOnboarding() {
         {screen.id === "rooms" && (
           <Question
             title="What rooms do you have?"
-            sub="One line per kind of room. Ten identical doubles is one line with 10 of them."
+            sub="One line per kind of room, with at least one photo. Ten identical doubles is one line with 10 of them."
           >
             <RoomsEditor s={s} set={set} />
+            <RoomsWarning priced={roomsPriced} photos={roomsPhotosOk} />
           </Question>
         )}
 
@@ -885,8 +944,8 @@ export default function HotelOnboarding() {
 
         {screen.id === "template" && (
           <Question
-            title="Choose your website design"
-            sub="Your hotel gets its own website, free. Every design below is already filled with your details — tap Preview to click through all five pages on desktop or phone."
+            title="Last step: choose your website design"
+            sub="Your hotel gets its own website, free. Every design below is already filled with your details, rooms, photos and services — tap Preview to click through it on desktop or phone. Picking one puts your website live."
           >
             <AnimatePresence>
               {choosing && (
@@ -896,7 +955,7 @@ export default function HotelOnboarding() {
                   exit={{ opacity: 0, y: -6 }}
                   className="mb-4 flex items-center gap-2 rounded-xl bg-ink-900/[0.04] ring-1 ring-ink-900/[0.08] px-4 py-3 text-sm font-medium text-ink-800"
                 >
-                  <Loader2 className="h-4 w-4 animate-spin text-sunset-flame" /> Building your website…
+                  <Loader2 className="h-4 w-4 animate-spin text-sunset-flame" /> Building your website and putting it live…
                 </motion.div>
               )}
             </AnimatePresence>
@@ -936,12 +995,59 @@ export default function HotelOnboarding() {
         {screen.id === "photos" && (
           <Question
             title="Add photos of your place"
-            sub="Upload photos or paste links. Short on time? Skip — we'll use beautiful stock photos for now, and you can swap them any time in Manage your website."
+            sub="Add as many as you like — select several at once or drag them in, then reorder or remove. Short on gallery photos? Skip — we'll use beautiful stock photos for now, and you can swap them any time in Manage your website."
           >
+            <p className="font-display font-semibold text-ink-950">Your place — website gallery</p>
+            <p className="text-sm text-ink-600 mt-1 mb-3">
+              The pool, the lobby, the view. The first one is the big photo at the top of your website.
+            </p>
             {/* The gallery manager sits on a light card. */}
             <div className="card rounded-3xl p-3 sm:p-5 text-ink-900">
               <GalleryManager photos={s.photos || []} onChange={(photos) => set({ photos })} max={24} />
             </div>
+
+            {s.rooms.length > 0 && (
+              <>
+                <p className="mt-10 font-display font-semibold text-ink-950">Your rooms</p>
+                <p className="text-sm text-ink-600 mt-1 mb-3">
+                  More photos per room help guests choose — they show on each room on your website.
+                </p>
+                <div className="space-y-3">
+                  {s.rooms.map((r, i) => (
+                    <div key={i} className="card rounded-3xl p-4 sm:p-5">
+                      <PhotoUploader
+                        label={r.name.trim() || `Room ${i + 1}`}
+                        photos={r.photos || []}
+                        onChange={(photos) =>
+                          set({ rooms: s.rooms.map((x, j) => (j === i ? { ...x, photos } : x)) })
+                        }
+                        max={12}
+                        compact
+                        required={!r.imported}
+                        hint={
+                          r.imported
+                            ? "Add photos of this room, or keep the ones from your listing."
+                            : "Add at least one photo of this room."
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </Question>
+        )}
+
+        {screen.id === "services" && (
+          <Question
+            title="What services do you offer?"
+            sub="Tap everything guests can book or use — massage, tours, airport pickup… They get their own section on your website, and your AI can offer them. Change them any time in Settings."
+          >
+            <ServicesStep
+              services={s.services || []}
+              onChange={(services) => set({ services })}
+              currency={s.currency}
+            />
           </Question>
         )}
 
@@ -1145,7 +1251,7 @@ function Welcome() {
   const steps = [
     ["Tell us about your hotel", "Already on Airbnb or Booking.com? We'll bring it all across."],
     ["Make it stand out", "Your rooms and what they cost a night."],
-    ["Your website & AI", "Pick a design for your free website, then switch your AI on."],
+    ["Your website & AI", "Photos and services, then pick a design for your free website and switch your AI on."],
   ];
   return (
     <div>
@@ -1184,11 +1290,11 @@ const PHASES = {
   },
   2: {
     title: "Make it stand out",
-    body: "Now your rooms — how many of each, and the price per night. Your AI quotes these and your calendar is built from them.",
+    body: "Now your rooms — how many of each, the price per night, and a photo of each. Your AI quotes these and your calendar is built from them.",
   },
   3: {
     title: "Your website & AI",
-    body: "Pick a design and your hotel gets its own website — filled in for you, with a WhatsApp booking button. Then switch your AI on.",
+    body: "Add your photos and the services you offer, then pick a design — your hotel gets its own website, filled in for you, with a WhatsApp booking button. Then switch your AI on.",
   },
 };
 
@@ -1369,7 +1475,8 @@ function RoomsEditor({ s, set }) {
                   <input
                     value={r.name}
                     onChange={(e) => update({ name: e.target.value })}
-                    placeholder="Room name, e.g. Deluxe Double"
+                    placeholder={`Room name, e.g. Room ${i + 1}`}
+                    aria-label={`Room ${i + 1} name`}
                     className="flex-1 min-w-0 font-semibold text-ink-950 placeholder:text-ink-400 outline-none text-[17px] bg-transparent"
                   />
                   {s.rooms.length > 1 && (
@@ -1402,6 +1509,22 @@ function RoomsEditor({ s, set }) {
                     </div>
                   </div>
                 </div>
+                {/* A room typed in by hand needs at least one picture. */}
+                <div className="mt-3 pt-3 border-t border-ink-900/[0.07]">
+                  <PhotoUploader
+                    label="Room photos"
+                    photos={r.photos || []}
+                    onChange={(photos) => update({ photos })}
+                    max={12}
+                    compact
+                    required={!r.imported}
+                    hint={
+                      r.imported
+                        ? "Photos from your listing will be used — add more if you like."
+                        : "Add at least one photo of this room — guests book what they can see."
+                    }
+                  />
+                </div>
               </motion.div>
             );
           })}
@@ -1409,7 +1532,7 @@ function RoomsEditor({ s, set }) {
 
       <motion.button
         type="button"
-        onClick={() => set({ rooms: [...s.rooms, blankRoom()] })}
+        onClick={() => set({ rooms: [...s.rooms, blankRoom(s.rooms.length + 1)] })}
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         transition={SPRING}
@@ -1419,6 +1542,25 @@ function RoomsEditor({ s, set }) {
         Add another room
       </motion.button>
     </>
+  );
+}
+
+/** Why Next is still locked on a rooms screen. */
+function RoomsWarning({ priced, photos }) {
+  if (priced && photos) return null;
+  return (
+    <div role="status" className="mt-3 space-y-1">
+      {!priced && (
+        <p className="text-sm font-medium text-amber-700">
+          Add a name and nightly price for every room — your AI quotes these to guests.
+        </p>
+      )}
+      {!photos && (
+        <p className="text-sm font-medium text-amber-700">
+          Add at least one photo for every room you add yourself.
+        </p>
+      )}
+    </div>
   );
 }
 

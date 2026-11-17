@@ -141,7 +141,7 @@ function GuestPanel({ guest, onClose }) {
       {guest && (
         <div className="space-y-5">
           <div className="flex items-center gap-3.5">
-            <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-sunset font-display text-lg font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+            <div className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-full bg-[#FF5A1F] font-geist text-xl font-semibold text-white shadow-[0_10px_22px_-10px_rgba(255,90,31,0.7)]">
               {(guest.name?.[0] || "G").toUpperCase()}
             </div>
             <div className="min-w-0">
@@ -160,19 +160,19 @@ function GuestPanel({ guest, onClose }) {
           <div className="grid grid-cols-3 gap-2.5">
             <div className="rounded-2xl bg-white/80 p-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
               <p className="text-[11px] text-ink-500">Stays</p>
-              <p className="mt-0.5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+              <p className="mt-0.5 font-geist text-xl font-semibold tracking-[-0.02em] text-ink-900">
                 <NumberTicker value={guest.stays} duration={0.8} />
               </p>
             </div>
             <div className="rounded-2xl bg-white/80 p-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
               <p className="text-[11px] text-ink-500">Nights</p>
-              <p className="mt-0.5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+              <p className="mt-0.5 font-geist text-xl font-semibold tracking-[-0.02em] text-ink-900">
                 <NumberTicker value={guest.nights} duration={0.8} />
               </p>
             </div>
-            <div className="rounded-2xl bg-sunset-soft p-3 ring-1 ring-sunset-flame/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-              <p className="text-[11px] text-ink-500">Revenue</p>
-              <p className="mt-1 truncate font-display text-sm font-semibold tabular-nums text-ink-900 sm:text-base">
+            <div className="rounded-2xl bg-[#0A0A0A] p-3">
+              <p className="text-[11px] text-white/55">Revenue</p>
+              <p className="mt-1 truncate font-geist text-sm font-semibold tabular-nums text-white sm:text-base">
                 {money(guest.revenue, guest.currency)}
               </p>
             </div>
@@ -203,7 +203,7 @@ function GuestPanel({ guest, onClose }) {
                   className="flex items-start justify-between gap-3 rounded-2xl bg-white/75 p-3.5 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff] transition-colors duration-300 hover:bg-white"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold tabular-nums text-ink-900">
+                    <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">
                       {fmtDate(b.checkIn)} → {fmtDate(b.checkOut)}
                     </p>
                     <p className="text-xs text-ink-500 mt-0.5 truncate">
@@ -215,7 +215,7 @@ function GuestPanel({ guest, onClose }) {
                     </div>
                   </div>
                   <div className="flex-shrink-0 text-right">
-                    <p className="text-sm font-semibold tabular-nums text-ink-900">
+                    <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">
                       {money(b.totalAmount, b.currency)}
                     </p>
                     {b.status === "cancelled" && (
@@ -308,38 +308,91 @@ export default function GuestsPage() {
     );
   }, [guests, q]);
 
+  // Read-only roster summary for the KPI strip.
+  const summary = useMemo(
+    () => ({
+      total: guests.length,
+      returning: guests.filter((g) => g.returning).length,
+      stays: guests.reduce((n, g) => n + (Number(g.stays) || 0), 0),
+      nights: guests.reduce((n, g) => n + (Number(g.nights) || 0), 0),
+    }),
+    [guests],
+  );
+
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-      <Reveal className="mb-6 flex flex-wrap items-center justify-between gap-4 sm:mb-8">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
+      <Reveal className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
         <div className="flex min-w-0 items-center gap-3.5">
-          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+          <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)]">
             <Users className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+            <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
               Guests
             </h1>
-            <p className="mt-0.5 text-sm text-ink-500">
+            <p className="mt-0.5 text-sm text-black/55">
               Everyone who has{" "}
-              <span className="font-serif text-[1.05em] italic text-ink-700">stayed</span> with
+              <span className="font-semibold text-[#FF5A1F]">stayed</span> with
               you.
             </p>
           </div>
         </div>
-        <div className="group relative w-full sm:w-72">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400 transition-all duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-sunset-flame" />
+        <div className="group relative w-full sm:w-80">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400 transition-all duration-500 ease-spring group-focus-within:rotate-[-12deg] group-focus-within:scale-110 group-focus-within:text-[#FF5A1F]" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name or phone"
-            className="input rounded-2xl py-2.5 pl-10"
+            className="input rounded-xl bg-white py-3 pl-10"
             aria-label="Search guests"
           />
         </div>
       </Reveal>
 
+      {/* KPI strip */}
+      {!loading && !failed && guests.length > 0 && (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {[
+            { label: "Guests", value: summary.total, icon: Users, hero: true },
+            { label: "Returning", value: summary.returning, icon: ChevronRight },
+            { label: "Stays", value: summary.stays, icon: BedDouble },
+            { label: "Nights", value: summary.nights, icon: Moon },
+          ].map((k, i) => (
+            <Reveal key={k.label} delay={i * 0.05} className="h-full">
+              <div
+                className={`group relative h-full overflow-hidden rounded-2xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 sm:p-5 ${
+                  k.hero
+                    ? "bg-[#0A0A0A] text-white shadow-[0_24px_48px_-28px_rgba(10,10,10,0.8)]"
+                    : "bg-white ring-1 ring-black/[0.06] hover:shadow-[0_20px_40px_-26px_rgba(255,90,31,0.55)] hover:ring-[#FF5A1F]/25"
+                }`}
+              >
+                {k.hero && (
+                  <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#FF5A1F] opacity-30 blur-2xl" />
+                )}
+                <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-[#FF5A1F] transition-transform duration-500 group-hover:scale-x-100" />
+                <div className="relative flex items-start justify-between gap-2">
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${k.hero ? "text-white/55" : "text-black/45"}`}>
+                    {k.label}
+                  </p>
+                  <span
+                    className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                      k.hero ? "bg-[#FF5A1F] text-white" : "bg-[#FFF1EA] text-[#FF5A1F]"
+                    }`}
+                  >
+                    <k.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                  </span>
+                </div>
+                <p className={`relative mt-3 font-geist text-3xl font-semibold tracking-[-0.04em] tabular-nums sm:text-[34px] ${k.hero ? "text-white" : "text-[#0A0A0A]"}`}>
+                  <NumberTicker value={k.value} />
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      )}
+
       {loading ? (
-        <div className="card overflow-hidden">
+        <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06]">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
@@ -360,7 +413,7 @@ export default function GuestsPage() {
           title="Couldn't load guests"
           description="We couldn't reach your booking history. Check your connection and try again."
           action={
-            <button type="button" onClick={load} className="btn-primary">
+            <button type="button" onClick={load} className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97]">
               Try again
             </button>
           }
@@ -378,13 +431,13 @@ export default function GuestsPage() {
           description={`No guest matches "${q}". Try a different name or phone number.`}
         />
       ) : (
-        <Reveal y={16} className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-ink-900/[0.06] bg-white/90 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <Reveal y={16} className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.35)]">
+          <div className="flex items-center justify-between border-b border-black/[0.06] bg-[#FAFAFA] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-black/45">
             <span>
               <span className="tabular-nums">{filtered.length}</span> guest{filtered.length === 1 ? "" : "s"}
             </span>
           </div>
-          <div className="divide-y divide-ink-900/[0.05]">
+          <div className="divide-y divide-black/[0.05]">
           {filtered.map((g, i) => (
             <Spotlight
               as={motion.button}
@@ -395,17 +448,17 @@ export default function GuestsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: Math.min(i, 12) * 0.03, ease: [0.16, 1, 0.3, 1] }}
               whileTap={{ scale: 0.985 }}
-              className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-300 hover:bg-white/80"
+              className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-[background-color,box-shadow] duration-200 hover:bg-[#FFF1EA]/50 hover:shadow-[inset_3px_0_0_#FF5A1F]"
             >
               <div className="relative flex-shrink-0">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-sunset font-display text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_6px_14px_-8px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:rotate-[-6deg]">
+                <div className="grid h-11 w-11 place-items-center rounded-full bg-[#0A0A0A] font-geist text-sm font-semibold text-white ring-2 ring-white transition-[transform,background-color] group-hover:bg-[#FF5A1F] duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:rotate-[-6deg]">
                   {(g.name[0] || "G").toUpperCase()}
                 </div>
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate text-sm font-semibold text-ink-900">
+                  <p className="truncate text-[15px] font-semibold tracking-[-0.01em] text-[#0A0A0A]">
                     {g.name}
                   </p>
                   {g.returning && <span className="badge-brand">Returning</span>}
@@ -424,39 +477,39 @@ export default function GuestsPage() {
 
               <div className="hidden flex-shrink-0 items-center gap-5 text-right sm:flex">
                 <div>
-                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-black/40">
                     <BedDouble className="h-3 w-3" strokeWidth={1.8} /> Stays
                   </p>
-                  <p className="text-sm font-semibold tabular-nums text-ink-900">{g.stays}</p>
+                  <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">{g.stays}</p>
                 </div>
                 <div>
-                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-black/40">
                     <Moon className="h-3 w-3" strokeWidth={1.8} /> Nights
                   </p>
-                  <p className="text-sm font-semibold tabular-nums text-ink-900">{g.nights}</p>
+                  <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">{g.nights}</p>
                 </div>
                 <div>
-                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-black/40">
                     <Wallet className="h-3 w-3" strokeWidth={1.8} /> Revenue
                   </p>
-                  <p className="text-sm font-semibold tabular-nums text-ink-900">
+                  <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">
                     {money(g.revenue, g.currency)}
                   </p>
                 </div>
                 <div className="min-w-[80px]">
-                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                  <p className="flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-black/40">
                     <CalendarDays className="h-3 w-3" strokeWidth={1.8} /> Last
                   </p>
-                  <p className="text-sm font-semibold tabular-nums text-ink-900">
+                  <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">
                     {fmtDate(g.lastStay)}
                   </p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-ink-300 transition-all duration-500 ease-spring group-hover:translate-x-1 group-hover:text-sunset-flame" />
+                <ChevronRight className="h-4 w-4 text-ink-300 transition-all duration-500 ease-spring group-hover:translate-x-1 group-hover:text-[#FF5A1F]" />
               </div>
 
               {/* compact summary on phones */}
               <div className="flex-shrink-0 text-right sm:hidden">
-                <p className="text-sm font-semibold tabular-nums text-ink-900">{g.stays}</p>
+                <p className="text-sm font-semibold tabular-nums text-[#0A0A0A]">{g.stays}</p>
                 <p className="text-[10px] text-ink-400">
                   stay{g.stays === 1 ? "" : "s"}
                 </p>

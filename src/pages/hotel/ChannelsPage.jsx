@@ -165,14 +165,14 @@ function ZodomusConnectCard({ onConnected }) {
       <Spotlight className="card relative mt-5 overflow-hidden p-5 sm:p-6">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sunset opacity-[0.12] blur-3xl"
+          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#FF5A1F] opacity-[0.12] blur-3xl"
         />
         <div className="relative flex items-start gap-3">
-          <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_8px_20px_-8px_rgba(255,61,119,0.6)]">
+          <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FF5A1F] text-white shadow-[0_8px_20px_-8px_rgba(255,90,31,0.6)]">
             <Link2 className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h3 className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">
+            <h3 className="font-geist text-[17px] font-semibold tracking-[-0.02em] text-ink-900">
               Connect a booking site
             </h3>
             <p className="mt-0.5 text-[13px] text-ink-500">
@@ -210,7 +210,7 @@ function ZodomusConnectCard({ onConnected }) {
                     <motion.span
                       layoutId="zodomus-ota-pill"
                       transition={spring}
-                      className="absolute inset-0 -z-0 rounded-2xl bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.55),0_10px_24px_-12px_rgba(255,61,119,0.5)]"
+                      className="absolute inset-0 -z-0 rounded-2xl bg-white shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,90,31,0.55),0_10px_24px_-12px_rgba(255,90,31,0.5)]"
                     />
                   )}
                   <span className="relative">
@@ -222,7 +222,7 @@ function ZodomusConnectCard({ onConnected }) {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={spring}
-                      className="relative grid h-4 w-4 place-items-center rounded-full bg-sunset text-white"
+                      className="relative grid h-4 w-4 place-items-center rounded-full bg-[#FF5A1F] text-white"
                     >
                       <Check className="h-2.5 w-2.5" strokeWidth={3} />
                     </motion.span>
@@ -250,7 +250,7 @@ function ZodomusConnectCard({ onConnected }) {
             <button
               type="submit"
               disabled={submitting || !ota || !otaPropertyId.trim()}
-              className="btn-primary group min-h-[44px] justify-center disabled:pointer-events-none disabled:opacity-50"
+              className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px] justify-center disabled:pointer-events-none disabled:opacity-50"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -433,18 +433,18 @@ export default function ChannelsPage({ hideHeader = false }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
       {!hideHeader && (
         <Reveal>
-          <div className="group flex items-center gap-3.5 mb-8">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <div className="group mb-8 flex items-center gap-3.5">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
               <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
+              <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
                 Channels
               </h1>
-              <p className="text-sm text-ink-500">
+              <p className="text-sm text-black/55">
                 Connect your booking sites and WhatsApp — your AI answers every
                 guest message on them.
               </p>
@@ -458,17 +458,17 @@ export default function ChannelsPage({ hideHeader = false }) {
           one link carries availability, rates, reservations AND guest messages.
           Onboarding deliberately doesn't ask for these; this is where a hotel
           comes to switch them on. */}
-      <div className="relative">
+      <div className="grid gap-12 xl:grid-cols-12 xl:gap-8">
+      <div className="relative min-w-0 xl:col-span-8">
         <Reveal>
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+          <div className="mb-1 flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+              <div className="group grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F]">
                 <Globe2 className="h-5 w-5" strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
-                <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-ink-900">
-                  Booking{" "}
-                  <span className="font-serif italic font-normal">sites</span>
+                <h2 className="font-geist text-xl font-semibold tracking-[-0.03em] text-[#0A0A0A]">
+                  Booking <span className="text-[#FF5A1F]">sites</span>
                 </h2>
                 <p className="text-sm text-ink-500 mt-1 max-w-xl">
                   Sync + AI replies in their inbox. One connection keeps your
@@ -499,7 +499,7 @@ export default function ChannelsPage({ hideHeader = false }) {
         {wubookConfigured === false && <ZodomusConnectCard onConnected={load} />}
 
         <Reveal delay={0.06}>
-          <div className="card mt-5 p-4 sm:p-5">
+          <div className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.35)] sm:p-5">
             <ChannelWall variant="bare" />
           </div>
         </Reveal>
@@ -512,15 +512,15 @@ export default function ChannelsPage({ hideHeader = false }) {
       </div>
 
       {/* WhatsApp — the direct messaging channel */}
-      <div className="relative mt-12 pt-10">
-        <div className="divider absolute inset-x-0 top-0" />
+      <div className="relative min-w-0 pt-10 xl:col-span-4 xl:pt-0">
+        <div className="divider absolute inset-x-0 top-0 xl:hidden" />
         <Reveal>
           <div className="flex items-start gap-3 min-w-0 mb-5">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/15">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#25D366] text-white shadow-[0_10px_22px_-12px_rgba(37,211,102,0.8)]">
               <WhatsAppMark className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-ink-900">
+              <h2 className="font-geist text-xl font-semibold tracking-[-0.03em] text-[#0A0A0A]">
                 WhatsApp
               </h2>
               <p className="text-sm text-ink-500 mt-1 max-w-xl">
@@ -581,7 +581,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                       <span className="badge-gray">Not connected</span>
                     )}
                   </div>
-                  <p className="relative font-display text-[16px] font-semibold tracking-[-0.02em] text-ink-900 mt-4">
+                  <p className="relative mt-4 font-geist text-[17px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
                     {ch.name}
                   </p>
                   <p className="relative text-[13px] text-ink-500 mt-1 leading-relaxed flex-1">
@@ -628,7 +628,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                       <button
                         onClick={() => connect(ch.key)}
                         disabled={busy === ch.key}
-                        className="btn-primary group/btn w-full min-h-[44px] justify-center disabled:opacity-60"
+                        className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group/btn w-full min-h-[44px] justify-center disabled:opacity-60"
                       >
                         {busy === ch.key ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -650,6 +650,7 @@ export default function ChannelsPage({ hideHeader = false }) {
         Your AI answers guests on WhatsApp — quotes prices, checks availability
         and books rooms, 24/7.
       </p>
+      </div>
       </div>
 
       {/* WhatsApp connect — WasenderAPI QR scan (or paste an API key). The
@@ -701,7 +702,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                 </div>
                 <h2
                   id="tg-title"
-                  className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900"
+                  className="font-geist text-lg font-semibold tracking-[-0.02em] text-ink-900"
                 >
                   Connect Telegram
                 </h2>
@@ -728,7 +729,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                         <Check className="w-7 h-7" strokeWidth={2.5} />
                       </span>
                     </motion.div>
-                    <p className="font-display text-lg font-semibold text-ink-900">
+                    <p className="font-geist text-lg font-semibold text-ink-900">
                       Telegram is connected
                     </p>
                     <p className="text-sm text-ink-500 mt-1">
@@ -736,7 +737,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                     </p>
                     <button
                       onClick={() => setTg(null)}
-                      className="btn-primary mt-6 w-full min-h-[44px] justify-center"
+                      className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] mt-6 w-full min-h-[44px] justify-center"
                     >
                       Done
                     </button>
@@ -750,7 +751,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                     transition={spring}
                     className="text-center py-4"
                   >
-                    <p className="font-display text-lg font-semibold text-ink-900">
+                    <p className="font-geist text-lg font-semibold text-ink-900">
                       That code expired
                     </p>
                     <p className="text-sm text-ink-500 mt-1">
@@ -758,7 +759,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                     </p>
                     <button
                       onClick={startTelegramPairing}
-                      className="btn-primary mt-6 w-full min-h-[44px] justify-center"
+                      className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] mt-6 w-full min-h-[44px] justify-center"
                     >
                       Get a new code
                     </button>
@@ -779,7 +780,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                           transition={{ ...spring, delay: i * 0.06 }}
                           className="flex gap-3 text-sm text-ink-700"
                         >
-                          <span className="flex-shrink-0 grid h-6 w-6 place-items-center rounded-full bg-sunset-soft text-sunset-flame font-bold text-xs">
+                          <span className="flex-shrink-0 grid h-6 w-6 place-items-center rounded-full bg-[#FFF1EA] text-[#FF5A1F] font-bold text-xs">
                             {i + 1}
                           </span>
                           <span>{step}</span>
@@ -803,7 +804,7 @@ export default function ChannelsPage({ hideHeader = false }) {
                             /* clipboard unavailable — the code is on screen */
                           }
                         }}
-                        className="btn-ghost mt-2 text-xs font-bold text-brand-600 hover:text-brand-700"
+                        className="btn-ghost mt-2 text-xs font-bold text-[#E84A12] hover:text-brand-700"
                       >
                         Copy code
                       </button>

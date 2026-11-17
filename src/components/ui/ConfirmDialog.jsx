@@ -51,7 +51,7 @@ export function ConfirmProvider({ children }) {
         {state && (
           <motion.div
             key="confirm"
-            className="fixed inset-0 z-[95] flex items-center justify-center bg-night-950/40 p-4 backdrop-blur-md"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -59,20 +59,20 @@ export function ConfirmProvider({ children }) {
             onClick={() => close(false)}
           >
             <motion.div
-              className="glass-strong relative w-full max-w-md overflow-hidden rounded-3xl p-6 text-center sm:p-7"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 text-center shadow-[0_0_0_1px_rgba(10,10,10,0.06),0_32px_80px_-24px_rgba(10,10,10,0.45)] sm:p-7"
               initial={{ opacity: 0, scale: 0.94, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0, transitionEnd: { filter: "none" } }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 6 }}
               transition={POP}
               onClick={(e) => e.stopPropagation()}
               role="alertdialog"
               aria-modal="true"
             >
-              {/* soft wash behind the icon */}
+              {/* coloured top edge — rose for destructive, brand orange otherwise */}
               <div
                 aria-hidden
-                className={`pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl ${
-                  state.danger ? "bg-rose-400/25" : "bg-sunset opacity-25"
+                className={`pointer-events-none absolute inset-x-0 top-0 h-[3px] ${
+                  state.danger ? "bg-rose-500" : "bg-[#FF5A1F]"
                 }`}
               />
               <motion.div
@@ -82,17 +82,17 @@ export function ConfirmProvider({ children }) {
                 className={`relative mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl ring-1 ring-inset ${
                   state.danger
                     ? "bg-rose-50 text-rose-500 ring-rose-500/15"
-                    : "bg-sunset-soft text-sunset-flame ring-sunset-flame/15"
+                    : "bg-[#FFF1EA] text-[#FF5A1F] ring-[#FF5A1F]/15"
                 }`}
               >
                 <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
               </motion.div>
 
-              <h3 className="relative font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
+              <h3 className="relative font-geist text-lg font-semibold tracking-[-0.02em] text-neutral-950">
                 {state.title || "Are you sure?"}
               </h3>
               {state.description && (
-                <p className="relative mt-2 text-sm leading-relaxed text-ink-500">{state.description}</p>
+                <p className="relative mt-2 text-sm leading-relaxed text-neutral-500">{state.description}</p>
               )}
 
               <div className="relative mt-6 flex flex-col-reverse gap-2.5 sm:flex-row">
@@ -102,7 +102,7 @@ export function ConfirmProvider({ children }) {
                 <button
                   onClick={() => close(true)}
                   autoFocus
-                  className={`flex-1 ${state.danger ? "btn-danger" : "btn-primary"}`}
+                  className={`flex-1 ${state.danger ? "btn-danger" : "btn-brand"}`}
                 >
                   {state.confirmLabel || "Confirm"}
                 </button>

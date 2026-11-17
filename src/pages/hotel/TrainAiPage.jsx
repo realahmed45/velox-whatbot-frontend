@@ -1,10 +1,12 @@
 /**
  * Train your AI — everything the AI needs to look after guests on its own.
  *
- *   [readiness summary]
- *   [Guest questions | Contacts & rules]     ← the only tab row
+ *   [readiness summary]            "Your AI knows 68% — 13 quick answers left"
+ *   [Guest questions | Contacts & rules]
  *
- *   Guest questions    topics on the left, toolbar + question list on the right.
+ *   Guest questions    default: guided mode, ONE question at a time
+ *                      (must-haves first). "See all answers" opens the full
+ *                      list with search + topic filter (?view=all).
  *   Contacts & rules   1. People to contact  2. How your AI behaves.
  *
  * Testing lives on its own page (/dashboard/test-ai, TestAiPage.jsx).
@@ -13,21 +15,23 @@
  * Deep links:
  *   ?tab=questions|contacts     (legacy "behaviour" → Contacts & rules, scrolled
  *                                to the rules; legacy "test" → Test your AI page)
+ *   ?view=all                   the complete list instead of guided mode
  *   ?fill=1                     jump straight to whatever must-have is missing
  *                                (used by <TrainingReminder />)
  *   ?teach=<question>           open "New question" pre-filled (from Test your AI)
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
-import { CircleAlert, FlaskConical, GraduationCap, MessageCircleQuestion, RotateCcw, Users } from "lucide-react";
-import { PulseDot, Reveal, SlidingTabs } from "@/components/fx";
+import { CircleAlert, FlaskConical, RotateCcw } from "lucide-react";
 import { ReadinessModal, sessionGet, sessionSet } from "@/components/TrainingReminder";
 import useTraining from "./train/useTraining";
 import ReadinessCard from "./train/ReadinessCard";
 import LoadingState from "./train/LoadingState";
+import GuidedMode from "./train/GuidedMode";
 import QuestionsTab from "./train/QuestionsTab";
 import ContactsAndRulesTab from "./train/ContactsAndRulesTab";
-import { TEST_PATH, hop } from "./train/shared";
+import { TEST_PATH } from "./train/shared";
+import { Segmented, btnSecondary, pageTitle, panel } from "./train/ui";
 
 const POPUP_KEY = "botlify.trainAi.popupShown";
 
@@ -39,24 +43,28 @@ export default function TrainAiPage() {
   const [params, setParams] = useSearchParams();
   const rawTab = params.get("tab");
   const tab = rawTab === "contacts" || rawTab === "behaviour" ? "contacts" : "questions";
+  const view = params.get("view") === "all" ? "all" : "guided";
 
   const t = useTraining();
   const { loading, loadError, readiness, categories } = t;
 
-  // Guest-questions view state lives here so "Show me what's missing" can drive it.
+  // "See all answers" view state lives here so deep links can drive it.
   const [topic, setTopic] = useState("all");
   const [query, setQuery] = useState("");
   const [unansweredOnly, setUnansweredOnly] = useState(false);
   const [addDraft, setAddDraft] = useState(null);
   const [popupOpen, setPopupOpen] = useState(false);
+  const [guidedKey, setGuidedKey] = useState(0);
   const handledLoad = useRef(false);
 
-  const setTab = useCallback(
-    (key) =>
+  const go = useCallback(
+    (nextTab, nextView) =>
       setParams(
         (p) => {
           const n = new URLSearchParams(p);
-          n.set("tab", key);
+          n.set("tab", nextTab);
+          if (nextView === "all") n.set("view", "all");
+          else if (nextView === "guided") n.delete("view");
           n.delete("fill");
           n.delete("teach");
           return n;
@@ -65,25 +73,34 @@ export default function TrainAiPage() {
       ),
     [setParams],
   );
+  const setTab = useCallback((key) => go(key), [go]);
 
   const goToMissing = useCallback(() => {
     setPopupOpen(false);
     const r = readiness;
     if (!r) return;
     if (r.missingAnswers.length) {
-      const cat = r.missingAnswers[0].category;
-      setTopic(categories.some((c) => c.key === cat) ? cat : "all");
-      setQuery("");
-      setUnansweredOnly(true);
-      setTab("questions");
+      // Guided mode always starts with the unanswered must-haves.
+      setGuidedKey((k) => k + 1);
+      go("questions", "guided");
+      scrollMainTop();
     } else if (r.missingContacts.length) {
-      setTab("contacts");
+      go("contacts");
       const role = r.missingContacts[0].role;
       setTimeout(() => {
         document.getElementById(`contact-${role}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 120);
     }
-  }, [readiness, categories, setTab]);
+  }, [readiness, go]);
+
+  const openAdd = useCallback(
+    (question = "") => {
+      setAddDraft({ question, category: question ? "" : categories[0]?.key || "general" });
+      go("questions", "all");
+      scrollMainTop();
+    },
+    [categories, go],
+  );
 
   // After the first load: open a pre-filled question (?teach=), jump straight
   // to what's missing (?fill=1), or show the friendly reminder once per session.
@@ -94,7 +111,7 @@ export default function TrainAiPage() {
     const teach = params.get("teach");
     if (teach) {
       setAddDraft({ question: teach, category: "" });
-      setTab("questions");
+      go("questions", "all");
       scrollMainTop();
       return;
     }
@@ -113,7 +130,7 @@ export default function TrainAiPage() {
       sessionSet(POPUP_KEY, "1");
       setPopupOpen(true);
     }
-  }, [loading, loadError, readiness, params, rawTab, goToMissing, setTab]);
+  }, [loading, loadError, readiness, params, rawTab, goToMissing, go]);
 
   const addFaq = async (form) => {
     const ok = await t.addFaq(form);
@@ -125,6 +142,7 @@ export default function TrainAiPage() {
     if (await t.resetFaqs()) {
       setTopic("all");
       setUnansweredOnly(false);
+      setGuidedKey((k) => k + 1);
     }
   };
 
@@ -132,71 +150,37 @@ export default function TrainAiPage() {
   if (rawTab === "test") return <Navigate to={TEST_PATH} replace />;
 
   const tabs = [
-    {
-      value: "questions",
-      icon: MessageCircleQuestion,
-      label: (
-        <>
-          Guest questions
-          {readiness?.missingAnswers.length > 0 && (
-            <span aria-label="Needs attention" className="ml-0.5 inline-flex">
-              <PulseDot color="bg-sunset-flame" />
-            </span>
-          )}
-        </>
-      ),
-    },
-    {
-      value: "contacts",
-      icon: Users,
-      label: (
-        <>
-          Contacts &amp; rules
-          {readiness?.missingContacts.length > 0 && (
-            <span aria-label="Needs attention" className="ml-0.5 inline-flex">
-              <PulseDot color="bg-sunset-flame" />
-            </span>
-          )}
-        </>
-      ),
-    },
+    { value: "questions", label: "Guest questions", dot: readiness?.missingAnswers.length > 0 },
+    { value: "contacts", label: "Contacts & rules", dot: readiness?.missingContacts.length > 0 },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-8">
-      <Reveal as="header" className="group flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
-        <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] ${hop}`}>
-            <GraduationCap className="h-5 w-5" strokeWidth={1.8} />
-          </div>
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
-              Train your <span className="font-serif italic font-normal">AI</span>
-            </h1>
-            <p className="text-sm text-ink-500 mt-0.5 max-w-2xl">
-              Teach your AI what guests ask, who to call, and how to handle tricky moments.
-            </p>
-          </div>
+    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 font-geist text-[#0A0A0A] sm:px-6 sm:pt-8 lg:px-8">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+        <div className="min-w-0 flex-1">
+          <h1 className={pageTitle}>
+            Train your AI<span className="text-[#FF5A1F]">.</span>
+          </h1>
+          <p className="mt-1 max-w-xl text-[15px] text-neutral-500">
+            Answer a few guest questions in your own words. Your AI does the rest.
+          </p>
         </div>
-        <Link to={TEST_PATH} className="btn-secondary min-h-[42px] self-start shrink-0">
-          <FlaskConical className="w-4 h-4 text-sunset-flame" />
+        <Link to={TEST_PATH} className={`${btnSecondary} self-start shrink-0 sm:self-auto`}>
+          <FlaskConical className="h-4 w-4 text-[#FF5A1F]" />
           Test your AI
         </Link>
-      </Reveal>
+      </header>
 
       {loading ? (
         <LoadingState />
       ) : loadError ? (
-        <div className="card p-10 text-center">
-          <div className="relative mx-auto grid h-14 w-14 place-items-center">
-            <span aria-hidden className="absolute inset-0 rounded-full bg-rose-400 opacity-25 blur-2xl" />
-            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-rose-50 text-rose-500 ring-1 ring-rose-500/20">
-              <CircleAlert className="w-6 h-6" strokeWidth={1.8} />
-            </span>
-          </div>
-          <p className="font-display font-semibold text-ink-900 mt-4">{loadError}</p>
-          <button onClick={t.load} className="btn-secondary group mt-4 min-h-[40px]">
-            <RotateCcw className="w-4 h-4 transition-transform duration-700 ease-spring group-hover:-rotate-180" />
+        <div className={`${panel} p-10 text-center`}>
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-rose-50 text-rose-500">
+            <CircleAlert className="h-6 w-6" strokeWidth={1.8} />
+          </span>
+          <p className="mt-4 font-semibold text-[#0A0A0A]">{loadError}</p>
+          <button onClick={t.load} className={`${btnSecondary} mt-4`}>
+            <RotateCcw className="h-4 w-4" />
             Try again
           </button>
         </div>
@@ -204,29 +188,44 @@ export default function TrainAiPage() {
         <>
           <ReadinessCard readiness={readiness} onFill={goToMissing} />
 
-          <div className="mt-6 mb-5">
-            <SlidingTabs value={tab} onChange={setTab} items={tabs} />
+          <div className="mb-6 mt-7">
+            <Segmented id="train-tabs" items={tabs} value={tab} onChange={setTab} />
           </div>
 
           {/* Only the active tab is shown. Both stay mounted (hidden) so
               unsaved edits survive switching back and forth. */}
           <div role="tabpanel" hidden={tab !== "questions"}>
-            <QuestionsTab
-              faqs={t.faqs}
-              categories={categories}
-              topic={topic}
-              setTopic={setTopic}
-              query={query}
-              setQuery={setQuery}
-              unansweredOnly={unansweredOnly}
-              setUnansweredOnly={setUnansweredOnly}
-              addDraft={addDraft}
-              setAddDraft={setAddDraft}
-              onSave={t.saveFaq}
-              onAdd={addFaq}
-              onDelete={t.deleteFaq}
-              onReset={resetFaqs}
-            />
+            {view === "guided" ? (
+              <GuidedMode
+                key={guidedKey}
+                faqs={t.faqs}
+                categories={categories}
+                onSave={(faq, form) => t.saveFaq(faq, form, { quiet: true })}
+                onSeeAll={() => go("questions", "all")}
+                onAddQuestion={() => openAdd()}
+              />
+            ) : (
+              <QuestionsTab
+                faqs={t.faqs}
+                categories={categories}
+                topic={topic}
+                setTopic={setTopic}
+                query={query}
+                setQuery={setQuery}
+                unansweredOnly={unansweredOnly}
+                setUnansweredOnly={setUnansweredOnly}
+                addDraft={addDraft}
+                setAddDraft={setAddDraft}
+                onSave={t.saveFaq}
+                onAdd={addFaq}
+                onDelete={t.deleteFaq}
+                onReset={resetFaqs}
+                onBack={() => {
+                  setAddDraft(null);
+                  go("questions", "guided");
+                }}
+              />
+            )}
           </div>
           <div role="tabpanel" hidden={tab !== "contacts"}>
             <ContactsAndRulesTab
@@ -251,4 +250,3 @@ export default function TrainAiPage() {
     </div>
   );
 }
-

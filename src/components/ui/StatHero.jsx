@@ -40,14 +40,14 @@ export default function StatHero({
   return (
     <Spotlight
       className={clsx(
-        "group relative z-10 mb-6 rounded-3xl bg-night-900 px-5 py-4 text-white ring-1 ring-white/[0.06] shadow-[0_24px_50px_-28px_rgba(6,5,10,0.65)] sm:px-6 sm:py-5",
+        "group relative z-10 mb-6 rounded-3xl bg-[#0A0A0A] px-5 py-4 text-white ring-1 ring-white/[0.06] shadow-[0_24px_50px_-28px_rgba(10,10,10,0.65)] sm:px-6 sm:py-5",
         className,
       )}
     >
       {/* sunset glow + dot texture, clipped to the slab (the popover must not be) */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-        <div className="absolute -top-20 right-10 h-56 w-56 rounded-full bg-sunset-flame/25 blur-[70px]" />
-        <div className="absolute -bottom-24 right-1/3 h-48 w-48 rounded-full bg-sunset-violet/25 blur-[70px]" />
+        <div className="absolute -top-20 right-10 h-56 w-56 rounded-full bg-[#FF5A1F]/30 blur-[70px]" />
+        <div className="absolute -bottom-24 right-1/3 h-48 w-48 rounded-full bg-[#FF5A1F]/10 blur-[70px]" />
         <div className="absolute inset-0 bg-dot-grid-dark opacity-30 [mask-image:linear-gradient(90deg,transparent,black)]" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       </div>
@@ -56,13 +56,13 @@ export default function StatHero({
         {/* left: icon + title */}
         <div className="flex min-w-0 items-center gap-3.5">
           {Icon && (
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_20px_-8px_rgba(255,61,119,0.7)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FF5A1F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_-8px_rgba(255,90,31,0.8)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
               <Icon className="h-5 w-5" strokeWidth={1.8} />
             </div>
           )}
           <div className="min-w-0">
             {eyebrow && (
-              <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-[0.16em] text-sunset-gold/90">
+              <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#FF8A5B]">
                 {eyebrow}
               </span>
             )}
@@ -84,7 +84,7 @@ export default function StatHero({
                     <p
                       className={clsx(
                         "font-display text-lg font-semibold tabular-nums tracking-[-0.02em]",
-                        s.accent ? "text-sunset" : "text-white",
+                        s.accent ? "text-[#FF7A45]" : "text-white",
                       )}
                     >
                       <StatValue value={s.value} />
@@ -112,7 +112,7 @@ export default function StatHero({
               key={s.label}
               className="shrink-0 rounded-xl bg-white/[0.07] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-inset ring-white/10"
             >
-              <span className={clsx("text-sm font-semibold tabular-nums", s.accent ? "text-sunset" : "text-white")}>
+              <span className={clsx("text-sm font-semibold tabular-nums", s.accent ? "text-[#FF7A45]" : "text-white")}>
                 <StatValue value={s.value} />
               </span>{" "}
               <span className="text-[10px] text-white/50">{s.label}</span>
@@ -175,7 +175,7 @@ function HeroHelp({ title = "How this works", tips = [], footer }) {
             <ul className="space-y-2">
               {tips.map((t, i) => (
                 <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-ink-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" />
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF5A1F]" />
                   <span>{t}</span>
                 </li>
               ))}

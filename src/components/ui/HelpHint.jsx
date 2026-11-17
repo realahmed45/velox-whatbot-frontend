@@ -44,7 +44,7 @@ export default function HelpHint({ title = "How this works", tips = [], footer, 
         aria-label="Help"
         aria-expanded={open}
       >
-        <HelpCircle className="h-3.5 w-3.5 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-[-12deg] group-hover:scale-110" />
+        <HelpCircle className="h-3.5 w-3.5 text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:rotate-[-12deg] group-hover:scale-110" />
         Help
       </button>
 
@@ -73,7 +73,7 @@ export default function HelpHint({ title = "How this works", tips = [], footer, 
             <ul className="space-y-2">
               {tips.map((t, i) => (
                 <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-ink-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" />
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF5A1F]" />
                   <span>{t}</span>
                 </li>
               ))}

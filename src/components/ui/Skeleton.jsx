@@ -2,15 +2,14 @@ import { clsx } from "clsx";
 
 /**
  * Shimmer skeleton placeholder. Use instead of spinners for
- * content-shaped loading states. A soft ink block that breathes, with a
- * warm light sweep gliding across it.
+ * content-shaped loading states. A soft neutral block with a light sweep.
  */
 export default function Skeleton({ className, ...props }) {
   return (
     <div
       className={clsx(
-        "relative isolate overflow-hidden rounded-md bg-ink-900/[0.06] animate-pulse",
-        "after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.65)_50%,rgba(255,181,71,0.12)_55%,transparent_70%)] after:bg-[length:200%_100%] after:animate-shimmer after:content-['']",
+        "relative isolate overflow-hidden rounded-md bg-black/[0.055]",
+        "after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.7)_50%,rgba(255,90,31,0.06)_55%,transparent_70%)] after:bg-[length:200%_100%] after:animate-shimmer after:content-['']",
         className,
       )}
       {...props}
@@ -30,7 +29,7 @@ export function SkeletonText({ lines = 3, className }) {
 
 export function SkeletonCard({ className }) {
   return (
-    <div className={clsx("card space-y-4 p-5", className)}>
+    <div className={clsx("surface space-y-4 p-5", className)}>
       <div className="flex items-center gap-3">
         <Skeleton className="h-10 w-10 rounded-xl" />
         <div className="flex-1 space-y-2">

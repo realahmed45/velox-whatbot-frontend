@@ -176,31 +176,31 @@ function AgentChat({ onActionDone }) {
       {/* soft sunset halo behind the panel */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-x-6 -inset-y-4 -z-10 rounded-[2.5rem] bg-sunset opacity-[0.12] blur-3xl"
+        className="pointer-events-none absolute -inset-x-6 -inset-y-4 -z-10 rounded-[2.5rem] bg-[#FF5A1F] opacity-[0.12] blur-3xl"
       />
-      <div className="card relative overflow-hidden rounded-3xl">
+      <div className="relative overflow-hidden rounded-3xl bg-white ring-1 ring-black/[0.07] shadow-[0_30px_60px_-40px_rgba(10,10,10,0.45)]">
         {/* specular sunset hairline */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sunset-flame/60 to-transparent"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#FF5A1F]/60 to-transparent"
         />
         {/* header */}
-        <div className="flex items-center gap-3 border-b border-ink-900/[0.06] px-4 py-4 sm:px-6">
+        <div className="relative flex items-center gap-3 bg-[#0A0A0A] px-4 py-4 sm:px-6">
           <div className="group relative flex-shrink-0">
             <div
               aria-hidden
-              className="absolute inset-0 rounded-xl bg-sunset opacity-50 blur-md transition-opacity duration-500 group-hover:opacity-80"
+              className="absolute inset-0 rounded-xl bg-[#FF5A1F] opacity-50 blur-md transition-opacity duration-500 group-hover:opacity-80"
             />
-            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-[#FF5A1F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
               <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="flex items-center gap-2 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em] text-ink-900">
+            <h2 className="flex items-center gap-2 font-geist text-[15px] font-semibold leading-tight tracking-[-0.02em] text-white">
               Botlify Agent
               <PulseDot color="bg-emerald-500" />
             </h2>
-            <p className="mt-0.5 truncate text-xs leading-tight text-ink-500">
+            <p className="mt-0.5 truncate text-xs leading-tight text-white/55">
               Ask about your hotel, or tell it what to change.
             </p>
           </div>
@@ -209,7 +209,7 @@ function AgentChat({ onActionDone }) {
         {/* transcript */}
         <div
           ref={scrollRef}
-          className="max-h-[360px] min-h-[148px] space-y-3 overflow-y-auto px-4 py-5 sm:px-6"
+          className="max-h-[420px] min-h-[220px] space-y-3 overflow-y-auto px-4 py-5 sm:px-6"
         >
           {messages.length === 0 && !busy && (
             <div className="py-3 text-center">
@@ -227,10 +227,10 @@ function AgentChat({ onActionDone }) {
                     transition={{ ...spring, delay: 0.08 * i }}
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.96 }}
-                    className="group inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-white/80 px-3.5 py-1.5 text-xs font-medium text-ink-600 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.04)] transition-[color,box-shadow] duration-300 hover:text-ink-900 hover:ring-sunset-flame/30 hover:shadow-[inset_0_1px_0_#fff,0_10px_22px_-12px_rgba(255,106,43,0.5)]"
+                    className="group inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-white/80 px-3.5 py-1.5 text-xs font-medium text-ink-600 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.04)] transition-[color,box-shadow] duration-300 hover:text-ink-900 hover:ring-[#FF5A1F]/30 hover:shadow-[inset_0_1px_0_#fff,0_10px_22px_-12px_rgba(255,90,31,0.5)]"
                   >
                     <Sparkles
-                      className="h-3 w-3 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-[-14deg] group-hover:scale-125"
+                      className="h-3 w-3 text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:rotate-[-14deg] group-hover:scale-125"
                       strokeWidth={1.8}
                     />
                     {s}
@@ -250,7 +250,7 @@ function AgentChat({ onActionDone }) {
                 <div
                   className={`relative max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
-                      ? "rounded-br-md bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_-12px_rgba(255,61,119,0.55)]"
+                      ? "rounded-br-md bg-[#0A0A0A] text-white shadow-[0_10px_24px_-14px_rgba(10,10,10,0.6)]"
                       : "rounded-bl-md bg-white/85 text-ink-800 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff,0_1px_2px_rgba(15,23,42,0.04)]"
                   }`}
                 >
@@ -262,9 +262,9 @@ function AgentChat({ onActionDone }) {
             {busy && (
               <motion.div key="typing" {...bubbleIn} className="flex justify-start">
                 <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white/85 px-4 py-3 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-gold [animation-delay:-0.3s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-flame [animation-delay:-0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sunset-magenta" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#FF5A1F] [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#FF5A1F] [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#FF5A1F]" />
                 </div>
               </motion.div>
             )}
@@ -287,7 +287,7 @@ function AgentChat({ onActionDone }) {
                   <button
                     type="button"
                     onClick={confirmAction}
-                    className="btn-primary px-3.5 py-2 text-xs"
+                    className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] px-3.5 py-2 text-xs"
                   >
                     <Check className="h-3.5 w-3.5" /> Do it
                   </button>
@@ -325,7 +325,7 @@ function AgentChat({ onActionDone }) {
               type="submit"
               disabled={busy || !input.trim()}
               whileTap={{ scale: 0.92 }}
-              className="btn-primary h-11 w-11 rounded-2xl p-0 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] h-11 w-11 rounded-2xl p-0 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Send"
             >
               {busy ? (
@@ -370,7 +370,7 @@ function SuggestionCard({ s, onDone }) {
       : fmtDay(s.dateFrom);
 
   return (
-    <Spotlight className="card group h-full p-5">
+    <Spotlight className="card group h-full p-5 transition-transform duration-300 hover:-translate-y-0.5">
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent ${
@@ -379,7 +379,7 @@ function SuggestionCard({ s, onDone }) {
       />
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
+          <p className="truncate font-geist text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
             {s.room || "Room"}
           </p>
           <p className="mt-0.5 text-xs text-ink-500">{range}</p>
@@ -397,7 +397,7 @@ function SuggestionCard({ s, onDone }) {
         </div>
       </div>
 
-      <p className="mb-2 flex flex-wrap items-baseline gap-x-1.5 font-display text-lg font-semibold tabular-nums text-ink-900">
+      <p className="mb-2 flex flex-wrap items-baseline gap-x-1.5 font-geist text-lg font-semibold tabular-nums text-ink-900">
         <span className="text-sm font-medium text-ink-400 line-through">
           {money(s.currentRate, s.currency)}
         </span>
@@ -414,7 +414,7 @@ function SuggestionCard({ s, onDone }) {
           type="button"
           onClick={() => act("approve")}
           disabled={!!busy}
-          className="btn-primary px-3.5 py-2 text-xs disabled:opacity-60"
+          className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] px-3.5 py-2 text-xs disabled:opacity-60"
         >
           {busy === "approve" ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -470,12 +470,12 @@ function GlanceRow({ booking, kind, onDone }) {
   const initial = (booking.guestName || "G").trim().charAt(0).toUpperCase();
 
   return (
-    <div className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors duration-300 hover:bg-white/80">
+    <div className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors duration-200 hover:bg-[#FFF1EA]/60">
       <div
-        className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-full font-display text-sm font-semibold ring-1 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 ${
+        className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-full font-geist text-sm font-semibold ring-1 transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:scale-105 ${
           done
             ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20"
-            : "bg-sunset-soft text-sunset-flame ring-sunset-flame/15"
+            : "bg-[#FFF1EA] text-[#FF5A1F] ring-[#FF5A1F]/15"
         }`}
       >
         {initial}
@@ -528,45 +528,72 @@ function GlanceRow({ booking, kind, onDone }) {
 
 function GlanceCard({ icon: Icon, title, count, children }) {
   return (
-    <div className="card group h-full p-4 sm:p-5">
-      <div className="mb-3 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+    <div className="group h-full rounded-2xl bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(10,10,10,0.04)] sm:p-5">
+      <div className="mb-3 flex items-center gap-2.5 border-b border-black/[0.05] pb-3">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
           <Icon className="h-4 w-4" strokeWidth={1.8} />
         </div>
-        <h3 className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
+        <h3 className="font-geist text-[15px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
           {title}
         </h3>
         {count > 0 && (
-          <span className="ml-auto rounded-full bg-ink-900/[0.05] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
+          <span className="ml-auto rounded-full bg-[#0A0A0A] px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-white">
             {count}
           </span>
         )}
       </div>
-      {children}
+      <div className="space-y-0.5">{children}</div>
     </div>
   );
 }
 
 function KpiCard({ icon: Icon, label, children, footer, hero = false }) {
   return (
-    <Spotlight className="card group h-full p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-[13px] text-ink-500">{label}</p>
+    <div
+      className={`group relative h-full overflow-hidden rounded-2xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 sm:p-5 ${
+        hero
+          ? "bg-[#0A0A0A] text-white shadow-[0_24px_48px_-28px_rgba(10,10,10,0.8)]"
+          : "bg-white ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(10,10,10,0.04)] hover:shadow-[0_20px_40px_-26px_rgba(255,90,31,0.55)] hover:ring-[#FF5A1F]/25"
+      }`}
+    >
+      {hero && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#FF5A1F] opacity-30 blur-2xl"
+        />
+      )}
+      {/* orange accent bar slides in on hover */}
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-[#FF5A1F] transition-transform duration-500 ease-out group-hover:scale-x-100"
+      />
+      <div className="relative flex items-start justify-between gap-2">
+        <p
+          className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
+            hero ? "text-white/55" : "text-black/45"
+          }`}
+        >
+          {label}
+        </p>
         <div
           className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
             hero
-              ? "bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_8px_18px_-8px_rgba(255,61,119,0.6)]"
-              : "bg-sunset-soft text-sunset-flame"
+              ? "bg-[#FF5A1F] text-white shadow-[0_8px_18px_-8px_rgba(255,90,31,0.8)]"
+              : "bg-[#FFF1EA] text-[#FF5A1F]"
           }`}
         >
           <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
         </div>
       </div>
-      <p className="mt-2 truncate font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 tabular-nums sm:text-3xl">
+      <p
+        className={`relative mt-3 truncate font-geist text-3xl font-semibold tracking-[-0.04em] tabular-nums sm:text-[34px] ${
+          hero ? "text-white" : "text-[#0A0A0A]"
+        }`}
+      >
         {children}
       </p>
       {footer}
-    </Spotlight>
+    </div>
   );
 }
 
@@ -634,143 +661,130 @@ export default function TodayPage() {
   const greeting = greetingFor(new Date().getHours());
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-      <Reveal className="mb-6 sm:mb-8">
-        <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-[12px] font-medium text-ink-500 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
-          <CalendarCheck className="h-3.5 w-3.5 text-sunset-flame" strokeWidth={1.8} />
-          Today ·{" "}
-          {new Date().toLocaleDateString(undefined, {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          })}
-        </p>
-        <h1 className="font-display text-[28px] font-semibold leading-[1.05] tracking-[-0.035em] text-ink-900 sm:text-4xl">
-          {greeting},{" "}
-          <span className="font-serif font-normal italic tracking-[-0.01em] text-sunset">
-            {firstName || "there"}
-          </span>
-        </h1>
-        <p className="mt-2 text-sm text-ink-500 sm:text-[15px]">
-          Here&apos;s your hotel at a glance — and an agent ready for anything.
-        </p>
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
+      {/* ── Page header ─────────────────────────────────────────────── */}
+      <Reveal className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[12px] font-medium text-black/60 ring-1 ring-black/[0.07]">
+            <CalendarCheck className="h-3.5 w-3.5 text-[#FF5A1F]" strokeWidth={1.8} />
+            Today ·{" "}
+            {new Date().toLocaleDateString(undefined, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </p>
+          <h1 className="font-geist text-[30px] font-semibold leading-[1.02] tracking-[-0.045em] text-[#0A0A0A] sm:text-[44px]">
+            {greeting},{" "}
+            <span className="text-[#FF5A1F]">{firstName || "there"}</span>
+          </h1>
+          <p className="mt-2 text-sm text-black/55 sm:text-[15px]">
+            Here&apos;s your hotel at a glance — and an agent ready for anything.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 self-start rounded-full bg-[#0A0A0A] py-1.5 pl-2.5 pr-3.5 text-xs font-medium text-white sm:self-auto">
+          <PulseDot color="bg-emerald-400" />
+          AI agent online
+        </div>
       </Reveal>
 
-      {/* ── 1. The agent (always available, even if today's data failed) ── */}
-      <Reveal delay={0.06} className="mb-8">
-        <AgentChat onActionDone={refresh} />
-      </Reveal>
-
-      {/* ── 1b. Where the OTA connection really is ───────────────────────
+      {/* ── Where the OTA connection really is ─────────────────────────
           Hidden entirely when nothing is connected and nothing needs fixing,
           so a direct-only hotel isn't nagged about a channel they never
           asked for. When the approval wait IS running, this is where they
           see it narrated honestly instead of wondering. */}
-      <div className="mb-6">
+      <div className="mb-6 empty:hidden">
         <ConnectionStatus compact hideWhenIdle />
       </div>
 
+      {/* ── KPI counters ────────────────────────────────────────────── */}
       {loading ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-            ))}
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-48 w-full rounded-2xl" />
-            <Skeleton className="h-48 w-full rounded-2xl" />
-          </div>
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[124px] w-full rounded-2xl" />
+          ))}
         </div>
-      ) : failed ? (
-        <EmptyState
-          icon={CalendarCheck}
-          title="Couldn't load today"
-          description="We couldn't reach your hotel data. Check your connection and try again."
-          action={
-            <button type="button" onClick={() => load()} className="btn-primary">
-              Try again
-            </button>
-          }
-        />
       ) : (
-        <>
-          {/* ── 2. Pricing suggestions ─────────────────────────────── */}
-          {suggestions.length > 0 && (
-            <section className="mb-8">
-              <div className="mb-3 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-sunset-flame" strokeWidth={1.8} />
-                <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
-                  Pricing suggestions
-                </h2>
-                <span className="badge-brand">{suggestions.length}</span>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {suggestions.map((s, i) => (
-                  <Reveal key={s._id} delay={i * 0.06} className="h-full">
-                    <SuggestionCard s={s} onDone={refresh} />
-                  </Reveal>
-                ))}
-              </div>
-            </section>
-          )}
+        !failed && (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <Reveal delay={0} className="h-full">
+              <KpiCard icon={DoorOpen} label="Arrivals">
+                <NumberTicker value={arrivals.length} />
+              </KpiCard>
+            </Reveal>
+            <Reveal delay={0.06} className="h-full">
+              <KpiCard icon={LogOut} label="Departures">
+                <NumberTicker value={departures.length} />
+              </KpiCard>
+            </Reveal>
+            <Reveal delay={0.12} className="h-full">
+              <KpiCard icon={BedDouble} label="In house">
+                <NumberTicker value={data?.inHouse ?? 0} />
+              </KpiCard>
+            </Reveal>
+            <Reveal delay={0.18} className="h-full">
+              <KpiCard
+                icon={Wallet}
+                label="Revenue (MTD)"
+                hero
+                footer={
+                  topSources.length > 0 && (
+                    <p className="relative mt-1.5 truncate text-[11px] capitalize text-white/50">
+                      {topSources
+                        .map(
+                          (s) =>
+                            `${String(s.source || "other").replace(/_/g, " ")} ${money(
+                              s.revenue,
+                              revenue.currency,
+                            )}`,
+                        )
+                        .join(" · ")}
+                    </p>
+                  )
+                }
+              >
+                <span className="text-2xl sm:text-[28px]">
+                  <NumberTicker
+                    value={Number(revenue.monthToDate || 0)}
+                    prefix={`${revenue.currency || "USD"} `}
+                  />
+                </span>
+              </KpiCard>
+            </Reveal>
+          </div>
+        )
+      )}
 
-          {/* ── 3. Today at a glance ───────────────────────────────── */}
-          <section>
-            <h2 className="mb-3 font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
-              Today at a glance
-            </h2>
+      {/* ── Agent + today's movements ───────────────────────────────── */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* The agent is always available, even if today's data failed */}
+        <Reveal delay={0.06} className="min-w-0 lg:col-span-7">
+          <AgentChat onActionDone={refresh} />
+        </Reveal>
 
-            {/* counters */}
-            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Reveal delay={0} className="h-full">
-                <KpiCard icon={DoorOpen} label="Arrivals">
-                  <NumberTicker value={arrivals.length} />
-                </KpiCard>
-              </Reveal>
-              <Reveal delay={0.06} className="h-full">
-                <KpiCard icon={LogOut} label="Departures">
-                  <NumberTicker value={departures.length} />
-                </KpiCard>
-              </Reveal>
-              <Reveal delay={0.12} className="h-full">
-                <KpiCard icon={BedDouble} label="In house">
-                  <NumberTicker value={data?.inHouse ?? 0} />
-                </KpiCard>
-              </Reveal>
-              <Reveal delay={0.18} className="h-full">
-                <KpiCard
-                  icon={Wallet}
-                  label="Revenue (MTD)"
-                  hero
-                  footer={
-                    topSources.length > 0 && (
-                      <p className="mt-1.5 truncate text-[11px] capitalize text-ink-400">
-                        {topSources
-                          .map(
-                            (s) =>
-                              `${String(s.source || "other").replace(/_/g, " ")} ${money(
-                                s.revenue,
-                                revenue.currency,
-                              )}`,
-                          )
-                          .join(" · ")}
-                      </p>
-                    )
-                  }
-                >
-                  <span className="text-xl sm:text-2xl">
-                    <NumberTicker
-                      value={Number(revenue.monthToDate || 0)}
-                      prefix={`${revenue.currency || "USD"} `}
-                    />
-                  </span>
-                </KpiCard>
-              </Reveal>
+        <div className="min-w-0 lg:col-span-5">
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-48 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
             </div>
-
-            {/* arrivals / departures lists */}
-            <div className="grid gap-4 sm:grid-cols-2">
+          ) : failed ? (
+            <EmptyState
+              icon={CalendarCheck}
+              title="Couldn't load today"
+              description="We couldn't reach your hotel data. Check your connection and try again."
+              action={
+                <button
+                  type="button"
+                  onClick={() => load()}
+                  className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97]"
+                >
+                  Try again
+                </button>
+              }
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <Reveal delay={0.05} className="h-full">
                 <GlanceCard icon={DoorOpen} title="Arriving today" count={arrivals.length}>
                   {arrivals.length === 0 ? (
@@ -795,20 +809,48 @@ export default function TodayPage() {
                 </GlanceCard>
               </Reveal>
             </div>
+          )}
+        </div>
+      </div>
 
-            {arrivals.length === 0 &&
-              departures.length === 0 &&
-              (data?.inHouse ?? 0) === 0 &&
-              suggestions.length === 0 && (
-                <div className="mt-4">
-                  <EmptyState
-                    icon={Users}
-                    title="A quiet day"
-                    description="No arrivals, departures or guests in house. Ask the agent about your upcoming bookings."
-                  />
+      {!loading && !failed && (
+        <>
+          {/* ── Pricing suggestions ──────────────────────────────────── */}
+          {suggestions.length > 0 && (
+            <section className="mt-8">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#0A0A0A] text-[#FF5A1F]">
+                  <TrendingUp className="h-4 w-4" strokeWidth={1.8} />
                 </div>
-              )}
-          </section>
+                <h2 className="font-geist text-lg font-semibold tracking-[-0.03em] text-[#0A0A0A]">
+                  Pricing suggestions
+                </h2>
+                <span className="rounded-full bg-[#FF5A1F] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white">
+                  {suggestions.length}
+                </span>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {suggestions.map((s, i) => (
+                  <Reveal key={s._id} delay={i * 0.06} className="h-full">
+                    <SuggestionCard s={s} onDone={refresh} />
+                  </Reveal>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {arrivals.length === 0 &&
+            departures.length === 0 &&
+            (data?.inHouse ?? 0) === 0 &&
+            suggestions.length === 0 && (
+              <div className="mt-6">
+                <EmptyState
+                  icon={Users}
+                  title="A quiet day"
+                  description="No arrivals, departures or guests in house. Ask the agent about your upcoming bookings."
+                />
+              </div>
+            )}
         </>
       )}
     </div>

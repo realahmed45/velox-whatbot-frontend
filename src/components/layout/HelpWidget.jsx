@@ -12,6 +12,8 @@ import { Magnetic, Spotlight } from "@/components/fx";
 
 const SHORTCUTS = [
   { keys: ["Ctrl", "K"], label: "Open command palette" },
+  { keys: ["?"], label: "All keyboard shortcuts" },
+  { keys: ["g", "i"], label: "Go to Messages" },
   { keys: ["Esc"], label: "Close dialogs" },
 ];
 
@@ -45,11 +47,10 @@ export default function HelpWidget() {
         <Magnetic strength={0.35}>
           <button
             onClick={() => setOpen(true)}
-            className="group relative grid h-12 w-12 place-items-center rounded-full bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_12px_30px_-8px_rgba(255,61,119,0.65),0_4px_10px_-2px_rgba(124,92,255,0.35)] transition-transform duration-500 ease-spring hover:scale-110 active:scale-95"
+            className="group relative grid h-12 w-12 place-items-center rounded-full bg-[#0A0A0A] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_12px_28px_-10px_rgba(10,10,10,0.6)] ring-1 ring-white/10 transition-[transform,background-color] duration-300 ease-spring hover:scale-110 hover:bg-[#FF5A1F] active:scale-95"
             aria-label="Help"
           >
-            <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-50 animate-ping-soft" />
-            <HelpCircle
+                        <HelpCircle
               className="relative h-5 w-5 transition-transform duration-500 ease-spring group-hover:rotate-[-14deg] group-hover:scale-110"
               strokeWidth={2}
             />
@@ -71,14 +72,14 @@ export default function HelpWidget() {
                   rel="noreferrer"
                   className="card-hover group flex items-center gap-3 rounded-2xl p-3"
                 >
-                  <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+                  <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
                     <l.icon className="h-4.5 w-4.5" strokeWidth={1.8} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-ink-900">{l.label}</p>
                     <p className="text-xs text-ink-500">{l.hint}</p>
                   </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-ink-300 transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-sunset-flame" />
+                  <ExternalLink className="h-3.5 w-3.5 text-ink-300 transition-all duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#FF5A1F]" />
                 </Spotlight>
               ))}
             </div>
@@ -93,9 +94,9 @@ export default function HelpWidget() {
                 <div key={s.label} className="flex items-center justify-between px-3.5 py-2.5">
                   <span className="text-sm text-ink-700">{s.label}</span>
                   <div className="flex items-center gap-1">
-                    {s.keys.map((k) => (
+                    {s.keys.map((k, ki) => (
                       <kbd
-                        key={k}
+                        key={ki}
                         className="min-w-[22px] rounded-md bg-white px-1.5 py-0.5 text-center font-mono text-[10px] font-semibold text-ink-600 shadow-[inset_0_-1px_0_rgba(15,23,42,0.1)] ring-1 ring-ink-900/[0.08]"
                       >
                         {k}

@@ -1,10 +1,10 @@
 /** RulesSection — "How your AI behaves": instructions for tricky moments. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Lightbulb, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { Lightbulb, Plus, Trash2 } from "lucide-react";
 import SaveBar from "./SaveBar";
-import { hasText, newKey, ringError, spring } from "./shared";
+import { hasText, newKey } from "./shared";
+import { btnSecondary, field, fieldError, iconBtnDanger, labelCls, panel } from "./ui";
 
 const toRules = (playbook) =>
   playbook.map((p) => ({ _k: newKey(), situation: p.situation || "", response: p.response || "" }));
@@ -60,53 +60,37 @@ export default function RulesSection({ playbook, onSave }) {
 
   return (
     <div>
-      <div className="flex items-start gap-2.5 rounded-xl bg-sunset-soft ring-1 ring-sunset-flame/15 px-3.5 py-2.5">
-        <Lightbulb className="w-4 h-4 mt-0.5 shrink-0 text-sunset-flame" strokeWidth={1.8} />
-        <p className="text-sm text-ink-600">
-          These are <span className="font-semibold text-ink-900">instructions to your AI</span>, not
-          messages to guests. They tell it what to do in tricky moments — an emergency, an angry
-          guest, a refund request — so it handles them the way you would.
+      <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-[#FF5A1F]/[0.06] px-3.5 py-3 text-[13px] text-neutral-600">
+        <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[#FF5A1F]" />
+        <p>
+          These are <span className="font-semibold text-[#0A0A0A]">instructions to your AI</span>, not messages to
+          guests — what to do in an emergency, with an angry guest or a refund request.
         </p>
       </div>
 
-      <div className="mt-4 space-y-3">
-        {rules.length === 0 && (
-          <div className="card p-8 text-center">
-            <div className="relative mx-auto mb-3 grid h-12 w-12 place-items-center">
-              <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
-              <span className="relative grid h-11 w-11 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
-                <ShieldCheck className="w-5 h-5" strokeWidth={1.8} />
-              </span>
-            </div>
-            <p className="font-display font-semibold text-ink-900">No rules yet</p>
-            <p className="text-sm text-ink-500 mt-1">Add one for each situation you want handled your way.</p>
-          </div>
-        )}
-        <AnimatePresence initial={false}>
+      {rules.length === 0 ? (
+        <div className={`${panel} px-6 py-8 text-center`}>
+          <p className="font-semibold text-[#0A0A0A]">No rules yet</p>
+          <p className="mt-1 text-[14px] text-neutral-500">Add one for each situation you want handled your way.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
           {rules.map((r, i) => {
             const flagged = showErrors && incomplete(r);
-            const done = !incomplete(r);
             return (
-              <motion.div
+              <div
                 key={r._k}
-                layout="position"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={spring}
-                className={`card group p-4 transition-shadow duration-500 ${flagged ? ringError : "focus-within:shadow-[inset_0_1px_0_#fff,0_0_0_1.5px_rgba(255,106,43,0.45),0_16px_36px_-18px_rgba(255,61,119,0.35)]"}`}
+                className={`${panel} p-4 sm:p-5 transition-[border-color,box-shadow] focus-within:border-[#FF5A1F]/50 ${
+                  flagged ? "!border-rose-300" : ""
+                }`}
               >
                 <div className="flex items-start gap-3">
-                  <span
-                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-semibold tabular-nums mt-6 transition-colors duration-300 ${
-                      done ? "bg-sunset text-white shadow-[0_6px_14px_-6px_rgba(255,61,119,0.55)]" : "bg-ink-900/[0.05] text-ink-600"
-                    }`}
-                  >
+                  <span className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-neutral-100 text-[12px] font-semibold tabular-nums text-neutral-600">
                     {i + 1}
                   </span>
-                  <div className="min-w-0 flex-1 grid gap-3">
+                  <div className="grid min-w-0 flex-1 gap-3">
                     <div>
-                      <label htmlFor={`rule-${r._k}`} className="text-xs font-semibold text-ink-500">
+                      <label htmlFor={`rule-${r._k}`} className={labelCls}>
                         When…
                       </label>
                       <input
@@ -115,41 +99,39 @@ export default function RulesSection({ playbook, onSave }) {
                         onChange={(e) => update(r._k, { situation: e.target.value })}
                         maxLength={200}
                         placeholder="e.g. A guest asks for a late check-out on a Sunday"
-                        className={`input mt-1 font-medium ${flagged && !hasText(r.situation) ? "!border-rose-400" : ""}`}
+                        className={`${field} mt-1.5 font-medium ${flagged && !hasText(r.situation) ? fieldError : ""}`}
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-ink-500">Your AI should…</label>
+                      <label className={labelCls}>Your AI should…</label>
                       <textarea
                         value={r.response}
                         onChange={(e) => update(r._k, { response: e.target.value })}
                         maxLength={1000}
                         rows={2}
                         placeholder="e.g. Say yes until 2pm at no charge, later than that costs half a night."
-                        className={`input mt-1 min-h-[72px] ${flagged && !hasText(r.response) ? "!border-rose-400" : ""}`}
+                        className={`${field} mt-1.5 min-h-[72px] ${flagged && !hasText(r.response) ? fieldError : ""}`}
                       />
                     </div>
-                    {flagged && (
-                      <p className="text-xs text-rose-600 -mt-1">Fill in both parts, or remove this rule.</p>
-                    )}
+                    {flagged && <p className="-mt-1 text-[12px] text-rose-600">Fill in both parts, or remove this rule.</p>}
                   </div>
                   <button
                     onClick={() => setRules((list) => list.filter((x) => x._k !== r._k))}
                     aria-label="Remove rule"
                     title="Remove"
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-400 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:rotate-[-10deg] hover:text-rose-600 hover:bg-rose-50 active:scale-90 mt-5"
+                    className={`${iconBtnDanger} -mr-2 -mt-1`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </AnimatePresence>
-      </div>
+        </div>
+      )}
 
-      <button onClick={add} className="btn-secondary group mt-4 min-h-[42px]" disabled={rules.length >= 60}>
-        <Plus className="w-4 h-4 text-sunset-flame transition-transform duration-500 ease-spring group-hover:rotate-90" />
+      <button onClick={add} className={`${btnSecondary} mt-4`} disabled={rules.length >= 60}>
+        <Plus className="h-4 w-4 text-[#FF5A1F]" />
         Add a rule
       </button>
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Modal from "@/components/ui/Modal";
+import PhotoUploader from "@/components/PhotoUploader";
 import { PulseDot, Reveal, Spotlight } from "@/components/fx";
 import ConnectionStatus from "@/components/ConnectionStatus";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -113,7 +114,7 @@ export default function PropertyPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8" aria-busy="true">
+      <div className="mx-auto max-w-[1400px] px-4 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8" aria-busy="true">
         <div className="flex items-center gap-3.5 mb-8">
           <div className="h-11 w-11 rounded-xl bg-ink-900/[0.06] animate-pulse" />
           <div className="space-y-2">
@@ -133,17 +134,17 @@ export default function PropertyPage() {
   const property = properties.find((p) => p._id === activeId) || null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10">
-      <Reveal className="flex flex-wrap items-center justify-between gap-3 mb-7">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
+      <Reveal className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div className="group flex items-center gap-3.5 min-w-0">
-          <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] ${hop}`}>
+          <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)] ${hop}`}>
             <Hotel className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-ink-900">
-              Property &amp; <span className="font-serif italic font-normal">Rooms</span>
+            <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
+              Property &amp; <span className="text-[#FF5A1F]">Rooms</span>
             </h1>
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-black/55">
               Your hotel's details, rooms, rates and availability.
             </p>
           </div>
@@ -152,7 +153,7 @@ export default function PropertyPage() {
           <select
             value={activeId || ""}
             onChange={(e) => switchTo(e.target.value)}
-            className="input w-auto max-w-full min-h-[40px] py-2 pr-8 font-medium"
+            className="input w-full max-w-full min-h-[42px] rounded-xl bg-white py-2 pr-8 font-medium sm:w-auto"
           >
             {properties.map((p) => (
               <option key={p._id} value={p._id}>
@@ -226,17 +227,17 @@ function SetupCards({ onDone, onCancel }) {
             onClick={() => setMode("import")}
             className="card-hover text-left p-6 group active:scale-[0.98]"
           >
-            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-sunset text-white shadow-[0_10px_24px_-10px_rgba(255,61,119,0.6)] mb-4 ${hop}`}>
+            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-[#FF5A1F] text-white shadow-[0_10px_24px_-10px_rgba(255,90,31,0.6)] mb-4 ${hop}`}>
               <CloudDownload className="w-6 h-6" strokeWidth={1.8} />
             </div>
-            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">
+            <p className="font-geist text-lg font-semibold tracking-[-0.02em] text-ink-900">
               Import from Booking.com / Airbnb
             </p>
             <p className="text-sm text-ink-500 mt-1">
               Already listed on an OTA? Pull your property, rooms and rates in
               one click — and keep availability synced both ways.
             </p>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame mt-4">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF5A1F] mt-4">
               Import my property <Plus className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:rotate-90" />
             </span>
           </Spotlight>
@@ -245,15 +246,15 @@ function SetupCards({ onDone, onCancel }) {
             onClick={() => setMode("manual")}
             className="card-hover text-left p-6 group active:scale-[0.98]"
           >
-            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame mb-4 ${hop}`}>
+            <div className={`grid h-12 w-12 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F] mb-4 ${hop}`}>
               <Building2 className="w-6 h-6" strokeWidth={1.8} />
             </div>
-            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up manually</p>
+            <p className="font-geist text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up manually</p>
             <p className="text-sm text-ink-500 mt-1">
               Not on an OTA yet? Add your hotel and rooms yourself in a couple
               of minutes — you can connect OTAs later.
             </p>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sunset-flame mt-4">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF5A1F] mt-4">
               Create my property <Plus className="w-3.5 h-3.5 transition-transform duration-500 ease-spring group-hover:rotate-90" />
             </span>
           </Spotlight>
@@ -322,9 +323,9 @@ function ImportFlow({ onBack, onDone, onManual }) {
   };
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.3)] sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Import from your OTAs</p>
+        <p className="font-geist text-lg font-semibold tracking-[-0.02em] text-ink-900">Import from your OTAs</p>
         <button
           onClick={onBack}
           className="btn-ghost px-3 py-1.5 text-xs"
@@ -342,19 +343,19 @@ function ImportFlow({ onBack, onDone, onManual }) {
       ) : unavailable ? (
         <div className="text-center py-8">
           <div className="relative mx-auto mb-4 grid h-14 w-14 place-items-center">
-            <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
+            <span aria-hidden className="absolute inset-0 rounded-full bg-[#FF5A1F] opacity-20 blur-2xl" />
             <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-amber-50 text-amber-500 ring-1 ring-amber-500/20">
               <CloudDownload className="w-6 h-6" strokeWidth={1.8} />
             </span>
           </div>
-          <p className="font-display text-lg font-semibold text-ink-900">OTA import is coming soon</p>
+          <p className="font-geist text-lg font-semibold text-ink-900">OTA import is coming soon</p>
           <p className="text-sm text-ink-500 mt-1 max-w-md mx-auto">
             {unavailable} In the meantime, add your rooms manually — your
             bookings and AI concierge work exactly the same.
           </p>
           <button
             onClick={onManual}
-            className="btn-primary group mt-5 min-h-[44px]"
+            className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group mt-5 min-h-[44px]"
           >
             <Building2 className={`w-4 h-4 ${hop}`} /> Set up manually
           </button>
@@ -374,7 +375,7 @@ function ImportFlow({ onBack, onDone, onManual }) {
               className="flex flex-wrap items-center gap-3 rounded-xl bg-white/60 p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color] duration-500 ease-spring hover:-translate-y-0.5 hover:bg-white/90"
             >
               <div className="flex-1 min-w-[180px]">
-                <p className="font-display font-semibold text-ink-900">{p.name}</p>
+                <p className="font-geist font-semibold text-ink-900">{p.name}</p>
                 <p className="text-xs text-ink-500">
                   {[p.city, p.country].filter(Boolean).join(", ")}
                   {p.currency ? ` · ${p.currency}` : ""}
@@ -388,7 +389,7 @@ function ImportFlow({ onBack, onDone, onManual }) {
                 <button
                   onClick={() => doImport(p)}
                   disabled={!!importing}
-                  className="btn-primary min-h-[40px] px-3.5 py-2 text-xs disabled:opacity-60"
+                  className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] min-h-[40px] px-3.5 py-2 text-xs disabled:opacity-60"
                 >
                   {importing === p.channexId ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -450,7 +451,7 @@ function ManualCreateForm({ onBack, onDone }) {
   return (
     <div className="card p-5 sm:p-6 max-w-2xl">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up your property</p>
+        <p className="font-geist text-lg font-semibold tracking-[-0.02em] text-ink-900">Set up your property</p>
         <button
           onClick={onBack}
           className="btn-ghost px-3 py-1.5 text-xs"
@@ -551,7 +552,7 @@ function ManualCreateForm({ onBack, onDone }) {
           <p className="text-sm text-amber-800 mt-1">{limitError}</p>
           <Link
             to="/dashboard/billing"
-            className="btn-primary mt-3 min-h-[40px] px-3.5 py-2 text-xs"
+            className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] mt-3 min-h-[40px] px-3.5 py-2 text-xs"
           >
             See upgrade options
           </Link>
@@ -562,7 +563,7 @@ function ManualCreateForm({ onBack, onDone }) {
       <button
         onClick={submit}
         disabled={saving || !!limitError}
-        className="mt-5 btn-primary group min-h-[44px] disabled:opacity-60"
+        className="mt-5 btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px] disabled:opacity-60"
       >
         {saving ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -638,12 +639,12 @@ function PropertyEditor({ property, onChanged }) {
 
       {/* Details */}
       <Reveal>
-      <div className="card p-5 sm:p-6">
+      <div className="rounded-2xl bg-white p-5 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.3)] sm:p-6">
         <div className="mb-5"><div className="group flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
             <Building2 className="h-5 w-5" strokeWidth={1.8} />
           </span>
-          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Property details</p>
+          <p className="font-geist text-[18px] font-semibold tracking-[-0.03em] text-[#0A0A0A]">Property details</p>
         </div></div>
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
@@ -738,7 +739,7 @@ function PropertyEditor({ property, onChanged }) {
           <button
             onClick={saveDetails}
             disabled={saving}
-            className="btn-primary group min-h-[44px] disabled:opacity-60"
+            className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px] disabled:opacity-60"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -824,13 +825,13 @@ function PhotosCard({ property, onChanged }) {
 
   return (
     <Reveal>
-    <div className="card p-5 sm:p-6">
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.3)] sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="group flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
             <Camera className="h-5 w-5" strokeWidth={1.8} />
           </span>
-          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Photos</p>
+          <p className="font-geist text-[18px] font-semibold tracking-[-0.03em] text-[#0A0A0A]">Photos</p>
         </div>
         <button
           onClick={() => fileRef.current?.click()}
@@ -857,9 +858,9 @@ function PhotosCard({ property, onChanged }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="group flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink-900/10 bg-white/40 px-4 py-8 text-center transition-colors hover:border-sunset-flame/40 hover:bg-white/80"
+          className="group flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink-900/10 bg-white/40 px-4 py-8 text-center transition-colors hover:border-[#FF5A1F]/40 hover:bg-white/80"
         >
-          <span className={`grid h-10 w-10 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ${hop}`}>
+          <span className={`grid h-10 w-10 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F] ${hop}`}>
             <Camera className="h-5 w-5" strokeWidth={1.8} />
           </span>
           <span className="text-sm text-ink-500">
@@ -945,17 +946,17 @@ function RoomsSection({ property }) {
 
   return (
     <Reveal>
-    <div className="card p-5 sm:p-6">
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.3)] sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="group flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0A0A0A] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
             <BedDouble className="h-5 w-5" strokeWidth={1.8} />
           </span>
-          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Rooms</p>
+          <p className="font-geist text-[18px] font-semibold tracking-[-0.03em] text-[#0A0A0A]">Rooms</p>
         </div>
         <button
           onClick={() => setEditing({})}
-          className="btn-primary group min-h-[40px] px-3.5 py-2 text-xs"
+          className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[40px] px-3.5 py-2 text-xs"
         >
           <Plus className="w-4 h-4 transition-transform duration-500 ease-spring group-hover:rotate-90" /> Add room
         </button>
@@ -970,12 +971,12 @@ function RoomsSection({ property }) {
       ) : rooms.length === 0 ? (
         <div className="text-center py-10 rounded-xl border-2 border-dashed border-ink-900/10 bg-white/40">
           <div className="relative mx-auto mb-3 grid h-14 w-14 place-items-center">
-            <span aria-hidden className="absolute inset-0 rounded-full bg-sunset opacity-20 blur-2xl" />
-            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-sunset-soft text-sunset-flame">
+            <span aria-hidden className="absolute inset-0 rounded-full bg-[#FF5A1F] opacity-20 blur-2xl" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F]">
               <BedDouble className="w-6 h-6" strokeWidth={1.8} />
             </span>
           </div>
-          <p className="font-display font-semibold text-ink-900">No rooms yet</p>
+          <p className="font-geist font-semibold text-ink-900">No rooms yet</p>
           <p className="text-sm text-ink-500 mt-0.5">
             Add your room types so the AI can quote prices and book guests.
           </p>
@@ -988,12 +989,12 @@ function RoomsSection({ property }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring, delay: Math.min(i, 8) * 0.05 }}
-              className={`group rounded-xl p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color,box-shadow] duration-500 ease-spring ${r.active === false ? "bg-ink-900/[0.02] opacity-60" : "bg-white/60 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-18px_rgba(255,61,119,0.35)]"}`}
+              className={`group rounded-xl p-4 ring-1 ring-ink-900/[0.07] shadow-[inset_0_1px_0_#fff] transition-[transform,background-color,box-shadow] duration-500 ease-spring ${r.active === false ? "bg-ink-900/[0.02] opacity-60" : "bg-white/60 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[inset_0_1px_0_#fff,0_14px_30px_-18px_rgba(255,90,31,0.35)]"}`}
             >
               <div className="flex flex-wrap items-start gap-3">
                 <div className="flex-1 min-w-[200px]">
                   <div className="flex items-center gap-2">
-                    <span className="font-display font-semibold tracking-[-0.01em] text-ink-900">{r.name}</span>
+                    <span className="font-geist font-semibold tracking-[-0.01em] text-ink-900">{r.name}</span>
                     {r.active === false && (
                       <span className="badge-gray">
                         inactive
@@ -1113,10 +1114,15 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
   const isEdit = !!room;
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({});
+  const [triedSave, setTriedSave] = useState(false);
   const patch = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  // A room added by hand needs at least one photo of the room.
+  const hasPhoto = (form.photos || []).some((p) => p.url);
+  const photoRequired = !isEdit;
 
   useEffect(() => {
     if (!open) return;
+    setTriedSave(false);
     setForm(
       room
         ? { ...room }
@@ -1130,13 +1136,16 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
             baseRate: "",
             currency: property.currency || "USD",
             active: true,
+            photos: [],
           },
     );
   }, [open, room, property.currency]);
 
   const submit = async () => {
+    setTriedSave(true);
     if (!form.name?.trim()) return toast.error("Room name is required");
     if (!Number(form.baseRate)) return toast.error("Set a nightly rate");
+    if (photoRequired && !hasPhoto) return toast.error("Add at least one photo of the room");
     setSaving(true);
     const payload = {
       name: form.name.trim(),
@@ -1149,6 +1158,11 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
       currency: form.currency,
       active: form.active !== false,
     };
+    if (Array.isArray(form.photos)) {
+      payload.photos = form.photos
+        .filter((p) => p.url)
+        .map((p, i) => ({ url: p.url, caption: p.caption || "", position: i }));
+    }
     try {
       if (isEdit) {
         await api.put(`/hotel/rooms/${room._id}`, payload);
@@ -1195,10 +1209,28 @@ function RoomModal({ open, room, property, onClose, onSaved }) {
           <input
             value={form.name || ""}
             onChange={(e) => patch("name", e.target.value)}
-            placeholder="e.g. Deluxe Double, Sea View"
+            placeholder="e.g. Room 1"
             className={input}
           />
         </div>
+        <PhotoUploader
+          label="Room photos"
+          photos={form.photos || []}
+          onChange={(photos) => patch("photos", photos)}
+          max={12}
+          compact
+          required={photoRequired}
+          hint={
+            photoRequired
+              ? "Add at least one photo of the room — guests book what they can see."
+              : "Add photos of this room — they show on your website and booking page."
+          }
+          error={
+            photoRequired && triedSave && !hasPhoto
+              ? "Add at least one photo of the room before saving."
+              : ""
+          }
+        />
         <div>
           <span className={label}>Description</span>
           <textarea
@@ -1309,13 +1341,13 @@ function TransfersSettingsCard({ property, onChanged }) {
 
   return (
     <Reveal>
-    <div className="card p-5 sm:p-6">
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.3)] sm:p-6">
       <div className="group flex items-center gap-3 mb-5">
-        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sunset-soft text-sunset-flame ${hop}`}>
+        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FFF1EA] text-[#FF5A1F] ${hop}`}>
           <Plane className="h-5 w-5" strokeWidth={1.8} />
         </span>
         <div className="min-w-0">
-          <p className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink-900">Airport transfers</p>
+          <p className="font-geist text-[18px] font-semibold tracking-[-0.03em] text-[#0A0A0A]">Airport transfers</p>
           <p className="text-xs text-ink-500">
             Let your AI offer guests a ride from and to the airport.
           </p>
@@ -1406,7 +1438,7 @@ function TransfersSettingsCard({ property, onChanged }) {
         <button
           onClick={save}
           disabled={saving}
-          className="btn-primary group min-h-[44px] disabled:opacity-60"
+          className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] group min-h-[44px] disabled:opacity-60"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />

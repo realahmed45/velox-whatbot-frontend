@@ -20,7 +20,7 @@ export default function ActionCard({
   className,
 }) {
   const iconBgMap = {
-    brand: "bg-sunset-soft text-sunset-flame",
+    brand: "bg-[#FFF1EA] text-[#FF5A1F]",
     accent: "bg-amber-500/10 text-amber-600",
     emerald: "bg-emerald-500/10 text-emerald-600",
     amber: "bg-amber-500/10 text-amber-600",
@@ -34,13 +34,13 @@ export default function ActionCard({
       as={Wrapper}
       {...props}
       className={clsx(
-        "card-hover group block w-full overflow-hidden p-5 text-left active:scale-[0.98]",
+        "surface group relative block w-full overflow-hidden p-5 text-left transition-[transform,box-shadow] duration-300 ease-spring hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(255,90,31,0.35),0_18px_36px_-18px_rgba(10,10,10,0.25)] active:scale-[0.98]",
         className,
       )}
     >
       <ArrowUpRight
         aria-hidden
-        className="absolute right-4 top-4 h-4 w-4 text-ink-300 opacity-0 transition-all duration-500 ease-spring -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-sunset-flame group-hover:opacity-100"
+        className="absolute right-4 top-4 h-4 w-4 text-ink-300 opacity-0 transition-all duration-500 ease-spring -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#FF5A1F] group-hover:opacity-100"
       />
       <div
         className={clsx(
@@ -50,8 +50,8 @@ export default function ActionCard({
       >
         {Icon && <Icon className="h-5 w-5" strokeWidth={1.8} />}
       </div>
-      <h3 className="mb-1 font-display font-semibold tracking-[-0.02em] text-ink-900">{title}</h3>
-      {description && <p className="text-sm leading-snug text-ink-500">{description}</p>}
+      <h3 className="mb-1 font-geist font-semibold tracking-[-0.025em] text-neutral-950">{title}</h3>
+      {description && <p className="text-sm leading-snug text-neutral-500">{description}</p>}
     </Spotlight>
   );
 }

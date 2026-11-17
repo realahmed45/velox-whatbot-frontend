@@ -4,9 +4,10 @@
  */
 import { ArrowRight, ArrowUpRight, Mail, MapPin, Menu, Phone, Star, X } from "lucide-react";
 import {
-  Img, Lightbox, MapFrame, MobileBookBar, PAGES, PageLink, Reveal, SIZES, WhatsAppFab, WhatsAppIcon,
-  directionsHref, formatPrice, paragraphs, roomFacts, useBookCta, useBooking, useBp, useEnquiry, useFonts, useFrameHeight,
-  useGallery, useLightbox, useMenu, useReviews, useRooms, useScrolled, useSite, useWhatsApp, year,
+  Counter, DrawLine, Img, KenBurns, Lightbox, MapFrame, MobileBookBar, PageLink, Reveal, RevealText, Rise, SIZES,
+  ScrollProgress, ServiceIcon, WhatsAppFab, WhatsAppIcon, directionsHref, formatPrice, paragraphs, roomFacts, servicePrice,
+  useActivePage, useBookCta, useBooking, useBp, useEnquiry, useFonts, useFrameHeight, useGallery, useLightbox, useMenu,
+  useNavPages, useReviews, useRooms, useScrolled, useServiceCta, useServices, useSite, useWhatsApp, year,
 } from "../shared";
 
 const SERIF = "'Playfair Display', Georgia, serif";
@@ -20,7 +21,8 @@ const LINE = "rgba(201,169,110,0.22)";
 
 export default function Noir() {
   useFonts("noir", "family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600;700");
-  const { site, page } = useSite();
+  const { site } = useSite();
+  const page = useActivePage();
   const gold = site.accent || "#c9a96e";
   const gallery = useGallery();
   const lb = useLightbox();
@@ -30,6 +32,7 @@ export default function Noir() {
       <main>
         {page === "home" && <Home gold={gold} onPhoto={lb.open} />}
         {page === "rooms" && <Rooms gold={gold} />}
+        {page === "services" && <ServicesPage gold={gold} />}
         {page === "gallery" && <Gallery gold={gold} onPhoto={lb.open} />}
         {page === "about" && <About gold={gold} />}
         {page === "contact" && <Contact gold={gold} />}
@@ -43,7 +46,7 @@ export default function Noir() {
 }
 
 const Kicker = ({ children, gold }) => (
-  <p className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.4em]" style={{ color: gold }}>
+  <p className="inline-flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.4em]" style={{ color: gold }}>
     <span className="h-px w-10" style={{ background: gold }} />
     {children}
   </p>
@@ -59,47 +62,60 @@ function Title({ children, size = 54, center, className = "" }) {
 }
 
 function GoldButton({ href, children, gold, solid, ...rest }) {
+  // A gold wash sweeps in from the left on hover (transform only).
   return (
     <a
       href={href}
       {...rest}
-      className="group inline-flex items-center gap-3 px-8 py-4 text-[12px] font-semibold uppercase tracking-[0.28em] transition-opacity duration-300 hover:opacity-85"
-      style={{ border: `1px solid ${gold}`, background: solid ? gold : "transparent", color: solid ? BG : gold }}
+      className="group relative inline-flex items-center gap-3 overflow-hidden px-8 py-4 text-[12px] font-semibold uppercase tracking-[0.28em]"
+      style={{ border: `1px solid ${gold}`, background: solid ? gold : "transparent", color: solid ? BG : gold, isolation: "isolate" }}
     >
+      <span aria-hidden="true" className="absolute inset-0 -z-10 origin-left scale-x-0 transition-transform duration-500 ease-out group-hover:scale-x-100" style={{ background: solid ? "rgba(255,255,255,0.18)" : "rgba(201,169,110,0.14)" }} />
       {children}
     </a>
   );
 }
 
 function Nav({ gold }) {
-  const { site, page } = useSite();
+  const { site } = useSite();
+  const page = useActivePage();
+  const pages = useNavPages();
   const { lg } = useBp();
   const scrolled = useScrolled(40);
   const [open, setOpen] = useMenu();
   const cta = useBookCta();
-  const left = PAGES.slice(0, 3);
-  const right = PAGES.slice(3);
+  const half = Math.ceil(pages.length / 2);
+  const left = pages.slice(0, half);
+  const right = pages.slice(half);
+  const solid = scrolled || page !== "home";
   const link = (p) => (
-    <PageLink key={p.id} page={p.id} className="text-[11px] font-semibold uppercase tracking-[0.3em] transition hover:opacity-100" style={{ color: page === p.id ? gold : TEXT, opacity: page === p.id ? 1 : 0.75 }}>
+    <PageLink key={p.id} page={p.id} className="group relative py-1 text-[11px] font-semibold uppercase tracking-[0.28em] transition-opacity duration-300 hover:opacity-100" style={{ color: page === p.id ? gold : TEXT, opacity: page === p.id ? 1 : 0.78 }}>
       {p.label}
+      <span aria-hidden="true" className={`absolute -bottom-1 left-0 right-[0.28em] h-px origin-center transition-transform duration-500 ${page === p.id ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} style={{ background: gold }} />
     </PageLink>
   );
   return (
     <>
-      <header className="fixed left-0 right-0 top-0 z-40 transition-[background-color,border-color] duration-500" style={{ background: scrolled || page !== "home" ? "rgba(11,11,12,0.94)" : "linear-gradient(180deg, rgba(0,0,0,0.6), transparent)", borderBottom: `1px solid ${scrolled ? LINE : "transparent"}` }}>
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6" style={{ height: scrolled ? 72 : 92, transition: "height .4s" }}>
+      <header className="fixed left-0 right-0 top-0 z-40">
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.65), transparent)" }} />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{ opacity: solid ? 1 : 0, background: "rgba(11,11,12,0.78)", backdropFilter: "blur(16px) saturate(150%)", WebkitBackdropFilter: "blur(16px) saturate(150%)", borderBottom: `1px solid ${LINE}` }}
+        />
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between px-6" style={{ height: lg ? 84 : 72 }}>
           {lg ? (
             <>
-              <nav className="flex flex-1 gap-9">{left.map(link)}</nav>
+              <nav className="flex flex-1 gap-8">{left.map(link)}</nav>
               <PageLink page="home" className="text-center">
                 <span className="block text-[22px] uppercase tracking-[0.32em]" style={{ fontFamily: SERIF }}>{site.hotel.name}</span>
                 {site.hotel.starRating > 0 && (
                   <span className="mt-1 flex justify-center gap-1">{Array.from({ length: site.hotel.starRating }).map((_, i) => <Star key={i} className="h-2.5 w-2.5" style={{ color: gold, fill: gold }} />)}</span>
                 )}
               </PageLink>
-              <nav className="flex flex-1 items-center justify-end gap-9">
+              <nav className="flex flex-1 items-center justify-end gap-8">
                 {right.map(link)}
-                {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.3em] transition-opacity hover:opacity-85" style={{ background: gold, color: BG }}>Reserve</a>}
+                {cta && <a href={cta.href} target={cta.target} rel={cta.rel} className="px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.3em] transition-transform duration-300 hover:-translate-y-0.5" style={{ background: gold, color: BG }}>Reserve</a>}
               </nav>
             </>
           ) : (
@@ -109,10 +125,11 @@ function Nav({ gold }) {
             </>
           )}
         </div>
+        {solid && <ScrollProgress color={gold} height={1} />}
       </header>
       {open && !lg && (
-        <div className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-6" style={{ background: BG }}>
-          {PAGES.map((p, i) => (
+        <div className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-6 overflow-y-auto py-20" style={{ background: BG }}>
+          {pages.map((p, i) => (
             <Reveal key={p.id} delay={i * 0.05} y={10}>
               <PageLink page={p.id} className="text-3xl uppercase tracking-[0.2em]" style={{ fontFamily: SERIF, color: page === p.id ? gold : TEXT }}>{p.label}</PageLink>
             </Reveal>
@@ -138,34 +155,52 @@ function Home({ gold, onPhoto }) {
   return (
     <>
       <section className="relative flex items-center justify-center overflow-hidden text-center" style={{ minHeight: h, background: BG }}>
-        <Img src={c.hero?.image} alt={site.hotel.name} priority fallback="#2a2620" className="absolute inset-0 h-full w-full object-cover" style={{ transform: "scale(1.04)" }} />
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.35), rgba(0,0,0,0.78))" }} />
-        <Reveal className="relative px-6">
-          <Kicker gold={gold}>{[site.hotel.city, site.hotel.country].filter(Boolean).join(" · ") || site.hotel.typeLabel}</Kicker>
-          <h1 className="mx-auto mt-8 max-w-5xl uppercase leading-[1.02]" style={{ fontFamily: SERIF, fontSize: lg ? 92 : md ? 68 : 38, letterSpacing: md ? "0.06em" : "0.03em" }}>
-            {c.hero?.title || site.hotel.name}
-          </h1>
-          {c.hero?.subtitle && <p className="mx-auto mt-7 max-w-xl text-[17px] font-light leading-relaxed" style={{ color: "rgba(236,231,223,0.88)" }}>{c.hero.subtitle}</p>}
-          <div className="mt-12 flex flex-wrap justify-center gap-4">
+        <KenBurns className="absolute inset-0" from={1.16} duration={10}>
+          <Img src={c.hero?.image} alt={site.hotel.name} priority fallback="#2a2620" className="h-full w-full object-cover" />
+        </KenBurns>
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.32), rgba(0,0,0,0.8))" }} />
+        <div className="relative px-6" style={{ paddingTop: 96, paddingBottom: 96 }}>
+          <Rise delay={0.1} className="flex justify-center">
+            <Kicker gold={gold}>{[site.hotel.city, site.hotel.country].filter(Boolean).join(" · ") || site.hotel.typeLabel}</Kicker>
+          </Rise>
+          <RevealText
+            text={c.hero?.title || site.hotel.name}
+            className="mx-auto mt-8 max-w-5xl uppercase leading-[1.04]"
+            style={{ fontFamily: SERIF, fontSize: lg ? 92 : md ? 68 : 36, letterSpacing: md ? "0.06em" : "0.03em" }}
+            delay={0.3}
+            stagger={0.1}
+            duration={1.1}
+          />
+          <div className="mx-auto mt-8 flex max-w-xs items-center justify-center gap-3" aria-hidden="true">
+            <DrawLine origin="right" className="h-px flex-1" style={{ background: gold }} delay={0.8} />
+            <Star className="h-3 w-3" style={{ color: gold, fill: gold }} />
+            <DrawLine className="h-px flex-1" style={{ background: gold }} delay={0.8} />
+          </div>
+          {c.hero?.subtitle && <Rise delay={0.9} as="p" className="mx-auto mt-7 max-w-xl text-[17px] font-light leading-relaxed" style={{ color: "rgba(236,231,223,0.9)" }}>{c.hero.subtitle}</Rise>}
+          <Rise delay={1.1} className="mt-12 flex flex-wrap justify-center gap-4">
             {book && <GoldButton {...book} gold={gold} solid>Book now <ArrowRight className="h-4 w-4" /></GoldButton>}
             {wa && <GoldButton href={wa} target="_blank" rel="noopener noreferrer" gold={gold} solid={!book}><WhatsAppIcon size={16} /> {book ? "WhatsApp" : "Reserve on WhatsApp"}</GoldButton>}
             {!wa && !book && <PageLink page="contact" className="inline-flex items-center gap-3 px-8 py-4 text-[12px] font-semibold uppercase tracking-[0.28em]" style={{ background: gold, color: BG }}>Contact us</PageLink>}
             {(!book || !wa) && rooms.length > 0 && <PageLink page="rooms" className="inline-flex items-center gap-3 px-8 py-4 text-[12px] font-semibold uppercase tracking-[0.28em]" style={{ border: `1px solid ${gold}`, color: gold }}>Our rooms</PageLink>}
-          </div>
-        </Reveal>
-        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-[10px] uppercase tracking-[0.4em]" style={{ color: MUTED }} aria-hidden="true">
-          Scroll
-          <span className="h-12 w-px" style={{ background: `linear-gradient(${gold}, transparent)` }} />
+          </Rise>
         </div>
+        {md && (
+          <Rise delay={1.4} className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-[10px] uppercase tracking-[0.4em]" style={{ color: MUTED }}>
+            <span aria-hidden="true" className="flex flex-col items-center gap-3">
+              Scroll
+              <span className="h-12 w-px" style={{ background: `linear-gradient(${gold}, transparent)` }} />
+            </span>
+          </Rise>
+        )}
       </section>
 
-      <section className="mx-auto max-w-4xl px-6 text-center" style={{ paddingTop: md ? 150 : 80, paddingBottom: md ? 120 : 64 }}>
+      <section className="mx-auto max-w-4xl px-6 text-center" style={{ paddingTop: md ? 150 : 80, paddingBottom: md ? 110 : 60 }}>
         <Reveal>
-          {site.hotel.typeLabel && <Kicker gold={gold}>{site.hotel.typeLabel}</Kicker>}
+          {site.hotel.typeLabel && <div className="flex justify-center"><Kicker gold={gold}>{site.hotel.typeLabel}</Kicker></div>}
           <Title center className="mt-8" size={50}>{c.about?.heading || `Welcome to ${site.hotel.name}`}</Title>
           {intro && <p className="mx-auto mt-8 max-w-2xl text-[17px] font-light leading-[1.9]" style={{ color: MUTED }}>{intro}</p>}
-          <div className="mx-auto mt-10 h-14 w-px" style={{ background: gold }} aria-hidden="true" />
         </Reveal>
+        <Stats gold={gold} />
       </section>
 
       {c.about?.image && (
@@ -191,10 +226,12 @@ function Home({ gold, onPhoto }) {
         </section>
       )}
 
+      <Services gold={gold} limit={6} />
+
       {c.amenities?.length > 0 && (
         <section style={{ background: PANEL, borderTop: `1px solid ${LINE}`, borderBottom: `1px solid ${LINE}` }}>
           <div className="mx-auto max-w-7xl px-6" style={{ paddingTop: md ? 110 : 64, paddingBottom: md ? 110 : 64 }}>
-            <Reveal className="text-center"><Kicker gold={gold}>The details</Kicker><Title center className="mt-6" size={44}>Amenities &amp; services</Title></Reveal>
+            <Reveal className="text-center"><div className="flex justify-center"><Kicker gold={gold}>The details</Kicker></div><Title center className="mt-6" size={44}>Amenities</Title></Reveal>
             <div className={`mt-14 grid ${lg ? "grid-cols-4" : md ? "grid-cols-3" : "grid-cols-2"}`} style={{ borderTop: `1px solid ${LINE}`, borderLeft: `1px solid ${LINE}` }}>
               {c.amenities.map((a, i) => (
                 <Reveal key={a + i} delay={(i % 4) * 0.05} y={10} className="flex flex-col justify-between gap-6 p-6" style={{ borderRight: `1px solid ${LINE}`, borderBottom: `1px solid ${LINE}`, minHeight: 130 }}>
@@ -232,14 +269,122 @@ function Home({ gold, onPhoto }) {
   );
 }
 
+/** Stars and rooms, counted up under the welcome. */
+function Stats({ gold }) {
+  const { site } = useSite();
+  const { md } = useBp();
+  const rooms = useRooms();
+  const services = useServices();
+  const stars = Math.min(5, Number(site.hotel.starRating) || 0);
+  const items = [
+    stars > 0 && { k: "s", value: <Counter value={stars} duration={1.4} />, label: stars === 1 ? "Star" : "Stars" },
+    rooms.length > 0 && { k: "r", value: <Counter value={rooms.length} duration={1.4} />, label: rooms.length === 1 ? "Room type" : "Room types" },
+    services.length > 0 && { k: "v", value: <Counter value={services.length} duration={1.4} />, label: services.length === 1 ? "Service" : "Services" },
+    site.hotel.checkIn && { k: "c", value: site.hotel.checkIn, label: "Check-in" },
+  ].filter(Boolean);
+  if (!items.length) return null;
+  return (
+    <Reveal delay={0.1} className="mx-auto mt-14 grid max-w-3xl" style={{ gridTemplateColumns: `repeat(${md ? items.length : Math.min(2, items.length)}, minmax(0, 1fr))`, borderTop: `1px solid ${LINE}` }}>
+      {items.map((x, i) => (
+        <div key={x.k} className="px-3 py-7" style={{ borderLeft: (md ? i : i % 2) ? `1px solid ${LINE}` : "none", borderBottom: !md && items.length > 2 && i < 2 ? `1px solid ${LINE}` : "none" }}>
+          <p className="leading-none" style={{ fontFamily: SERIF, fontSize: md ? 44 : 34, color: gold }}>{x.value}</p>
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.32em]" style={{ color: MUTED }}>{x.label}</p>
+        </div>
+      ))}
+    </Reveal>
+  );
+}
+
+/** Services as a gilded grid. Hidden when there are none. */
+function Services({ gold, limit, page = false }) {
+  const { md, lg } = useBp();
+  const all = useServices();
+  if (!all.length) return null;
+  const list = limit ? all.slice(0, limit) : all;
+  const cols = lg ? 3 : md ? 2 : 1;
+  return (
+    <section className="mx-auto max-w-7xl px-6" style={{ paddingTop: page ? 0 : md ? 130 : 72, paddingBottom: md ? 130 : 72 }}>
+      {!page && (
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <Reveal><Kicker gold={gold}>Concierge</Kicker><Title className="mt-6">Curated services</Title></Reveal>
+          {all.length > list.length && (
+            <PageLink page="services" className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: gold }}>All {all.length} services <ArrowRight className="h-4 w-4" /></PageLink>
+          )}
+        </div>
+      )}
+      <div className={`${page ? "" : "mt-14"} grid`} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, borderTop: `1px solid ${LINE}`, borderLeft: `1px solid ${LINE}` }}>
+        {list.map((s, i) => <ServiceCell key={s.name + i} service={s} gold={gold} index={i} delay={(i % cols) * 0.08} />)}
+      </div>
+    </section>
+  );
+}
+
+function ServiceCell({ service, gold, index, delay }) {
+  const cta = useServiceCta(service.name);
+  const price = servicePrice(service);
+  return (
+    <Reveal delay={delay} className="group bs-hover relative flex flex-col overflow-hidden" style={{ borderRight: `1px solid ${LINE}`, borderBottom: `1px solid ${LINE}`, minHeight: 300, isolation: "isolate" }}>
+      {/* The service photo (when there is one) surfaces softly on hover. */}
+      {service.image && (
+        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-700 group-hover:opacity-100">
+          <div className="bs-zoom h-full w-full">
+            <Img src={service.image} alt="" sizes={SIZES.third} fallback="#2a2620" className="h-full w-full object-cover" />
+          </div>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(11,11,12,0.78), rgba(11,11,12,0.94))" }} />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col p-8">
+        <div className="flex items-center justify-between">
+          <span className="grid h-12 w-12 place-items-center transition-transform duration-500 group-hover:-translate-y-1" style={{ border: `1px solid ${LINE}`, color: gold }}>
+            <ServiceIcon icon={service.icon} name={service.name} className="h-5 w-5" strokeWidth={1.25} />
+          </span>
+          <span className="text-xs" style={{ fontFamily: SERIF, color: gold }}>{String(index + 1).padStart(2, "0")}</span>
+        </div>
+        <h3 className="mt-8 text-[26px] leading-tight" style={{ fontFamily: SERIF }}>{service.name}</h3>
+        {service.description && <p className="mt-3 text-[15px] font-light leading-relaxed" style={{ color: MUTED }}>{service.description}</p>}
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em]" style={{ color: price ? gold : TEXT }}>
+            {price ? price.label : "Ask us"}
+          </p>
+          {cta && (
+            <a href={cta.href} target={cta.target} rel={cta.rel} className="inline-flex items-center gap-1.5 py-1 text-[11px] font-semibold uppercase tracking-[0.26em]" style={{ color: TEXT }} aria-label={`Arrange ${service.name}`}>
+              Arrange <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" style={{ color: gold }} />
+            </a>
+          )}
+        </div>
+      </div>
+      <span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-px origin-left scale-x-0 transition-transform duration-700 group-hover:scale-x-100" style={{ background: gold }} />
+    </Reveal>
+  );
+}
+
+function ServicesPage({ gold }) {
+  const { site } = useSite();
+  const { md } = useBp();
+  const services = useServices();
+  return (
+    <>
+      <PageHead kicker="Concierge" title="Services" image={services.find((s) => s.image)?.image || site.content.gallery?.[3]?.url || site.content.hero?.image} gold={gold} />
+      <Reveal className="mx-auto max-w-3xl px-6 text-center" style={{ paddingBottom: md ? 72 : 44 }}>
+        <p className="text-xl italic leading-relaxed" style={{ fontFamily: SERIF, color: "rgba(236,231,223,0.9)" }}>
+          Transfers, treatments and excursions — our team arranges every detail before you arrive.
+        </p>
+      </Reveal>
+      <Services gold={gold} page />
+      <Cta gold={gold} />
+    </>
+  );
+}
+
 function RoomTile({ room, gold, delay }) {
   const cta = useBookCta(room.name);
   const price = formatPrice(room.price, room.currency);
   const facts = roomFacts(room).slice(0, 2);
   return (
     <Reveal delay={delay} className="group relative overflow-hidden" style={{ background: PANEL }}>
-      <Img src={room.image} alt={room.name} sizes={SIZES.third} fallback="#2a2620" className="aspect-[3/4] w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110" />
+      <Img src={room.image} alt={room.name} sizes={SIZES.third} fallback="#2a2620" className="aspect-[3/4] w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.08]" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 35%, rgba(0,0,0,0.92))" }} aria-hidden="true" />
+      <span aria-hidden="true" className="pointer-events-none absolute inset-4 scale-[0.98] opacity-0 transition-[transform,opacity] duration-700 group-hover:scale-100 group-hover:opacity-100" style={{ border: `1px solid ${gold}` }} />
       <div className="absolute inset-x-0 bottom-0 p-7">
         {price && <p className="text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: gold }}>From {price} / night</p>}
         <h3 className="mt-2 text-3xl" style={{ fontFamily: SERIF }}>{room.name}</h3>
@@ -301,12 +446,14 @@ function PageHead({ kicker, title, image, gold }) {
   const { md } = useBp();
   return (
     <section className="relative flex items-end overflow-hidden" style={{ minHeight: md ? 520 : 360, background: BG }}>
-      <Img src={image} alt="" priority fallback="#2a2620" className="absolute inset-0 h-full w-full object-cover" />
+      <KenBurns key={image} className="absolute inset-0" from={1.1} duration={8}>
+        <Img src={image} alt="" priority fallback="#2a2620" className="h-full w-full object-cover" />
+      </KenBurns>
       <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(11,11,12,1))" }} />
-      <Reveal className="relative mx-auto w-full max-w-7xl px-6 pb-16">
-        <Kicker gold={gold}>{kicker}</Kicker>
-        <h1 className="mt-6 uppercase leading-none" style={{ fontFamily: SERIF, fontSize: md ? 80 : 40, letterSpacing: md ? "0.05em" : "0.03em" }}>{title}</h1>
-      </Reveal>
+      <div className="relative mx-auto w-full max-w-7xl px-6 pb-16">
+        <Rise delay={0.1}><Kicker gold={gold}>{kicker}</Kicker></Rise>
+        <RevealText text={title} className="mt-6 uppercase leading-[1.02]" style={{ fontFamily: SERIF, fontSize: md ? 80 : 38, letterSpacing: md ? "0.05em" : "0.03em" }} delay={0.2} stagger={0.09} />
+      </div>
     </section>
   );
 }
@@ -336,7 +483,7 @@ function Rooms({ gold }) {
           return (
             <div key={r.id || i} className={md ? "grid grid-cols-12 items-center gap-12" : "space-y-8"} style={{ paddingTop: md ? 90 : 48, paddingBottom: md ? 90 : 48, borderBottom: `1px solid ${LINE}` }}>
               <Reveal className={md ? `col-span-7 ${i % 2 ? "order-2" : ""}` : ""}>
-                <div className="overflow-hidden" style={{ background: PANEL }}><Img src={r.image} alt={r.name} sizes="(min-width: 820px) 58vw, 100vw" fallback="#2a2620" className="aspect-[16/11] w-full object-cover transition-transform duration-[1200ms] hover:scale-105" /></div>
+                <div className="bs-zoom" style={{ background: PANEL }}><Img src={r.image} alt={r.name} sizes="(min-width: 820px) 58vw, 100vw" fallback="#2a2620" className="aspect-[16/11] w-full object-cover" /></div>
               </Reveal>
               <Reveal delay={0.1} className={md ? "col-span-5" : ""}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.35em]" style={{ color: gold }}>Room {String(i + 1).padStart(2, "0")}</p>
@@ -510,6 +657,7 @@ function Contact({ gold }) {
 
 function Footer({ gold }) {
   const { site } = useSite();
+  const pages = useNavPages();
   const { md } = useBp();
   return (
     <footer style={{ borderTop: `1px solid ${LINE}` }}>
@@ -520,7 +668,7 @@ function Footer({ gold }) {
           <p className="mt-1 text-sm" style={{ color: MUTED }}>{[site.content.contact?.phone, site.content.contact?.email].filter(Boolean).join("  ·  ")}</p>
         )}
         <nav className={`mt-10 flex flex-wrap justify-center ${md ? "gap-10" : "gap-5"}`}>
-          {PAGES.map((p) => <PageLink key={p.id} page={p.id} className="text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: MUTED }}>{p.label}</PageLink>)}
+          {pages.map((p) => <PageLink key={p.id} page={p.id} className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#a39e95] transition-colors hover:text-[#ece7df]">{p.label}</PageLink>)}
         </nav>
         <div className="mx-auto mt-12 h-px w-24" style={{ background: gold }} />
         <p className="mt-8 text-xs" style={{ color: "#8a857d" }}>

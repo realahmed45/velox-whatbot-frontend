@@ -22,7 +22,7 @@ export default function FormField({
       {label && (
         <label htmlFor={htmlFor} className="block text-[13px] font-medium text-ink-700">
           {label}
-          {required && <span className="ml-0.5 text-sunset-magenta">*</span>}
+          {required && <span className="ml-0.5 text-[#FF5A1F]">*</span>}
         </label>
       )}
       {children}

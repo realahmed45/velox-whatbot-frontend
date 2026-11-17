@@ -25,6 +25,23 @@ const SITE_CSS = `
 .bsite a,.bsite button{-webkit-tap-highlight-color:transparent}
 .bsite h1,.bsite h2,.bsite h3{overflow-wrap:break-word;text-wrap:balance}
 .bsite img{-webkit-user-drag:none}
+.bsite ::selection{background:rgba(127,127,127,.28)}
+.bsite .bs-lift{position:relative;isolation:isolate}
+.bsite .bs-lift::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;box-shadow:var(--bs-shadow,0 34px 60px -32px rgba(0,0,0,.42));opacity:0;transition:opacity .6s cubic-bezier(.22,1,.36,1)}
+.bsite .bs-zoom{overflow:hidden}
+.bsite .bs-zoom img,.bsite .bs-zoom>[role=img]{transition:transform 1.3s cubic-bezier(.22,1,.36,1)}
+.bsite .bs-shift{transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.bsite .bs-fade{transition:opacity .5s ease}
+.bsite .bs-tilt{transform:rotate(var(--bs-r,0deg));transition:transform .6s cubic-bezier(.22,1,.36,1)}
+@media (hover:hover){
+.bsite .bs-tilt:hover,.bsite .bs-tilt:focus-within{transform:rotate(0deg) translateY(-6px) scale(1.02)}
+.bsite .bs-lift{transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.bsite .bs-lift:hover,.bsite .bs-lift:focus-within{transform:translateY(-6px)}
+.bsite .bs-lift:hover::before,.bsite .bs-lift:focus-within::before{opacity:1}
+.bsite .bs-zoom:hover img,.bsite .bs-hover:hover .bs-zoom img,.bsite .bs-hover:focus-visible .bs-zoom img{transform:scale(1.07)}
+.bsite .bs-hover:hover .bs-shift{transform:translateX(6px)}
+.bsite .bs-hover:hover .bs-fade,.bsite .bs-hover:focus-visible .bs-fade{opacity:1}
+}
 @media (prefers-reduced-motion: reduce){.bsite *,.bsite *::before,.bsite *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 `;
 

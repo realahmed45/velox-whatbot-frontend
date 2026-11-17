@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
-import { Reveal } from "@/components/fx";
+import { NumberTicker, Reveal } from "@/components/fx";
 
 const DAYS = 30;
 
@@ -181,18 +181,18 @@ function Housekeeping({ propertyId }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 lg:grid-cols-2">
       {rooms.map((r, i) => (
-        <Reveal key={r.roomTypeId} delay={i * 0.06} y={16}>
-        <div className="card group p-4 sm:p-5">
+        <Reveal key={r.roomTypeId} delay={i * 0.06} y={16} className="h-full">
+        <div className="group h-full rounded-2xl bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(10,10,10,0.04)] transition-shadow duration-300 hover:shadow-[0_20px_40px_-28px_rgba(10,10,10,0.35)] sm:p-5">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="flex min-w-0 items-center gap-2.5 font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
-              <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-sunset-soft text-sunset-flame transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
+            <h3 className="flex min-w-0 items-center gap-2.5 font-geist text-[15px] font-semibold tracking-[-0.02em] text-[#0A0A0A]">
+              <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-[#FFF1EA] text-[#FF5A1F] transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg]">
                 <BedDouble className="h-4 w-4" strokeWidth={1.8} />
               </span>
               <span className="truncate">{r.roomName}</span>
             </h3>
-            <span className="flex-shrink-0 rounded-full bg-ink-900/[0.05] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
+            <span className="flex-shrink-0 rounded-full bg-[#0A0A0A] px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-white">
               {r.units.length} unit{r.units.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -242,7 +242,7 @@ function RateEditor({ room, currency, onSaved, onClose }) {
   };
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-white/80 p-4 ring-1 ring-sunset-flame/20 shadow-[inset_0_1px_0_#fff,0_12px_30px_-18px_rgba(255,106,43,0.5)]">
+    <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-white p-4 ring-1 ring-[#FF5A1F]/25 shadow-[0_12px_30px_-18px_rgba(255,90,31,0.5)]">
       <div className="min-w-[160px]">
         <label className="label text-xs" htmlFor={`rate-${room._id}`}>
           Base rate ({currency || "USD"} per night)
@@ -261,7 +261,7 @@ function RateEditor({ room, currency, onSaved, onClose }) {
         type="button"
         onClick={save}
         disabled={saving}
-        className="btn-primary px-3.5 py-2 text-xs"
+        className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97] px-3.5 py-2 text-xs"
       >
         {saving ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -365,20 +365,36 @@ export default function CalendarPage() {
 
   const currency = property?.currency || "USD";
 
+  // Read-only summary of the grid for the KPI strip.
+  const summary = useMemo(() => {
+    let freeTonight = 0;
+    let soldOut = 0;
+    let lastUnit = 0;
+    for (const r of rooms) {
+      const nights = availability[r._id] || [];
+      if (nights[0]) freeTonight += Math.max(0, Number(nights[0].available) || 0);
+      for (const n of nights) {
+        if (n.available <= 0) soldOut += 1;
+        else if (n.available === 1) lastUnit += 1;
+      }
+    }
+    return { freeTonight, soldOut, lastUnit };
+  }, [rooms, availability]);
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-6 font-geist sm:px-6 sm:pt-8 lg:px-8">
       <Reveal className="mb-6 sm:mb-8">
         <div className="flex items-center gap-3.5">
-          <div className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-sunset text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_10px_22px_-10px_rgba(255,61,119,0.6)]">
+          <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl bg-[#0A0A0A] text-[#FF5A1F] shadow-[0_14px_28px_-14px_rgba(10,10,10,0.7)]">
             <CalendarDays className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-3xl">
+            <h1 className="font-geist text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#0A0A0A] sm:text-[36px]">
               Calendar
             </h1>
-            <p className="mt-0.5 text-sm text-ink-500">
+            <p className="mt-0.5 text-sm text-black/55">
               The next{" "}
-              <span className="font-serif text-[1.05em] italic text-ink-700">30 days</span>, and
+              <span className="font-semibold text-[#FF5A1F]">30 days</span>, and
               who's cleaning what.
             </p>
           </div>
@@ -396,7 +412,7 @@ export default function CalendarPage() {
           title="Couldn't load the calendar"
           description="We couldn't reach your rooms. Check your connection and try again."
           action={
-            <button type="button" onClick={load} className="btn-primary">
+            <button type="button" onClick={load} className="btn bg-[#FF5A1F] text-white shadow-[0_10px_24px_-12px_rgba(255,90,31,0.8)] hover:bg-[#E84A12] hover:-translate-y-0.5 active:scale-[0.97]">
               Try again
             </button>
           }
@@ -415,13 +431,53 @@ export default function CalendarPage() {
         />
       ) : (
         <>
+          {/* ── KPI strip ──────────────────────────────────────────── */}
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {[
+              { label: "Room types", value: rooms.length, icon: BedDouble },
+              { label: "Free tonight", value: summary.freeTonight, icon: Check, hero: true },
+              { label: "Last-unit nights", value: summary.lastUnit, icon: Sparkles },
+              { label: "Sold-out nights", value: summary.soldOut, icon: X },
+            ].map((k, i) => (
+              <Reveal key={k.label} delay={i * 0.05} className="h-full">
+                <div
+                  className={`group relative h-full overflow-hidden rounded-2xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 sm:p-5 ${
+                    k.hero
+                      ? "bg-[#0A0A0A] text-white shadow-[0_24px_48px_-28px_rgba(10,10,10,0.8)]"
+                      : "bg-white ring-1 ring-black/[0.06] hover:shadow-[0_20px_40px_-26px_rgba(255,90,31,0.55)] hover:ring-[#FF5A1F]/25"
+                  }`}
+                >
+                  {k.hero && (
+                    <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#FF5A1F] opacity-30 blur-2xl" />
+                  )}
+                  <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-[#FF5A1F] transition-transform duration-500 group-hover:scale-x-100" />
+                  <div className="relative flex items-start justify-between gap-2">
+                    <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${k.hero ? "text-white/55" : "text-black/45"}`}>
+                      {k.label}
+                    </p>
+                    <span
+                      className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl transition-transform duration-500 ease-spring group-hover:-translate-y-0.5 group-hover:rotate-[-8deg] ${
+                        k.hero ? "bg-[#FF5A1F] text-white" : "bg-[#FFF1EA] text-[#FF5A1F]"
+                      }`}
+                    >
+                      <k.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                    </span>
+                  </div>
+                  <p className={`relative mt-3 font-geist text-3xl font-semibold tracking-[-0.04em] tabular-nums sm:text-[34px] ${k.hero ? "text-white" : "text-[#0A0A0A]"}`}>
+                    <NumberTicker value={k.value} />
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
           {/* ── Availability grid ──────────────────────────────────── */}
           <section className="mb-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+              <h2 className="font-geist text-lg font-semibold tracking-[-0.03em] text-[#0A0A0A]">
                 Availability
               </h2>
-              <div className="flex items-center gap-1 rounded-full bg-white/70 p-1 text-xs text-ink-600 ring-1 ring-ink-900/[0.06] shadow-[inset_0_1px_0_#fff]">
+              <div className="flex items-center gap-1 rounded-full bg-white p-1 text-xs font-medium text-black/60 ring-1 ring-black/[0.07]">
                 <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5">
                   <span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-500/20 ring-1 ring-inset ring-emerald-500/30" />
                   Free
@@ -437,12 +493,12 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            <Reveal delay={0.05} y={16} className="card overflow-hidden">
+            <Reveal delay={0.05} y={16} className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-[0_24px_48px_-36px_rgba(10,10,10,0.35)]">
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0">
                   <thead>
                     <tr>
-                      <th className="sticky left-0 top-0 z-20 min-w-[132px] border-b border-r border-ink-900/[0.06] bg-white/85 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-500 backdrop-blur-xl sm:min-w-[160px]">
+                      <th className="sticky left-0 top-0 z-20 min-w-[132px] border-b border-r border-black/[0.06] bg-[#FAFAFA] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-black/45 sm:min-w-[180px]">
                         Room
                       </th>
                       {dates.map((d, i) => {
@@ -451,21 +507,21 @@ export default function CalendarPage() {
                         return (
                           <th
                             key={d.toISOString()}
-                            className={`min-w-[36px] border-b border-ink-900/[0.06] px-1 py-2 text-center text-[10px] font-semibold backdrop-blur-xl ${
+                            className={`min-w-[36px] border-b border-ink-900/[0.06] px-1 py-2 text-center text-[10px] font-semibold ${
                               today
-                                ? "bg-sunset-soft text-sunset-flame"
+                                ? "bg-[#FFF1EA] text-[#FF5A1F]"
                                 : weekend
-                                  ? "bg-ink-900/[0.03] text-ink-500"
-                                  : "bg-white/70 text-ink-500"
+                                  ? "bg-[#F5F5F4] text-black/45"
+                                  : "bg-[#FAFAFA] text-black/45"
                             }`}
                           >
                             <span className="block uppercase leading-tight">
                               {d.toLocaleDateString(undefined, { weekday: "narrow" })}
                             </span>
                             <span
-                              className={`mx-auto mt-0.5 grid h-5 w-5 place-items-center rounded-full font-display text-[11px] font-semibold leading-none tabular-nums ${
+                              className={`mx-auto mt-0.5 grid h-5 w-5 place-items-center rounded-full font-geist text-[11px] font-semibold leading-none tabular-nums ${
                                 today
-                                  ? "bg-sunset text-white shadow-[0_4px_10px_-4px_rgba(255,61,119,0.7)]"
+                                  ? "bg-[#FF5A1F] text-white shadow-[0_4px_10px_-4px_rgba(255,90,31,0.7)]"
                                   : "text-ink-800"
                               }`}
                             >
@@ -484,12 +540,12 @@ export default function CalendarPage() {
                         <tr
                           key={room._id}
                           className={`group/row transition-colors duration-300 ${
-                            open ? "bg-sunset-soft" : "hover:bg-white/70"
+                            open ? "bg-[#FFF1EA]" : "hover:bg-[#FFF1EA]/40"
                           }`}
                         >
                           <td
-                            className={`sticky left-0 z-10 border-b border-r border-ink-900/[0.06] px-2 py-1.5 backdrop-blur-xl transition-colors duration-300 ${
-                              open ? "bg-orange-50/90" : "bg-white/85 group-hover/row:bg-white/95"
+                            className={`sticky left-0 z-10 border-b border-r border-ink-900/[0.06] px-2 py-1.5 transition-colors duration-300 ${
+                              open ? "bg-[#FFF1EA]" : "bg-white group-hover/row:bg-[#FFFAF6]"
                             }`}
                           >
                             <button
@@ -504,7 +560,7 @@ export default function CalendarPage() {
                             >
                               <span
                                 className={`block truncate text-sm font-semibold transition-colors ${
-                                  open ? "text-sunset-flame" : "text-ink-900 group-hover:text-sunset-flame"
+                                  open ? "text-[#FF5A1F]" : "text-[#0A0A0A] group-hover:text-[#FF5A1F]"
                                 }`}
                               >
                                 {room.name}
@@ -521,7 +577,7 @@ export default function CalendarPage() {
                               <td
                                 key={d.toISOString()}
                                 className={`border-b border-ink-900/[0.05] px-0.5 py-1 text-center ${
-                                  i === 0 ? "bg-sunset-flame/[0.06]" : ""
+                                  i === 0 ? "bg-[#FF5A1F]/[0.06]" : ""
                                 }`}
                               >
                                 {available == null ? (
@@ -556,7 +612,7 @@ export default function CalendarPage() {
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                     className="overflow-hidden"
                   >
-                    <div className="border-t border-ink-900/[0.06] bg-white/40 p-3 sm:p-4">
+                    <div className="border-t border-black/[0.06] bg-[#FAFAF9] p-3 sm:p-4">
                       <RateEditor
                         room={rooms.find((r) => String(r._id) === String(openRoom))}
                         currency={currency}
@@ -572,13 +628,15 @@ export default function CalendarPage() {
 
           {/* ── Housekeeping ───────────────────────────────────────── */}
           <section>
-            <div className="mb-1.5 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-sunset-flame" strokeWidth={1.8} />
-              <h2 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
+            <div className="mb-1.5 flex items-center gap-2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#0A0A0A] text-[#FF5A1F]">
+                <Sparkles className="h-4 w-4" strokeWidth={1.8} />
+              </span>
+              <h2 className="font-geist text-lg font-semibold tracking-[-0.03em] text-[#0A0A0A]">
                 Housekeeping
               </h2>
             </div>
-            <p className="mb-4 text-xs text-ink-500">
+            <p className="mb-4 text-xs text-black/50">
               Tap a unit to move it through clean → dirty → inspected → out of
               service.
             </p>

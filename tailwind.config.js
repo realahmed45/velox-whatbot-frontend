@@ -34,14 +34,17 @@ export default {
         },
         // Bali sunset — the 2026 brand system. One gradient, four stops:
         // gold → flame → magenta → twilight violet.
+        // Rebranded Nov 2026: the old sunset names all resolve to Botlify
+        // orange shades, so every existing page matches the new brand.
         sunset: {
-          gold: "#FFB547",
-          flame: "#FF6A2B",
-          coral: "#FF4D5E",
-          magenta: "#FF3D77",
-          violet: "#7C5CFF",
-          indigo: "#4B3BFF",
+          gold: "#FF9A5C",
+          flame: "#FF5A1F",
+          coral: "#FF6B35",
+          magenta: "#F2541B",
+          violet: "#E84A12",
+          indigo: "#C93D0E",
         },
+        brand2: { DEFAULT: "#FF5A1F", hover: "#E84A12", tint: "#FFF1EA" },
         // Night canvas for marketing + dark glass (sidebar, modals on dark).
         night: {
           600: "#2A2640",
@@ -115,12 +118,10 @@ export default {
       backgroundImage: {
         // THE signature gradient — Bali sunset. Use for primary actions, the
         // logo, and at most one hero word per screen.
-        sunset:
-          "linear-gradient(115deg, #FFB547 0%, #FF6A2B 28%, #FF3D77 62%, #7C5CFF 100%)",
+        sunset: "linear-gradient(115deg, #FF7A3D 0%, #FF5A1F 55%, #E84A12 100%)",
         "sunset-soft":
-          "linear-gradient(115deg, rgba(255,181,71,0.16) 0%, rgba(255,106,43,0.14) 30%, rgba(255,61,119,0.12) 65%, rgba(124,92,255,0.14) 100%)",
-        "sunset-conic":
-          "conic-gradient(from 0deg, #FFB547, #FF6A2B, #FF3D77, #7C5CFF, #4B3BFF, #FFB547)",
+          "linear-gradient(115deg, rgba(255,122,61,0.14) 0%, rgba(255,90,31,0.12) 55%, rgba(232,74,18,0.12) 100%)",
+        "sunset-conic": "conic-gradient(from 0deg, #FF7A3D, #FF5A1F, #E84A12, #FF5A1F, #FF7A3D)",
         // Kept for older call sites — now resolves to the sunset family.
         "brand-gradient":
           "linear-gradient(115deg, #FF8A3D 0%, #FF6A2B 40%, #FF3D77 100%)",

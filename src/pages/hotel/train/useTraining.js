@@ -61,13 +61,16 @@ export default function useTraining() {
   );
 
   /* ── Question writes ─────────────────────────────────────────────── */
-  const saveFaq = async (faq, form) => {
+  // `quiet`: guided mode shows its own progress, so no toast per answer.
+  const saveFaq = async (faq, form, { quiet = false } = {}) => {
     const prev = faqs;
     setFaqs((list) => list.map((f) => (f._id === faq._id ? { ...f, ...form } : f)));
     try {
       const { data } = await api.patch(`/training/${faq._id}`, form);
       apply(data);
-      toast.success(hasText(form.answer) ? "Saved — your AI will use this answer" : "Saved — the AI won't answer this one yet");
+      if (!quiet) {
+        toast.success(hasText(form.answer) ? "Saved — your AI will use this answer" : "Saved — the AI won't answer this one yet");
+      }
       return true;
     } catch (e) {
       setFaqs(prev);
