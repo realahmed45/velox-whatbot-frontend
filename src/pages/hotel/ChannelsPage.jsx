@@ -40,6 +40,7 @@ import FacebookPagePicker from "@/components/FacebookPagePicker";
 import WhatsAppConnectModal from "@/components/WhatsAppConnectModal";
 import WhatsAppHealthStrip from "@/components/WhatsAppHealthStrip";
 import WubookConnectCard from "@/components/WubookConnectCard";
+import EmailRelayCard from "@/components/EmailRelayCard";
 import useChannelCallbackParams from "@/hooks/useChannelCallbackParams";
 import { CHANNEL_COUNT_PHRASE, OTA_CHANNELS } from "@/data/otaChannels";
 import { Magnetic, PulseDot, Reveal, Spotlight } from "@/components/fx";
@@ -495,6 +496,9 @@ export default function ChannelsPage({ hideHeader = false }) {
           onConfigured={setWubookConfigured}
           onConnected={load}
         />
+        <div className="mt-4">
+          <EmailRelayCard />
+        </div>
 
         {wubookConfigured === false && <ZodomusConnectCard onConnected={load} />}
 
