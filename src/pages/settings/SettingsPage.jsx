@@ -40,6 +40,7 @@ import {
   ArrowRight,
   Clock,
   Sparkles,
+  Wallet,
 } from "lucide-react";
 import HolidayModeCard from "@/components/HolidayModeCard";
 import PasswordStrength from "@/components/auth/PasswordStrength";
@@ -57,6 +58,7 @@ const IgAiBotPage = lazy(() => import("@/pages/ai-bot/IgAiBotPage"));
 const TeamPage = lazy(() => import("@/pages/team/TeamPage"));
 const BillingPage = lazy(() => import("@/pages/billing/BillingPage"));
 const ServicesSettings = lazy(() => import("@/pages/settings/ServicesSettings"));
+const PaymentsSettings = lazy(() => import("@/pages/settings/PaymentsSettings"));
 
 const SUPPORT_EMAIL = "contactus@botlify.site";
 
@@ -175,6 +177,13 @@ export default function SettingsPage() {
                 label: "Team",
                 icon: Users,
                 subtitle: "Invite staff and choose what they can see.",
+              },
+              {
+                id: "payments",
+                label: "Guest payments",
+                icon: Wallet,
+                subtitle:
+                  "Let guests pay online when your AI books — money goes straight to your account.",
               },
               {
                 id: "billing",
@@ -365,6 +374,7 @@ export default function SettingsPage() {
                   <TeamPage />
                 </div>
               )}
+              {tab === "payments" && isOwner && <PaymentsSettings />}
               {tab === "billing" && isOwner && (
                 <div className="settings-embed">
                   <BillingPage />

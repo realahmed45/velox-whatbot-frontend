@@ -19,6 +19,7 @@ import {
 import axios from "axios";
 import DriversPanel from "@/components/DriversPanel";
 import AdminPickups from "./AdminPickups";
+import AdminMoney from "./AdminMoney";
 import {
   Loader2,
   LogOut,
@@ -404,6 +405,7 @@ function AdminDashboard({ onLogout }) {
                   label: `Consultants${stats?.consultants?.total != null ? ` (${stats.consultants.total})` : ""}`,
                 },
                 { value: "drivers", label: "Drivers" },
+                { value: "money", label: "Money" },
               ]}
               />
             </div>
@@ -674,6 +676,9 @@ function AdminDashboard({ onLogout }) {
                 </div>
               </div>
             )}
+
+            {/* ── MONEY ── guest payments + automatic payouts */}
+            {tab === "money" && <AdminMoney client={adminApi} />}
 
             {/* ── SUBS ── */}
             {tab === "subs" && (

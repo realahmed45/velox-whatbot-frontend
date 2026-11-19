@@ -5,6 +5,7 @@
  */
 import { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
+import { PAYOUT_CHANNELS, channelLabel } from "@/data/payoutChannels";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { Magnetic, NumberTicker, Reveal, RevealGroup, Spotlight } from "@/components/fx";
@@ -128,6 +129,7 @@ function ApplicationForm({ onApplied }) {
     phone: "",
     country: "",
     city: "",
+    channelCode: "",
     bankName: "",
     accountName: "",
     accountNumber: "",
@@ -145,6 +147,7 @@ function ApplicationForm({ onApplied }) {
         country: form.country.trim(),
         city: form.city.trim(),
         payout: {
+          channelCode: form.channelCode,
           bankName: form.bankName.trim(),
           accountName: form.accountName.trim(),
           accountNumber: form.accountNumber.trim(),
@@ -167,7 +170,7 @@ function ApplicationForm({ onApplied }) {
           {[
             "Apply below — we approve consultants within a day or two.",
             "You get a personal referral code.",
-            "Hotels enter your code when they sign up — you earn 20% of what Botlify makes from them for 12 months, paid monthly.",
+            "Hotels enter your code when they sign up — you earn 20% of what Botlify makes from them for 12 months, paid automatically to your bank or e-wallet every month.",
           ].map((t, i) => (
             <li key={i} className="flex gap-2.5">
               <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sunset text-[11px] font-bold text-white tabular-nums shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
@@ -222,12 +225,21 @@ function ApplicationForm({ onApplied }) {
         </p>
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
-            <span className={label}>Bank name</span>
-            <input
-              value={form.bankName}
-              onChange={(e) => patch("bankName", e.target.value)}
+            <span className={label}>Bank or e-wallet</span>
+            <select
+              value={form.channelCode}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, channelCode: e.target.value, bankName: channelLabel(e.target.value) }))
+              }
               className={input}
-            />
+            >
+              <option value="">Choose…</option>
+              {PAYOUT_CHANNELS.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <span className={label}>Account name</span>
@@ -556,14 +568,26 @@ function PayoutEditor({ consultant, onChanged }) {
         </span>
         Payout details
       </p>
+      <p className="text-sm text-ink-500 -mt-2 mb-4">
+        Your commission is paid automatically every month to this account.
+      </p>
       <div className="grid sm:grid-cols-3 gap-3">
         <div>
-          <span className={label}>Bank name</span>
-          <input
-            value={p.bankName || ""}
-            onChange={(e) => patch("bankName", e.target.value)}
+          <span className={label}>Bank or e-wallet</span>
+          <select
+            value={p.channelCode || ""}
+            onChange={(e) =>
+              setP((x) => ({ ...x, channelCode: e.target.value, bankName: channelLabel(e.target.value) }))
+            }
             className={input}
-          />
+          >
+            <option value="">Choose…</option>
+            {PAYOUT_CHANNELS.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <span className={label}>Account name</span>
@@ -574,7 +598,7 @@ function PayoutEditor({ consultant, onChanged }) {
           />
         </div>
         <div>
-          <span className={label}>Account number / IBAN</span>
+          <span className={label}>Account / phone number</span>
           <input
             value={p.accountNumber || ""}
             onChange={(e) => patch("accountNumber", e.target.value)}

@@ -23,6 +23,7 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 const VerifyEmailPage = lazyWithRetry(() => import("@/pages/auth/VerifyEmailPage"));
 const InvitePage = lazyWithRetry(() => import("@/pages/auth/InvitePage"));
+const PayResultPage = lazyWithRetry(() => import("@/pages/PayResultPage"));
 const PublicBookingPage = lazyWithRetry(
   () => import("@/pages/PublicBookingPage"),
 );
@@ -156,6 +157,7 @@ export default function App() {
               {/* The hotel's own booking page. Public, no OTA, no commission —
                   this is the link a hotel shares with its own guests. */}
               <Route path="/book/:slug" element={<PublicBookingPage />} />
+              <Route path="/pay/:result" element={<PayResultPage />} />
               <Route element={<MarketingLayout />}>
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/consultants" element={<ConsultantsLandingPage />} />

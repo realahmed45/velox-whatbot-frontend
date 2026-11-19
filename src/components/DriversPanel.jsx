@@ -7,8 +7,9 @@
  *                      of their own.
  *
  * Only the endpoints differ, so they're passed in rather than branched on
- * throughout. Drivers are contacted by hand; assigning one to a pickup sends
- * the guest the driver's name, car and WhatsApp number.
+ * throughout. Jobs are offered to drivers on WhatsApp automatically (first
+ * YES wins); assigning one by hand still works and sends the guest the
+ * driver's name, car and WhatsApp number.
  */
 import { useCallback, useEffect, useState } from "react";
 import defaultApi from "@/services/api";
@@ -27,6 +28,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import Skeleton from "@/components/ui/Skeleton";
 import { Spotlight } from "@/components/fx";
+import { PAYOUT_CHANNELS } from "@/data/payoutChannels";
 
 const ID_TYPES = [
   { value: "ktp", label: "KTP" },
@@ -47,6 +49,7 @@ const BLANK = {
   licenceExpiry: "",
   vehicle: { make: "", model: "", colour: "", plate: "", seats: 4 },
   serviceAreas: [],
+  payout: { channelCode: "", accountNumber: "", accountHolderName: "" },
   priority: 100,
   active: true,
   notes: "",
@@ -138,8 +141,8 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
           </h2>
           <p className="text-sm text-ink-500 mt-0.5 max-w-xl">
             {scope === "platform"
-              ? "Used for hotels that don't run their own taxi service. Assign one to a pickup and the guest gets their name, car and WhatsApp number."
-              : "When a guest books an airport pickup, assign one of these drivers to it and the guest gets their name, car and WhatsApp number automatically."}
+              ? "Used for hotels that don't run their own taxi service. Paid pickups are offered to these drivers on WhatsApp automatically — the first to reply YES gets it, and is paid out after the trip."
+              : "When a guest books an airport pickup, these drivers get the job on WhatsApp automatically — the first to reply YES gets it, and the guest is sent their name, car and number."}
           </p>
         </div>
         <button
@@ -216,6 +219,7 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
                       ...BLANK,
                       ...d,
                       vehicle: { ...BLANK.vehicle, ...(d.vehicle || {}) },
+                      payout: { ...BLANK.payout, ...(d.payout || {}) },
                       idExpiry: dateInput(d.idExpiry),
                       licenceExpiry: dateInput(d.licenceExpiry),
                     })
@@ -241,6 +245,7 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
       {editing && (
         <DriverForm
           value={editing}
+          scope={scope}
           saving={saving}
           onCancel={() => setEditing(null)}
           onSave={save}
@@ -252,9 +257,11 @@ export default function DriversPanel({ scope = "hotel", client, onChange }) {
 }
 
 /* ── Add / edit ────────────────────────────────────────────────────────── */
-function DriverForm({ value, saving, onCancel, onSave }) {
+function DriverForm({ value, scope, saving, onCancel, onSave }) {
   const [form, setForm] = useState(value);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const setPayout = (k, v) =>
+    setForm((f) => ({ ...f, payout: { ...(f.payout || {}), [k]: v } }));
   const setVehicle = (k, v) =>
     setForm((f) => ({ ...f, vehicle: { ...f.vehicle, [k]: v } }));
 
@@ -403,6 +410,41 @@ function DriverForm({ value, saving, onCancel, onSave }) {
             </div>
           </div>
         </div>
+
+        {scope === "platform" && (
+          <div className="rounded-2xl bg-white/50 p-3.5 ring-1 ring-inset ring-ink-900/[0.06]">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Automatic payouts</p>
+            <p className="text-xs text-ink-400 mb-2.5">
+              Their earnings from paid trips go here every day, automatically.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <select
+                value={form.payout?.channelCode || ""}
+                onChange={(e) => setPayout("channelCode", e.target.value)}
+                className="input"
+              >
+                <option value="">Bank or e-wallet…</option>
+                {PAYOUT_CHANNELS.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={form.payout?.accountNumber || ""}
+                onChange={(e) => setPayout("accountNumber", e.target.value)}
+                className="input"
+                placeholder="Account / phone number"
+              />
+              <input
+                value={form.payout?.accountHolderName || ""}
+                onChange={(e) => setPayout("accountHolderName", e.target.value)}
+                className="input"
+                placeholder="Name on the account"
+              />
+            </div>
+          </div>
+        )}
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
